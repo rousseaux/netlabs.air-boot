@@ -61,7 +61,7 @@ TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partition', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Linux Default Kernel', 0
 TXT_SETUP_LinuxRootPart        db 'Linux Root Partition', 0
 TXT_SETUP_ForceLBAUsage        db 'Erzwinge BIOS-LBA', 0
-TXT_SETUP_ExtPartMShack        db 'Erw. Partition M$-Hack', 0
+TXT_SETUP_ExtPartMShack        db 'Erw-Part MS Workaround', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'DEFINIERE LINUX KOMMANDOZEILE', 0
 
@@ -145,7 +145,7 @@ TXT_SETUPHELP_InPartitionSetup db 'B - Bootbar', 0
                                db 'V - VIBR-Detection', 0
                                db 'H - Hide Support', 0
                                db 'L - Laufwerksbuchstabe', 0
-                               db 'P - Erw. Part. M$ Hack', 0
+                               db 'P - Erw-Part MS invent', 0
                                db 0
 
 TXT_SETUPHELP_HideSetup:       db 'Status wÑhlen, indem', 0
@@ -279,7 +279,7 @@ TXT_SETUPHELP_ExtPartMShack    db 'Aktiviert dynamisches', 0
                                db 'Ñndern des erweiterten', 0
                                db 'Partitionstyp durch', 0
                                db 'das P-Flag in Standard', 0
-                               db 'oder M$-ID.', 0
+                               db 'oder MS-Erfindung.', 0
                                db 0
 TXT_SETUPHELP_DefLinuxCmd:     db 'Definiert die Linux', 0
                                db 'Kommandozeile.', 0
@@ -329,9 +329,11 @@ TXT_SETUP_DriveLetter          db 'Laufwerksbuchstabe', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'C-Z drÅcken', 0
 
-; Colors for special words hard-coded. Keep all 0s.
-TXT_SETUP_LowerMessage         db 'Dieses Programm ist ',0,'kostenlos',0,' fÅr nicht-kommerzielle BenÅtzung.',0
+IFNDEF ReleaseCommercial
+   ; Colors for special words hard-coded. Keep all 0s.
+   TXT_SETUP_LowerMessage      db 'Dieses Programm ist ',0,'kostenlos',0,' fÅr nicht-kommerzielle BenÅtzung.',0
                                db 'Sie dÅrfen AiR-BOOT ',0,'NICHT',0,' in ',0,'-IRGENDEINER-',0,' Form vertreiben/benÅtzen,',0
                                db 'falls Sie Geld fÅr das jeweilige Produkt oder die Installation erhalten.',0
                                db 'Sofern Sie AiR-BOOT in ',0,'anderen Bereichen',0,' benutzen oder',0,0,0
                                db 'vorinstallieren',0,' mîchten, kontaktieren Sie mich via: ',0,'kiewitz@netlabs.org',0,' !',0
+ENDIF

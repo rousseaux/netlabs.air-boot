@@ -61,7 +61,7 @@ TXT_SETUP_LinuxKernelPart      db 'Partition Noyau Linux', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Noyau Linux par DÇfaut', 0
 TXT_SETUP_LinuxRootPart        db 'Partition Racine Linux', 0
 TXT_SETUP_ForceLBAUsage        db 'Force usage du BIOS-LBA', 0
-TXT_SETUP_ExtPartMShack        db 'M$-Hack Part. êtendue', 0
+TXT_SETUP_ExtPartMShack        db 'êt-Part MS Workaround', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'DêFINIR LIGNE DE COMMANDE LINUX', 0
 
@@ -145,7 +145,7 @@ TXT_SETUPHELP_InPartitionSetup db 'A - Amoráable', 0
                                db 'V - DÇtection VIBR', 0
                                db 'C - Support CachÇ', 0
                                db 'L - Lettre Partition', 0
-                               db 'P - M$ Hack Part. êt.', 0
+                               db 'P - êt-Part MS invent.', 0
                                db 0
 
 TXT_SETUPHELP_HideSetup:       db 'Choisir l''Çtat des', 0
@@ -286,7 +286,7 @@ TXT_SETUPHELP_ForceLBAUsage    db 'Forcer l''usage de', 0
                                db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Changement dynamique', 0
                                db 'du type id (standard', 0
-                               db 'ou M$-id) de la', 0
+                               db 'ou MS-invention) de la', 0
                                db 'partition Çtendue.', 0
                                db '(dÇfini par drapeau P)', 0
                                db 0
@@ -339,9 +339,11 @@ TXT_SETUP_DriveLetter          db 'Lettre Partition', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'Appuyez C-Z', 0
 
-; Colors for special words hard-coded. Keep all 0s.
-TXT_SETUP_LowerMessage         db 'Ce programme est ',0,'gratuit',0,' pour une utilisation privÇe non-commerciale.',0
+IFNDEF ReleaseCommercial
+   ; Colors for special words hard-coded. Keep all 0s.
+   TXT_SETUP_LowerMessage      db 'Ce programme est ',0,'gratuit',0,' pour une utilisation privÇe non-commerciale.',0
                                db 'Vous ne devez ',0,'PAS',0,' distribuer/utiliser AiR-BOOT sous ',0,'-TOUTE-',0,' forme,',0
                                db 'si vous àtes payÇ pour la distribution du produit ou du service.',0
                                db 'Pour utiliser AiR-BOOT dans des ',0,'conditions diffÇrentes',0,', ',0,'prÇ-installer',0,' ou',0
                                db 'le distribuer',0,', svp veuillez me contacter par courriel: ',0,'kiewitz@netlabs.org',0,' !',0
+ENDIF

@@ -61,7 +61,9 @@ TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partitie', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Linux Standaard Kernel', 0
 TXT_SETUP_LinuxRootPart        db 'Linux hoofdafdeling', 0
 TXT_SETUP_ForceLBAUsage        db 'Enkel BIOS-LBA', 0
-TXT_SETUP_ExtPartMShack        db 'Ext. Partitie M$-Hack', 0
+TXT_SETUP_ExtPartMShack        db 'Ext-Part MS Workaround', 0
+;----------------------------------|---------------------|------------------
+
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'Opdrachtenreeks voor Linux', 0
 
@@ -147,7 +149,7 @@ TXT_SETUPHELP_InPartitionSetup db 'O - Opstartbaar', 0
                                db 'D - Detectie van VIBR', 0
                                db 'V - Verbergen', 0
                                db 'L - Partitie letter', 0
-                               db 'P - Ext. Part. M$ Hack', 0
+                               db 'P - Ext-Part MS invent', 0
                                db 0
 
 TXT_SETUPHELP_HideSetup:       db 'Bepaal hoe de andere', 0
@@ -291,11 +293,11 @@ TXT_SETUPHELP_ForceLBAUsage    db 'Uitschakelen van de', 0
                                db 'ENKEL gebruik gemaakt', 0
                                db 'van de BIOS LBA API''s.', 0
                                db 0
-TXT_SETUPHELP_ExtPartMShack    db 'Automatische aanpassen', 0
-                               db 'van partities groter', 0
-                               db 'dan 8 Giga i. v. m.', 0
-                               db 'het M$-id hierbij.', 0
-                               db 'Zie ook q_and_a.txt .  ', 0
+TXT_SETUPHELP_ExtPartMShack    db 'Schakelt dynamische', 0
+                               db 'wijziging van ext.', 0
+                               db 'part. type id naar', 0
+                               db 'standaard of MS-Invent', 0
+                               db '(gedef. door P optie)', 0
                                db 0
 TXT_SETUPHELP_DefLinuxCmd:     db 'Opdrachten voor Linux', 0
                                db 'instellen, indien', 0
@@ -346,9 +348,11 @@ TXT_SETUP_DriveLetter          db 'Partitie letter', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'Kies uit C @ Z', 0
 
-; Colors for special words hard-coded. Keep all 0s.
-TXT_SETUP_LowerMessage:        db 'U mag dit programma ',0,'vrijelijk',0,' gebruiken ten privaten titel.',0
+IFNDEF ReleaseCommercial
+   ; Colors for special words hard-coded. Keep all 0s.
+   TXT_SETUP_LowerMessage:     db 'U mag dit programma ',0,'vrijelijk',0,' gebruiken ten privaten titel.',0
                                db 'U mag in ',0,'GEEN GEVAL',0,' AiR-BOOT gebruiken/verdelen indien dit op ',0,'-ENIGERLEI-',0,0
                                db 'manier, gepaard gaat met een geldelijke vergoeding.',0
                                db 'Wilt u AiR-BOOT gebruiken ',0,'in andere omstandigheden',0,', ',0,'zoals voorge‹nstalleerd',0,' of',0
                                db 'afzonderlijk verdeeld',0,', vraag het dan via email aan: ',0,'kiewitz@netlabs.org',0,' !',0
+ENDIF

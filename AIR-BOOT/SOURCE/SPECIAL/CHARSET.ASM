@@ -3,8 +3,8 @@
 ;=============
 ; The sourcecode is released via www.netlabs.org CVS *ONLY*.
 ;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT YET RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2002 by Martin Kiewitz.
+;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
+;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
 ;  You may recompile the source and do *PRIVATE* modifications, but please keep
 ;  in mind that modifying this code needs at least *some* assembly skill. If
 ;  you mess up your system, because you needed to hack your way through, don't

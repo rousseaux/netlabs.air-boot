@@ -31,6 +31,8 @@ TXT_TimedBootSecond:           db ' sekund. ', 0
 TXT_TimedBootDisabled:         db 'Tidstyrd bootning avaktiverad; ingen tidsgr„ns kommer att upptr„da.', 0
 TXT_BootMenuHelpText1:         db 'Tryck [Esc] f”r att v„xla tidsboot, [Enter] f”r att acceptera aktuellt val.', 0
 TXT_BootMenuHelpText2:         db 'V„lj annan med pilarna, eller tryck [TAB] f”r att se BIOS POST meddelande.', 0
+; Maximum 30 chars
+;----------------------------------|----------------------------|
 TXT_BootMenuEnterSetup         db 'F10 f”r att kommma till Setup', 0
 
 ; Dynamic Length (till 80 chars)

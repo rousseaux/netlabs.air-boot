@@ -31,6 +31,8 @@ TXT_TimedBootSecond:           db ' секунду. ', 0 ; if only one is left, ELiTE :
 TXT_TimedBootDisabled:         db 'Автозагрузка отключена, таймер отключен.', 0
 TXT_BootMenuHelpText1:         db 'Нажмите [Esc] для переключения автозагрузки, [Enter] для выбора раздела.', 0
 TXT_BootMenuHelpText2:         db 'Выберите раздел или нажмите [TAB], чтобы увидеть сообщения BIOS POST.', 0
+; Maximum 30 chars
+;----------------------------------|----------------------------|
 TXT_BootMenuEnterSetup         db 'F10 для смены настроек.', 0
 
 ; Dynamic Length (till 80 chars)

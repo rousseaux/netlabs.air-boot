@@ -36,6 +36,7 @@
  º  - OS/2 Warp3/Warp4/WSeB, en zowel MCP als eComStation                     º
  º     (it's even possible to boot from logical partitions, so don't use the  º
  º      supplied OS/2 BootMan).                                               º
+ º  - BeOS                                                                    º
  º  - Unix/Linux (met of zonder  LILO)                                        º
  º  - Windows 95/98/ME (aka MS-DOS)                                           º
  º  - Windows NT/2000/XP                                                      º

@@ -141,6 +141,12 @@
  º         ³             ³        ³ [+] New option to enforce exclusive LBA   º
  º         ³             ³        ³     API usage for some really bad BIOSes  º
  º         ³             ³        ³ [+] Bad BIOS INT 10h compatibility fix    º
+ º         ³             ³        ³ [+] Swedish localization available        º
+ ºÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º   1.01  ³  2 Mar 2003 ³ [WARP] ³ [!] NO WAR FOR CONTROL OVER OIL RESOURCES º
+ º         ³             ³        ³ [-] Issue with NTFS detected as being     º
+ º         ³             ³        ³      HPFS fixed                           º
+ º         ³             ³        ³ [+] Minor changes                         º
  ºÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
  º [BETA] úúúúúú Internal Beta-Version ³ [WARP] úúúúúúúúúúúú Official Release º
  º [REG] úúúúúúúúúú Registered Version ³ [iNST] úúúúúúúúúúúúú iNSTALL and Co. º
@@ -165,6 +171,7 @@
  º   AiR-BOOT - Italian - by Stefano Sistemi                                  º
  º   AiR-BOOT - Russian - by Denis Tazetdinov                                 º
  º   AiR-BOOT - Swedish - by Bj”rn S”derstr”m                                 º
+ º   AiR-BOOT - German  - by myself ;)                                        º
  º                                                                            º
  ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                          ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
      ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

@@ -40,6 +40,7 @@
  º  - OS/2 Warp3/Warp4/WSeB, ainsi que l'extension MCP et eComStation         º
  º     (il est mˆme possible de d‚marrer depuis des partitions logiques, donc º
  º      de ne pas utiliser le gestionnaire d'amor‡age fourni avec OS/2)       º
+ º  - BeOS                                                                    º
  º  - Unix/Linux (avec ou sans LILO)                                          º
  º  - Windows 95/98/ME (c…d MS-DOS)                                           º
  º  - Windows NT/2000/XP                                                      º

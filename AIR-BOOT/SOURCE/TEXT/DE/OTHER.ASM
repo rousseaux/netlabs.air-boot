@@ -31,6 +31,8 @@ TXT_TimedBootSecond:           db ' Sekunde. ', 0 ; if only one is left, ELiTE :
 TXT_TimedBootDisabled:         db 'Zeitgesteuerter Boot deaktiviert.', 0
 TXT_BootMenuHelpText1:         db '[Esc] um Automatischen Boot an/auszuschalten, [Enter] um Auswahl zu booten', 0
 TXT_BootMenuHelpText2:         db 'Mit den Pfeiltasten auswÑhlen oder [TAB] fÅr den BIOS POST Bildschirm.', 0
+; Maximum 30 chars
+;----------------------------------|----------------------------|
 TXT_BootMenuEnterSetup         db 'F10 um ins Setup zu gelangen', 0
 
 ; Dynamic Length (till 80 chars)

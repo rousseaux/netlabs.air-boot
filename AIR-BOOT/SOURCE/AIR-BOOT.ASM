@@ -3,8 +3,8 @@
 ;=============
 ; The sourcecode is released via www.netlabs.org CVS *ONLY*.
 ;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT YET RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2002 by Martin Kiewitz.
+;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
+;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
 ;  You may recompile the source and do *PRIVATE* modifications, but please keep
 ;  in mind that modifying this code needs at least *some* assembly skill. If
 ;  you mess up your system, because you needed to hack your way through, don't
@@ -20,7 +20,8 @@
 ;---------------------------------------------------------------------------
 
 ; If ReleaseCode is not defined, it will produce debug-able code...
-ReleaseCode                 equ     -1
+; ReleaseCode                 equ    -1
+ReleaseCommercial           equ    -1
 
 JUMPS
 
@@ -30,7 +31,7 @@ IFDEF ReleaseCode
    ExecBaseSeg              equ     00000h
    ExecBasePtr              equ     07C00h ; BIOS starts our MBR at 0:7C00
   ELSE
-   ExecBaseSeg              equ     03ABFh ; Adjust to DOS segment
+   ExecBaseSeg              equ     03567h ; Adjust to DOS segment
    ExecBasePtr              equ     00100h
 ENDIF
 BootBaseSeg                 equ      8000h
@@ -44,7 +45,7 @@ VideoIO_Page2               equ     0BA00h
 VideoIO_Page4               equ     0BC00h
 VideoIO_FXSegment           equ     0A000h
 
-Include ..\..\..\asm.inc\stdmacro.inc
+Include ..\..\..\JimiHelp\asm.inc\stdmacro.inc
 Include ..\INSTALL\GLOBAL.ASM\airboot.inc
 
 TextChar_WinLineRight       equ       0C4h ; 'Ä'
@@ -139,7 +140,7 @@ code_seg        segment public use16
 ;---------------------------------------------------------------------------
 AiR_BOOT:     cli
               db      0EBh               ; JMP-Short -> MBR_Start
-              db      'AiRBOOT', 07h, 01h, 20h, 03h, 01h, 00h, TXT_LanguageID
+              db      'AiRBOOT', 02h, 03h, 20h, 03h, 01h, 01h, TXT_LanguageID
               ; ID String, Date and Version Number, U for US version
               db      1                  ; Total Sectors Count,
                                          ;  Will get overwritten by FIXBSET.exe
@@ -172,7 +173,7 @@ MBR_HaltSystem:
 MBR_FuckUpSys:cli
               jmp     MBR_FuckUpSys
 
-              db      '=FUCKMS='
+              db      'FUCKMS:>'
               jmp     MBR_Start          ; WE HAVE TO DO THIS CAUSE MICKEYSOFT
                                          ;  This needs to be at THIS fixed
                                          ;  location, don't modify it.

@@ -3,8 +3,8 @@
 ;=============
 ; The sourcecode is released via www.netlabs.org CVS *ONLY*.
 ;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT YET RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2002 by Martin Kiewitz.
+;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
+;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
 ;  You may recompile the source and do *PRIVATE* modifications, but please keep
 ;  in mind that modifying this code needs at least *some* assembly skill. If
 ;  you mess up your system, because you needed to hack your way through, don't
@@ -220,6 +220,17 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
 
    test    ah, FileSysFlags_NoName       ; No-Name-Flag ? -> No Partition Name
    jnz     PCCTP_ThereIsNoName           ;                    available
+      cmp     PartSystemID, 07h          ; We got IFS here?
+      jne     PCCTP_NotNTFS
+      ; Check, if 'HPFS' is at DWORD offset 36h
+      cmp     wptr ds:[si+36h], 'PH'
+      jne     PCCTP_SeemsNTFS
+      cmp     wptr ds:[si+38h], 'SF'
+      je      PCCTP_NotNTFS
+     PCCTP_SeemsNTFS:
+      inc     PartSystemID
+      jmp     PCCTP_ThereIsNoName
+     PCCTP_NotNTFS:
       test    ah, FileSysFlags_FAT32     ; FAT32 specific name getting ?
       jz      PCCTP_ResumeNormal
       add     si, 1Ch                    ; Fix for FAT 32, shiat
@@ -227,17 +238,19 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
       add     si, 2Bh                    ; DS:SI - Partition-Name
       mov     cx, 11                     ;         11 bytes length
       call    PART_CheckForValidPartName
-      jnc     PCCTP_SetNameToNoName
+      jnc     PCCTP_ThereIsNoName
+;      jnc     PCCTP_SetNameToNoName
       sub     si, 4                      ; DS:SI -> Serial&Name (15-Bytes)
       xor     ah, ah                     ; no Flags_NoPartName
       jmp     PCCTP_NameSearchInIPT
 
-     PCCTP_SetNameToNoName:
-      cmp     PartSystemID, 07h          ; We got HPFS that failed ?
-      jne     PCCTP_NotHPFS              ; -> is NTFS (internal type 08h)
-      inc     PartSystemID               ; All that fails is Microsoft <bg>
-     PCCTP_NotHPFS:
-      jmp     PCCTP_ThereIsNoName
+; WAS: NTFS/HPFS detection problem
+;     PCCTP_SetNameToNoName:
+;      cmp     PartSystemID, 07h          ; We got HPFS that failed ?
+;      jne     PCCTP_NotHPFS              ; -> is NTFS (internal type 08h)
+;      inc     PartSystemID               ; All that fails is Microsoft <bg>
+;     PCCTP_NotHPFS:
+;      jmp     PCCTP_ThereIsNoName
 
       ;=======================================================
       ; NAME SEARCH in IPT-Table

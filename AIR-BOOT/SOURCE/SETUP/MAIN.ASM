@@ -3,8 +3,8 @@
 ;=============
 ; The sourcecode is released via www.netlabs.org CVS *ONLY*.
 ;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT YET RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2002 by Martin Kiewitz.
+;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
+;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
 ;  You may recompile the source and do *PRIVATE* modifications, but please keep
 ;  in mind that modifying this code needs at least *some* assembly skill. If
 ;  you mess up your system, because you needed to hack your way through, don't
@@ -486,83 +486,85 @@ SETUP_DrawMenuBase              Proc Near   Uses
    mov     cx, 0328h
    call    VideoIO_LocateToCenter        ; LocateToCenter 3, 40 using TotalLen
    call    VideoIO_Print                 ; 'Translated By' as well...
-   ; -------------------------------------------- Lower 1st Line
-   mov     si, offset TXT_SETUP_LowerMessage
-   mov     cl, 3
-   call    GetLenOfStrings               ; CX - Len of 3 Strings at [si]
-   mov     dx, cx
-   mov     cx, 1328h
-   call    VideoIO_LocateToCenter        ; LocateToCenter 19, 40 using TotalLen
-   mov     si, offset TXT_SETUP_LowerMessage
-   call    VideoIO_Print                 ; Begin using WHITE...
-   mov     cx, 0A00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; continue green - 'free'
-   mov     cx, 0F00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; finish using WHITE...
-   ; -------------------------------------------- Lower 2nd Line
-   mov     cl, 5
-   call    GetLenOfStrings               ; CX - Len of 5 Strings at [si]
-   mov     dx, cx
-   mov     cx, 1528h
-   call    VideoIO_LocateToCenter        ; LocateToCenter 21, 40 using TotalLen
-   call    VideoIO_Print                 ; Begin using WHITE again...
-   mov     cx, 0C00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; contine red - 'NOT'
-   mov     cx, 0F00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; more White...
-   mov     cx, 0C00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; contine red - '-ANY-'
-   mov     cx, 0F00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; more White...
-   ; -------------------------------------------- Lower 3rd Line
-   call    GetLenOfString                ; CX - Len of String at [si]
-   mov     dx, cx
-   mov     cx, 1628h
-   call    VideoIO_LocateToCenter        ; LocateToCenter 22, 40 using TotalLen
-   call    VideoIO_Print                 ; Begin using WHITE again...
-   ; -------------------------------------------- Lower 4th Line
-   mov     cl, 5
-   call    GetLenOfStrings               ; CX - Len of 5 Strings at [si]
-   mov     dx, cx
-   mov     cx, 1828h
-   call    VideoIO_LocateToCenter        ; LocateToCenter 24, 40 using TotalLen
-   call    VideoIO_Print                 ; Begin White (again)...
-   mov     cx, 0A00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; continue green - 'other environments'
-   mov     cx, 0F00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; white...
-   mov     cx, 0A00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; green - 'preinstall'
-   mov     cx, 0F00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; finish white...
-   ; -------------------------------------------- Lower 5th Line
-   mov     cl, 4
-   call    GetLenOfStrings               ; CX - Len of 4 Strings at [si]
-   mov     dx, cx
-   mov     cx, 1928h
-   call    VideoIO_LocateToCenter        ; LocateToCenter 25, 40 using TotalLen
-   mov     cx, 0A00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; green - 'distribute'
-   mov     cx, 0F00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; ...some white...
-   mov     cx, 0B00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; and finally the e-mail adress
-   mov     cx, 0F00h
-   call    VideoIO_Color
-   call    VideoIO_Print                 ; finish using WHITE
+   IFNDEF ReleaseCommercial
+      ; -------------------------------------------- Lower 1st Line
+      mov     si, offset TXT_SETUP_LowerMessage
+      mov     cl, 3
+      call    GetLenOfStrings               ; CX - Len of 3 Strings at [si]
+      mov     dx, cx
+      mov     cx, 1328h
+      call    VideoIO_LocateToCenter        ; LocateToCenter 19, 40 using TotalLen
+      mov     si, offset TXT_SETUP_LowerMessage
+      call    VideoIO_Print                 ; Begin using WHITE...
+      mov     cx, 0A00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; continue green - 'free'
+      mov     cx, 0F00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; finish using WHITE...
+      ; -------------------------------------------- Lower 2nd Line
+      mov     cl, 5
+      call    GetLenOfStrings               ; CX - Len of 5 Strings at [si]
+      mov     dx, cx
+      mov     cx, 1528h
+      call    VideoIO_LocateToCenter        ; LocateToCenter 21, 40 using TotalLen
+      call    VideoIO_Print                 ; Begin using WHITE again...
+      mov     cx, 0C00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; contine red - 'NOT'
+      mov     cx, 0F00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; more White...
+      mov     cx, 0C00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; contine red - '-ANY-'
+      mov     cx, 0F00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; more White...
+      ; -------------------------------------------- Lower 3rd Line
+      call    GetLenOfString                ; CX - Len of String at [si]
+      mov     dx, cx
+      mov     cx, 1628h
+      call    VideoIO_LocateToCenter        ; LocateToCenter 22, 40 using TotalLen
+      call    VideoIO_Print                 ; Begin using WHITE again...
+      ; -------------------------------------------- Lower 4th Line
+      mov     cl, 5
+      call    GetLenOfStrings               ; CX - Len of 5 Strings at [si]
+      mov     dx, cx
+      mov     cx, 1828h
+      call    VideoIO_LocateToCenter        ; LocateToCenter 24, 40 using TotalLen
+      call    VideoIO_Print                 ; Begin White (again)...
+      mov     cx, 0A00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; continue green - 'other environments'
+      mov     cx, 0F00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; white...
+      mov     cx, 0A00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; green - 'preinstall'
+      mov     cx, 0F00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; finish white...
+      ; -------------------------------------------- Lower 5th Line
+      mov     cl, 4
+      call    GetLenOfStrings               ; CX - Len of 4 Strings at [si]
+      mov     dx, cx
+      mov     cx, 1928h
+      call    VideoIO_LocateToCenter        ; LocateToCenter 25, 40 using TotalLen
+      mov     cx, 0A00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; green - 'distribute'
+      mov     cx, 0F00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; ...some white...
+      mov     cx, 0B00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; and finally the e-mail adress
+      mov     cx, 0F00h
+      call    VideoIO_Color
+      call    VideoIO_Print                 ; finish using WHITE
+   ENDIF
    ret
 SETUP_DrawMenuBase              EndP
 

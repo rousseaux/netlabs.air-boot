@@ -3,8 +3,8 @@
 ;=============
 ; The sourcecode is released via www.netlabs.org CVS *ONLY*.
 ;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT YET RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2002 by Martin Kiewitz.
+;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
+;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
 ;  You may recompile the source and do *PRIVATE* modifications, but please keep
 ;  in mind that modifying this code needs at least *some* assembly skill. If
 ;  you mess up your system, because you needed to hack your way through, don't
@@ -23,8 +23,12 @@
 ;  I'm going to sue your cheap ass, rape your dog and blow up your house. =)
 
 CopyrightVersionLen         equ   5
-Copyright                    db ' AiR-BOOT v1.00 - (c) ''98-2003 Martin Kiewitz, Dedicated to Gerd Kiewitz', 0
-BootEndMsg                   db 'Distribute/copy freely. Only meant for private usage.', 0
+Copyright                    db ' AiR-BOOT v1.01 - (c) 1998-2003 Martin Kiewitz, Dedicated to Gerd Kiewitz', 0
+IFDEF ReleaseCommercial
+   RegisteredTo              db 'Registered To: Myself', 0
+  ELSE
+   BootEndMsg                db 'Distribute/copy freely. Only meant for private usage.', 0
+ENDIF
 
 CheckID_MBR                  db 'AiRBOOT'
 

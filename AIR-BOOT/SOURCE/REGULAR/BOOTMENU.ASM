@@ -3,8 +3,8 @@
 ;=============
 ; The sourcecode is released via www.netlabs.org CVS *ONLY*.
 ;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT YET RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2002 by Martin Kiewitz.
+;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
+;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
 ;  You may recompile the source and do *PRIVATE* modifications, but please keep
 ;  in mind that modifying this code needs at least *some* assembly skill. If
 ;  you mess up your system, because you needed to hack your way through, don't
@@ -183,6 +183,22 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
 
    mov     cx, 0C04h
    call    VideoIO_Color
+
+   IFDEF ReleaseCommercial
+      mov     si, offset RegisteredTo
+      call    GetLenOfString
+      mov     dx, 144Eh
+      sub     dl, cl
+      mov     cx, dx
+      call    VideoIO_Locate
+      mov     al, TextChar_WinRep4
+      call    VideoIO_PrintSingleChar
+      call    VideoIO_Print
+      mov     al, TextChar_WinRep5
+      call    VideoIO_PrintSingleChar
+   ENDIF
+
+   ; Additional message how to enter setup
    mov     si, offset TXT_BootMenuEnterSetup
    call    GetLenOfString
    mov     dx, 194Eh
@@ -191,10 +207,10 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
    call    VideoIO_Locate
    mov     al, TextChar_WinRep4
    call    VideoIO_PrintSingleChar
-   call    VideoIO_Print                 ; Additional message how to enter setup
+   call    VideoIO_Print
    mov     al, TextChar_WinRep5
    call    VideoIO_PrintSingleChar
-   ; HelpWindow fertig...
+   ; HelpWindow done...
    ret
 BOOTMENU_BuildMain              EndP
 
@@ -254,7 +270,11 @@ BOOTMENU_BuildGoodBye           Proc Near   Uses es di
    call    VideoIO_Print                 ; Print Copyright to the end...
    mov     cx, 0303h
    call    VideoIO_Locate
-   mov     si, offset BootEndMsg         ; Print End-Message...
+   IFDEF ReleaseCommercial
+      mov     si, offset RegisteredTo
+     ELSE
+      mov     si, offset BootEndMsg         ; Print End-Message...
+   ENDIF
    call    VideoIO_Print
    ; -------------------------------------------
    mov     ah, 02h

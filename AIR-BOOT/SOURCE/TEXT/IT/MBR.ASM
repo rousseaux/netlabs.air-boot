@@ -13,5 +13,3 @@ TXT_ERROR_CheckCode            db ' - Il codice', 0
 TXT_ERROR_CheckFailed          db ' di AiR-BOOT e'' danneggiato.', 13, 10
                                db '   Riavviare con il floppy di AiR-BOOT per ripristinarlo.', 13, 10
                                db '   Sistema bloccato. Premere RESET.', 0
-
-

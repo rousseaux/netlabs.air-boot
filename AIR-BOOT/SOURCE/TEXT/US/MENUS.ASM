@@ -61,7 +61,7 @@ TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partition', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Linux Default Kernel', 0
 TXT_SETUP_LinuxRootPart        db 'Linux Root Partition', 0
 TXT_SETUP_ForceLBAUsage        db 'Force BIOS-LBA Usage', 0
-TXT_SETUP_ExtPartMShack        db 'Ext. Partition M$-Hack', 0
+TXT_SETUP_ExtPartMShack        db 'Ext-Part MS Workaround', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'DEFINE COMMAND LINE FOR LINUX', 0
 
@@ -143,7 +143,7 @@ TXT_SETUPHELP_InPartitionSetup db 'B - Bootable', 0
                                db 'V - VIBR-Detection', 0
                                db 'H - Hidden Support', 0
                                db 'L - Partition Letter', 0
-                               db 'P - Ext. Part. M$ Hack', 0
+                               db 'P - Ext-Part MS invent', 0
                                db 0
 
 TXT_SETUPHELP_HideSetup:       db 'Select the state at', 0
@@ -278,7 +278,7 @@ TXT_SETUPHELP_ForceLBAUsage    db 'Forces the usage of', 0
 TXT_SETUPHELP_ExtPartMShack    db 'Enables dynamic change', 0
                                db 'of the ext. partition', 0
                                db 'type id to standard or', 0
-                               db 'M$-id.', 0
+                               db 'MS-invention.', 0
                                db '(defined by P-flag)', 0
                                db 0
 TXT_SETUPHELP_DefLinuxCmd:     db 'Defines the command', 0
@@ -330,9 +330,11 @@ TXT_SETUP_DriveLetter          db 'Partition Letter', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'Press C-Z', 0
 
-; Colors for special words hard-coded. Keep all 0s.
-TXT_SETUP_LowerMessage         db 'This program is ',0,'free',0,' for non-commercial private use.',0
+IFNDEF ReleaseCommercial
+   ; Colors for special words hard-coded. Keep all 0s.
+   TXT_SETUP_LowerMessage      db 'This program is ',0,'free',0,' for non-commercial private use.',0
                                db 'You may ',0,'NOT',0,' distribute/use AiR-BOOT in ',0,'-ANY-',0,' form,',0
                                db 'if you get money for the distributed product or the service.',0
                                db 'If you want to use AiR-BOOT in ',0,'other environments',0,', ',0,'preinstall',0,' or',0
                                db 'distribute',0,' it, please contact me via e-mail: ',0,'kiewitz@netlabs.org',0,' !',0
+ENDIF

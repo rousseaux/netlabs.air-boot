@@ -35,6 +35,7 @@
  º  - MS-DOS/DR-DOS/Open-DOS/PC-DOS (2000)                                    º
  º  - OS/2 Warp3/Warp4/WSeB, sowie MCP und eComStation                        º
  º     (es ist auch m”glich von logischen Partitionen zu booten)              º
+ º  - BeOS                                                                    º
  º  - Unix/Linux (mit oder ohne LILO)                                         º
  º  - Windows 95/98/ME (aka MS-DOS)                                           º
  º  - Windows NT/2000/XP                                                      º

@@ -42,7 +42,7 @@ ImageBasePtr    equ     0h      ; We put our AiR-BOOT image to this location
 MBR_CurrentSectorsSeg           equ     9000h ; We put current MBR into this seg
 StackSeg        equ     7000h
 
-Include ..\..\..\global\asm.inc\stdmacro.inc
+Include ..\..\..\..\JimiHelp\asm.inc\stdmacro.inc
 Include ..\global.asm\airboot.inc
 
 		.386p

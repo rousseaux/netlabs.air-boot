@@ -61,7 +61,7 @@ TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partition', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Linux Standard KÑrna', 0
 TXT_SETUP_LinuxRootPart        db 'Linux Root Partition', 0
 TXT_SETUP_ForceLBAUsage        db 'Forc BIOS-LBA AnvÑndn.', 0
-TXT_SETUP_ExtPartMShack        db 'Ext. Partition M$-Hack', 0
+TXT_SETUP_ExtPartMShack        db 'Ext-Part MS Workaround', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'DEFINIERA KOMMANDORAD FôR LINUX', 0
 
@@ -147,7 +147,7 @@ TXT_SETUPHELP_InPartitionSetup db 'B - Bootningbar', 0
                                db 'V - VIBR-UpptÑckt', 0
                                db 'H - Dolt Stîd', 0
                                db 'L - Partition Bokstav', 0
-                               db 'P - Ext. Part. M$ Hack', 0
+                               db 'P - Ext-Part MS invent', 0
                                db 0
 
 TXT_SETUPHELP_HideSetup:       db 'VÑlj status fîr', 0
@@ -296,7 +296,7 @@ TXT_SETUPHELP_ForceLBAUsage    db 'Forc. anvÑndning av', 0
 TXT_SETUPHELP_ExtPartMShack    db 'Aktiverar dyn. Ñndring', 0
                                db 'av den utîkade part.,', 0
                                db 'skriv id fîr standard', 0
-                               db 'eller M$-id.', 0
+                               db 'eller MS-uppfinnade.', 0
                                db '(definierad av P-flag)', 0
                                db 0
 TXT_SETUPHELP_DefLinuxCmd:     db 'Definierar kommando', 0
@@ -348,9 +348,11 @@ TXT_SETUP_DriveLetter          db 'Partition Bokstav', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'Tryck C-Z', 0
 
-; Colors for special words hard-coded. Keep all 0s.
-TXT_SETUP_LowerMessage         db 'Detta program Ñr ',0,'fritt',0,' fîr icke-kommersiell privat anvÑndning.',0
+IFNDEF ReleaseCommercial
+   ; Colors for special words hard-coded. Keep all 0s.
+   TXT_SETUP_LowerMessage      db 'Detta program Ñr ',0,'fritt',0,' fîr icke-kommersiell privat anvÑndning.',0
                                db 'Du fÜr ',0,'INTE',0,' distribuera/anvÑnda AiR-BOOT i ',0,'-NèGON-',0,' form,',0
                                db 'om du erhÜller pengar fîr den distribuerade produkten eller servicen.',0
                                db 'Om du vill anvÑnda AiR-BOOT i ',0,'andra sammanhang',0,', ',0,'fîrinstallera',0,' eller',0
                                db 'distribuera',0,' den, var vÑnlig och kontakta mig via e-mail: ',0,'kiewitz@netlabs.org',0,' !',0
+ENDIF

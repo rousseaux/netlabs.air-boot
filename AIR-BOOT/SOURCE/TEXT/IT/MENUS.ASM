@@ -61,7 +61,7 @@ TXT_SETUP_LinuxKernelPart      db 'Partiz. kernel Linux', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Kernel Linux predef.', 0
 TXT_SETUP_LinuxRootPart        db 'Partizione Root Linux', 0
 TXT_SETUP_ForceLBAUsage        db 'Forza uso LBA del BIOS', 0
-TXT_SETUP_ExtPartMShack        db 'Partiz. Estese M$ >8Gb', 0
+TXT_SETUP_ExtPartMShack        db 'Est-Part MS Workaround', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'DEFINIRE LINEA DI COMANDO LINUX', 0
 
@@ -147,7 +147,7 @@ TXT_SETUPHELP_InPartitionSetup db 'A -Avviabile (boot)', 0
                                db 'V -Rilevazione VIBR', 0
                                db 'N -Supporto Nascoste', 0
                                db 'L -Lettera Partizione', 0
-                               db 'P -Part.Estese MS >8Gb', 0
+                               db 'P -Est-Part MS inventi', 0
                                db 0
 
 TXT_SETUPHELP_HideSetup:       db 'Definisce lo stato', 0
@@ -289,11 +289,11 @@ TXT_SETUPHELP_ForceLBAUsage    db 'Forza l''uso delle API', 0
                                db 'dell''uso misto di CHS', 0
                                db 'ed LBA.', 0
                                db 0
-TXT_SETUPHELP_ExtPartMShack    db 'Cambia dinamicamente', 0
-                               db 'l''ID delle partiz.', 0
-                               db 'estese >8Gb da', 0
-                               db 'standard a formato M$', 0
-                               db '(definito dal flag P)', 0
+TXT_SETUPHELP_ExtPartMShack    db 'Abilita il cambiamento', 0
+                               db 'dinamico della partiz.', 0
+                               db 'estesa, da "type id"', 0
+                               db 'standard a tipo MS', 0
+                               db '(definito dal P-flag)', 0
                                db 0
 TXT_SETUPHELP_DefLinuxCmd:     db 'Definisce la linea di', 0
                                db 'comando per Linux, se', 0
@@ -344,9 +344,11 @@ TXT_SETUP_DriveLetter          db 'Lettera Partizione', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'Premere C a Z', 0
 
-; Colors for special words hard-coded. Keep all 0s.
-TXT_SETUP_LowerMessage         db 'Programma ',0,'gratuito',0,' per uso privato non commerciale.',0
+IFNDEF ReleaseCommercial
+   ; Colors for special words hard-coded. Keep all 0s.
+   TXT_SETUP_LowerMessage      db 'Programma ',0,'gratuito',0,' per uso privato non commerciale.',0
                                db 'Proibita ',0,'ASSOLUTAMENTE',0,' distribuzione o uso di AiR-BOOT in ',0,'-OGNI-',0,' modo,',0
                                db 'in caso di pagamento del prodotto o del servizio fornito con esso.',0
                                db 'Se si vuole usare AiR-BOOT secondo ',0,'altre condizioni',0,', ',0,'preinstallarlo',0,' o ',0
                                db 'distribuirlo',0,' , contattatemi via e-mail: ',0,'kiewitz@netlabs.org',0,' !',0
+ENDIF

@@ -31,6 +31,8 @@ TXT_TimedBootSecond:           db ' second. ', 0 ; if only one is left, ELiTE :]
 TXT_TimedBootDisabled:         db 'Timed boot disabled; no timeout will occur.', 0
 TXT_BootMenuHelpText1:         db 'Press [Esc] to toggle timed boot, [Enter] to accept current selection.', 0
 TXT_BootMenuHelpText2:         db 'Select another with the arrow keys, or press [TAB] to see BIOS POST message.', 0
+; Maximum 30 chars
+;----------------------------------|----------------------------|
 TXT_BootMenuEnterSetup         db 'F10 to enter Setup', 0
 
 ; Dynamic Length (till 80 chars)

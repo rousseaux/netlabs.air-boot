@@ -29,9 +29,8 @@
   may update your copy of AiR-BOOT. Configuration will remain intact.
 
  Changes this time:
-  - First official Release
-  - New option to enforce exclusive LBA API usage for some really bad BIOSes
-  - Bad BIOS INT 10h compatibility fix
-  - Swedish localization available
+  - NO WAR FOR CONTROL OVER OIL RESOURCES
+  - Issue with NTFS detected as being HPFS fixed
+  - Minor changes
 
- Release-Version: 1.00 on 7 Jan 2003
+ Release-Version: 1.01 on 7 Jan 2003

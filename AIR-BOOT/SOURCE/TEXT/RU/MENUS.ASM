@@ -146,7 +146,7 @@ TXT_SETUPHELP_InPartitionSetup db 'B - Загружаемый', 0
                                db 'V - Поиск MBR-вирусов', 0
                                db 'H - Поддержка прятания', 0
                                db 'L - Буква раздела', 0
-                               db 'P - Расш. Разд. M$-Хак', 0
+                               db 'P - Расш. Разд. MS-Хак', 0
                                db 0
 
 TXT_SETUPHELP_HideSetup:       db 'Выберите состояние,', 0
@@ -278,7 +278,7 @@ TXT_SETUPHELP_ForceLBAUsage    db 'Требудет использование', 0
 TXT_SETUPHELP_ExtPartMShack    db 'Включает динамическую', 0
                                db 'смену типа расширенных', 0
                                db 'разделов в стандартный', 0
-                               db 'или M$.', 0
+                               db 'или MS.', 0
                                db '(указать через P-флаг)', 0
                                db 0
 TXT_SETUPHELP_DefLinuxCmd:     db 'Командная строка для', 0
@@ -330,9 +330,11 @@ TXT_SETUP_DriveLetter          db 'Буква раздела', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'Нажмите C-Z', 0
 
-; Colors for special words hard-coded. Keep all 0s.
-TXT_SETUP_LowerMessage         db 'Эта программа ',0,'бесплатна',0,' для некоммерческого использования.',0
+IFNDEF ReleaseCommercial
+   ; Colors for special words hard-coded. Keep all 0s.
+   TXT_SETUP_LowerMessage      db 'Эта программа ',0,'бесплатна',0,' для некоммерческого использования.',0
                                db 'Вы ',0,'НЕ',0,' можете распространять/использовать AiR-BOOT в ',0,'-ЛЮБОЙ-',0,' форме,',0
                                db 'если Вы получаете за это деньги.',0
                                db 'Если Вы хотите использовать AiR-BOOT в ',0,'в других системах',0,', ',0,'предустанавливать',0,' или',0
                                db 'распространять',0,' свяжитесь со мной по e-mail: ',0,'kiewitz@netlabs.org',0,' !',0
+ENDIF

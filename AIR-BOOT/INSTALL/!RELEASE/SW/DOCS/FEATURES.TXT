@@ -36,6 +36,7 @@
  º  - OS/2 Warp3/Warp4/WSeB, s† v„l som MCP paketeringar och eComStation      º
  º     (det „r „ven m”jligt att boota fr†n logiska partitioner, s† anv„nd     º
  º     inte den medf”ljande OS/2 BootManager)                                 º
+ º  - BeOS                                                                    º
  º  - Unix/Linux (med eller utan LILO)                                        º
  º  - Windows 95/98/ME (aka MS-DOS)                                           º
  º  - Windows NT/2000/XP                                                      º

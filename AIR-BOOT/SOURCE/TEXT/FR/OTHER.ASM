@@ -31,6 +31,8 @@ TXT_TimedBootSecond:           db ' seconde. ', 0 ; if only one is left, ELiTE :
 TXT_TimedBootDisabled:         db 'Amor‡age temporis‚ d‚sactiv‚; aucune temporisation n''arrivera.', 0
 TXT_BootMenuHelpText1:         db '[Esc] bascule l''amor‡age temporis‚, [Enter] accepte la s‚lection courante.', 0
 TXT_BootMenuHelpText2:         db 'FlŠches pour choisir une autre, ou [TAB] pour voir les messages POST BIOS.', 0
+; Maximum 30 chars
+;----------------------------------|----------------------------|
 TXT_BootMenuEnterSetup         db 'F10 pour Configurer', 0
 
 ; Dynamic Length (till 80 chars)

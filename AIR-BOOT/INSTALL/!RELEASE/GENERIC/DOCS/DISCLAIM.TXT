@@ -27,7 +27,7 @@
  º                                                                            º
  º The sourcecode is released via www.netlabs.org CVS *ONLY*.                 º
  º  You MUST NOT upload it to other servers nor republish it in any way.      º
- º  The sourcecode is still COPYRIGHTED and NOT YET RELEASED UNDER GPL.       º
+ º  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.           º
  º  It's (c) Copyright 1998-2003 by Martin Kiewitz.                           º
  º  You may recompile the source and do *PRIVATE* modifications, but please   º
  º  keep in mind that modifying this code needs at least *some* assembly      º

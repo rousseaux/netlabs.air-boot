@@ -7,7 +7,7 @@
   К ллллллллллл ллллл лллллллллп  К                                     К
   К лллл   лллл ллллл лллл пллллм К     Г                               К
   Г пллп   пллп  плп  пллп   пллп Г     Г   Developer Information for   Г
-                   ммм                  Г        AiR-BOOT v1.00         Г
+                   ммм                  Г        AiR-BOOT v1.01         Г
   љ              мллп             љ     Г                               Г
        ФФФФФФФ мллп                     К                               Г
   Г     кПкПГмлллммлллм           Г     К                               Г
@@ -36,7 +36,7 @@
   ===================
 
         This document defines several aspects of AiR-BOOT v0.26b+ and is
-         currently on the level of AiR-BOOT v1.00.
+         currently on the level of AiR-BOOT v1.01.
 
         AiR-BOOT is an advanced multi-boot-loader that resides completly in
          MBR/track-0. It has built-in colored menu-driven setup,
@@ -135,6 +135,7 @@
                                               'I' for italian
                                               'R' for russian
                                               'U' for english
+                                              'S' for swedish
          TotalCodeSectors   : BYTE          - counting from sector 2
          CheckSumOfCode     : WORD          - explained later
         -----------------------------------------------------------------------

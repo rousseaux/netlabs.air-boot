@@ -36,6 +36,7 @@
  º  - OS/2 Warp3/Warp4/WSeB, cosi' come la versione MCP ed eComStation        º
  º     (e' possibile l'avvio da partizioni logiche, quindi non e' necessario  º
  º      il BootManager fornito con OS/2)                                      º
+ º  - BeOS                                                                    º
  º  - Unix/Linux (con o senza LILO)                                           º
  º  - Windows 95/98/ME (vedi MS-DOS)                                          º
  º  - Windows NT/2000/XP                                                      º

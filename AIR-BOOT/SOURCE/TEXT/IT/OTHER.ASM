@@ -31,7 +31,9 @@ TXT_TimedBootSecond:           db ' secondo. ', 0 ; if only one is left, ELiTE :
 TXT_TimedBootDisabled:         db 'Avvio Temporizzato Disabilitato. Pausa.', 0
 TXT_BootMenuHelpText1:         db 'Premere [Esc] per resettare il timer, [Invio] per accettare la selezione.', 0
 TXT_BootMenuHelpText2:         db 'Selezionare con i tasti freccia, oppure [TAB] per i messaggi POST del BIOS.', 0
-TXT_BootMenuEnterSetup         db 'F10 to enter Setup', 0
+; Maximum 30 chars
+;----------------------------------|----------------------------|
+TXT_BootMenuEnterSetup         db 'F10 Impostazioni', 0
 
 ; Dynamic Length (till 80 chars)
 TXT_TooManyPartitions:         db 13, 10, ' - Trovate troppe partizioni. AiR-BOOT ne supporta fino a 30.', 0
@@ -82,9 +84,3 @@ TXT_ERROR_CheckConfig          db 13, 10, ' - La configurazione', 0
 
 ;----------------------------------|----------------------------------------------------------|
 TXT_TooManyTries               db 'Troppi tentativi, Sistema Bloccato.', 0
-
-
-
-
-
-

@@ -1,7 +1,7 @@
 
 JUMPS
 
-Include ..\..\..\global\asm.inc\stdmacro.inc
+Include ..\..\..\..\JimiHelp\asm.inc\stdmacro.inc
 include ..\global.asm\airboot.inc
 
 		.386p
