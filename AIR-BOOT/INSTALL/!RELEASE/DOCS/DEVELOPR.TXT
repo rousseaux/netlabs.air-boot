@@ -1,0 +1,404 @@
+
+  ù Ä ÄÄÄÄÍÍ = Ä  ù  Ä = ÍÍÄÄÄÄ Ä ù
+  ³                               ³
+     ÜÛÛÛÛÛÛÛÜ   ÜÛÜ  ÜÛÛÛÛÛÛÛÛÜ          ú  úÄÄÄÍÄÄÍÄÍÍÄÄÍÍÍÍÄÍÍÍÍÍÍÍÍÍÎÄ
+  ³ ÛÛÛÛßßßÛÛÛÛ ÛÛÛÛÛ ÛÛÛß   ßÛÛÛ ³            AiR ON-Line Software     º
+  º ÛÛÛÛÜÜÜÛÛÛÛ ÛÛÛÛÛ ÛÛÛÜ   ÜÛÛÛ º      ú ÄÄÄÄÍÄÍÍÄÄÍÍÍÍÄÍÍÍÍÍÍÍÍÄÍÍÍÍÍÎÄ
+  º ÛÛÛÛÛÛÛÛÛÛÛ ÛÛÛÛÛ ÛÛÛÛÛÛÛÛÛß  º                                     º
+  º ÛÛÛÛ   ÛÛÛÛ ÛÛÛÛÛ ÛÛÛÛ ßÛÛÛÛÜ º     ³                               º
+  ³ ßÛÛß   ßÛÛß  ßÛß  ßÛÛß   ßÛÛß ³     ³   Developer Information for   ³
+                   ÜÜÜ                  ³    AiR-BOOT v0.94b [RC-4]     ³
+  ù              ÜÛÛß             ù     ³                               ³
+       ÄÄÄÄÄÄÄ ÜÛÛß                     º                               ³
+  ³     Ú¿Ú¿³ÜÛÛÛÜÜÛÛÛÜ           ³     º                               ³
+  º     ÀÙ³ÀÙßÛÛÛßßÜÛÛß           º     º                               ú
+  º    ÄÄÄÄÄÄÄ    ÜÛÛÝ            º     º
+  º              ÜÛÛÛÄÄÄÄÄÄÄÄÄ    º    ÄÎÍÍÍÄÍÍÍÍÍÄÍÍÍÍÄÍÍÄÄÍÄÄÍÄÄÄúÄÄ  ú
+  º             ÜÛÛÛÝ³ ³Ú¿³³Ä     º
+  ³            ÜÛÛÛÛ ÀÄ³³ÀÙ³Ä     ³
+              ßÛÛÛÛÝÄÄÄÄÄÄÄÄÄÄ
+  ³             ßß                ³
+  ù Ä´-=’iç éï-Liïî SéŸâW’çî=-ÃÄÄ ù
+
+
+   1.1  - Foreword
+   2.1  - Detection
+   2.2  - Code-Image
+   2.3  - Config-Data
+   3.1  - Configuration
+   3.2  - Internal Partition Table
+   3.3  - Hide-Configuration
+
+-------------------------------------------------------------------------------
+
+  ===================
+  | 1.1  - FOREWORD |
+  ===================
+
+        This document defines several aspects of AiR-BOOT v0.26b+ and is
+         currently on the level of AiR-BOOT v0.94b [RC-4].
+
+        AiR-BOOT is an advanced multi-boot-loader that resides completly in
+         MBR/track-0. It has built-in colored menu-driven setup,
+         Virus-Detection and much more.
+
+        This documentation is meant for other developers that want to detect
+         and/or support AiR-BOOT and modify some configuration values.
+
+        Please keep in mind that you are responsible for doing those changes
+         the documented, correct manner. AiR-BOOT is able to fix some
+         configuration values like Default-Partition, because the user could
+         have killed that partition, but AiR-BOOT is not completely
+         error-tolerant. Work as defined in this documentation and everything
+         will work as expected.
+
+        All offsets are zero-based, which means offset 1 is the 2nd byte.
+         Everything is meant to be in Intel-Order.
+
+        You may contact the author via e-mail using: kiewitz@netlabs.org.
+
+
+  ====================
+  | 2.1  - DETECTION |
+  ====================
+
+        AiR-BOOT consists of several parts.
+         - AiR-BOOT MBR Code (sector 1)
+         - AiR-BOOT Code (starting at sector 2)
+         - AiR-BOOT configuration (sector 55-59)
+         - AiR-BOOT MBR backup (sector 60)
+
+        A detailed view:
+
+          Sec.  Name
+         ---------------------------
+         |  1 | Master Boot Record | -> Code
+         |  2 | System-Table       | -> Code
+         |  3 | Code               | -> Code
+         | .. | ...                | -> Code
+         | 55 | Configuration      | -> Config
+         | 56 | Partitiontable 1   | -> Config
+         | 57 | Partitiontable 2   | -> Config
+         | 58 | Hide-Configuration | -> Config
+         | 59 | Hide-Configuration | -> Config
+         | 60 | Backup of our MBR  | -> Config
+         ---------------------------
+
+        Internally those parts are combined into Code and Configuration Data.
+        Both can get individually checked for corruption, so if the code is
+         damaged, but the configuration is intact, we don't have to rewrite
+         everything and force the user to reconfigure.
+
+         Now a basic-routine used for making a checksum out of ONE 512-byte
+          sector. Further use is explained in the following sections.
+
+         ;        In: BX - Base Check
+         ;            DS:SI - Pointer to 512-byte-area to be included
+         ;       Out: BX - Base Check Result
+         ; Destroyed: SI will get updated (+512)
+         MBR_GetCheckOfSector         Proc Near   Uses ax cx
+            mov    cx, 256
+           GetCheckOfSector_Loop:
+               lodsw
+               xor    ax, 0BABEh
+               xor    bx, ax
+            loop   GetCheckOfSector_Loop
+            or     bx, bx
+            jnz    GetCheckOfSector_NoFixUp
+            mov    bx, 1             ; No 0, because 0 means "empty"
+           GetCheckOfSector_NoFixUp:
+            ret
+         MBR_GetCheckOfSector         EndP
+
+
+  =====================
+  | 2.2  - CODE-IMAGE |
+  =====================
+
+        Detecting presence of AiR-BOOT code is easy.
+        Look in the MBR at offset 2 for the signature 'AiRBOOT'.
+
+        If it's found, then the following structure is legal:
+
+        -----------------------------------------------------------------------
+         Contents: Standard AiR-BOOT basic information structure
+        =======================================================================
+         Identifier         : STRING * 7    - 'AiRBOOT'
+         DayOfRelease       : BYTE          - in BCD
+         MonthOfRelease     : BYTE          - in BCD
+         YearOfRelease      : WORD          - in BCD (non-intel byte order)
+         MajorVersion       : BYTE          - in BCD
+         MinorVersion       : BYTE          - in BCD
+         ReleaseLanguage    : BYTE          - 'D' for dutch
+                                              'F' for french
+                                              'G' for german
+                                              'I' for italian
+                                              'R' for russian
+                                              'U' for english
+         TotalCodeSectors   : BYTE          - counting from sector 2
+         CheckSumOfCode     : WORD          - explained later
+        -----------------------------------------------------------------------
+
+        Now how to verify, if the Code-Image is completely intact.
+
+        Please note: There is no verification of the MBR-code. Anyway, if the
+         MBR-code is bad, then the signature should not be in place and it
+         would not load anyway.
+
+        Code used for verification in x86 assembly:
+
+         ; DS:SI - point to Sector 2 (the sector following MBR)
+         xor     bx, bx
+         mov     cx, TotalCodeSectors
+        CheckCodeLoop:
+            call    MBR_GetCheckOfSector
+         loop    CheckCodeLoop
+         -> BX holds CheckSum
+
+        Now if BX and CheckSumOfCode match, we got a intact code-image.
+
+
+  ======================
+  | 2.3  - CONFIG-DATA |
+  ======================
+
+        Detecting AiR-BOOT configuration is similar to code detection.
+        Look in sector 55 at offset 0 for the signature 'AiRCFG-TABLE­'.
+
+        If it's found, then the following structure is legal:
+
+        -----------------------------------------------------------------------
+         Contents: Standard AiR-BOOT config identification structure
+        =======================================================================
+         Identifier         : STRING * 13   - 'AiRCFG-TABLE­'
+         MajorVersion       : BYTE          - in BCD
+         MinorVersion       : BYTE          - in BCD
+         ReleaseLanguage    : BYTE          - see above
+         EditCounter        : DWORD         - Will be increased on every save
+         CheckSumOfConfig   : WORD          - explained later
+        -----------------------------------------------------------------------
+
+        Please note: MajorVersion/MinorVersion/ReleaseLanguage may NOT have to
+                      match the Version in the basic information structure.
+                      This is the version of AiR-BOOT that installed the Config
+                      area.
+
+        Code used for verification in x86 assembly:
+
+         ; DS:SI - point to Sector 55
+         xor     bx, bx
+         mov     cx, 5                   ; total of 5 configuration sectors
+        CheckCodeLoop:
+            call    MBR_GetCheckOfSector
+         loop    CheckCodeLoop
+         -> BX holds CheckSum
+
+        Now if BX and CheckSumOfConfig match, we got an intact code-image.
+
+        Please note: The MBR-BackUp sector is *NOT* included.
+
+
+  ========================
+  | 3.1  - CONFIGURATION |
+  ========================
+
+        Please note: You have to check that the configuration data is INTACT,
+                      before even thinking about writing to the configuration
+                      area. If it's not intact, consider it as unknown data.
+
+        After changing anything in configuration area, do the following:
+         - Increase the EditCounter in sector 55 by one
+         - Set the CheckSumConfig to 0
+         - Calculate a new CheckSum by using the algo specified earlier
+         - Set CheckSumConfig to the checksum you calculated
+
+        In this section, I will specify the basic configuration structure used
+         in sector 55.
+
+        -----------------------------------------------------------------------
+         Contents: AiR-BOOT basic configuration structure
+        =======================================================================
+         Identifier         : STRING * 13   - 'AiRCFG-TABLE­'
+         MajorVersion       : BYTE          - in BCD
+         MinorVersion       : BYTE          - in BCD
+         ReleaseLanguage    : BYTE          - normally 'U' for USA/english
+         EditCounter        : DWORD         - Will be increased on every save
+         CheckSumOfConfig   : WORD          - explained in [2.3]
+         Partitions         : BYTE          - Partitions count in IPT
+         BootPartitions     : BYTE          - Removed since v0.28b
+         DefaultPartition   : BYTE          - Default-partition no (zero based)
+         LastPartition      : BYTE          - Last-booted-partition (zero based)
+         TimedBoot          : BYTE          - 0 - Timed Boot disabled
+                                              1 - Timed Boot enabled
+         TimedSeconds       : BYTE          - How many seconds till Timed Boot
+         TimedDelay         : WORD          - Internal Do not change
+         TimedBootLast      : BYTE          - 0 - Boot default, if Timed Boot
+                                              1 - Boot last, if Timed Boot
+         RememberBoot       : BYTE          - 0 - No action
+                                              1 - User-Boot->set LastPartition
+         RememberTimed      : BYTE          - 0 - No action
+                                              1 - Timed-Boot->set LastPartition
+         IncludeFloppy      : BYTE          - 0 - No floppy drive in bootmenu
+                                              1 - Floppy drive in bootmenu
+         BootMenuActive     : BYTE          - 0 - Don't display bootmenu
+                                              1 - Display bootmenu
+                                              2 - Detailed bootmenu (v0.91+)
+         PartitionsDetect   : BYTE          - 0 - No action
+                                              1 - Add new partitions as bootable
+         PasswordedSetup    : BYTE          - 0 - No action
+                                              1 - Ask Password on enter setup
+         PasswordedSystem   : BYTE          - 0 - No action
+                                              1 - Ask Password everytime
+         PasswordedChngBoot : BYTE          - 0 - No action
+                                              1 - Ask Password, if user boots
+                                                   by himself
+         ProtectMBRTSR      : BYTE          - 0 - No action
+                                              1 - Install MBR-Protect TSR
+         ProtectMBRignore   : BYTE          - 0 - System halt on MBR write
+                                              1 - Ignoring MBR writes
+         FloppyGetName      : BYTE          - 0 - No action
+                                              1 - Get floppy name on startup
+         DetectVirus        : BYTE          - 0 - No action
+                                              1 - Detect normal MBR virii
+         DetectStealth      : BYTE          - 0 - No action
+                                              1 - Detect stealth MBR virii
+         DetectVIBR         : BYTE          - 0 - No action
+                                              1 - Detect Virii-In-Boot-Record
+         AutoEnterSetup     : BYTE          - 0 - No action
+                                              1 - enter setup automatically
+                                                   (reset by setup)
+         MasterPassword     : QWORD         - Not documented
+         BootPassword       : QWORD         - Not documented
+         RudeProtection     : BYTE          - Removed since v0.28b
+         LinuxPartition     : BYTE          - Linux Root partition no (0-based)
+         TimedKeyHandling   : BYTE          - 0 - Do nothing
+                                              1 - Reset time
+                                              2 - Stop time
+         MakeSound          : BYTE          - 0 - No action
+                                              1 - Make startup/boot sounds
+         FloppyGetTimer     : BYTE          - 0 - No action
+                                              1 - Get floppy name every 2 secs
+         ResumeBIOSbootSeq  : BYTE          - 0 - Disabled
+                                              1 - CD-ROM
+                                              2 - Network
+                                              3 - ZIP/LS120
+         CooperBars         : BYTE          - 0 - Disabled
+                                              1 - Enabled
+         LinuxCommandLine   : STRING * 75   - Linux Command Line (0-terminated)
+         LinuxKrnlPartition : BYTE          - 0FFh - Disabled
+                                              Otherwise no of partition
+                                               (has to be FAT-16) (0 based)
+         LinuxDefaultKernel : STRING * 11   - Default Kernel Name
+                                               will override Default Partition,
+                                               if found. Filled up with spaces.
+         LinuxKernelNameEnd : BYTE          - Fixed ZERO
+         LinuxLastKernel    : STRING * 11   - Last-Booted Kernel Name
+                                               if Partition got booted, this
+                                               field will get filled with spaces
+         LinuxKernelNameEnd2: BYTE          - Fixed ZERO
+         ExtPartitionMShack : BYTE          - 0 - Disabled
+                                              1 - MS Work-Around Enabled
+         AutomaticBoot      : BYTE          - Automatic Booting (0.94+)
+                                              0 - Disabled
+                                              1 - Enabled (only for one time)
+         AutomaticPartition : BYTE          - Automatic Booting (0.94+)
+                                               Partition no (zero based)
+         Reserved           : STRING * 255  - RESERVED
+         AutoDriveLetter    : STRING * 5    - RESERVED CONTENT (0.94+)
+                                               (used by Installer/2)
+         BIOScontIPTentry   : STRING * 34   - RESERVED CONTENT
+         VirusDetectionHelp : STRING * 12   - RESERVED CONTENT
+         FloppyIPTentry     : STRING * 34   - RESERVED CONTENT
+        -----------------------------------------------------------------------
+
+        Please note:
+         = Any area marked as Reserved MUST not get touched in any way =
+
+
+  ===================================
+  | 3.2  - INTERNAL PARTITION TABLE |
+  ===================================
+
+        The internal partition table (IPT) is in sectors 56-57.
+
+        The basic rule: Don't delete/add/move any of those entries.
+                        AiR-BOOT will detect changes on the partition tables
+                         by itself and will adjust pointers from basic
+                         configuration and hide-configuration automatically.
+
+        Each IPT-entry is 34-bytes long. Those entries begin at offset 0.
+        You have to look in basic configuration to know how many IPT-entries
+         are in there.
+
+        If you change any partitions-bootable flag, you have to adjust the
+         BootPartitions-variable from basic configuration accordingly.
+
+        -----------------------------------------------------------------------
+         Contents: AiR-BOOT internal partition table entry (IPT)
+        =======================================================================
+         SerialNumber       : DWORD         - Serial number of partition
+                                               (if available)
+         PartitionName      : STRING * 11   - Name of the partition
+                                               (in sync with boot-record)
+         Drive              : BYTE          - Drive of partition (INT 13h-like)
+         PartitionID        : BYTE          - unhidden ID of partition
+                                               (08h == NTFS, thanx M$)
+         Flags              : BYTE          - Bit 0 - BootAble
+                                              Bit 1 - VIBR Detection
+                                              Bit 2 - Hide Feature used
+                                              Bit 3 - Logical Drive Letter set
+                                              Bit 4 - M$ Partition Hack Req.
+                                              All others: RESERVED
+         CheckSum           : WORD          - CheckSum of boot-record
+         LocationBegin      : STRING * 3    - Cyl/Head/Sec of Boot-Record
+         LocationPartTab    : STRING * 3    - Cyl/Head/Sec of Partition Table
+                                               containing this partition
+         AbsoluteBegin      : DWORD         - LBA sector of Boot-Record
+         AbsolutePartTab    : DWORD         - LBA sector of Partition Table
+        -----------------------------------------------------------------------
+
+        You may change:
+         SerialNumber/PartitionName - If you sync your changes with the
+                                       bootrecord of the partition
+         Flags                      - Do not (re)set any reserved bits
+
+        All other entries should NOT be changed by anyone but AiR-BOOT.
+
+
+  =============================
+  | 3.3  - HIDE CONFIGURATION |
+  =============================
+
+        First of all, if you define a Hide-Configuration, set the "Hide-Feature
+         used" flag. If you delete a Hide-Configuration completely, reset the
+         flag.
+
+        Hiding is defined per partition using a 30-byte string. This string is
+         built up of Partition-pointers that consist of a single byte.
+
+        Each partition-pointer is actually the number of the partition in the
+         IPT, which means they are zero-based.
+
+        The entry FFh is a terminator and actually defines "no-partition".
+        An empty Hide-Configuration entry consists of 30x FFh bytes.
+
+        The partitions listed in each hide-configuration string should be in-
+         order, which means if you want to hide partition 0, 2 and 3 the string
+         should look like this: 00h 02h 03h FFh (and 26 more FFhs)
+
+        The logical-drive-letters string is 30-bytes long. One byte per
+         partition. It's used for OS/2 use ONLY and it's only definable for
+         HPFS or FAT16 partitions. If you enable/disable the driveletter, then
+         YOU are required to change the corresponding partition's Drive-Letter
+         flag accordingly.
+
+        -----------------------------------------------------------------------
+         Contents: AiR-BOOT hide configuration
+        =======================================================================
+         HideConfiguration  : STRING * 30   - for one partition each
+          * 30 -> 900 Bytes (due maximum of 30 partitions in IPT)
+         DriveLetters       : STRING * 30   - Drive Letters of all partitions
+                                               (0h - disabled) [since v0.92+]
+         Reserved           : STRING * 84   - RESERVED
+         Identifier         : STRING * 10   - 'AiRBOOTHID'
+        -----------------------------------------------------------------------
