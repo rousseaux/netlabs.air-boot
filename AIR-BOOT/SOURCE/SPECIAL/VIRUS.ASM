@@ -172,7 +172,7 @@ ANTIVIR_CheckBackUpMBR          Proc Near  Uses
    jc      ACBUMBR_Failed
    mov     cx, 7
    mov     di, offset TmpSector
-   inc     di                            ; Position for "AiRBOOT" normally
+   add     di, 2                         ; Position for "AiRBOOT" normally
    mov     si, offset CheckID_MBR
    repz    cmpsb
    stc
