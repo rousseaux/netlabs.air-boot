@@ -22,9 +22,9 @@
 ; If you modify this Copyright and release this shiat under your own name,
 ;  I'm going to sue your cheap ass, rape your dog and blow up your house. =)
 
-CopyrightVersionLen         equ   5+7
-Copyright                    db ' AiR-BOOT v0.94 [RC-4] - (c) ''98-2002 Martin Kiewitz, Dedicated to Gerd Kiewitz', 0
-BootEndMsg                   db 'Release Candidate 4 still BETA. Do NOT distribute/copy. Only for private use.', 0
+CopyrightVersionLen         equ   5
+Copyright                    db ' AiR-BOOT v1.00 - (c) ''98-2003 Martin Kiewitz, Dedicated to Gerd Kiewitz', 0
+BootEndMsg                   db 'Distribute/copy freely. Only meant for private usage.', 0
 
 CheckID_MBR                  db 'AiRBOOT'
 

@@ -60,6 +60,7 @@ TXT_SETUP_ContinueBIOSboot     db 'Загрузка через BIOS', 0
 TXT_SETUP_LinuxKernelPart      db 'Раздел ядра Linux', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Ядро Linux по умолчанию', 0
 TXT_SETUP_LinuxRootPart        db 'Раздел корня Linux', 0
+TXT_SETUP_ForceLBAUsage        db 'Использовать BIOS-LBA', 0
 TXT_SETUP_ExtPartMShack        db 'Разделы для MS-систем', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'ЗАДАЙТЕ КОМАНДНУЮ СТРОКУ ДЛЯ LINUX', 0
@@ -268,6 +269,11 @@ TXT_SETUPHELP_LinuxDefaultKrnl db 'Имя файла для ядра', 0
                                db 0
 TXT_SETUPHELP_LinuxRootPart    db 'Раздел с корневым', 0
                                db 'каталогом Linux.', 0
+                               db 0
+TXT_SETUPHELP_ForceLBAUsage    db 'Требудет использование', 0
+                               db 'BIOS LBA API вместо', 0
+                               db 'комбинированного - CHS', 0
+                               db 'и LBA.', 0
                                db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Включает динамическую', 0
                                db 'смену типа расширенных', 0

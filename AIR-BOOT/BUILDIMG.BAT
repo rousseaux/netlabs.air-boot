@@ -5,6 +5,7 @@ if "%1"=="DT"  goto Valid
 if "%1"=="FR"  goto Valid
 if "%1"=="IT"  goto Valid
 if "%1"=="RU"  goto Valid
+if "%1"=="SW"  goto Valid
 if "%1"=="ALL" goto BuildAll
 echo Invalid language ID
 goto ExitMe
@@ -16,6 +17,7 @@ call buildimg DT
 call buildimg FR
 call buildimg IT
 call buildimg RU
+call buildimg SW
 goto ExitMe
 
 :Valid

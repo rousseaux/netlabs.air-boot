@@ -60,6 +60,7 @@ TXT_SETUP_ContinueBIOSboot     db 'Opstarten van :', 0
 TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partitie', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Linux Standaard Kernel', 0
 TXT_SETUP_LinuxRootPart        db 'Linux hoofdafdeling', 0
+TXT_SETUP_ForceLBAUsage        db 'Enkel BIOS-LBA', 0
 TXT_SETUP_ExtPartMShack        db 'Ext. Partitie M$-Hack', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'Opdrachtenreeks voor Linux', 0
@@ -283,6 +284,12 @@ TXT_SETUPHELP_LinuxDefaultKrnl db 'Specifieert de Linux', 0
                                db 0
 TXT_SETUPHELP_LinuxRootPart    db 'Linux opstart-', 0
                                db 'partitie wijzigen.', 0
+                               db 0
+TXT_SETUPHELP_ForceLBAUsage    db 'Uitschakelen van de', 0
+                               db 'combinatie van LBA', 0
+                               db 'en CHS. Er wordt dan', 0
+                               db 'ENKEL gebruik gemaakt', 0
+                               db 'van de BIOS LBA API''s.', 0
                                db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Automatische aanpassen', 0
                                db 'van partities groter', 0

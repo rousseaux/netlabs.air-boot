@@ -1,0 +1,166 @@
+     ÖÄ[ Installation ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º Grund-installationen kan endast g”ras genom att anv„nda DOS eller i en     º
+ º DOS-Box. Om du har Unix/Linux, m†ste du boota fr†n en DOS diskett.         º
+ º Notera: Du beh”ver aldrig att beh”va boota fula DOS igen :)                º
+ º                                                                            º
+ º 1. Ta en tom, formaterad diskett. Stoppa in den i enhet A: och starta      º
+ º     filen AIRBS_xx.EXE fr†n AiR-BOOT arkivet (d„r xx „r din landskod).     º
+ º                                                                            º
+ º 2. Kontrollera din CMOS-Setup. Avaktivera 'Virus Varning', om den optionen º
+ º     „r tillg„nglig och „ndra boot-sekvensen till n†got, d„r A: „r det      º
+ º     f”rsta valet. F”rs”k inte spara dina „ndringarna till CMOS.            º
+ º                                                                            º
+ º 3. Boota nu fr†n disketten som tillverkades i steg 1.                      º
+ º                                                                            º
+ º 4. AiR-BOOT INSTALL tar nu ”ver och du b”r kunna avsluta installations-    º
+ º     processen p† egen hand.                                                º
+ º                                                                            º
+ º 5. Efter att INSTALL har gjort sitt arbete, kommer du att komma till den   º
+ º     inbyggda SETUP.							      º
+ º     Notera: Du kan komma till AiR-BOOT SETUP senare genom att h†lla Ctrl   º
+ º           och/eller Alt vid AiR-BOOT startup.                              º
+ º                                                                            º
+ º 6. Efter att du har k”rt AiR-BOOT SETUP, b”r du „ndra din bootsekvens till º
+ º     n†gon liknande 'endast C' eller n†got val, d„r C: kommer f”rst.        º
+ º     Notera: teraktivera inte 'Virus Skydd'. AiR-BOOT g”r ett b„ttre jobb  º
+ º           och du skulle f† en Virusvarning vid varje bootning.             º
+ º                                                                            º
+ º Okej, nu b”r allt fungera och du skall ha ett viruskyddad system som har   º
+ º  AiR-BOOT.                                                                 º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º Om AiR-BOOT inte skulle komma upp vid n†got tillf„lle t.ex. vid            º
+ º  installation av ett nytt OS, m†ste du stoppa in din AiR-BOOTs disk/CD-ROM º
+ º  och boota fr†n den igen. AiR-BOOT INSTALL kommer automatiskt att uppt„cka º
+ º  vad som blev fel och l†ta dig v„lja, om den skall reparera skadan.        º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ F”rklaringar ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º PARTITION SETUP ³                                                          º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                                          º
+ º Den h„r menyn och dess anv„ndning „r v„ldigt enkel, om du vet hur man      º
+ º anv„nder den. Alla flaggor kan v„xlas p† en per partitions basis, vilket   º
+ º betyder att funktionerna bakom en flagga kan anv„ndas n„r du bootar en     º
+ º partition och avaktiveras n„r du anv„nder en annan.                        º
+ º                                                                            º
+ º F”r att v„xla en flagga, v„lj helt enkelt den korresponderande partitionen º
+ º och tryck p† bokstaven som representerar den flaggan.                      º
+ º                                                                            º
+ º 'B' - Bootningsbar                                                         º
+ º        Alla partitioner som har den h„r flaggan kommer att listas i 	      º
+ º        bootmenyn.                                                          º
+ º                                                                            º
+ º 'V' - VIBR Protection                                                      º
+ º        Virus-In-Boot-Record Uppt„ckt. Var v„nlig se Virus-Uppt„ckt f”r     º
+ º        mer information.                                                    º
+ º                                                                            º
+ º 'H' - Dold Konfiguration                                                   º
+ º        Den h„r flaggan definierar, om en Dold-Konfiguration „r aktiv f”r   º
+ º        den h„r partitionen. Om du trycker bokstaven, kommer menyn f”r      º
+ º        Dold-Konfiguration att komma upp och du kommer att kunna definera   º
+ º        partitioner som skall g”mmas, n„r de valda partitionen bootas.      º
+ º                                                                            º
+ º 'L' - Enhets-Bokstav (OS/2 / eCS endast)                                   º
+ º        OS/2 / eCS beh”ver en enhets-bokstav hos partitionen f”r att bootas.º
+ º        Du m†ste ange den enhets-bokstav, som OS/2 / eCS har tilldelat den. º
+ º        Det „r inte m”jligt att uppt„cka den. (XFDisk gissar faktiskt)      º
+ º                                                                            º
+ º 'P' - Ut”kade Partitioner MS tg„rd                                        º
+ º        Den h„r flaggam „r endast anv„ndbar, n„r den globala MS-tg„rds     º
+ º        switchen ocks† „r aktiverad. N„r det „r fallet och partitionen      º
+ º        bootas MED den h„r flaggan aktiv, kommer alla ut”kade partitioner   º
+ º        att modifieras f”r att m”ta pseudo-standarden fr†n Microsoft. Om    º
+ º        partitionen har den h„r flaggan avaktiverad, d† kommer alla	      º
+ º        partitioner att bli modifierade f”r att passa den VERKLIGA 	      º
+ º        standarden.F”r ytterligare information var v„nlig se nedanf”r.      º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º VIRUS UPPTCKT ³                                                           º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                                           º
+ º AiR-BOOT inkluderar 3 olika metoder f”r virusdetektering.                  º
+ º S† gott som varje boot-virus b”r passa in med dessa.                       º
+ º                                                                            º
+ º Normal - Den h„r j„mf”r MBR i minnet med MBR p† disken vid varje boot.     º
+ º           S† normala MBR virus kommer att hittas.                          º
+ º                                                                            º
+ º Stealth - Den h„r uppt„cker virus som g”mmer sig sj„lva och p†verkar BIOS  º
+ º            HDD access API. Normal uppt„ckt skulle misslyckas med dessa     º
+ º            virus.                                                          º
+ º                                                                            º
+ º VIBR - Virus-In-Boot-Record Uppt„ckt. Erfordrar att den globala switchen   º
+ º         AND och den specifika partitionsflaggan „r aktiverad. Den kommer   º
+ º	   att kontrollera bootrecord hos den valda partitionen efter	      º
+ º	   f”r„ndringar. Den h„r uppt„ckten „r SVR och kan rapportera falska º
+ º	   positiva svar. Om ett modifierat boot-record hittas, kommer	      º
+ º	   bootning att nekas fr†n den partitionen. Du kan †terst„lla den h„r º
+ º	   kontrollen genom att v„xla V-flaggan.                              º
+ º                                                                            º
+ º MBR Skydd „r troligtvis samma sak som 'Virus Skydd' i ditt CMOS.           º
+ º Den kommer att f†nga in INT 13h (L†gniv† I/O) och kommer att kontrollera   º
+ º skrivningar till cylinder 0 och huvud 0. Detta kommer att betraktas som    º
+ º virusaktivitet och avbrytas. Datorn kommer att stanna och du f†r se ett    º
+ º korresponderande meddelande. Den h„r optionen kan vara inkompatibel med    º
+ º n†got 3dje partsprogram, liksom optionen 'Virus Skydd' i CMOS „r	      º
+ º inkompatibel med AiR-BOOT.                                                 º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º UT™KADE PARTITIONER MS TGRD ³                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                            º
+ º Denna 'funktion' m†ste implementeras, tack vare Microsofts s„tt att        º
+ º uppfinna en pseudo-standard som inte „r kompatibel med n†got annat OS.     º
+ º                                                                            º
+ º Problemet best†r av ID hos ut”kade partitioner. Den officiella standarden  º
+ º var och „r att anv„nda '05h'. Nu har Microsoft "uppfunnit" ett nytt ID     º
+ º '0Fh' f”r ut”kade partitioner som l„gger beslag p† utrymme ”ver 8 GB.      º							      º
+ º                                                                            º
+ º Nu kommer m†nga OS inte att se NGRA logiska partitioner l„ngre. S† en     º
+ º smart anv„ndare kommer kanske att f”rs”ka „ndra tillbaka. Detta fungerar,  º
+ º men (naturligtvis) kommer vissa MS program som ScanDisk att f† problem     º
+ º med den, och den kommer att fylla upp hela partitioner med SKRP.          º
+ º                                                                            º
+ º S† vi har en verklig standard, som p† n†got s„tt „ven kommer att fungera   º
+ º med Windows, men ibland kan partitioner kanske (!) bli f”rst”rda. Eller    º
+ º anv„nder vi MS invention, men tappar kompatibilitet med vissa OS.          º
+ º ...eller anv„nder vi AiR-BOOT f”r att v„xla mella dessa 2 "standarder"     º
+ º i flykten.								      º
+ º                                                                            º
+ º N„r den globala switchen AND och P-flaggan hos den bootade partitionen „r  º
+ º aktiverad, kommer AiR-BOOT att „ndra alla ut”kade partitioner till att bli º
+ º ID '0Fh', f”r att systemen skall bli kompatibla med MS Windows.            º
+ º                                                                            º
+ º  andra sidan, om den globala switchen „r aktiverad, men P-flaggan „r      º
+ º avaktiverad, kommer AiR-BOOT att „ndra dom till den verkliga standarden,   º
+ º vilket betyder att t.ex. DOS kommer att k„nna igen logiska partitioner     º
+ º igen.                                                                      º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Begr„nsningar ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º  Om ditt system passar in i p† en av f”ljande kategorier, installera INTE  º
+ º  AiR-BOOT. 								      º
+ º                                                                            º
+ º  - Du ett krypteringsverktyg i din MBR                                     º
+ º  - Du har NGONTING anv„ndbart i din MBR                                   º
+ º  - Du har mer „n 30 partitioner totalt p† ditt system                      º
+ º     (AiR-BOOT's interna partitionstabell kan inte inneh†lla mer „n det,    º
+ º      det kanske kommer att expanderas vid n†got senare datum, men jag kan  º
+ º      inte komma p† n†got sk„l).                                            º
+ º									      º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ K„nda Buggar ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º Jag skulle kalla det saknade funktioner. Det finns inga k„nda buggar.      º
+ º                                                                            º
+ º  - Linux normal K„rna image format                                         º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

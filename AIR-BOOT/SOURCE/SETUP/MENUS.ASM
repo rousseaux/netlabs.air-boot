@@ -206,8 +206,9 @@ SETUP_ExtendedBootOptions:
                 dw      0, 0
                 dw      0, 0
                 dw      0, 0
-                dw      0, 0
-                dw      0, 0
+                dw      offset SETUPMAGIC_EnableDisable, offset CFG_ForceLBAUsage
+                dw      offset TXT_SETUP_ForceLBAUsage, offset TXT_SETUPHELP_ForceLBAUsage
+                dw      6 dup (0)
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_ExtPartitionMShack
                 dw      offset TXT_SETUP_ExtPartMShack, offset TXT_SETUPHELP_ExtPartMShack
                 dw      6 dup (0)

@@ -60,6 +60,7 @@ TXT_SETUP_ContinueBIOSboot     db 'BIOS Boot fortsetzen', 0
 TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partition', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Linux Default Kernel', 0
 TXT_SETUP_LinuxRootPart        db 'Linux Root Partition', 0
+TXT_SETUP_ForceLBAUsage        db 'Erzwinge BIOS-LBA', 0
 TXT_SETUP_ExtPartMShack        db 'Erw. Partition M$-Hack', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'DEFINIERE LINUX KOMMANDOZEILE', 0
@@ -269,6 +270,11 @@ TXT_SETUPHELP_LinuxRootPart    db 'Definiert die Linux', 0
                                db 'Root Partition.', 0
                                db 0
 ;----------------------------------|--------------------|-------------------
+TXT_SETUPHELP_ForceLBAUsage    db 'Erzwingt BenÅtzung der', 0
+                               db 'BIOS LBA APIs anstatt', 0
+                               db 'gemischter Verwendung', 0
+                               db 'von CHS und LBA.', 0
+                               db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Aktiviert dynamisches', 0
                                db 'Ñndern des erweiterten', 0
                                db 'Partitionstyp durch', 0

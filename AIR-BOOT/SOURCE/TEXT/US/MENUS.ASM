@@ -60,6 +60,7 @@ TXT_SETUP_ContinueBIOSboot     db 'Continue BIOS Boot Seq', 0
 TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partition', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Linux Default Kernel', 0
 TXT_SETUP_LinuxRootPart        db 'Linux Root Partition', 0
+TXT_SETUP_ForceLBAUsage        db 'Force BIOS-LBA Usage', 0
 TXT_SETUP_ExtPartMShack        db 'Ext. Partition M$-Hack', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'DEFINE COMMAND LINE FOR LINUX', 0
@@ -268,6 +269,11 @@ TXT_SETUPHELP_LinuxDefaultKrnl db 'Defines your default', 0
                                db 0
 TXT_SETUPHELP_LinuxRootPart    db 'Changes your Linux', 0
                                db 'root partition.', 0
+                               db 0
+TXT_SETUPHELP_ForceLBAUsage    db 'Forces the usage of', 0
+                               db 'BIOS LBA APIs instead', 0
+                               db 'of mixed usage of CHS', 0
+                               db 'and LBA.', 0
                                db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Enables dynamic change', 0
                                db 'of the ext. partition', 0

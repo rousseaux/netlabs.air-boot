@@ -139,7 +139,7 @@ code_seg        segment public use16
 ;---------------------------------------------------------------------------
 AiR_BOOT:     cli
               db      0EBh               ; JMP-Short -> MBR_Start
-              db      'AiRBOOT', 21h, 10h, 20h, 02h, 00h, 94h, TXT_LanguageID
+              db      'AiRBOOT', 07h, 01h, 20h, 03h, 01h, 00h, TXT_LanguageID
               ; ID String, Date and Version Number, U for US version
               db      1                  ; Total Sectors Count,
                                          ;  Will get overwritten by FIXBSET.exe
@@ -439,7 +439,7 @@ Include TEXT\CHARSET.asm                 ; Special Video Charsets (if needed)
                             org 06C00h                          ; Sector 55
 Configuration:
                              db 'AiRCFG-TABLE­'
-                             db 00h, 94h, 'U' ; "Compressed" ID String
+                             db 01h, 00h, 'U' ; "Compressed" ID String
 
 CFG_LastTimeEditLow          dw     0    ; Last Time Edited Stamp (will incr every setup)
 CFG_LastTimeEditHi           dw     0    ; second 16 bit part...
@@ -501,6 +501,7 @@ CFG_LinuxLastKernel          db    11 dup (32), 0 ; Last-Booted Kernel Name
 CFG_ExtPartitionMShack       db     0    ; Extended Partition M$-Hack Global Enable
 CFG_AutomaticBoot            db     0    ; Automatic Booting (only one bootup)
 CFG_PartAutomatic            db     0    ; Partition-No for automatic booting
+CFG_ForceLBAUsage            db     0    ; LBA-BIOS-API forced on any HDD I/O
 
 ; VIR variables are for the AiR-BOOT Anti Virus Code
 ; Most of them are backups of Interrupt Points, so we can check, if a

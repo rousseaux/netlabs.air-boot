@@ -1,0 +1,50 @@
+     ÖÄ[ Funktioner ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º AiR-BOOT har m†nga, m†nga funktioner som andra bootmanagers saknar.        º
+ º                                                                            º
+ º  - F„rgad Boot-Meny                                                        º
+ º  - Maximalt 30 partitioner (gr„nsen betyder alla partitioner p† systemet)  º
+ º  - Komplett integrerad, Award-liknande, meny-driven SETUP inkluderande     º
+ º     verklig hj„lp f”r varje option                                         º
+ º  - Nationella versioner inkluderande Tysk, Holl„ndsk, Fransk, Italiensk,   º
+ º    Rysk och Svensk                                                         º
+ º  - Kyrilliskt st”d (f”r ryska spr†ket)                                     º
+ º  - V„ldigt enkel Installation/Reparation via diskett eller CD-ROM          º
+ º  - Boot-Process helt konfigureringsbar                                     º
+ º  - Konfigureringsbart L”senordsskydd                                       º
+ º  - 100% i MBR/sp†r-0 (beh”ver inget riktigt utrymme p† h†rddisken)         º
+ º  - "Korrupt-MBR"-Skydd (kan restaurera MBR, om det blir korrupt)           º
+ º  - Intelligent Partitionshantering. kommer inte att †terst„lla eller bete  º
+ º    sig onormalt, om partitioner flyttas, h†rddiskar „ndras, etc.           º
+ º     (endast komplett tillg„ngligt f”r FAT och HPFS partitioner)            º
+ º  - D”lja partitioner st”d                                                  º
+ º  - Diskett-Bootning                                                        º
+ º  - Hittar (Stealth-)MBR och Bootrecord-Virus (och „r kapabel att ta bort   º
+ º     de flesta av dem)                                                      º
+ º  - Reparations-L„ge, AiR-BOOT disk/CD-ROM „r kapabel att reparera AiR-BOOT º
+ º     utan att †terst„lla konfigurationen                                    º
+ º  - MBR-Skydd i Real-L„ge                                                   º
+ º  - Linux K„rna St”d (fr†n FAT-16 partitioner), K„rna-Kommandorad och       º
+ º     automatisk, med konfigureringsbar root-partition                       º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º AiR-BOOT har problemfritt testats med f”ljande Operativsystem:             º
+ º                                                                            º
+ º  - MS-DOS/DR-DOS/Open-DOS/PC-DOS (2000)                                    º
+ º  - OS/2 Warp3/Warp4/WSeB, s† v„l som MCP paketeringar och eComStation      º
+ º     (det „r „ven m”jligt att boota fr†n logiska partitioner, s† anv„nd     º
+ º     inte den medf”ljande OS/2 BootManager)                                 º
+ º  - Unix/Linux (med eller utan LILO)                                        º
+ º  - Windows 95/98/ME (aka MS-DOS)                                           º
+ º  - Windows NT/2000/XP                                                      º
+ º                                                                            º
+ º AiR-BOOT „r kompatibel med LVM, Logical Volume Manager som „r tillg„nglig  º
+ º  f”r OS/2, eComStation och Linux-varianter.                                º
+ º                                                                            º
+ º AiR-BOOT kan bootas fr†n CD-ROM. Skapa helt enkelt en diskett, f†nga dess  º
+ º  image och anv„nd den f”r att br„nna din egen AiR-BOOT CD-ROM.             º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

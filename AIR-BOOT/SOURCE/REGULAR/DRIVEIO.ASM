@@ -203,10 +203,13 @@ Comment *컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴�
  Preserve: all registers
  컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴*
 DriveIO_LoadSector              Proc Near  Uses ax bx ds si es di
+   test    cs:[CurIO_UseExtension], 1
+   jz      DIOLS_UseNormal
    ; LBA-boundary >16450560 (FB0400h)
    cmp     bx, 00FBh
-   jb      DIOLS_UseNormal
-   test    cs:[CurIO_UseExtension], 1
+   jae     DIOLS_UseExtension
+   ; or are we forced do use LBA?
+   test    cs:[CFG_ForceLBAUsage], 1
    jnz     DIOLS_UseExtension
   DIOLS_UseNormal:
       mov     di, 3
@@ -252,10 +255,13 @@ Comment *컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴�
  Preserve: all registers
  컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴*
 DriveIO_SaveSector              Proc Near  Uses ax bx cx ds si es di
+   test    cs:[CurIO_UseExtension], 1
+   jz      DIOSS_UseNormal
    ; LBA-boundary >16450560 (FB0400h)
    cmp     bx, 00FBh
-   jb      DIOSS_UseNormal
-   test    cs:[CurIO_UseExtension], 1
+   jae     DIOSS_UseExtension
+   ; or are we forced do use LBA?
+   test    cs:[CFG_ForceLBAUsage], 1
    jnz     DIOSS_UseExtension
   DIOSS_UseNormal:
       mov     di, 3

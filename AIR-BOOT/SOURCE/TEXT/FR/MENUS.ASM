@@ -60,6 +60,7 @@ TXT_SETUP_ContinueBIOSboot     db 'Cont. SÇq Amorce BIOS', 0
 TXT_SETUP_LinuxKernelPart      db 'Partition Noyau Linux', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Noyau Linux par DÇfaut', 0
 TXT_SETUP_LinuxRootPart        db 'Partition Racine Linux', 0
+TXT_SETUP_ForceLBAUsage        db 'Force usage du BIOS-LBA', 0
 TXT_SETUP_ExtPartMShack        db 'M$-Hack Part. êtendue', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'DêFINIR LIGNE DE COMMANDE LINUX', 0
@@ -277,6 +278,11 @@ TXT_SETUPHELP_LinuxDefaultKrnl db 'DÇfinir le nom du', 0
 TXT_SETUPHELP_LinuxRootPart    db 'Modifier votre', 0
                                db 'partition racine', 0
                                db 'Linux.', 0
+                               db 0
+TXT_SETUPHELP_ForceLBAUsage    db 'Forcer l''usage de', 0
+                               db 'l''API BIOS LBA au lieu', 0
+                               db 'd''un amalgame de', 0
+                               db 'CHS et LBA.', 0
                                db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Changement dynamique', 0
                                db 'du type id (standard', 0

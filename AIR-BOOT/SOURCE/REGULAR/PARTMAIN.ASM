@@ -498,9 +498,12 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    adc     bx, wptr es:[di+LocBRPT_AbsoluteLength+2] ;  begin location
    ; BX:AX -> Absolute End-Position of Partition
 
+   test    CFG_ForceLBAUsage, 1
+   jnz     PSP_ForceI13X
    ; LBA-boundary at 16450560 (FB0400h)
    cmp     bx, 00FBh
    jb      PSP_NoI13X
+  PSP_ForceI13X:
    push    es di
       mov     ax, 3000h
       mov     es, ax

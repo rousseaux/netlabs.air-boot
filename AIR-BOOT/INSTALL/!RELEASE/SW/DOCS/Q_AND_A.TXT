@@ -1,0 +1,145 @@
+     ÖÄ[ Fr†gor & Svar ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º F: Jag anv„nde en annan h†rddisk p† min dator, allt gick bra, men en v„n   º
+ º     beh”vde disken igen, s† jag tog bort den. Nu kan han inte boota den    º
+ º     l„ngre. Vad skall jag g”ra ?                                           º
+ º S: Det „r ett problem med partitionstabellen. Vissa system beh”ver vara    º
+ º     den enda "aktiva" partitionen, s† AiR-BOOT tar bort dessa flaggor hos  º
+ º     ALLA partitioner, UTOM den som den bootades ifr†n.                     º
+ º     F”r att kunna boota, m†ste du ta tillbaka h†rddisken, boota fr†n den   º
+ º     partition som din v„n vill boota fr†n, st„nga av datorn, ta bort       º
+ º     h†rddisken och det kommer att fungera igen.                            º
+ º                                                                            º
+ º     Notera: Om din v„n skulle anv„nda AiR-BOOT, skulle det h„r problemet   º
+ º     inte upptr„da. Om han endast har en partition som „r bootningsbar och  º
+ º     inte vill anv„nda den h„r menyn, kan han st„nga av den. AiR-BOOT       º
+ º     kommer att anv„nda sin definierbara standardpartition automatiskt.     º
+ º                                                                            º
+ º F: Varf”r tvingar du en anv„ndare att ha minst 62 sektorer per sp†r p† sin º
+ º     h†rddisk. Jag tittade p† din kod-image och den anv„nder inte h„lften   º
+ º     av den.                                                                º
+ º S: Jag gjorde en mera 'komprimerad' version (31 n”dv„ndiga sektorer) f”rut,º
+ º     men jag uppt„ckte att det var dumt. Ett stealth-virus d”dade delar av  º
+ º     konfigurationen, s† att en anv„ndare skulle ha varit tvungen att       º
+ º     s„tta upp AiR-BOOT p† nytt helt och h†llet. 			      º
+ º     Nu sparar jag konfiguration vid en annan punkt. De flesta virus kommer º
+ º     inte att kunna d”da konfigurationen. Notera: AiR-BOOT disken „r        º
+ º     kapabel att reparera AiR-BOOT koden *sj„lv*, s† du beh”ver inte        º
+ º     konfigurera om AiR-BOOT.                                               º
+ º     Stoppa bara in AiR-BOOT disken, om du har problem att starta din       º
+ º     dator. Den kommer att s”ka&reparera alla saknade delar av AiR-BOOT.    º
+ º                                                                            º
+ º F: Jag tittade p† din MBR-kod och jag s†g att du g”r n†gra underliga       º
+ º     saker. Varf”r g”r du det ?                                             º
+ º S: H„r „r startkoden som „r i MBR-koden sedan version 0.26b:               º
+ º     CLI (avaktiverar Interrupts)                                           º
+ º     JuMP N†gonstans                                                        º
+ º     JuMP TillAnnanPlats                                                    º
+ º     STI (aktiverar Interrupts)                                             º                                                                            º
+ º     Nu orsaken: Det beror p† Microsoft. En v„nlig "h„lsning" finns ocks† i º
+ º                 MBR. De anv„nder inte n†gra standarder. Varf”r skulle de.  º
+ º                 Windoze NT/2000 s”ker efter CLI instruktioner. Jag vet     º
+ º                 inte varf”r. Det „r inte standard f”r MBR skrivning.       º
+ º                 Om den inte hittas g†r Windoze 2000 b„rs„rkarg†ng. De 2    º
+ º                 hoppen „r d„rf”r vid MBR-offset 2h, det „r AiR-BOOT 	      º
+ º                 signaturen. Jag ville inte „ndra uppt„ckten, s† jag gjorde º
+ º                 ocks† 'A' till en del av JMP instruktionen. S† den hoppar  º
+ º                 till en specifik plats och hoppar sedan till den riktiga   º
+ º                 starten.                                                   º
+ º                                                                            º
+ º    Detta m†ste g”ras ENBART p† grund av Microsoft. Jag st†r inte ut med    º
+ º     detta l„ngre. Det finns ingen orsak till en s†dan kontroll. Det „r     º
+ º     inte dokumenterat n†gonstans och CLI „r skr„p i varje fall, d„rf”r att º
+ º     man beh”ver inte avaktivera interrupts f”r att „ndra stacken eller     º
+ º     n†got liknande. Varje skicklig assemblerprogrammerare k„nner till det. º                                                º
+ º                                                                            º
+ º F: Hej, varf”r har du skrivit den h„r koden ? 			      º
+ º     'NT BOOT'/'OS/2 BOOTMANAGER'/'LILO' „r bra.                            º
+ º S: Ja, s„kert. L†t mig s„ga n†got om dessa saker.                          º
+ º     NT BOOT „r skr„p. 100 KBytes f”r en BOOTMANAGER ? r du tokig ? Och    º
+ º     den m†ste dessutom ha Windows NT installerat. 			      º
+ º     (eller en FAT partition?!)                                             º
+ º     OS/2 BOOTMANAGER beh”ver en prim„r partition, s† det finns endast      º
+ º     3 kvar. LILO „r korkad. F”rst och fr„mst kan den inte boota Linux, om  º
+ º     Linux inte finns p† den f”rsta h†rddisken (†tminstone den senaste      º
+ º     g†ngen jag f”rs”kte). Den laddar Linux K„rnan via HackIn, som jag inte º
+ º     inte heller tycker om. Och den „r inte s„rskilt enkel att installera   º
+ º     och konfigurera. Den m†ste justeras, n„r du l„gger till nya 	      º
+ º     partitioner till din h†rddisk. etc. etc. etc.                          º
+ º                                                                            º
+ º     De flesta bootmanagers beh”ver ett specifikt OS installerat, s† det „r º
+ º     inte heller bra, f”rresten.: Om du l„gger till en ny partition till en º
+ º     disk som inneh†ller Linux, kommer LILO inte att hitta rootpartitionen  º
+ º     l„ngre (haha, bra f”rs”k). Det „r din "f”rn„mliga" boot-manager. Puh.  º
+ º     AiR-BOOT kommer att hitta den (normalt) automatiskt i flykten och      º
+ º     boota den normalt.                                                     º
+ º                                                                            º
+ º F: Oj, vad har du emot LILO. Den „r s††††† bra.                            º
+ º S: Tja, jag hade inget emot den, tills den n„stan raderade min partion     º
+ º     med projekt. Den var FAT och den h„r lilla buggiga elakingen skrev     º
+ º     ”ver n†gra interna *som var dokumenterade* utan att ens ge mig n†got   º
+ º     varningsmeddelande.                                                    º
+ º     Jag betraktar LILO som p† samma niv† som Mickeysoft produkter. Precis  º
+ º     som om dom trodde att de kunde h„rska ”ver hela datorn och g”ra vad    º
+ º     som helst.                                                             º
+ º     Under AiR-BOOTs alphatestning, har den ALDRIG gjort n†gon 	      º
+ º     partitionstabell korrupt.                                              º
+ º     De enda problemen var krascher, s† att jag var tvungen att restaurera  º
+ º     den gamla MBR.                                                         º
+ º     Under sen betatestning, har den aldrig gett n†gra problem. Och om det  º
+ º     skulle finnas n†gra, stoppade jag bara in AiR-BOOT disketten och vips, º
+ º     var problemet borta.                                                   º
+ º     (f”rresten: det var p† det s„ttet jag uppt„ckte att                    º
+ º     Partition Magic 3.x skriver ”ver vissa sektorer i MBR).                º
+ º                                                                            º
+ º F: S† m†nga optioner, ingen kommer n†gonsin att beh”va dessa. Antar att    º
+ º     du har kastat bort din tid.                                            º
+ º S: Ja, kanske „r det f”r m†nga optioner, och kanske „r det skr„p.          º
+ º     Jag antar att m†nga anv„ndare kommer att anv„nda olika optioner, s†    º
+ º     dom „r bra som dom „r. F”r m†nga optioner skulle inneb„ra, att 	      º
+ º     programmet „r alltf”r l†ngsamt eller hanteringen blev sv†r, men inte i º
+ º     AiR-BOOT. Det „r litet till storleken, enkelt att st„lla in...	      º
+ º     just p† samma s„tt som ditt BIOS. Jag har inkluderat RIKTIG on-line    º
+ º     hj„lp, ocks†. Inte p† det s„tt som i de flesta BIOS. Jag har 	      º
+ º     inkluderat roliga saker, som f„rgmenyer...titta p† BIOS fr†n 1989.     º
+ º     De var verkligen fula. F„rgade menyer „r n†got verkligen coolt. Men    º
+ º     jag vet, du „r en av de med WindowsNT, vilken tycker att det „r det    º
+ º     b„sta OS som finns i v„rlden. Du har aldrig provat OS/2, eller	      º
+ º     Unix/Linux. Du vill ha ett GUI, men du avskyr dessa idiotiskt	      º
+ º     f„rgade f”nster.                                                       º
+ º                                                                            º
+ º F: Jag tror att du har kopierat texten hos din boot-meny fr†n DocsBoot.    º
+ º S: Du har r„tt. DocsBoot „r cool, men du m†ste st„lla in den med en	      º
+ º     DOS-exe. Det „r inte m”jligt under Unix/Linux, eller under WinNT       º
+ º     eller OS/2. S† det „r ett om”jligt val. Och den har inte s† m†nga      º
+ º     optioner som AiR-BOOT har.                       		      º
+ º                                                                            º
+ º F: F”rresten, din SETUP liknar min Award BIOS SETUP r„tt mycket.           º
+ º S: Tja, :] nej, Jag har modifierat det mesta av dess design. 	      º
+ º     Meny-placeringarna var bra, det samma g„ller f”r f„rgerna, s† jag      º
+ º     anv„nde dom ocks† (De flesta anv„ndare vill inte ha 2 olika setups).   º
+ º     Men f”nsterdesignen, f”nstrens uppritningshastighet och optimeringen   º
+ º     „r lite annorlunda.                                                    º
+ º                                                                            º
+ º F: Jag „r representant f”r en biostillverkare och skulle vilja 	      º
+ º     implementera AiR-BOOT i v†r BIOS.                                      º
+ º S: Detta skulle vara fantastisk, vi skulle vilja ha n†gonting 	      º
+ º     s†dant, s† att den kunde direktk”ras fr†n BIOS, och att ingen	      º
+ º     WinNT-installation skulle d”da den.                                    º
+ º     Var v„nlig kontakta oss. (Vi har kodat AiR-BOOT p† ett s„tt, s† att    º
+ º     det h„r blir m”jligt. Vi beh”ver endast ett utrymme p† 512 byte f”r    º
+ º     koden i ert BIOS).                                                     º
+ º     AiR-BOOT m†ste installeras p† h†rddisken i varje fall, men layer 0     º
+ º     koden skulle finnas i BIOS, s† att AiR-BOOT kunde f† f”rsta tillg†ngen º
+ º     till h†rddisken och kunde s”ka efter virus etc.                        º
+ º                                                                            º
+ º F: Jag „r representant f”r ett bolag som tillverkar ett OS. Vi skulle      º
+ º     ocks† vilja implementera er AiR-BOOT.                                  º
+ º S: Vi kunde diskutera bundlade versioner. Men jag kommer 		      º
+ º     ALDRIG NGONSIN att modifiera AiR-BOOT f”r att bli OS beroende. 	      º
+ º     AiR-BOOT kodades f”r att vara totalt oberoende fr†n alla OS, s†	      º
+ º     OEM versioner skulle kunna boota „ven andra OS.                        º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

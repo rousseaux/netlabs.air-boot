@@ -60,6 +60,7 @@ TXT_SETUP_ContinueBIOSboot     db 'Continua Avvio dal BIOS', 0
 TXT_SETUP_LinuxKernelPart      db 'Partiz. kernel Linux', 0
 TXT_SETUP_LinuxDefaultKernel   db 'Kernel Linux predef.', 0
 TXT_SETUP_LinuxRootPart        db 'Partizione Root Linux', 0
+TXT_SETUP_ForceLBAUsage        db 'Forza uso LBA del BIOS', 0
 TXT_SETUP_ExtPartMShack        db 'Partiz. Estese M$ >8Gb', 0
 ; This here may be larger than 23 chars...
 TXT_SETUP_DefLinuxCmd          db 'DEFINIRE LINEA DI COMANDO LINUX', 0
@@ -282,6 +283,11 @@ TXT_SETUPHELP_LinuxDefaultKrnl db 'Definisce il nome del', 0
                                db 0
 TXT_SETUPHELP_LinuxRootPart    db 'Cambia la partizione', 0
                                db 'root di Linux', 0
+                               db 0
+TXT_SETUPHELP_ForceLBAUsage    db 'Forza l''uso delle API', 0
+                               db 'LBA del BIOS invece', 0
+                               db 'dell''uso misto di CHS', 0
+                               db 'ed LBA.', 0
                                db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Cambia dinamicamente', 0
                                db 'l''ID delle partiz.', 0
