@@ -36,10 +36,10 @@ TXT_BootMenuHelpText2:         db 'Andere keuze met de pijltjestoetsen, tik [TAB
 TXT_BootMenuEnterSetup         db 'Druk F10 voor setup', 0
 
 ; Dynamic Length (till 80 chars)
-TXT_BrokenPartitionTable:      db 13, 10, ' - Your system has at least one broken partition table entry or your harddrive'
-                               db 13, 10, '   contains bad sectors. System halted.', 0
+TXT_BrokenPartitionTable:      db 13, 10, ' - U hard disk bevat minstens 1 beschadigde paritietabel element of u hard disk'
+                               db 13, 10, '   bevat bad sector. Systeem is gestopt.', 0
 TXT_TooManyPartitions:         db 13, 10, ' - Er zijn teveel partities aanwezig. Het maximum is 30.', 0
-TXT_NoBootAble:                db 13, 10, ' - Geen opstartpartitie beschikbaar. Afgebroken.', 0
+TXT_NoBootAble:                db 13, 10, ' - Geen opstartpartitie beschikbaar. Systeem is gestopt.', 0
 TXT_BIOSchanged:               db 13, 10, ' - Het BIOS werd gewijzigd! Controleer eerst op virussen.'
                                db 13, 10, '   Tik op een toets om verder te gaan...', 0
 ;----------------------------------|--------------------------------------------------------------------------|
