@@ -296,6 +296,9 @@ ushort maincode (int argc, char *argv[]) {
          CurChar = toupper(*StartPos++);
 
          switch (CurChar) {
+          case '?':
+            MSG_Print (TXT_SYNTAX_Show);
+            return 1;
           case 'B':
             if (ArgumentLen==1) DoReboot = TRUE;
              else BadParm = TRUE;
@@ -499,7 +502,7 @@ ushort maincode (int argc, char *argv[]) {
          MSG_Print (TXT_ERROR_NoBootManager);
          return 1;
        }
-      printf ("AiR-BOOT/SETABOOT: AiR-BOOT %X.%.2X detected.\n\n", AiRBOOT_CodeSig->MajorVersion, AiRBOOT_CodeSig->MinorVersion);
+      printf ("AiR-BOOT/SETABOOT: AiR-BOOT %X.%02X detected.\n\n", AiRBOOT_CodeSig->MajorVersion, AiRBOOT_CodeSig->MinorVersion);
       if (AiRBOOT_Config->BootMenuActive) {
          if (AiRBOOT_Config->TimedBoot) {
             itoa (AiRBOOT_Config->TimedSeconds, (PCHAR)&TempBuffer, 10);

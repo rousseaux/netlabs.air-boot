@@ -1,1 +1,1 @@
-Include TEXT\US\OTHER.asm 
+Include TEXT\SW\OTHER.asm 

@@ -20,8 +20,8 @@
 ;---------------------------------------------------------------------------
 
 ; If ReleaseCode is not defined, it will produce debug-able code...
-; ReleaseCode                 equ    -1
-ReleaseCommercial           equ    -1
+ReleaseCode                 equ    -1
+; ReleaseCommercial           equ    -1
 
 JUMPS
 

@@ -1,1 +1,1 @@
-Include TEXT\US\MENUS.asm 
+Include TEXT\SW\MENUS.asm 
