@@ -117,11 +117,11 @@ DriveIO_UpdateFloppyName        EndP
 ;                      HARDDRIVE / GENERAL ACCESS
 ; =============================================================================
 ;  The following routines are used for harddisc/floppy access.
-;  The access is done via BIOS INT 13h or BIOS/Extensions.
-;  Access will be done prefered by INT 13h, because it's (I wonder!) much
+;  The access is done via INT 13h/CHS or INT 13h/LBA.
+;  Access will be done prefered by INT 13h/CHS, because it's (I wonder!) much
 ;   faster, than the LBA-method. I don't know, why LBA is so slow. Perhaps BIOS.
 ;
-;  Internal access (to AiR-BOOT) is always done via INT 13h.
+;  Internal access (to AiR-BOOT) is always done via INT 13h/CHS.
 
 Comment *ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
  Routine: Loads partition to ExecBase and checks for validity
@@ -132,20 +132,29 @@ Comment *ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
  Preserve: all registers
  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ*
 DriveIO_LoadPartition           Proc Near  Uses ds si
+   int 3
    mov     wptr cs:[CurPartition_Location+0], ax
    mov     wptr cs:[CurPartition_Location+2], bx
    mov     wptr cs:[CurPartition_Location+4], dx
    mov     wptr cs:[CurPartition_Location+6], cx ; Saves the location
    push    ExecBaseSeg
    pop     ds
-   mov     si, ExecBasePtr           ; DS:SI - ExecBase
+   mov     si, ExecBasePtr               ; DS:SI - ExecBase
    call    DriveIO_LoadSector
    clc
    cmp     word ptr ds:[si+LocBR_Magic], 0AA55h
    je      DIOLP_Success
-   stc
+   ; We check, if we are scanning partitions. In that case, if CHS is not 0/0/1
+   ;  we will display a "bad partition table" message and halt the system.
+   cmp     cx, 0001h
+   jne     DIOLP_Failed
+   or      dh, dh
+   jnz     DIOLP_Failed
+   stc                                   ; Set carry, so no partition table
   DIOLP_Success:
    ret
+  DIOLP_Failed:
+   jmp     DriveIO_GotLoadError
 DriveIO_LoadPartition           EndP
 
 Comment *ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
@@ -193,6 +202,20 @@ DriveIO_DAP_Transfer       dd        0   ; Transfer Adress
 DriveIO_DAP_Absolute       dd        0   ; Absolute Sector
                            dd        0   ; Second Part of QWORD
 
+; Special error message instead of "LOAD ERROR" during partition scanning,
+;  so users will notice that something is bad with their partition table(s)
+DriveIO_GotLoadError            Proc Near
+   test    cs:CurIO_Scanning, 1          ; Must be CS:, cause DS!=CS here
+   jnz     InScanMode
+   jmp     MBR_LoadError
+  InScanMode:   
+   mov     si, offset TXT_BrokenPartitionTable
+   push    cs
+   pop     ds
+   call    MBR_Teletype
+   jmp     MBRLE_Halt
+DriveIO_GotLoadError            EndP
+
 Comment *ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
  Routine: Loads a specified sector to DS:DI
  ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
@@ -222,7 +245,8 @@ DriveIO_LoadSector              Proc Near  Uses ax bx ds si es di
          jnc     DIOLS_Success
       dec     di
       jnz     DIOLS_ErrorLoop
-      call    MBR_LoadError
+      ; Sector load failed...
+      jmp     DriveIO_GotLoadError
 
   DIOLS_UseExtension:
    push    cx
@@ -239,7 +263,8 @@ DriveIO_LoadSector              Proc Near  Uses ax bx ds si es di
       int     13h
    pop     cx
    jnc     DIOLS_Success
-   call    MBR_LoadError
+   ; Sector load failed...
+   jmp     DriveIO_GotLoadError
 
   DIOLS_Success:
    ret

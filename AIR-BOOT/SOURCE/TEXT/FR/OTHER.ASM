@@ -36,6 +36,8 @@ TXT_BootMenuHelpText2:         db 'Fläches pour choisir une autre, ou [TAB] pour
 TXT_BootMenuEnterSetup         db 'F10 pour Configurer', 0
 
 ; Dynamic Length (till 80 chars)
+TXT_BrokenPartitionTable:      db 13, 10, ' - Votre systäme a au moins d'une entrÇe mauvaise de table de partition, ou'
+                               db 13, 10, '   la disque dñr a des cassÇe secteurs. Systäme arràtÇ.', 0
 TXT_TooManyPartitions:         db 13, 10, ' - Trop de partitions trouvÇes. AiR-BOOT supporte un maximum de 30.', 0
 TXT_NoBootAble:                db 13, 10, ' - Aucune partition amoráable dÇfinie. Systäme arràtÇ.', 0
 TXT_BIOSchanged:               db 13, 10, ' - BIOS CHANGê! Veuillez vÇrifier votre systäme contre un virus.'

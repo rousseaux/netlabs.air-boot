@@ -36,6 +36,8 @@ TXT_BootMenuHelpText2:         db 'V„lj annan med pilarna, eller tryck [TAB] f”r
 TXT_BootMenuEnterSetup         db 'F10 f”r att kommma till Setup', 0
 
 ; Dynamic Length (till 80 chars)
+TXT_BrokenPartitionTable:      db 13, 10, ' - Your system has at least one broken partition table entry or your harddrive'
+                               db 13, 10, '   contains bad sectors. Systemet haltat.', 0
 TXT_TooManyPartitions:         db 13, 10, ' - F”r m†nga partitioner hittades. AiR-BOOT st”der endast upp till 30.', 0
 TXT_NoBootAble:                db 13, 10, ' - Ingen bootningsbar partition definierad. Systemet haltat.', 0
 TXT_BIOSchanged:               db 13, 10, ' - BIOS ŽNDRAT, var v„nlig kontrollera ditt system efter virus, f”r att vara s„ker.'

@@ -36,9 +36,11 @@ TXT_BootMenuHelpText2:         db 'Mit den Pfeiltasten ausw„hlen oder [TAB] fr 
 TXT_BootMenuEnterSetup         db 'F10 um ins Setup zu gelangen', 0
 
 ; Dynamic Length (till 80 chars)
+TXT_BrokenPartitionTable:      db 13, 10, ' - Mindestens einer Ihrer Partitionseintr„ge ist ungltig oder Ihre Festplatte'
+                               db 13, 10, '   beinhaltet defekte Sektoren. System angehalten.', 0
 TXT_TooManyPartitions:         db 13, 10, ' - Zuviele Partitionen gefunden. AiR-BOOT untersttzt maximal 30.', 0
 TXT_NoBootAble:                db 13, 10, ' - Keine bootbare Partition definiert. System angehalten.', 0
-TXT_BIOSchanged:               db 13, 10, ' - BIOS HAT SICH VERŽNDERT. šberprfen Sie ihr System nach Viren.'
+TXT_BIOSchanged:               db 13, 10, ' - BIOS HAT SICH VERŽNDERT. šberprfen Sie ihr System auf Viren.'
                                db 13, 10, '   Drcken Sie eine Taste um fortzufahren...', 0
 
 TXT_VirusFoundMain:            db 13, 10, ' - !ACHTUNG! -> EIN VIRUS WURDE GEFUNDEN <- !ACHTUNG!', 13, 10, 0

@@ -29,8 +29,9 @@
   may update your copy of AiR-BOOT. Configuration will remain intact.
 
  Changes this time:
-  - NO WAR FOR CONTROL OVER OIL RESOURCES
+  - NO WAR FOR CONTROL OVER OIL RESOURCES, thank you
   - Issue with NTFS detected as being HPFS fixed
+  - Broken partition table error message instead of "LOAD ERROR" on startup
   - Minor changes
 
  Release-Version: 1.01 on 7 Jan 2003

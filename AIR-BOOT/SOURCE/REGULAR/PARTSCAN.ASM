@@ -19,7 +19,7 @@
 ;                                             AiR-BOOT / PARTiTiON SCANNING
 ;---------------------------------------------------------------------------
 
-; Note: This is complex code. Also some of this functions have DS != CS, so
+; Note: This is complex code. Also some of these functions have DS != CS, so
 ;        make sure that you know what you are doing in here.
 
 PARTSCAN_ScanForPartitions      Proc Near  Uses
@@ -36,6 +36,7 @@ PARTSCAN_ScanForPartitions      Proc Near  Uses
    xor     al, al
    mov     NewPartitions, al
 
+   mov     CurIO_Scanning, 1             ; Set flag due scanning partitions
    mov     dl, 80h                       ; is first harddisc
   PSSFP_HarddiscLoop:
       push    dx
@@ -44,6 +45,7 @@ PARTSCAN_ScanForPartitions      Proc Near  Uses
       inc     dl
    dec     dh
    jnz     PSSFP_HarddiscLoop
+   mov     CurIO_Scanning, 0             ; Reset flag due scanning complete
 
    ; Use X-Reference to sync NewPartitionTable with Hide-Config
    call    PARTSCAN_SyncHideConfigWithXref
@@ -78,7 +80,7 @@ PARTSCAN_ScanForPartitions      Proc Near  Uses
       add     si, LocIPT_LenOfIPT
    loop    PSSFP_LinuxLoop
   PSSFP_NoPartitions:
-   mov     GotLinux, dl             ; Set Flag
+   mov     GotLinux, dl                  ; Set Flag
 
    ; ...and finally check, if we need to set a Drive-Letter
    mov     dl, AutoDrvLetter

@@ -616,7 +616,9 @@ ExtendedAbsPosSet            db     ?    ; If Absolute Position set
 
 CurPartition_Location        dw     4 dup (?)  ; Where did current partition came from?
 CurIO_UseExtension           db     ?    ; 1-Use INT 13h EXTENSIONS
-                                         ; Filled out by PreCrap
+                                         ;    (filled out by PreCrap)
+CurIO_Scanning               db     ?    ; 1-AiR-BOOT is scanning partitions
+                                         ;    (for detailed error message)
 
 GotLinux                     db     ?    ; 1-Linux found
 

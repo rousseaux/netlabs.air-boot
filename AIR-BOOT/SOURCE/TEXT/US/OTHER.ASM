@@ -36,6 +36,8 @@ TXT_BootMenuHelpText2:         db 'Select another with the arrow keys, or press 
 TXT_BootMenuEnterSetup         db 'F10 to enter Setup', 0
 
 ; Dynamic Length (till 80 chars)
+TXT_BrokenPartitionTable:      db 13, 10, ' - Your system has at least one broken partition table entry or your harddrive'
+                               db 13, 10, '   contains bad sectors. System halted.', 0
 TXT_TooManyPartitions:         db 13, 10, ' - Too many partitions found. AiR-BOOT is supporting up to 30.', 0
 TXT_NoBootAble:                db 13, 10, ' - No bootable partition defined. System halted.', 0
 TXT_BIOSchanged:               db 13, 10, ' - BIOS CHANGED, please check your system for any virus, just to be sure.'

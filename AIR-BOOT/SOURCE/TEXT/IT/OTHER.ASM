@@ -36,6 +36,8 @@ TXT_BootMenuHelpText2:         db 'Selezionare con i tasti freccia, oppure [TAB]
 TXT_BootMenuEnterSetup         db 'F10 Impostazioni', 0
 
 ; Dynamic Length (till 80 chars)
+TXT_BrokenPartitionTable:      db 13, 10, ' - Il sistema ha almeno una partizione corrotta nel tuo hard-disk contiene'
+                               db 13, 10, '   settori danneggiati. Sistema bloccato.', 0
 TXT_TooManyPartitions:         db 13, 10, ' - Trovate troppe partizioni. AiR-BOOT ne supporta fino a 30.', 0
 TXT_NoBootAble:                db 13, 10, ' - Nessuna partizione avviabile definita. Sistema bloccato.', 0
 TXT_BIOSchanged:               db 13, 10, ' - BIOS MODIFICATO! Controllare il sistema contro eventuali virus.'

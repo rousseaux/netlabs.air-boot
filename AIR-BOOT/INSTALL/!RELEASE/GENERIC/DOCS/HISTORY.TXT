@@ -146,6 +146,8 @@
  º   1.01  ³  2 Mar 2003 ³ [WARP] ³ [!] NO WAR FOR CONTROL OVER OIL RESOURCES º
  º         ³             ³        ³ [-] Issue with NTFS detected as being     º
  º         ³             ³        ³      HPFS fixed                           º
+ º         ³             ³        ³ [+] Broken partition table error message  º
+ º         ³             ³        ³      instead of "LOAD ERROR"              º
  º         ³             ³        ³ [+] Minor changes                         º
  ºÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
  º [BETA] úúúúúú Internal Beta-Version ³ [WARP] úúúúúúúúúúúú Official Release º
@@ -162,7 +164,7 @@
  º  AiR-BOOT and fix some problems/incompatibilities:                         º
  º                                                                            º
  º  Hex1753, Mike Reichel, Robert Traynor, chusty@attglobal.net, Tod Morcott, º
- º   Teruel de Campo, Irv Spalten, Chris Carroll, Warp5                       º
+ º   Teruel de Campo, Irv Spalten, Chris Carroll, Warp5, MaxWarp & Jake       º
  º                                                                            º
  º  ...and especially the translators that wasted so much time on it...       º
  º                                                                            º
