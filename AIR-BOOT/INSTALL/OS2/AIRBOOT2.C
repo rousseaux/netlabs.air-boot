@@ -92,7 +92,7 @@ VOID INST_Status_SetInsert (ULONG iStatus, USHORT iVersion) {
      }
     case Status_Installed:
     case Status_InstalledMGU: {
-       sprintf (MSG_Insert[0], "%x.%x", iVersion>>8, iVersion & 0x0FF);
+       sprintf (MSG_Insert[0], "%x.%02x", iVersion>>8, iVersion & 0x0FF);
        if (iStatus==Status_InstalledMGU)
           MSG_FillInsert (2, TXT_STATUS_Update);
          else
@@ -216,7 +216,7 @@ ushort maincode (int argc, char *argv[]) {
    //                         MENU
    // =============================================================
    MSG_Print (TXT_MENU_Main);
-   sprintf (MSG_Insert[0], "%x.%x", Image_CodeVersion>>8, Image_CodeVersion & 0x0FF);
+   sprintf (MSG_Insert[0], "%x.%02x", Image_CodeVersion>>8, Image_CodeVersion & 0x0FF);
    MSG_FillInsert (2, INST_Status_GetLanguageName(Image_LanguageID));
    if (Install_IsCorrupt)                         MSG_Print (TXT_MENU_Repair);
       else if (iStatus_Code==Status_NotInstalled) MSG_Print (TXT_MENU_Add);

@@ -128,6 +128,19 @@ MBR_TeletypeNumber              Proc Near   Uses ax bx
    ret
 MBR_TeletypeNumber              EndP
 
+;        In: AL - BCD-number to type to screen (full 2 digits everytime)
+; Destroyed: *nothing*
+MBR_TeletypeNumber2             Proc Near   Uses ax bx
+   mov     ah, al
+   and     ah, 0Fh
+   shr     al, 4
+   add     ax, 3030h
+   call    MBR_TeletypeSingle
+   mov     al, ah
+   call    MBR_TeletypeSingle
+   ret
+MBR_TeletypeNumber2             EndP
+
 ;---------------------------------------------------------------------------
 TXT_START_Copyright             db      'AiR-BOOT Installer v1.00 for AiR-BOOT', 13, 10
                                 db      ' - (c) Copyright ''98-''02 by Martin Kiewitz.', 13, 10
@@ -406,7 +419,7 @@ INST_Begin:
    mov     al, '.'
    call    MBR_TeletypeSingle
    mov     al, dl
-   call    MBR_TeletypeNumber
+   call    MBR_TeletypeNumber2
    mov     al, '/'
    call    MBR_TeletypeSingle
    mov     al, ImageLanguageID
@@ -762,7 +775,7 @@ INST_Status_TeletypeCode       Proc Near  Uses si
       mov     al, '.'
       call    MBR_TeletypeSingle
       mov     al, dl
-      call    MBR_TeletypeNumber
+      call    MBR_TeletypeNumber2
       mov     al, ')'
       call    MBR_TeletypeSingle
    pop     ax
