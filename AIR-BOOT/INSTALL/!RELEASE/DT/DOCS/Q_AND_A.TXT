@@ -1,0 +1,128 @@
+     ÖÄ[ Vragen en amtwoorden ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º V: Ik leende een harde schijf. Ik ondervond geen enkel probleem, alles     º
+ º     verliep zoals het hoorde. Echter, toen ik de schijf terugbracht, kon   º
+ º     de eigenaar er niets meer mee aanvangen. Wat te doen?                  º
+ º A: Dit is een probleem mat de partitietabel . Sommige systemen werken en-  º
+ º     kel maar als ze op de "enige" actieve partitie resideren. Vandaar dat  º
+ º     AiR-BOOT het kenmerk "actief" van alle andere partities verwijderd.    º
+ º     Om dit te verhelpen moet u die schijf opnieuw in *uw* PC plaatsen, op- º
+ º     starten van de gewenste partitie, afsluiten, en daarna de PC uitscha-  º
+ º     kelen. Vervolgens kan u de schijf uit uw PC nemen en deze schijf       º
+ º     teruggeven aan de eigenaar.                                            º
+ º     Opmerking: Indien uw kennis AiR-BOOT zou gebruiken, dan zou het        º
+ º           probleem zich niet voordoen. Is er slechts 1 partitie en wil hij º
+ º           of zij het AiR-BOOT menu niet, zien, dan kan het menu gewoon     º
+ º           uitgeschakeld worden.  AiR-BOOT zal dan automatisch de enige     º
+ º           aanwezige partitie laten opstarten.                              º
+ º                                                                            º
+ º V: Waarom in hemelsnaam minstens 62 sectoren per track op de harde schijf? º
+ º     Er wordt nauwelijks de helft van gebruikt.                             º
+ º A: Vroeger was dat inderdaad minder (31 sectors minstens), maar dat gaf    º
+ º     heel wat problemen met stealth-virussen. Na een aanval diende de ge-   º
+ º     bruiker AiR-BOOT helemaal opnieuw te herinstalleren.                   º
+ º     Aangezien de configuratie nu op een andere plaatst wordt bewaard kun-  º
+ º     nen de virii er niet meer aan. Opmerking: de AiR-BOOT basisdiskette    º
+ º     VOLSTAAT om het MBR te repareren, u dient AiR-BOOT niet te herinstal-  º
+ º     leren. Stop gewoon de basisdiskette in stataion A: wanneer de PC niet  º
+ º     wil opstarten. Zodoende zal alles heringesteld worden.                 º
+ º                                                                            º
+ º V: Welke vreemde dingen zijn dat daar in het MBR ???                       º
+ º A: Speciale codes in het MBR sinds 0.26b zijn:                             º
+ º     CLI (disables Interrupts)                                              º
+ º     JuMP Somewhere                                                         º
+ º     JuMP ToAnotherLocation                                                 º
+ º     STI (enables Interrupts)                                               º
+ º                                                                            º
+ º     Waarom?  Vanwege Micro$oft. M$ ploft rare dingen in het MBR.           º
+ º               Op een volslagen eigenzinnige manier.                        º
+ º               Windoze NT/2000 zoekt naar de "CLI" instructie.              º
+ º               Wij hebben maar het raden naar het waarom. Hoe dan ook, in-  º
+ º               dien Windy2000 geen "CLI" aantreft gaat het overstag. De 2   º
+ º               JuMP maken de AiR-BOOT inscripties onaantastbaar.            º
+ º                                                                            º
+ º    De enige reden hiervoor is dus de handelwijze van M$. "CLI checking"    º
+ º     is totaal overbodig, nergens op enigerlei wijze gedocumenteerd en ver- º
+ º     der is "CLI" niet meer dan klinkklare onzin. Iets waarvan trouwens     º
+ º     elke programmeur goed op de hoogte van is.                             º
+ º                                                                            º
+ º                                                                            º
+ º V: Zijn 'NT BOOT'/'OS/2 BOOTMAN'/'LILO' dan niet goed genoeg?              º
+ º A: Welja ... alhoewel dat voor discussie vatbaar is.                       º
+ º     NT BOOT is prutswerk. 100 KBytes voor wat opstartbeheer? Belachelijk!  º
+ º     En Windows NT MOET ge‹nstalleerd worden. (of een FAT partitie?!)       º
+ º     De OS/2 bootmanager heeft een primaire partitie nodig. Dus niet goed   º
+ º     genoeg. LILO is wat onhandig. Kan Linux niet opstarten indien Linux    º
+ º     zich niet op de eerste harde schijf bevindt (toch toen ik het probeer- º
+ º     de). De Linux kernel wordt geladen via een omweg, wat al evenmin uit-  º
+ º     staanbaar is. Bovendien alles behalve gemakkelijk. Elke keer dat er    º
+ º     iets wordt gewijzigd (nieuwe partities, schijven enz... enz... dient   º
+ º     alles te worden heringestald).                                         º
+ º                                                                            º
+ º     Meestal wordt het opstartbeheer gebonden aan een specifiek stuursy-    º
+ º     steem, en dat is gewoon niet goed genoeg. Overigens, wanneer u een     º
+ º     partitie toevoegd aan een schijf waarop zich Linux reeds bevind, dan   º
+ º     zal LILO zijn Linux niet meer terugvinden (haha!). AiR-BOOT integen-   º
+ º     deel vindt alles automatisch en "on-the-fly" terug.                    º
+ º                                                                            º
+ º V: Wat is in hemelsnaam het probleem met LILO?. LILO is toch goed genoeg?  º
+ º A: Zo dachten wij ook, tot wanneer nagenoeg een ganse partitie werd om     º
+ º     zeep gebracht. Dat was een FAT partitie en zonder enige verwittiging   º
+ º     werd alles overschreven. LILO bevindt zich een beetje op hetzelde ni-  º
+ º     veau als de M$ producten. Gaat er van uit de hele Wereld te beheersen  º
+ º     en dat dan bijgevolg alles gepermitteerd is.                           º
+ º     Tijdens de "alfa" testen van AiR-BOOT werd NOOIT een partitietabel     º
+ º     vernietigd. Enkel soms een crash, zodat het MBR diende te worden her-  º
+ º     ingesteld. Verder heeft zich nauwelijks een enkel probleem voorgedaan. º
+ º     En dan heeft het volstaan met de basisdikette hat zaakje terug te zet- º
+ º     ten. Overigens, hierbij werd duidelijk dat Partition Magic 3.x sommige º
+ º     sectoren in the MBR kan overschrijven.                                 º
+ º                                                                            º
+ º V: Is er niet een teveel aan opties? Wie zal daar ooit van gebruik maken?  º
+ º A: Misschien zijn er wel wat veel, misschien is het allemaal nutteloos.    º
+ º     Anderszijds kunnen de wensen van de gebruikers nogal een uiteenlopen,  º
+ º     zodat een breed gamma van keuzes uiteindelijk geen overbodige luxe     º
+ º     kan blijken te zijn.                                                   º
+ º     Indien het programma zou te traag worden of te ingewikkeld dan zou er  º
+ º     een probllem zijn natuurlijk. Echter AiR-BOOT heeft deze problemen     º
+ º     helemaal NIET. Bovendien is er een goede directe hulpfunctie. Beter    º
+ º     dan wat u kan aantreffen in de meeste BIOSsen. Gekleurde menu's, een   º
+ º     klank en lichtspel enz enz...                                          º
+ º                                                                            º
+ º V: Werd de tekst van het opstartmenu niet een beetje afgekeken van         º
+ º    DocsBoot?                                                               º
+ º A: Klopt. DocsBoot is goed, maar de menuopties moeten worden ingesteld     º
+ º     door middel van DOS-exe. Niet mogelijk onder Unix/Linux, WinNT noch    º
+ º     OS/2. Niet dus. Bovendien heeft AiR-BOOT veel meer opties.             º
+ º                                                                            º
+ º V: Het SETUPmenu lijkt wel erg veel op dat van het Award BIOS!             º
+ º A: Niet echt. Kleurtjes en menuopbouw komen weliswaar overeen, maar verder º
+ º     is de interne werking helemaal anders.                                 º
+ º                                                                            º
+ º V: Ik ben vertegenwoordiger van een Bios-fabrikant. Bestaat de mogelijk-   º
+ º     heid AiR-BOOT in onze producten te integreren?                         º
+ º A: Ja, een dergelijke overeenkomst zou goed van pas komen. Zodat AiR-BOOT  º
+ º     vanuit het BIOS kan worden uitgevoerd en WinNT er geen vat op heeft.   º
+ º     AiR-BOOT werd zodanig gecodeerd dat zulks mogelijk is. Uw product zou  º
+ º     ongeveer 512 byte code ruimte moeten reserveren voor AiR-BOOT.         º
+ º     AiR-BOOT zou hoe dan ook op de harde schijf moeten worden gezet, maar  º
+ º     "layer 0 code" zou zich in het bios kunnen bevinden, zodanig dat       º
+ º     AiR-BOOT als eerste de harde schijf kan benaderen.                     º
+ º     U kan ons contacteren via:   kiewitz@netlabs.org                       º
+ º                                                                            º
+ º V: Ik ben vertegenwoordiger van een softwarefabrikant. Wij zouden graag    º
+ º     AiR-BOOT in onze systemen integreren. Kan dat?                         º
+ º A: Bent u van Micro$oft, loop dan naar de Maan. Met uilieden is geen over- º
+ º     eenkomst mogelijk. Wij houden namelijk niet van de manier waarop u de  º
+ º     softwaremarkt verstoort.                                               º
+ º     Met andere vennootschappen kan eventueel worden gepraat.               º
+ º                                                                            º
+ º     Opmerking: AiR-BOOT kan NOOIT worden aangepast in die zin dat het af-  º
+ º           kelijk wordt van een bepaald stuursysteem. AiR-BOOT werd name-   º
+ º           lijk gecre‰erd ol een totale onafhankelijkheid van eender welk   º
+ º           stuursysteem te bewerkstelligen. OEM versies MOETEN dus ook      º
+ º           andere stuursystemen kunnen opstarten                            º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

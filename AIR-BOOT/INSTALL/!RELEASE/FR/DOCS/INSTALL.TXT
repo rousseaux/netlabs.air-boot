@@ -1,0 +1,177 @@
+     ÖÄ[ Installation ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º L'installation sans option peut uniquement se faire … partir d'une ligne   º
+ º  de commandes DOS. Si vous avez Unix ou Linux, vous devrez d‚marrer depuis º
+ º  une disquette DOS. Note: Vous n'aurrez plus jamais … d‚marrer depuis      º
+ º  l'horrible DOS :)                                                         º
+ º                                                                            º
+ º 1. Prenez une disquette vierge formatt‚e. Mettez la dans votre lecteur A:  º
+ º    et d‚marrez le fichier AIRBS_xx.EXE de l'archive AiR-BOOT (o— xx est    º
+ º    votre code de langue).                                                  º
+ º                                                                            º
+ º 2. V‚rifiez votre r‚glage CMOS (dans le bios). Des‚lectionnez 'Virus       º
+ º     Warning', si cette option est disponible, et changez la s‚quence de    º
+ º     d‚marrage de fa‡on … d‚marrer … partir du A: (A: en premier dans la    º
+ º     s‚quence). N'oubliez pas de sauvegarder les paramŠtres du CMOS.        º
+ º                                                                            º
+ º 3. Maintenant d‚marrez depuis la disquette cr‚‚e … l'‚tape 1.              º
+ º                                                                            º
+ º 4. AiR-BOOT INSTALL vous prend ensuite en charge et vous devriez pouvoir   º
+ º     finir le processus d'installation tout(e) seul(e)                      º
+ º                                                                            º
+ º 5. Une fois qu'INSTALL s'est tremin‚, vous voila dans le programme de      º
+ º     configuration int‚gr‚ SETUP.                                           º
+ º     NOTE: Si vous voulez relancer AiR-BOOT SETUP plus tard, il vous suffit º
+ º            de garder les touches Ctrl et/ou Alt au d‚marrage d'AiR-BOOT.   º
+ º                                                                            º
+ º 6. AprŠs avoir pass‚ l'‚tape du AiR-BOOT SETUP, vous pouvez rechanger      º
+ º     votre s‚quence de d‚marrage pour quelque chose comme 'C seulement' ou  º
+ º     autre chose avec C: au d‚but.                                          º
+ º     NOTE: Ne r‚activez pas la protection anti-virus, AiR-BOOT fait mieux   º
+ º           et vous auriez un avertissement de virus … chaque d‚marrage.     º
+ º                                                                            º
+ º OK, tout devrait maintenant fonctionner correctement et vous avez un       º
+ º  systŠme prot‚g‚ contre les virus avec AiR-BOOT.                           º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º Si une fois AiR-BOOT ne d‚marre pas par exemple … cause de l'installation  º
+ º  d'un nouvel OS, vous devrez ins‚rer le CD/la disquette AiR-BOOT et        º
+ º  red‚marrer … partir de cela.                                              º
+ º AiR-BOOT INSTALL d‚tectera alors automatiquement le problŠme et vous       º
+ º  laissera choisir s'il faut le r‚parer ou non.                             º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Explications ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º CONFIGURATION DES PARTITIONS  (Partition configuration) ³                  º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                  º
+ º Ce menu est d'utilisation trŠs ais‚e, si vous en connaissez les bases.     º
+ º Chaque option peut ˆtre activ‚e ou non sur chaque partition, ce qui veut   º
+ º  dire que les effets d'une option features peuvent ˆtre actifs lorsqu'on   º
+ º  d‚marre sur une partition et inactifs quand on utilise l'autre.           º
+ º                                                                            º
+ º Pour changer le statut d'une option, il n'y a qu'… s‚lectionner la         º
+ º  partition correspondante et appuyer sur la lettre qui repr‚sente l'option.º
+ º                                                                            º
+ º 'B' - Bootable (D‚marrable)                                                º
+ º        All partitions that got this flag will be listed in the bootmenu.   º
+ º                                                                            º
+ º 'V' - VIBR Protection (Protection contre les virii de secteur d'amor‡age)  º
+ º        Reportez-vous s.v.p. … la section "Virus-Detection" pour plus de    º
+ º        pr‚cision.                                                          º
+ º                                                                            º
+ º 'H' - Hide Configuration (Configuration des partitions cach‚es)            º
+ º        Cette option permet d'activer la configuration des partitions       º
+ º        cach‚es au d‚marrage. Si vous l'activez pour une partition donn‚es, º
+ º        le menu de configuration des partitions cach‚es apparaŒtra au       º
+ º        d‚marrage et vous pourrez choisir les partitions cach‚es ou         º
+ º        visibles quand vous d‚marrerez depuis la dite partition.            º
+ º                                                                            º
+ º 'L' - Drive-Letter (Lettre de lecteur - seulement pour OS/2 et eCS)        º
+ º        OS/2 et eCS ont besoin de la lettre attribu‚e au lecteur …          º
+ º        d‚marrer. Vous devez entrer la lettre de lecteur assign‚e par OS/2  º
+ º        ou eCS. Il n'est pas possible de la d‚tecter. (En fait, XFDisk le   º
+ º        devine)                                                             º
+ º                                                                            º
+ º 'P' - Extended Partition MS Work-Around (Routine MS de partition ‚tendue)  º
+ º        Cette option sert uniquement lorsque l'option de routine MS         º
+ º        g‚n‚rale est aussi activ‚e. Quand c'est le cas et qu'une partition  º
+ º        est d‚marr‚e avec cette option active, toutes les partitions        º
+ º        ‚tendues seront modifi‚es de fa‡ons … remplir les pseudo-standards  º
+ º        de Microsoft. Si l'option est d‚sactiv‚e pour cette partition,      º
+ º        alors toutes les partitions seront modifi‚es de fa‡on … ˆtre        º
+ º        conformes au standard REEL.                                         º
+ º        Pour plus d'informations, voir ci-dessous.                          º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º VIRUS DETECTION (D‚tection anti-virus)³                                    º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                    º
+ º AiR-BOOT est capable des d‚tecter les virii de 3 fa‡ons diff‚rentes.       º
+ º Quasiment tous les virii de boot devraient ˆtre couverts par ces m‚thodes. º
+ º                                                                            º
+ º Normal - Cette m‚thode compare le MBR en m‚more avec celui ‚crit sur le    º
+ º           disque lors de chaque d‚marrage. Ainsi les virii de secteur      º
+ º           d'amor‡age classiques sont d‚tect‚s.                             º
+ º                                                                            º
+ º Stealth - Celle-ci d‚tectera les virii qui se cachent et falsifient l'API  º
+ º            d'accŠs au disque dur du bios. La d‚tection normale ‚chouerait  º
+ º            sur ces virii.                                                  º
+ º                                                                            º
+ º VIBR - Virus-In-Boot-Record Detection. Requiert l'activation de l'option   º
+ º         globale ET de celle sp‚cifique … la partition. Le secteur de       º
+ º         d‚marrage de chaque partition sera alors v‚rifi‚ quant …           º
+ º         d'‚ventuelles modifications. Cette d‚tection est SALE et           º
+ º         susceptible de donner des r‚sultats faussement positifs.           º
+ º         Si un secteur de d‚marrage modifi‚ est trouv‚, le d‚marrage depuis º
+ º         cette partition sera interdit. Vous pouvez d‚sactiver cette        º
+ º         v‚rification en basculant l'option V.                              º
+ º                                                                            º
+ º La protection du MBR est certainement la mˆme que la protection anti-virus º
+ º  de votre CMOS. Elle capture l'interruption INT 13h (E/S de bas niveau) et º
+ º  observe les ‚critures sur le cylindre 0 et la tˆte 0. Ceci est consid‚r‚  º
+ º  comme acte viral et annul‚ aborted. L'ordinateur sera arrˆt‚ et vous      º
+ º  verrez le message correspondant. Cette option peut ˆtre incompatible avec º
+ º  certains programmes tiers, de mˆme que l'option de protection anti-virus  º
+ º  de votre CMOS est incompatible avec AiR-BOOT.                             º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º EXTENDED PARTITION MS WORK-AROUND (Routine de partition ‚tendue MS) ³      º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ      º
+ º Cette "fonctionnalit‚" devait ˆtre impl‚ment‚e … cause de la fa‡on que     º
+ º Microsoft a d'inventer un pseudo-standard incompatible avec tout autre OS. º
+ º                                                                            º
+ º Le problŠme est celui de l'identifiant (id) des partitions ‚tendues. Le    º
+ º standard officiel ‚tait d'utiliser '05h'. Mais Microsoft a "invent‚" un    º
+ º nouvel id '0Fh' pour les partitions ‚tendues qui occupent de l'espace au   º
+ º dessus de 8GO.                                                             º
+ º                                                                            º
+ º Ce qui fait que beaucoup d'OS ne vont plus voir aucune partition logique.  º
+ º Et donc un utilisateur intelligent pourrait essayer de corriger cela. Cela º
+ º fonctionne, mais (bien s–r) quelques programmes MS comme ScanDisk ont des  º
+ º problŠmes avec cela, et ainsi vont vous mettre en l'air des partitions     º
+ º entiŠres...                                                                º
+ º                                                                            º
+ º Ainsi nous avons le vrai format qui marche quand mˆme plus ou moins avec   º
+ º Windows, mais parfois des partitions peuvent (!) ˆtre d‚truites.           º
+ º Ou on utilise l'invention MS, mais on perd la compatibilit‚ avec certains  º
+ º OS. ...ou on utilise AiR-BOOT pour alterner entre les deux "standards" …   º
+ º la vol‚e.                                                                  º
+ º                                                                            º
+ º Quand le commutateur global ET l'option P sont activ‚s sur la partition,   º
+ º AiR-BOOT changera toutes les partitions ‚tendues pour que leur id soit     º
+ º '0Fh', de fa‡on … ce que le systŠme soit compatible avec MS Windows.       º
+ º                                                                            º
+ º D'autre part, si le commutateur global est activ‚ mais pas l'option P,     º
+ º AiR-BOOT changera les id pour qu'ils soient au standard r‚el, ce qui       º
+ º signifie par exemple que DOS reconnaŒtra de nouveau les partitions         º
+ º logiques.                                                                  º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Limitations ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º  Si votre systŠme rentre dans l'une de ces cat‚gories, N'installez PAS     º
+ º   AiR-BOOT.                                                                º
+ º                                                                            º
+ º  - Vous avez un outil de cryptage dans le MBR (secteur d'amor‡age)         º
+ º  - Vous avez QUOI QUE CE SOIT d'utile dans votre MBR                       º
+ º  - Vous avez plus de 30 partitions an total dans votre systŠme             º
+ º     (La table de partitions interne d'AiR-BOOT est incapable d'en contenir º
+ º     plus, cela peut ˆtre ‚tendu plus tard, mais je n'y vois aucune raison) º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+    ÖÄ[ ProblŠmes connus ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º Ce sont plut“t des fonctionnalit‚s manquantes. Il n'y a pas de bugs        º
+ º  r‚pertori‚s.                                                              º
+ º                                                                            º
+ º  - "Linux normal Kernel image format"                                      º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

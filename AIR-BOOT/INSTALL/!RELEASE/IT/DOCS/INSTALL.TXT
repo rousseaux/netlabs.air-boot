@@ -1,0 +1,169 @@
+     ÖÄ[ Installazione ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º L'installazione di base puo' essere fatta solo con DOS o in una finestra   º
+ º  di DOS. Se si ha Unix/Linux, e' necessario avviare da un disco. Nota:     º
+ º  non sara' piu' necessario avviare ancora dall'orrifico DOS :)             º
+ º                                                                            º
+ º 1. Inserire un disco vuoto e formattato nel drive A: e avviare il          º
+ º     programma AIRBS_xx.EXE dall'archivio di AiR-BOOT (dove xx e' la        º
+ º     abbreviazione della lingua).                                           º
+ º                                                                            º
+ º 2. Controllare il setup del BIOS. Deselezionare 'Virus Warning', se tale   º
+ º     opzione e' disponibile e cambiare la sequenza di avvio in modo che A:  º
+ º     sia la prima unita'. Non dimenticarsi di salvare le modifiche nel CMOS.º
+ º                                                                            º
+ º 3. Ora avviare con il floppy creato al punto 1.                            º
+ º                                                                            º
+ º 4. AiR-BOOT INSTALL partira' e si potra' terminare l'installazione         º
+ º     facilmente da soli.                                                    º
+ º                                                                            º
+ º 5. Dopo che INSTALL e' terminato, si accedera' al menu di CONFIGURAZIONE.  º
+ º     NOTA: Successivamente, e' possibile accedere alla CONFIGURAZIONE di    º
+ º           AiR-BOOT tenendo premuto CTRL e/oppure ALT all'avvio di AiR-BOOT.º
+ º                                                                            º
+ º 6. Una volta nel menu di CONFIGURAZIONE, si potra' cambiare la sequenza di º
+ º     avvio selezionando 'C only' o un'altra opzione che abbia il drive C:   º
+ º     come prima scelta.                                                     º
+ º     NOTA: Non riattivare 'Virus Protection'. AiR-BOOT funzionera' meglio   º
+ º           e si rischierebbe di avere un allarme virus ad ogni avvio.       º
+ º                                                                            º
+ º Okay, ora tutto dovrebbe funzionare ed avrete un sistema protetto da virus º
+ º  con tutte le caratteristiche di AiR-BOOT.                                 º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º Se in un qualsiasi momento AiR-BOOT non dovesse avviarsi, es. dopo         º
+ º  l'installazione di un nuovo S.O., si dovra' avviare AiR-BOOT ancora da    º
+ º  floppy/CD-ROM. AiR-BOOT INSTALL individuera' automaticamente il problema  º
+ º  e permettera' di scegliere se riparare il danno.                          º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Istruzioni ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º CONFIGURAZIONE PARTIZIONI ³                                                º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                                º
+ º Il menu e il suo uso sono molto semplici, se si sa come e cosa fare.       º
+ º Tutti i settaggi possono essere modificati partizione per partizione,      º
+ º nel senso che le funzioni di un settaggio saranno considerate all'avvio    º
+ º di una partizione e non considerate quando se ne avviera' un'altra.        º
+ º                                                                            º
+ º Per cambiare un settaggio, basta selezionare la partizione corrispondente  º
+ º e premere la lettera che rappresenta l'opzione stessa.                     º
+ º                                                                            º
+ º 'A' - Avviabile (boot)                                                     º
+ º        Tutte le partizioni con questa indicazione saranno visibili nel     º
+ º         menu di avvio.                                                     º
+ º                                                                            º
+ º 'V' - Rilevazione VIBR                                                     º
+ º        Virus-In-Boot-Record Protection (Protezione Virus da Boot-Record).  º
+ º        Vedi Rilevazione Virus per maggiori informazioni.                   º
+ º                                                                            º
+ º 'N' - Configurazione Partizioni Nascoste                                   º
+ º        Questo settaggio indica se il Supporto Partizioni Nascoste e'       º
+ º        attivo per questa partizione. Se si preme la lettera, il Menu       º
+ º        Configurazione Nascoste apparira' e sara' possibile definire le     º
+ º        partizioni da nascondere quando verra' avviata quella corrente.     º
+ º                                                                            º
+ º 'L' - Lettera partizione (solo per OS/2 - eCS)                             º
+ º        OS/2 - eCS necessitano della lettera attribuita alla partizione da  º
+ º        cui si avviano. Occorre indicare la lettera assegnata da OS/2 - eCS º
+ º        durante l'installazione. Non e' possibile rilevarla altrimenti.     º
+ º        (in realta' XFDisk tenta di indovinarla).                           º
+ º                                                                            º
+ º 'P' - Supporto Partizioni Estese Microsoft oltre gli 8Gb                   º
+ º        Questa impostazione e' utile solo quando e' abilitato anche il      º
+ º        supporto-MS generale. In tal caso, se la partizione e' avviata con  º
+ º        questo settaggio ATTIVO, tutte le partizioni estese verranno        º
+ º        modificate per rispettare il pseudo-standard di Microsoft. Se la    º
+ º        partizione ha il settaggio DISATTIVATO, allora tutte le partizioni  º
+ º        rispetteranno il VERO standard.                                     º
+ º        Per ulteriori informazioni vedere di seguito.                       º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º RILEVAMENTO VIRUS ³                                                        º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                                        º
+ º AiR-BOOT include 3 differenti metodi di rilevamento virus.                 º
+ º Quasi tutti i boot-virus sono compresi in questi.                          º
+ º                                                                            º
+ º Normale - Confronta il MBR in memoria con il MBR nel disco ad ogni avvio.  º
+ º            I normali MBR-virus possono essere cosi' trovati.               º
+ º                                                                            º
+ º Stealth - Rileva virus che si nascondono e falsano le API di accesso al    º
+ º            disco del BIOS. Il normale rilevamento non trova questi virus.  º
+ º                                                                            º
+ º VIBR    - Virus-In-Boot-Record Protection (Protezione Virus Boot-Record).  º
+ º            Richiede l'impostazione globale e il settaggio delle singole    º
+ º            partizioni entrambi abilitati. Controlla le modifiche al        º
+ º            settore d'avvio della partizione selezionata.                   º
+ º            Questo rilevamento e' CRITICO e puo' causare falsi allarmi.     º
+ º            Se viene rilevato un settore d'avvio modificato, l'avvio da     º
+ º            tale partizione sara' negato. Si puo' resettare il controllo    º
+ º            cambiando lo stato dell'opzione V.                              º
+ º                                                                            º
+ º La protezione del MBR e' simile al 'Virus Protection' nel vostro CMOS.     º
+ º Tale funzionalita' cattura l'INT 13h (I/O a basso livello) e monitorizza   º
+ º le operazioni di scrittura nel cilindro 0 testina 0. Queste azioni sono    º
+ º considerate come virali e saranno impedite. Il computer verra' bloccato e  º
+ º si ricevera' un messaggio di allarme. Questa opzione potrebbe essere       º
+ º incompatibile con un programma di terze parti, cosi' come la 'Virus        º
+ º Protection' nel CMOS e' incompatibile con AiR-BOOT.                        º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º SUPPORTO PARTIZIONI ESTESE MICROSOFT ³                                     º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                     º
+ º Questa 'funzione' e' stata implementata a causa dell'abitudine di          º
+ º Microsoft d'inventarsi un pseudo-standard incompatibile con ogni altro S.O.º
+ º                                                                            º
+ º Il problema e' l'identificativo (ID) delle partizioni estese. Lo standard  º
+ º ufficiale prevedeva (e prevede...) di usare l'ID '05h'. Ora Microsoft si   º
+ º e' inventata l'ID '0Fh' per le partizioni estese che occupano lo spazio    º
+ º al di la' del limite degli 8Gb.                                            º
+ º                                                                            º
+ º Ma ora molti S.O. non vedono piu' NESSUNA partizione logica. In tal caso,  º
+ º un utente esperto puo' provare a cambiare l'ID al valore originario.       º
+ º Questo funziona ma, naturalmente, alcuni programmi MS come ScanDisk hanno  º
+ º problemi con il vecchio ID e quindi DANNEGGIANO intere partizioni.         º
+ º                                                                            º
+ º In definitiva, abbiamo uno standard reale che funziona ovunque, compreso   º
+ º Windows, ma occasionalmente le partizioni possono (!) essere DISTRUTTE.    º
+ º Oppure usiame le invenzioni di Microsoft, perdendo la compatibilita' con   º
+ º alcuni sistemi operativi.                                                  º
+ º ...oppure usiamo AiR-BOOT per cambiare al volo tra questi 2 "standards" .  º
+ º                                                                            º
+ º Quando l'opzione generale E l'opzione 'P' nella partizione avviata sono    º
+ º abilitati, AiR-BOOT impostera' l'ID '0Fh' per tutte le partizioni estese,  º
+ º in modo da rendere il sistema compatibile con MS Windows.                  º
+ º                                                                            º
+ º D'altra parte, se l'opzione generale e' abilitata ma l'opzione P e'        º
+ º disabilitata, AiR-BOOT le impostera' al valore standard reale, in modo che º
+ º DOS, ad esempio, potra' riconoscere ancora le partizioni logiche.          º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Limitazioni ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º  Se il vostro sistema rientra in una di queste categorie, NON installate   º
+ º  AiR-BOOT.                                                                 º
+ º                                                                            º
+ º  - Avete un programma di cifratura dati nel MBR                            º
+ º  - Avete un QUALSIASI programma o utility nel MBR                          º
+ º  - Avete in totale piu' di 30 partizioni nel sistema                       º
+ º     (la tabella delle partizioni interna di AiR-BOOT non ne contiene, di   º
+ º      piu'; si potrebbe espandere in futuro, ma non ne vedo la necessita')  º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+    ÖÄ[ Problemi noti ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º Preferirei chiamarle funzioni mancanti. Non ci sono problemi conosciuti.   º
+ º                                                                            º
+ º  - Formato immagine normale Kernel di Linux                                º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+

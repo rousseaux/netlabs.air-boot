@@ -1,0 +1,158 @@
+     ÖÄ[ Installation ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º The base-installation can only be done using DOS or a DOS-Box. If you got  º
+ º  Unix/Linux, you have to boot from a DOS disc. Note: You will never need   º
+ º  to boot ugly DOS again :)                                                 º
+ º                                                                            º
+ º 1. Get a blank, formatted disc. Insert this disc into drive A: and start   º
+ º     the file AIRBS_xx.EXE from the AiR-BOOT archive (where xx is your      º
+ º     language code).                                                        º
+ º                                                                            º
+ º 2. Check your CMOS-Setup. Deselect 'Virus Warning', if this option is      º
+ º     available and change the boot-sequence to something, where A: is the   º
+ º     first entry. Don't forget to save the changes to your CMOS.            º
+ º                                                                            º
+ º 3. Now boot from the disc made in step 1.                                  º
+ º                                                                            º
+ º 4. AiR-BOOT INSTALL is now taking over and you should be able to finish    º
+ º     the installation process alone.                                        º
+ º                                                                            º
+ º 5. After INSTALL did its work, you will get into the built-in SETUP.       º
+ º     NOTE: You may enter AiR-BOOT SETUP later by holding Strg and/or Alt at º
+ º           AiR-BOOT startup. (Strg is sometimes labeled Ctrl)               º
+ º                                                                            º
+ º 6. After being in AiR-BOOT SETUP, you should change your boot-sequence to  º
+ º     something like 'C only' or some selection, where C: is in front.       º
+ º     NOTE: Do not reactivate 'Virus Protection'. AiR-BOOT does a better job º
+ º           and you would get a Virus-Warning on every boot.                 º
+ º                                                                            º
+ º Okay, all should work now and you have a virus protected system featuring  º
+ º  AiR-BOOT.                                                                 º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º If at some point AiR-BOOT is not coming up due e.g. installing a new OS,   º
+ º  you will have to insert your AiR-BOOT disc/CD-ROM and boot from it again. º
+ º  AiR-BOOT INSTALL will automatically detect what was going wrong and let   º
+ º  you select, if it should repair the damage.                               º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Explanation ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º PARTITION SETUP ³                                                          º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                                          º
+ º This menu and the usage is very simple, if you know how to do it.          º
+ º All the flags can be toggled on a per-partition basis, which means you the º
+ º features behind a flag can be used when booting one partition and disabled º
+ º when using another.                                                        º
+ º                                                                            º
+ º To toggle a flag, simply select the corresponding partition and press the  º
+ º letter that represents the flag.                                           º
+ º                                                                            º
+ º 'B' - Bootable                                                             º
+ º        All partitions that got this flag will be listed in the bootmenu.   º
+ º                                                                            º
+ º 'V' - VIBR Protection                                                      º
+ º        Virus-In-Boot-Record Protection. Please see Virus-Detection for     º
+ º        more information.                                                   º
+ º                                                                            º
+ º 'H' - Hide Configuration                                                   º
+ º        This flag defines, if a Hide-Configuration is active for this       º
+ º        partition. If you press the letter, the Hide-Configuration menu     º
+ º        will pop-up and you will be able to define the partitions to hide,  º
+ º        when the selected partition is booted.                              º
+ º                                                                            º
+ º 'L' - Drive-Letter (OS/2 / eCS only)                                       º
+ º        OS/2 / eCS needs the drive-letter of the partition to boot.         º
+ º        You have to enter the drive letter, that OS/2 / eCS assigned it.    º
+ º        It's not possible to detect it. (XFDisk actually guesses)           º
+ º                                                                            º
+ º 'P' - Extended Partition MS Work-Around                                    º
+ º        This flag is only useful, when the global MS-Work-Around switch is  º
+ º        enabled as well. When that's the case and a partition is booted     º
+ º        WITH this flag being active, all extended partitions will be        º
+ º        modified to meet the pseudo-standards by Microsoft. If the          º
+ º        partition got this flag disabled, then all partitions will get      º
+ º        modified to meet the REAL standard.                                 º
+ º        For further information please look below.                          º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º VIRUS DETECTION ³                                                          º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                                          º
+ º AiR-BOOT includes 3 different methods of virii detection.                  º
+ º Almost any boot-virus should be covered with those.                        º
+ º                                                                            º
+ º Normal - This one will compare the MBR in memory with the MBR on drive at  º
+ º           each boot. So normal MBR virii will get found.                   º
+ º                                                                            º
+ º Stealth - This one will detect virii that hide themselves and fake BIOS    º
+ º            HDD access API. Normal detection would fail on those virii.     º
+ º                                                                            º
+ º VIBR - Virus-In-Boot-Record Detection. Requires the global switch AND the  º
+ º         specific partition-flag to be enabled. This one will check the     º
+ º         bootrecord of the selected partition for modifications.            º
+ º         This detection is NASTY and may report false positives.            º
+ º         If a modified boot-record is found, booting will be denied from    º
+ º         that partition. You may reset this check by toggling the V-flag.   º
+ º                                                                            º
+ º MBR Protection is likely the same as 'Virus Protection' in your CMOS.      º
+ º It will capture INT 13h (Low level I/O) and watch for writes to cylinder 0 º
+ º and head 0. This will be regarded as a viral act and aborted. The computer º
+ º will stop and you will see a corresponding message. This option could be   º
+ º incompatible to a 3rd company program, like the option 'Virus Protection'  º
+ º in CMOS is incompatible to AiR-BOOT.                                       º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º EXTENDED PARTITION MS WORK-AROUND ³                                        º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                        º
+ º This 'feature' needed to be implemented, because of Microsofts way of      º
+ º inventing a pseudo-standard that is incompatible with any other OS.        º
+ º                                                                            º
+ º The problem is with the id of extended partitions. The official standard   º
+ º was and is to use '05h'. Now Microsoft "invented" a new id of '0Fh' for    º
+ º extended partitions that occupy space above 8 GB.                          º
+ º                                                                            º
+ º But now many OS won't see ANY logical partitions anymore. So a smart user  º
+ º could try to change it back. This works, but (of course) some MS programs  º
+ º like ScanDisk have problems with that one, so they will GARBLE UP entire   º
+ º partitions.                                                                º
+ º                                                                            º
+ º So we got the actual standard, that will work somehow even with Windows,   º
+ º but sometimes partitions may (!) get destroyed.                            º
+ º Or we use the MS invention, but lose compatibility to some OSes.           º
+ º ...or we use AiR-BOOT to switch between those 2 "standards" on-the-fly.    º
+ º                                                                            º
+ º When the global switch AND the P-flag on the booted partition is enabled,  º
+ º AiR-BOOT will change all extended partitions to be of id '0Fh', so the     º
+ º system will be compatible to MS Windows.                                   º
+ º                                                                            º
+ º On the other hand, if the global switch is enabled, but the P-flag is      º
+ º disabled, AiR-BOOT will change them to the real standard, which means for  º
+ º example DOS will recognize the logical partitions again.                   º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Limitations ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º  If your system fits into one of this categories, do NOT install AiR-BOOT. º
+ º                                                                            º
+ º  - You got an encryption tool in your MBR                                  º
+ º  - You got ANYTHING useful in your MBR                                     º
+ º  - You got more than 30 partitions in total on your system                 º
+ º     (AiR-BOOT's internal partition table is unable to hold more than that, º
+ º      it could be expanded at a later date, but I don't see any reason)     º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+    ÖÄ[ Known Bugs ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º I would call them missing features. There are no known bugs.               º
+ º                                                                            º
+ º  - Linux normal Kernel image format                                        º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

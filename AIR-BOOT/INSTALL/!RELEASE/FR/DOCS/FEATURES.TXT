@@ -1,0 +1,55 @@
+     ÖÄ[ Fonctionnalit‚s ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º AiR-BOOT offre de nombreuses possibilit‚s qui manquent aux autres          º
+ º  gestionnaires d'amor‡age.                                                 º                       º
+ º                                                                            º
+ º  - Menu de d‚marrage en couleurs                                           º
+ º  - Maximum de 30 partitions en tout sur le systŠme                         º
+ º  - Programme de configuration totalement int‚gr‚, g‚r‚ par menus, donnant  º
+ º     de l'aide sur toutes les options disponibles Award-styled              º
+ º  - Plusieurs langues dont l'allemand, le n‚erlandais, le fran‡ais,         º
+ º     l'italien et le russe                                                  º
+ º  - Support de l'alphabet cyrillique (pour le russe)                        º
+ º  - Installation et r‚paration trŠs faciles par disquette ou CD-ROM         º
+ º  - Processus de d‚marrage configurable entiŠrement                         º
+ º  - Configuration possible d'une protection par mot de passe                º
+ º  - EntiŠrement dans secteur d'amor‡age/piste-0 (ne n‚cessite pas de place  º
+ º     r‚elle sur le disque dur)                                              º
+ º  - Protection contre la corruption du secteur d'amo‡age (possibilit‚ de    º
+ º     restaurer le secteur d'amor‡age s'il se corromp)                       º
+ º  - Gestion intelligente des partitions. Pas de remise … z‚ro s'il se passe º
+ º     quelque chose d'anormal, si les partitions ont ‚t‚ boug‚es, les        º
+ º     disques durs chang‚s, etc... (complŠtement disponible seulement pour   º
+ º     les partitions FAT et HPFS)                                            º
+ º  - Support des partitions cach‚es                                          º
+ º  - D‚marrage sur disquette                                                 º
+ º  - Trouve les virii de secteur de boot et d'amor‡age (et peut supprimer    º
+ º     nombre d'entre eux)                                                    º
+ º  - En mode de r‚paration, le CD-ROM ou la disquette AiR-BOOT est capable   º
+ º     de r‚parer AiR-BOOT sans effacer les paramŠtres de configuration       º
+ º  - Protection du secteur d'amor‡age en mode r‚el                           º
+ º  - Support du noyau Linux (depuis des partitions FAT-16), Ligne de         º
+ º     commande Kernel et partition de root automatique, mais configurable    º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º AiR-BOOT a ‚t‚ test‚ avec succŠs sur les systŠmes d'exploitation suivants: º
+ º                                                                            º
+ º  - MS-DOS/DR-DOS/Open-DOS/PC-DOS (2000)                                    º
+ º  - OS/2 Warp3/Warp4/WSeB, ainsi que l'extension MCP et eComStation         º
+ º     (il est mˆme possible de d‚marrer depuis des partitions logiques, donc º
+ º      de ne pas utiliser le gestionnaire d'amor‡age fourni avec OS/2)       º
+ º  - Unix/Linux (avec ou sans LILO)                                          º
+ º  - Windows 95/98/ME (c…d MS-DOS)                                           º
+ º  - Windows NT/2000/XP                                                      º
+ º                                                                            º
+ º AiR-BOOT est compatible avec le LVM, gestionnaire de volumes logiques      º
+ º  disponible pour OS/2, eComStation et certaines variantes de Linux.        º
+ º                                                                            º
+ º AiR-BOOT peut d‚marrer depuis un CD-ROM. Il suffit de cr‚er une disquette  º
+ º  d'amor‡age, de prendre son image et de l'utiliser ensuite pour graver son º
+ º  propre CD-ROM AiR-BOOT.                                                   º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

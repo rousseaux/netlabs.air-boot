@@ -1,0 +1,51 @@
+     ÖÄ[ Features ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º AiR-BOOT bevat heel wat functies die u niet of nauwelijks zal aantreffen   º
+ º in andere programma's van deze aard, zoals:                                º
+ º  - Opstartmenu in kleuren.                                                 º
+ º  - Tot 30 partities instelbaar.                                            º
+ º  - SETUP in "Award" stijl, met hulp voorzien bij elk onderdeel, op te      º
+ º     roepen via de toets F1.                                                º
+ º  - Installatie via zelf aan te laken basisdiskette of CD-Rom.              º
+ º  - Het opstarten kan volledig aan uw wensen sorden aangepast.              º
+ º  - Versleuteling op diverse niveaus via wachtwoord.                        º
+ º  - 100% in het MBR/track-0 (gebruikt verder hoegenaamd geen schijfruimte.  º
+ º  - MBR beveilinging (kan het MBR herstellen indien dit werd beschadigd.    º
+ º  - Intelligente partitie beheersing. Er zullen zich geen ongerechtigdheden º
+ º     voordoen indien partities werden gewijzigd, verplaatst enz...          º
+ º     (enkel volledig functioneel voor FAT en HPFS partities).               º
+ º  - Partities kunnen worden verborgen.                                      º
+ º  - Floppy station in het opstartmenu.                                      º
+ º  - Detectie van stealth virii in het MBR met  de mogelijkheid die te       º
+ º     verwijderen.                                                           º
+ º  - Herinstellen van de setup via de basisdiskette of CD-Rom zonder dat     º
+ º     naar het SETUPmenu dient te worden gegaan (bij beschadiging en/of      º
+ º     wijziging van het MBR).                                                º
+ º  - MBR-beveiliging (Real-Mode).                                            º
+ º  - Toewijzen van de gewenste letter in OS/2.                               º
+ º  - Linux Kernel Support (vanuit FAT-16 partities), Kernel-opdrachtlijn en  º
+ º     automatische cre‰eren van de root-partitie (automatisch en toch confi- º
+ º      gureerbaar).                                                          º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º AiR-BOOT werd met succes getest op de volgende stuursystemen:              º
+ º                                                                            º
+ º  - MS-DOS/DR-DOS/Open-DOS/PC-DOS (2000)                                    º
+ º  - OS/2 Warp3/Warp4/WSeB, en zowel MCP als eComStation                     º
+ º     (it's even possible to boot from logical partitions, so don't use the  º
+ º      supplied OS/2 BootMan).                                               º
+ º  - Unix/Linux (met of zonder  LILO)                                        º
+ º  - Windows 95/98/ME (aka MS-DOS)                                           º
+ º  - Windows NT/2000/XP                                                      º
+ º                                                                            º
+ º AiR-BOOT is compatibel met de LVM (Logical Volume Manager) beschikbaar bij º
+ º  OS/2, eComStation en sommige Linuxvarianten.                              º
+ º                                                                            º
+ º AiR-BOOT kan worden opgestart vanf CD-ROM. U dient eerst de basisdiskette  º
+ º  aan te maken, en dan met "image" ervan naar de CD-RW te branden.          º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+

@@ -1,0 +1,126 @@
+     ÖÄ[ Questions & r‚ponses ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º Q: J'utilise un autre disque dur sur mon ordinateur, tout marchait bien jusqu'… ce qu'un ami  º
+ º     en ait de nouveau besoin, et que je l'enlŠve. Mintenant il lui est impossible de d‚marrer  º
+ º     Que dois-je faire ?                                             º
+ º R: Il y a un problŠme avec la table de partitions. Certaines systŠmes requiŠrenet d'ˆtre sur la º
+ º     seule partition "active", donc AiR-BOOT rend TOUTES les autres inactives º
+ º     Pour pouvoir d‚marrer, vous devez r‚cup‚rer le disque dur, d‚marrer depuis la partition º
+ º     sur laquelle votre ami veut d‚marrer, ‚teindre votre oridnateur, enlever le disque dur º
+ º     et c'est fini...                                  º
+ º                                                                   
+         º
+ º     NOTE: Si votre ami utilisait AiR-BOOT, il n'y aurait pas de problŠme. º
+ º           S'il a juste une partition d‚marrable et ne veut pas le menu, º
+ º           il peut le d‚sactiver. AiR-BOOT utilisera alors sa partition par d‚faut automatiquement º
+ º                                                                            º
+ º Q: Pourquoi forcez-vous l'utilisateur … avoir au moins 62 secteurs par piste sur son disque dur ? º
+ º     J'ai regard‚ votre image-code et ‡a n'en utilise pas la moiti‚...   º
+ º R: J'avais fait une version plus 'compacte' (31 secteurs requis) auparavant, mais j'ai d‚couvert º
+ º     que c'‚tait stupide. Un virus stealth a tu‚ une grande partie de la configuration º
+ º     et ainsi l'utilisateur a d– reconfigurer AiR-BOOT entiŠrement.   º
+ º     Maintenant je sauvegarde la configuration autre part. La plupart des virus devraient laisser º
+ º     intacte la configuration. Note: La disquette AiR-BOOT peut ne r‚parer *que* le code de º
+ º     AiR-BOOT, 
+pour que vous n'ayez pas … reconfigurer AiR-BOOT.  º
+ º     Ins‚rez juste la disquette de AiR-BOOT si vous avez des problŠmes … d‚marrer votre ordinateur. º
+ º     Les parties manquantes de AiR-BOOT seront cherch‚es et r‚par‚es.     º
+ º                                                                            º
+ º Q: Je viens de regarder votre code de MBR et j'ai vu que vousy faisiez des choses louches. Pourquoi ?  º
+ º R: Voici le d‚but du code de MBR depuis la version 0.26b:           º
+ º     CLI (d‚sactive les interruptions)                                              º
+ º     JuMP Somewhere (saute quelque part)                                     º
+ º     JuMP ToAnotherLocation  (saute … un autre endroit)                     º
+ º     STI (r‚active les interruptions)                                               º
+ º                                                                            º
+ º     Maintenant pourquoi: A cause de Microsoft. Ils font encore des leurs dans le MBR    º
+ º    
+           et n'utilisent aucun standard. Pourquoi le feraient-ils... º
+ º               Windaube NT/2000 recherche l'instruction CLI. Je ne sais pas pourquoi. º
+ º               Ce n'est pas un standard d'‚criture MBR.       º
+ º               Si windaube 2000 ne trouve pas ‡a il s'‚nerve.... Les 2 sauts sont l… car º
+ º               … l'offset 2h du MBR il y a la signature AiR-BOOT.   º
+ º               Je n'ai pas voulu changer la d‚tection, donc j'ai aussi inclus le 'A' º
+ º               dansl'instruction JMP. Ainsi il y a un saut … une place sp‚cifique º
+ º               puis un autre pour revenir au vrai d‚part.     º
+ º                                                                            º
+ º    Ceci est n‚cessaire SEULEMENT … cause de Micro$oft. Je ne peux plus le supporter.  º
+ º     Il n'y a pas besoin d'une telle v‚rification. Elle n'est document‚e nulle part  º
+ º     et le CLI est de toutes fa‡ons foireux car on n'a pas besoin de d‚sactiver  º
+ º     des interruptions pour cha
+nger les piles ou autre chose. Tout programmeur d'assembleur  º
+ º     comp‚tent le sait.                                                 º
+ º                                                                            º
+ º Q: H‚, pourquoi avez-vous cod‚ ce logiciel ? 'NT BOOT'/'OS/2 BOOTMAN'/'LILO' sont bien ! º
+ º R: Mouais, certainement. Mais je vais vous dire quelques choses … leur sujet         º
+ º     NT BOOT est de l'arnaque. 100 KOctets pour un gestionnaire d'amo‡age ? Vous ˆtes idiot ? Et º
+ º     de toutes fa‡ons Windows NT doit ˆtre install‚. (ou il faut une partition FAT ?!)           º
+ º     OS/2 BOOTMAN a besoin d'une partition primaire, donc il n'en reste que 3.            º
+ º     LILO est stupide. Tout d'abord, il ne peut pas lancer Linux si Linux n'est pas sur le 1er º
+ º     disque dur (du moins la derniŠre fois que j'ai essay‚). Il charge le noyau via HackIn et je ne peux º
+ º     pas non plus le supporter. Et il n'est pas si ‚vident … installer et configurer. Il faut l'ajuster 
+º
+ º     quand vous ajoutez des nouvelles partitions … votre disque dur, etc...  º
+ º                                                                            º
+ º     La plupart des gestionnaires d'amor‡age n‚cessitent l'installation d'un OS sp‚cifique, et ce n'est º
+ º     pas bon non plus. d'ailleurs: si vous ajoutez une nouvelle partition … un disque contnant Linux,    º
+ º           LILO ne va plus trouver la partition root (haha, bonne chance).  º
+ º           C'est donc ‡a votre gestionnaire d'amor‡age "g‚nial". ouha. AiR-BOOT la trouvera (normalement) º
+ º           automatiquement … la vol‚e et la d‚marrera normalement.     º
+ º                                                                            º
+ º Q: Ohhh mais qu'avez-vous donc contre LILO, c'est tellement bien !                º
+ º R: Rien du tout, jusqu'… ce qu'il m'‚crase presque ma partition de projets. Elle ‚tait en FAT et ce charmant  º
+ º     programme a ‚crit par dessus certaines parties interdites du disque *document‚e
+s*  sans mˆme me º
+ º     donner de message d'avertissement. Je considŠre LILO du mˆme niveau que les produits Mickeysoft. º
+ º     Juste penser qu'ils vont gouverner tout l'ordinateur et pouvoir faire quelque chose. º
+ º     Pendant les premiers tests d'AiR-BOOT, AUCUNE table de partitions n'a ‚t‚ corrompue. º
+ º     Les seuls problŠmes ‚taient des crashs et j'avais donc … restaurer le secteur d'amor‡age principal. º
+ º     Pendant les derniers essais, je n'ai eu aucun problŠme. Et au cas o— il y en aurait, il suffit juste d'ins‚rer º
+ º     la disquette d'AiR-BOOT et hop, plus de problŠme. (Soit dit en passant, j'ai remarqu‚ que º
+ º     Partition Magic 3.x ‚crasait certains secteurs dans le MBR.)  º
+ º                                                                            º
+ º Q: Tant d'options ! Personne n'en a besoin. A mon avis vous perdez votre temps. º
+ º R: OK il y a trop d'options et peut-ˆtre que ‡a ne sert … rien.  º
+ º     Je pense que de nombreux utilisateurs vont utiliser des opt
+ions diff‚rentes, donc qu'elles ont leur place º
+ º     dans AiR-BOOT. Trop d'options, ‡a serait si le programme ‚tait trop lent ou difficile … manipuler, ce que     º
+ º     n'est pas AiR-BOOT, qui occupe peu de place, est simple … configurer... exactement comme votre BIOS. º
+ º     J'ai aussi inclus une VRAIE aide en ligne - peu fr‚quent dans les BIOS. J'ai aussi fait des am‚liorations º
+ º     annexes et amusantes, comme des menus en couleur... Regardez les BIOS de 1989. Ils ‚taient vraiment  º
+ º     laids. Les menus en couleur sont d'une certaine fa‡on plus agr‚ables. Mais je sais, vous ˆtes de ceux qui º
+ º     ont WindowsNT et pensent que c'est le meilleur OS au monde. Vous n'avez jamais test‚ OS/2 ni Unix/Linux. º
+ º     Vous voulez une interface graphique, mais n'aimez pas ces petites fenˆtres en couleurs idiotes.  º
+ º                                                                            º
+ º Q: Je pense que vous avez copi‚ le texte de votre menu de d‚marade depuis le logiciel DocsBoot
+.     º
+ º R: C'est vrai. DocsBoot est bien, mais vous avez … le configurer depuis un ex‚cutable DOS.  º
+ º     Ce n'est pas possible depuis Unix/Linux, ni WinNT ni OS/2. C'est donc trop limit‚, d'autant plus º
+ º     que DocsBoot n'avait pas autant d'options que AiR-BOOT.            º
+ º                                                                            º
+ º Q: En passant, votre SETUP ressemble fortement … celui du mon BIOS Award.               º
+ º R: Et bien, :] non, j'ai modifi‚ la plupart de son interface. La place des menus ‚tait bien faite, º
+ º     de mˆme que les couleurs, donc je les ai utilis‚es (la plupart des utilisateurs n'aimeraient pas º
+ º     avoir deux programmes de configuration diff‚rents). Mais le design des fenˆtres design, leur º
+ º     vitesse d'affichage et l'optimisation sont un petit peu diff‚rents <bg>.        º
+ º                                                                            º
+ º Q: Je travaille pour un fabricant de BIOS et nous aimerions impl‚ment
+er AiR-BOOT dans notre BIOS. º
+ º R: Ce serait bien, et nous cherchons quelque chose comme cela, de fa‡on que AiR-BOOT puisse ˆtre º
+ º     pr‚ex‚cut‚ depuis le BIOS pour qu'aucune installation de WinNT ne vienne le d‚truire.    º
+ º     PriŠre de nous contacter. (Nous avons cod‚ AiR-BOOT de fa‡on … ce que cela soit possible. º
+ º     (Nous aurions besoin d'environ 512 octets de place dans votre BIOS pour le codepossible.)       º
+ º     AiR-BOOT aurait de toutes fa‡ons … ˆtre install‚ sur le disque dur, mais la couche 0 serait º
+ º     dans le BIOS, de telle fa‡on que AiR-BOOT prendait le 1er le contr“le du disque dur et pourrait º
+ º     tester la pr‚sence ‚ventuelle d'un virus, etc...                            º
+ º                                                                            º
+ º Q: Je travaille pour une entreprise qui programme des OS. Nous aimerions aussi impl‚menter AiR-BOOT º
+ º R: Nous pourrions parler d'une version incluse dans votre OS. Mais je ne modifierai JAMAIS AiR-BOOT 
+pour º
+ º     qu'il d‚pende de l'OS. AiR-BOOT a ‚t‚ cod‚ pour pouvoir ˆtre totalement ind‚pendant de tout OS, º
+ º     de telle fa‡on que les version OEM devraient aussi pouvoir lancer d'autres OS.  º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+

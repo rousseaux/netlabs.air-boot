@@ -1,0 +1,49 @@
+     ÖÄ[ Features ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º AiR-BOOT has many, many features that other boot managers are missing.     º
+ º                                                                            º
+ º  - Colored Boot-Menu                                                       º
+ º  - Maximum of 30 partitions (limit means all partitions on system)         º
+ º  - Completly integrated, Award-styled, menu-driven SETUP including real    º
+ º     help to every option                                                   º
+ º  - Foreign versions including German, Dutch, French, Italian and Russian   º
+ º  - Cyrillic support (for russian language)                                 º
+ º  - Very easy Installation/Repair via floppy or CD-ROM                      º
+ º  - Boot-Process completly configurable                                     º
+ º  - Configurable Password protection                                        º
+ º  - 100% in MBR/track-0 (does not need any real space on harddisk)          º
+ º  - "Corrupt-MBR"-Protection (is able to restore MBR, if it gets corrupted) º
+ º  - Intelligent Partition Handling. will not reset or act abnormal, if      º
+ º     partitions are moved, harddisks are changed, etc.                      º
+ º     (only available completely for FAT and HPFS partitions)                º
+ º  - Hiding partitions support                                               º
+ º  - Floppy-Boot                                                             º
+ º  - Finds (Stealth-)MBR and Bootrecord-Virii (and is able to remove most of º
+ º     them)                                                                  º
+ º  - Repair-Mode, AiR-BOOT disc/CD-ROM is able to repair AiR-BOOT without    º
+ º     resetting the configuration                                            º
+ º  - MBR-Protection under Real-Mode                                          º
+ º  - Linux Kernel Support (from FAT-16 partitions), Kernel-Commandline and   º
+ º     automagically, but configurable root-partition                         º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º AiR-BOOT was successfully tested with the following Operating Systems:     º
+ º                                                                            º
+ º  - MS-DOS/DR-DOS/Open-DOS/PC-DOS (2000)                                    º
+ º  - OS/2 Warp3/Warp4/WSeB, as well as the MCP package and eComStation       º
+ º     (it's even possible to boot from logical partitions, so don't use the  º
+ º      supplied OS/2 BootMan)                                                º
+ º  - Unix/Linux (with or without LILO)                                       º
+ º  - Windows 95/98/ME (aka MS-DOS)                                           º
+ º  - Windows NT/2000/XP                                                      º
+ º                                                                            º
+ º AiR-BOOT is compatible to LVM, the Logical Volume Manager available for    º
+ º  OS/2, eComStation and Linux-variants.                                     º
+ º                                                                            º
+ º AiR-BOOT is able to get booted from CD-ROM. Simply generate a floppy disc, º
+ º  get its image and use this to burn your own AiR-BOOT CD-ROM.              º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

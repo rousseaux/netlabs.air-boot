@@ -1,0 +1,52 @@
+     ÖÄ[ Caratteristiche ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º AiR-BOOT ha molte, molte caratteristiche che mancano ad altri boot manager:º
+ º                                                                            º
+ º  - Menu di avvio a colori                                                  º
+ º  - Massimo 30 partizioni (il limite e' riferito al numero totale di        º
+ º     partizioni presenti nel sistema)                                       º
+ º  - Impostazioni completamente integrate in un menu stile Award-BIOS, con   º
+ º     un vero aiuto in linea per ogni opzione                                º
+ º  - Versioni nazionalizzate: Tedesco, Olandese, Francese, Italiano, Russo   º
+ º  - Supporto caratteri cirillici (per la versione in lingua Russa)          º
+ º  - Facile Installazione/Riparazione via Floppy o CD-ROM                    º
+ º  - Procedura di Avvio completamente configurabile                          º
+ º  - Protezione tramite Password configurabile                               º
+ º  - 100% nel MBR (non necessita di spazio reale sull'hard-disk)             º
+ º  - Protezione "MBR-Danneggiato" (ripristina il MBR, se viene danneggiato)  º
+ º  - Gestione Partizioni Intelligente. Non si resetta o agisce in modo       º
+ º     errato in caso le partizioni vengano spostate, gli HD cambiati, etc.   º
+ º     (disponibile completamente solo per partizioni FAT e HPFS)             º
+ º  - Supporto partizioni nascoste                                            º
+ º  - Avvio di Floppy                                                         º
+ º  - Trova virus tipo (Stealth-)MBR e Bootrecord (e riesce a rimuoverne la   º
+ º     maggior parte)                                                         º
+ º  - In Modo Riparazione, il floppy/CD-ROM di AiR-BOOT riesce a riparare     º
+ º     AiR-BOOT senza perdere la configurazione                               º
+ º  - Protezione MBR in Modalita' Reale (Real-Mode)                           º
+ º  - Supporto Kernel Linux (da partizioni FAT-16), parametri Kernel sulla    º
+ º     linea di comando e partizione di root automatica, ma configurabile     º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º AiR-BOOT e' stato testato con successo sui seguenti Sistemi Operativi:     º
+ º                                                                            º
+ º  - MS-DOS/DR-DOS/Open-DOS/PC-DOS (2000)                                    º
+ º  - OS/2 Warp3/Warp4/WSeB, cosi' come la versione MCP ed eComStation        º
+ º     (e' possibile l'avvio da partizioni logiche, quindi non e' necessario  º
+ º      il BootManager fornito con OS/2)                                      º
+ º  - Unix/Linux (con o senza LILO)                                           º
+ º  - Windows 95/98/ME (vedi MS-DOS)                                          º
+ º  - Windows NT/2000/XP                                                      º
+ º                                                                            º
+ º AiR-BOOT e' compatibile con LVM, il Logical Volume Manager disponibile per º
+ º  OS/2, eComStation ed alcune distribuzioni di Linux                        º
+ º                                                                            º
+ º AiR-BOOT si avvia anche da CD-ROM. Basta creare il floppy, prendere        º
+ º  la sua immagine e usarla per masterizzare il proprio CD-ROM di AiR-BOOT.  º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+

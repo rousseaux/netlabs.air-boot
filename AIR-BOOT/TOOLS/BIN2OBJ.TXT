@@ -1,0 +1,76 @@
+ACA BIN2OBJ 1.10b Tutorial
+
+
+The command line parameters for ACA BIN2OBJ is
+
+	BIN2OBJ Name.obj _NAME_DATA_ DATA WORD _Name_ Name.dat
+	^^^^^^^ ^^^^^^^^ ^^^^^^^^^^^ ^^^^ ^^^^ ^^^^^^ ^^^^^^^^
+	   0        1         2        3    4     5      6
+	0:  executable name
+	1:  object file name
+	2:  data segment name
+	3:  class type         "DATA" or "FAR_DATA"
+	4:  segment alignment  "BYTE", "WORD", "PARA", or "PAGE"
+	5:  public name
+	6:  binary data file
+
+None of these parameters could be omit.
+
+
+0.	Executable name.  Of course, you need BIN2OBJ.EXE to run.
+
+1.	Object file name.  Choose a reasonable name for your object
+	file.  Besure add .OBJ extension because BIN2OBJ won't add
+	it for you.
+
+2.	Data segment name.  This is the name for the data segment.
+	It could be anything, but the best choice is to be the same
+	name as the _DATA or _FARDATA if the data segment does not
+	exceed 64K so that these data segment can be packed together
+	by linker.  If there are going to be many files inserted into
+	an executable, it is also a good choice to creat a unique
+	segment name for them.
+
+3.	Class type.  It usually should be "DATA" or "FAR_DATA".  If
+	you want put it at END of the executable, choose other names.
+	Be sure to check the linker map file.
+
+4.	Segment alignment.  This part tells linker how to align your
+	data segment.  either at byte (any where), word   (even place),
+	para (paragraph or 16 byte), or page (256 bytes) boundary.  If
+	you choose the data segment name as _DATA or _FARDATA that are
+	compiler default, this part should be PARA.  If the data segment
+	is to be associated with a segment register with index offset
+	0, then the data segment should also be PARA.  Otherwise, BYTE
+	or WORD doesn't seem to matter much.
+
+5.	Public name.  This is the name of the identifier.  If the
+	identifier is used in C, there should be a underscore '_'
+	character at the beginning.  The actually data type can
+	be defined as any type of pointer.  The data type is not
+	defined here.
+
+6.	Binary data file.  ACA BIN2OBJ treats any data file as binary.
+	So if you just want print a long ascii text file on screen, it
+	should be fine.  But it is better to remove all CR's (carriage
+	returns) in the text file.  See the test file comment to get
+	more informations.
+
+
+Example:
+
+	bin2obj introdoc.obj _RES_DATA DATA BYTE _IntroText test.txt
+	bin2obj intropic.obj _RES_DATA DATA BYTE _IntroPict test.vga
+
+	Linker will automatically pack these object files into one
+	segment.
+	
+	Note the underscores '_' at the beginning of two names at
+	command line.  They are required in C.
+
+	The data type of _IntroText and _IntroPict in C are
+		extern unsigned char IntroText[1];
+		extern unsigned char IntroPict[1];
+	extern unsigned char[1] data type will tell the C compiler
+	that IntroText and IntroPict are arrays of unsigned chars.
+	They can be treated as pointers.

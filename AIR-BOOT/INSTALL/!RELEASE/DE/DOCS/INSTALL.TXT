@@ -1,0 +1,165 @@
+     ÖÄ[ Installation ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º Die Installation kann nur unter DOS oder in einer DOS-Box erfolgen. Sofern º
+ º  Sie Unix/Linux benutzen, mssen Sie zumindest einmal DOS booten.          º
+ º                                                                            º
+ º 1. Sie ben”tigen eine leere, formatierte Floppy. Legen Sie diese Diskette  º
+ º     in Laufwerk A: und starten Sie die Datei AIRBS_xx.COM vom AiR-BOOT     º
+ º     Archiv (xx ist ihr dazugeh”riger Sprachen-Code).                       º
+ º                                                                            º
+ º 2. šberprfen Sie ihr CMOS-Setup. Deaktivieren Sie 'Virus Warning', sofern º
+ º     diese Option verfgbar ist und „ndern Sie die Boot-Sequenz, so dass A: º
+ º     als erstes gelistet wird. Vergessen Sie nicht die nderungen an ihrem  º
+ º     CMOS zu speichern.                                                     º
+ º                                                                            º
+ º 3. Jetzt booten Sie von der Floppy, die Sie in Schritt 1 generiert haben.  º
+ º                                                                            º
+ º 4. AiR-BOOT INSTALL wird nun bernehmen und Sie sollten den Installations- º
+ º     Prozess alleine abschliessen k”nnen.                                   º
+ º                                                                            º
+ º 5. Nachdem INSTALL seine Arbeit getan hat, werden Sie in das eingebaute    º
+ º     Setup gelangen.                                                        º
+ º     NOTIZ: Sie k”nnen sp„ter dieses SETUP durch Drcken von Strg und/oder  º
+ º            Alt beim Hochladen von AiR-BOOT betreten (Anstatt von Strg kann º
+ º            diese Taste auch Ctrl heissen)                                  º
+ º                                                                            º
+ º 6. Nachdem Sie im AiR-BOOT SETUP waren, sollten Sie die CMOS-Boot-Sequenz  º
+ º     auf 'C only' o.„. stellen.                                             º
+ º     NOTIZ: Aktivieren Sie keinesfalls 'Virus Protection'. AiR-BOOT kann    º
+ º            deutlich besser Viren finden und Sie wrden eine BIOS Virus-    º
+ º            Warnung bei jedem Hochstarten erhalten.                         º
+ º                                                                            º
+ º Alles sollte nun zu Ihrer vollen Zufriedenheit funktionieren.              º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º Sofern AiR-BOOT eines Tages nicht mehr starten m”chte z.B. nachdem Sie ein º
+ º  neues Betriebssystem installiert haben, sollten Sie von der AiR-BOOT      º
+ º  Floppy/CD-ROM booten. AiR-BOOT INSTALL wird automatisch den Defekt        º
+ º  feststellen und Ihnen Reparaturm”glichkeiten anbieten.                    º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Erkl„rung ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º PARTITIONS SETUP ³                                                         º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                                         º
+ º Die Bedienung dieses Mens ist sehr einfach, sofern Sie wissen wie.        º
+ º Alle Flaggen k”nnen Pro-Partition verstellt werden d.h. die Funktion, die  º
+ º hinter einer Flagge steckt kann frs Booten von einer Partition aktiviert  º
+ º und beim Booten einer Anderen deaktiviert werden.                          º
+ º                                                                            º
+ º Um ein Flag zu verstellen w„hlen Sie die entsprechende Partition aus und   º
+ º drcken den Buchstaben, der die Flagge repr„sentiert.                      º
+ º                                                                            º
+ º 'B' - Bootbar                                                              º
+ º        Alle Parttionen die diese Flagge besitzen werden im Bootmen        º
+ º        angezeigt.                                                          º
+ º                                                                            º
+ º 'V' - VIBR Schutz                                                          º
+ º        Virus-Im-Boot-Record Schutz. Im Abschnitt "Viren-Erkennung" finden  º
+ º        Sie weitere Informationen.                                          º
+ º                                                                            º
+ º 'H' - Hide Konfiguration                                                   º
+ º        Diese Flagge zeigt an, ob eine Hide-Konfiguration fr diese         º
+ º        Partition aktiv ist. Sofern Sie 'H' drcken, wird Ihnen das Hide-   º
+ º        Konfigurationsmen angezeigt, damit Sie die Partitionen ausw„hlen   º
+ º        k”nnen, die beim Booten dieser Partition versteckt werden sollen.   º
+ º                                                                            º
+ º 'L' - Drive-Letter (OS/2 / eCS only)                                       º
+ º        OS/2 / eCS ben”tigt den zugewiesenen Laufwerksbuchstaben der        º
+ º        Partition um diese zu Booten. Es ist nicht m”glich ihn automatisch  º
+ º        zu finden (XFDisk err„t ihn und manchmal ist er dadurch falsch).    º
+ º                                                                            º
+ º 'P' - Erweiterte Partition MS Work-Around                                  º
+ º        Diese Flagge ist nur dann von Bedeutung, sofern der globale MS-Work º
+ º        Around Schalter auch aktiviert ist. In diesem Falle bewirkt diese   º
+ º        Flagge im aktiven Zustand, dass alle erweiterten Partitionen        º
+ º        entsprechend des Pseudo-Standards von Microsoft modifiziert werden. º
+ º        Sofern es deaktiviert ist, werden alle auf den ECHTEN Standard      º
+ º        gesetzt (Mehr Information zu diesem Thema finden Sie weiter unten). º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º VIRUS ERKENNUNG ³                                                          º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                                          º
+ º AiR-BOOT besitzt 3 verschiede Methoden Viren zu erkennen.                  º
+ º So gut wie alle Boot-Viren drften dadurch erkannt werden.                 º
+ º                                                                            º
+ º Normal - Vergleicht bei jedem Boot den MBR im Speicher mit dem MBR der     º
+ º           Festplatte. Dadurch werden normale MBR Viren gefunden.           º
+ º                                                                            º
+ º Stealth - Findet Viren, die sich durch modifizieren der Festplatten-API    º
+ º            tarnen. Normale Erkennung wrden bei diesen Viren fehlschlagen. º
+ º                                                                            º
+ º VIBR - Virus-Im-Boot-Record Erkennung. Ben”tigt die Aktivierung des        º
+ º         globalen Schalters UND der spezifischen Partitions-Flagge.         º
+ º         šberprft den Boot-Record der jeweiligen Partition auf             º
+ º         Ver„nderungen. Diese Erkennung ist sehr sensibel und kann falschen º
+ º         Alarm ausl”sen. Sofern eine Modifikation festgestellt wird, wird   º
+ º         das Booten von der entsprechenden Partition verweigert. Sie mssen º
+ º         dann die Erkennung zurcksetzen, indem Sie die Flagge aus-und      º
+ º         wieder ein-schalten.                                               º
+ º                                                                            º
+ º MBR Schutz ist in etwa dasselbe wie 'Viren Schutz' im Ihrem BIOS.          º
+ º Er wird INT 13h (Low Level I/O) bernehmen und auf Schreib-Zugriffe nach   º
+ º Zylinder 0, Kopf 0 achten. Dies wird als virulenter Akt angesehen und      º
+ º unterbunden werden. Das System wird einfrieren und Sie werden eine         º
+ º denentsprechende Nachricht sehen. Diese Option kann inkompatibel zu        º
+ º bestimmten Programmen sein.                                                º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º ERWEITERTER PARTITIONS MS WORK-AROUND ³                                    º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                    º
+ º Diese 'Funktion' musste implementiert werden, da Microsoft einen Pseudo-   º
+ º Standard erfunden hat, der inkompatibel zu jedem anderen Betriebssystem    º
+ º ist.                                                                       º
+ º                                                                            º
+ º Das Problem liegt an der ID der erweiterten Partitionen. Der offizielle    º
+ º Standard war und ist '05h'. Microsoft erfand eine neue ID '0Fh' fr alle   º
+ º erweiterten Partitionen, die sich ber 8 GB befinden.                      º
+ º                                                                            º
+ º Dadurch konnten viele Betriebssysteme GAR KEINE logischen Partitionen mehr º
+ º sehen. Der Bentzer kann die ID zurckstellen, allerdings funktionieren    º
+ º dann (natrlich) einige Microsoft-Programme wie ScanDisk nicht mehr und    º
+ º k”nnen gesamte Partitionen zerst”ren.                                      º
+ º                                                                            º
+ º Wir haben jetzt also den eigentlichen Standard, der zwar auch mit Windows  º
+ º funktioniert, aber es k”nnen dadurch Partitionen zerst”rt (!) werden.      º
+ º Oder wir bentzen die MS Erfindung, verlieren dadurch allerdings die       º
+ º Kompatibilit„t zu anderen Betriebssystemen...oder bentzen AiR-BOOT um     º
+ º zwischen diesen beiden "Standards" zu w„hlen.                              º
+ º                                                                            º
+ º Sofern der globale Schalter UND die P-Flagge der zu bootenden Partition    º
+ º aktiviert ist, „ndert AiR-BOOT die ID aller erweiterten Partitionen auf    º
+ º '0Fh' um das System kompatibel zu MS Windows zu machen.                    º
+ º                                                                            º
+ º Sofern der globale Schalter aktiviert, die P-Flagge allerdings deaktiviert º
+ º ist, wird AiR-BOOT die erweiterten Partitionen auf den echten Standard     º
+ º stellen, dadurch wird z.B. DOS wieder logische Partitionen sehen.          º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Limitationen ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º  Sofern Ihr System eine der folgenden Kategorien entspricht, sollten Sie   º
+ º   AiR-BOOT NICHT installieren:                                             º
+ º                                                                            º
+ º  - Ihr System verwendet ein Verschlsslungs-Tool im MBR/Track-0            º
+ º  - Ihr System besitzt IRGENDETWAS wichtiges im MBR/Track-0                 º
+ º  - Ihr System besitzt mehr als 30 Partitionen                              º
+ º     (AiR-BOOTs interne Partitions Tabelle (IPT) kann nicht mehr als diese  º
+ º      Anzahl verwalten)                                                     º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+    ÖÄ[ Bekannte Fehler ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º Dies hier sind fehlende Funktionen. Es gibt keine bekannten Fehler.        º
+ º                                                                            º
+ º  - Linux normales Kernel Image Format                                      º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

@@ -1,0 +1,164 @@
+     ÖÄ[ Installation ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º De BASISDISKETTE moet worden aangemaakt vanuit DOS of een "DOS-Box".       º
+ º  Voor Unix/Linux dient u op te starten vanaf een Dos systeemdiskette.      º
+ º  Daarna bent u dan wel voor eeuwig en altijd bevrijd van Dos. :-)          º
+ º                                                                            º
+ º 1. Stop een lege of geformatteerde diskette in station A:                  º
+ º     start dan AIRBS_DT.COM vanaf een (de) opdrachtregel.                   º
+ º                                                                            º
+ º 2. Herstart uw PC, en ga naar de bios-setup. Schakel "virus-warning" uit,  º
+ º     en stel station A: in als eerste opstartoptie.                         º
+ º     Vergeet niet deze nieuwe instellingen te bewaren.                      º
+ º                                                                            º
+ º 3. U kan aldus van de diskette opgemaakt in stap 1. opstarten.             º
+ º                                                                            º
+ º 4. Het AiR-BOOT installatieprogramma kopieert dan de nodige bits en bytes  º
+ º     naar het MBR. U hoeft hierbij helemaal niets te doen.                  º
+ º                                                                            º
+ º 5. Daarna krijgt U het AiR-BOOT setupmenu op het scherm.                   º
+ º     Opmerking: Bij het opstarten kan u altijd het setup menu bereiken      º
+ º     mits op ctrl of alt te tikken terwijl de AiR-BOOT mededeling op het    º
+ º     scherm komt.                                                           º
+ º                                                                            º
+ º 6. Vanuit het AiR-BOOT setupmenu kan u dan uw opstartopties instellen      º
+ º     naar believen. Tik op F1 voor enige hulp bij de menu-opties.           º
+ º     Opmerking: Schakel de 'Virus Protection' in het bios NIET terug in!    º
+ º     In de eerste plaats doet AiR-BOOT het beter, en u zou bovendien bij    º
+ º     elke nieuwe opstart een valse virus-waarschuwing krijgen.              º
+ º                                                                            º
+ º Goed, alles zou nu perfect moeten werken terwijl uw systeem doelmatig      º
+ º  wordt beschermd tegen virussen in het MBR.                                º
+ º                                                                            º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º                                                                            º
+ º Indien AiR-BOOT niet op het scherm komt nadat een stuursysteem werd        º
+ º ge(her)‹nstalleerd dient u opnieuw op te starten vanaf de BASISDISKETTE.   º
+ º  AiR-BOOT zal dan automatisch vaststellen wat er aan de hand is, en u      º
+ º  voorstellen al dan niet de nodige reparaties aan te brengen.              º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Meer uitleg ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º PARTITIE INDELING ³                                                        º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                                        º
+ º U kan elke bestaande partitie de onderstaande kenmerken toewijzen.         º
+ º Dit kan volledige individueel per partitie; een kenmerk toegewezen aan een º
+ º bepaalde partitie heeft geen enkele invloed op de kenmerken dan de andere  º
+ º partities.                                                                 º
+ º                                                                            º
+ º Om de kenmerken te wijzigen en/of aan te passen, selecteer de partitie     º
+ º en tik op de overeenkomstige letter.                                       º
+ º                                                                            º
+ º 'O' - Opstartbaar                                                          º
+ º        Partities met dit kenmerk worden steeds getoond in het AiR-BOOT     º
+ º        opstartmenu.                                                        º
+ º                                                                            º
+ º 'D' - VIBR bescherming                                                     º
+ º        Bescherming tegen virussen in het MBR. Meer hierover onder          º
+ º        "Virus-Detectie".                                                   º
+ º                                                                            º
+ º 'V' - Verbergen                                                            º
+ º        Maakt al dan niet de verdwijntrucje voor de partitie actief.        º
+ º        partition. Wanneer deze optie actief is wordt de partitie niet in   º
+ º        het AiR-BOOT opstartmenu getoond.                                   º
+ º                                                                            º
+ º                                                                            º
+ º 'L' - Stationsaanwijzing (enkel voor OS/2 en / eCS)                        º
+ º        Hiermede kan u de letter toewijzen waarvan OS/2 of eCS dient op te  º
+ º        starten. Er is hiervoor geen autodetectie voorzien. U moet dus op   º
+ º        voorhand weten welke letter dient toegewezen te worden.             º
+ º                                                                            º
+ º                                                                            º
+ º 'P' - Extended Partition MS Work-Around                                    º
+ º        Enkel nuttig indien  "MS-Hack" ook werd ingeschakeld in "Nog meer   º
+ º        opties". Zijn deze beide opties ingeschakeld, dan worden ALLE uit-  º
+ º        gebreide partities aangepast om tegemoet te komen aan de Microsoft  º
+ º        eigenzinnige specificaties. Indien dit kenmerk wordt uitgeschakeld  º
+ º        dan wordt alles terug op de normale waarden ingesteld.              º
+ º        Voor meer hierover zie verder.                                      º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º VIRUS DETECTIE    ³                                                        º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                                        º
+ º AiR-BOOT maakt gebruik van  3 verschillende methodes.                      º
+ º Vrijwel alle MBR visussen kunnen hiermede worden uitgeschakeld.            º
+ º                                                                            º
+ º Normaal - Vergelijkt de MBR in het geheugen met de MBR van de partitie     º
+ º           tijdens het opstarten. Goed genoeg voor "normale" MBR virii.     º
+ º                                                                            º
+ º Stealth - Detecteert virii die zichzelf verbergen en het BIOS  HDD access  º
+ º           API vervalsen. Waar de "normale" detectie zou tekortschieten.    º
+ º                                                                            º
+ º VIBR - Detectie van MBR Virussen. Dient actief te worden ingesteld zowel   º
+ º         in de "Geavanceerde opties" als de "Partitie Indeling".            º
+ º         Hierbij wordt het MBR van de gekozen partities op wijzigingen      º
+ º         onderzocht. Een moeilijke klus, en het kan zijn dat u valse virus- º
+ º         meldingen krijgt. Wordt een gewijzigd MBR aangetroffen, dan wordt  º
+ º         het opstarten daarvan onmogelijk gemaakt. U kan dan eventueel      º
+ º         terug naar "normaal" door de "V"-optie uit te zetten.              º
+ º                                                                            º
+ º MBR bescherming is nagenoeg hetzelfde als de 'Virus Protection' van het    º
+ º bios van uw PC. INT 13h (Low level I/O) wordt aangeroepen en er wordt      º
+ º gewaakt op schrijven naar cylinder 0 en "head" 0.                          º
+ º Een dergelijk "schrijven naar" wordt dan gezien als een virale aanval, de  º
+ º actie wordt afgebroken en u krijgt meteen het corresponderende bericht te  º
+ º zien. Programma's voor MBR virii detectie zijn steeds incompatibel met el- º
+ º kaar, vandaar dat U de virus detectie in uw bios moet uitzetten.           º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º EXTENDED PARTITION MS WORK-AROUND ³                                        º
+ ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ                                        º
+ º Deze 'functie' diende te worden toegevoegd vanwege de eigenzinnige manier  º
+ º van werken van Microsoft.                                                  º
+ º                                                                            º
+ º Het probleem is de identificatie van de uitgebreide partities. Vroeger     º
+ º werd enkel en alleen '05h' gebruikt hiervoor. Voor uitgbreide partities    º
+ º boven de 8 GB voerde Microsoft een nieuw ID in: '0Fh'.                     º
+ º                                                                            º
+ º Echter, hierdoor kunnen andere systemen geen enkele logische partitie meer º
+ º zien. Een handige gebruiker kan dat terugzetten op "05h", maar de neven-   º
+ º werking hierbij is dat MS programma's zoals ScanDisk dan heelder partities º
+ º om zeep kunnen helpen.                                                     º
+ º                                                                            º
+ º Conclusie: ofwel hebben we een werkend iets, waarbij echter heelder par-   º
+ º tities kunnen worden vernietigd.                                           º
+ º Ofwel leggen we ons neer bij de MS creatie, en kunnen we andere systemen   º
+ º beter vergeten...                                                          º
+ º ...ofwel gebruiken we AiR-BOOT dat ons toelaat zonder probleem van het ene º
+ º naar het andere over te schakelen.                                         º
+ º                                                                            º
+ º Wordt deze optie dus in "Partitie-indeling" EN "Nog meer opties" actief    º
+ º gemaakt, dan worden alle uitgebreide partities ingesteld op '0Fh', zodat   º
+ º er met MS Windows geen problemen meer kunnen zijn.                         º
+ º                                                                            º
+ º Anderzijds, indien deze optie niet meer actief is in beide menu's tege-    º
+ º lijkertijd, dan wordt alles terug op '05h' ingesteld, zodat bijvoorbeeld   º
+ º DOS opnieuw de logische partities zal kunnen zien.                         º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ Beperkingen ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º  U kan AiR-BOOT niet installeren indien:                                   º
+ º                                                                            º
+ º  - Er zich in het MBR een versleutelingsprogramma bevindt.                 º
+ º  - Er zich belangrijke gegevens en/of programma's in het MBR bevinden.     º
+ º  - Uw PC meer dan 30 partities bevat.                                      º
+ º     (AiR-BOOTs interne partitietabel kan nu niet meer aan; zou kunnen      º
+ º      worden uitgebreid, maar het sop lijkt nu de kool niet waard)          º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+    ÖÄ[ Gekende hemiptera]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º  Geen gekende bugs tot nog toe. Wel ontbrekende functies.                  º
+ º                                                                            º
+ º  - Linux normal Kernel image format                                        º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

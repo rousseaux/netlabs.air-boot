@@ -1,0 +1,148 @@
+     ÖÄ[ Domande & Risposte ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º D: Ho usato un disco aggiuntivo sul mio computer e tutto era a posto, ma   º
+ º     un amico me lo ha chiesto indietro, percio' l'ho rimosso. Ora lui      º
+ º     non riesce ad avviare nulla. Cosa posso fare?                          º
+ º R: E' un problema con la tabella delle partizioni. Alcuni sistemi          º
+ º     operativi richiedono di risiedere nell'unica partizione "attiva",      º
+ º     quindi AiR-BOOT rimuove il settaggio "attiva" da tutte le partizioni   º
+ º     TRANNE che per quella che sara' avviata. Per riuscire ad avviare       º
+ º     nuovamente dal disco, dovete riottenere l'hard-disk, avviare dalla     º
+ º     partizione dalla quale il vostro amico vuole avviare, spegnere il      º
+ º     computer, rimuovere l'hard-disk e il gioco e' fatto.                   º
+ º                                                                            º
+ º     NOTA: se il vostro amico usasse AiR-BOOT, questo problema non si       º
+ º           porrebbe. Se ha solo una partizione avviabile e non vuole il     º
+ º           menu, puo' disattivarlo. AiR-BOOT usera' automaticamente la      º
+ º           partizione predefinita.                                          º
+ º                                                                            º
+ º D: Perche' l'utente e' obbligato ad avere almeno 62 settori per traccia    º
+ º     nel suo harddisk. ho controllato la tua immagine del codice e non ne   º
+ º     usa neppure la meta'.                                                  º
+ º R: Dapprima ne ho fatto una versione piu' 'compressa' (necessitava di soli º
+ º     31 settori ), ma ho scoperto che era una stupidaggine. Se un virus     º
+ º     stealth avesse distrutto parte della configurazione, l'utente avrebbe  º
+ º     dovuto rifare completamente l'installazione di AiR-BOOT.               º
+ º     Attualmente invece la configurazione viene salvata in una diversa      º
+ º     posizione. La maggior parte dei virus non dovrebbero corrompere la     º
+ º     configurazione. NOTA: il  disco di AiR-BOOT riparera' *solo* il codice º
+ º     di AiR-BOOT, in modo che non e' necessario riconfigurare AiR-BOOT.     º
+ º     Basta inserire il disco di AiR-BOOT in caso di problemi nell'avvio del º
+ º     computer. Egli cerchera' e riparera' le parti danneggiate di AiR-BOOT. º
+ º                                                                            º
+ º D: Ho dato un'occhiata al tuo codice nel MBR e ho visto che stai facendo   º
+ º     cose un po' strane. Perche'?                                           º
+ º R: Questo e' il codice di avvio nel MBR a partire dalla verisone 0.26b:    º
+ º     CLI (disabilita gli Interrupts)                                        º
+ º     JuMP DaQualcheParte                                                    º
+ º     JuMP DaUnAltraParte                                                    º
+ º     STI (abilita gli Interrupts)                                           º
+ º                                                                            º
+ º     Perche': Colpa di Microsoft. Nel MBR c'e' anche un bel giochetto.      º
+ º               Loro non usano nessuno standard. Perche' dovrebbero.         º
+ º               Windoze NT/2000 controlla la presenza dell'istruzione CLI.   º
+ º               Non so il perche'. Non e' uno standard di scrittura del MBR. º
+ º               Se non si trova, Windoze 2000 s'arrabbia. I due salti sono   º
+ º               perche' all'offset 2h del MBR c'e' la signature di AiR-BOOT. º
+ º               Non voglio cambiare il riconoscimento, cosi' ho fatto la     º
+ º               'A' come parte dell'istruzione JMP. Il tutto salta ad uno    º
+ º               specifico indirizzo e deve saltare poi al vero inizio.       º
+ º                                                                            º
+ º    Tutto questo ha dovuto essere fatto PROPRIO a causa di Microsoft. Non   º
+ º     puo' essere tollerabile. Non c'e' bisogno di tale controllo. Non e'    º
+ º     documentato da nessuna parte e CLI e' comunque una stupidata, perche'  º
+ º     non e' necessario disabilitare gli interrupts per cambiare lo stack o  º
+ º     qualcos'altro. Qualsiasi programmatore di Assembly esperto lo sa.      º
+ º                                                                            º
+ º D: Hey, perche' hai creato cio'? 'NT BOOT'/'OS/2 BOOTMAN'/'LILO' sono      º
+ º     ottimi                                                                 º
+ º R: Certamente. Diciamo qualcosa al riguardo.                               º
+ º     NT BOOT e' una schifezza.. 100 KBytes per un BOOTMANAGER? Siamo pazzi? º
+ º     E oltretutto richiede Windows NT installato. (o una partizione FAT?!)  º
+ º     OS/2 BOOTMAN richiede una partizione primaria, cosi' ne rimangono      º
+ º     disponibili solo tre.                                                  º
+ º     LILO e' stupido. Prima di tutto non riesce a caricare Linux, se Linux  º
+ º     non risiede nel primo  harddisk (almeno l'ultima volta, come ho        º
+ º     provato). Carica il Kernel Linux tramite HackIn, e anche questo non    º
+ º     riesco a sopportarlo. E non e' cosi' facile da installare e            º
+ º     configurare. Deve essere riconfigurato tutte le volte che si           º
+ º     aggiungono nuove partizioni all'harddisk,. etc. etc. etc.              º
+ º                                                                            º
+ º     La maggior parte dei bootmanager necessitano uno specifico S.O. e cio' º
+ º     non e' molto conveniente. Tra l'altro: se aggiungete una nuova         º
+ º           partizione in un drive contenete Linux, LILO non trovera' piu'   º
+ º           la partizione di root (haha, bella roba). Questo e' il vostro    º
+ º           "migliore" boot-manager. Phew. AiR-BOOT la trova al volo         º
+ º           (generalmente) in modo automatico e avvia come sempre.           º
+ º                                                                            º
+ º D: ehi, amico, cos'hai contro LILO. E' taaaanto bello.                     º
+ º R: Bene, non avevo nulla contro di lui, fino a che non mi ha quasi         º
+ º     cancellato la partizione con i miei progetti. era una FAT e questo     º
+ º     piccolo criminale ha sovrascritto alcuni descrittori interni *come     º
+ º     documentato* senza neppure darmi un messaggio di avvertimento.         º
+ º     Posso paragonare LILO allo stesso livello dei prodotti Mickeysoft.     º
+ º     Pensano di dettare legge sull'intero computer e di potergli fare       º
+ º     qualsiasi cosa. Durante l'alpha testing di AiR-BOOT, non ha MAI        º
+ º     danneggiato nessuna tabella delle partizioni. gli unici problemi sono  º
+ º     stati dei crash, che hanno richiesto il ripristino del MBR. Durante    º
+ º     gli ultimi beta test, non ha avuto nessun problema. E se ce n'erano,   º
+ º     bastava inserire il disco di AiR-BOOT e wups, il problema spariva.     º
+ º     (per inciso: e' il modo in cui ho scoperto che Partition Magic 3.x     º
+ º     sovrascriveva alcuni settori nel MBR).                                 º
+ º                                                                            º
+ º D: Quante opzioni, nessuno ne avra' mai bisogno. Penso che tu abbia        º
+ º     sprecato il tuo tempo.                                                 º
+ º R: Okay, bene, magari ci sono troppe opzioni e magari e' una pazzia.       º
+ º     Penso che diversi utenti useranno diverse opzioni, quindi vanno bene   º
+ º     come sono. Troppe opzioni possono esserci se il programma va troppo    º
+ º     lento o se la loro gestione diventa complicata, ma non per AiR-BOOT.   º
+ º     E' piccolo come dimensioni e facile da configurare... proprio come il  º
+ º     vostro BIOS. Ed e' incluso anche un aiuto in linea VERO. Non come      º
+ º     quelli della maggior parte dei BIOS. Ho inserito anche cose carine,    º
+ º     come i menu colorati... guardate i BIOS a partire dal 1989. Erano      º
+ º     veramente orrendi. I menu colorati sono molto piu' piacevoli.          º
+ º     Ma lo so, voi avete WindowsNT, che pensate sia il migliore S.O del     º
+ º     mondo. Non avete mai provato OS/2 e neppure Unix/Linux. Volete una     º
+ º     interfaccia grafica, ma odiate quelle finestre stupidamente colorate.  º
+ º                                                                            º
+ º D: Credo che tu abbia copiato il testo del menu di avvio da DocsBoot.      º
+ º R: E' vero. DocsBoot e' interessante, ma bisogna configurarlo mediante un  º
+ º     programma DOS. Questo non puo' essere possibile in Unix/Linux, e       º
+ º     neppure con WinNT o OS/2. quindi e' da escludere. Inoltre non ha molte º
+ º     delle opzioni che invece AiR-BOOT ha.                                  º
+ º                                                                            º
+ º D: Dopotutto, il menu di CONFIGURAZIONE assomiglia molto al mio BIOS SETUP º
+ º     della Award.                                                           º
+ º R: Beh, :] non proprio, ho modificato la maggior parte del suo design.     º
+ º     Il posizionamento dei menu era fatto bene, lo stesso per i colori,     º
+ º     quindi li ho usati anch'io (alla maggior parte degli utenti non piace  º
+ º      avere due setup differenti). Ma i motivi delle finestre, la           º
+ º      velocita' di presentazione sullo schermo e l'ottimizzazione sono un   º
+ º      po' differenti <bg>.                                                  º
+ º                                                                            º
+ º Q: Sono il rappresentante di un costruttore di BIOS, vorrei implementare   º
+ º      AiR-BOOT nei nostri BIOS.                                             º
+ º A: Sarebbe ottimo, pensavo proprio ad un utilizzo come questo, in modo che º
+ º     essendo pre-eseguito da BIOS, nessuna installazione di WinNT potrebbe  º
+ º     farlo fuori.                                                           º
+ º     Contattateci. (Abbiamo programmato AiR-BOOT in modo che questo possa   º
+ º     essere possibile. Abbiamo bisogno di circa 512 byte di spazio codice   º
+ º     nel vostro BIOS).                                                      º
+ º     AiR-BOOT potrebbe aver bisogno di essere installato comunque           º
+ º     nell'harddisk, ma il livello 0 del codice sarebbe nel BIOS, quindi     º
+ º     AiR-BOOT avrebbe il diritto di accedere per primo all'harddisk e       º
+ º     potrebbe allora controllare la presenza di virus, etc.                 º
+ º                                                                            º
+ º Q: Sono il rappresentante di una Azienda software produttrice di S.O.      º
+ º     Ci piacerebbe incorporare anche il vostro AiR-BOOT.                    º
+ º A: Possiamo trattare di prodotti venduti assieme (in bundle). Ma AiR-BOOT  º
+ º     NON VERRA' MAI modificato in modo da essere dipendente da un S.O..     º
+ º     AiR-BOOT e' stato creato per essere totalmente indipendente da ogni    º
+ º     S.O., quindi le versioni OEM versions potranno comunque avviare altri  º
+ º     S.O. come adesso.                                                      º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+
