@@ -44,7 +44,7 @@ VideoIO_Page2               equ     0BA00h
 VideoIO_Page4               equ     0BC00h
 VideoIO_FXSegment           equ     0A000h
 
-Include ..\..\global\asm.inc\stdmacro.inc
+Include ..\..\..\asm.inc\stdmacro.inc
 Include ..\INSTALL\GLOBAL.ASM\airboot.inc
 
 TextChar_WinLineRight       equ       0C4h ; 'Ä'
