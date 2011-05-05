@@ -8,6 +8,11 @@
  º warranty for bug-free operation, fitness for a particular purpose or the   º
  º appropriate behaviour of the program.                                      º
  º                                                                            º
+ º This software may not be used in any way by US government. This means it   º
+ º  may not be used on any US government/military computers in any case. It   º
+ º  also means that if you are working for US government in any way, then you º
+ º  are not allowed to use it as well.                                        º
+ º                                                                            º
  º THE SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED      º
  º WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF       º
  º MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS   º
@@ -25,23 +30,11 @@
  º made. Exception to the last rule: It may be included on freeware/shareware º
  º collections on CD-ROM, as well as on magazine cover CD-ROMs.               º
  º                                                                            º
- º The sourcecode is released via www.netlabs.org CVS *ONLY*.                 º
- º  You MUST NOT upload it to other servers nor republish it in any way.      º
- º  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.           º
- º  It's (c) Copyright 1998-2003 by Martin Kiewitz.                           º
- º  You may recompile the source and do *PRIVATE* modifications, but please   º
- º  keep in mind that modifying this code needs at least *some* assembly      º
- º  skill. If you mess up your system, because you needed to hack your way    º
- º  through, don't blame me. Releasing a customized version of AiR-BOOT,      º
- º  selling it in any form or reusing parts of this source is *PROHIBITED*.   º
- º  Ask me, if you have some idea about new functionality *before* developing º
- º  the code, otherwise I will definitely reject it. Also please accept, that º
- º  I have some basic design rules on AiR-BOOT and I will maintain them at    º
- º  all costs, so this won't get another GRUB.                                º
- º                                                                            º
  º All trademarks mentioned anywhere around here are property of their owners º
  º and the like... This means e.g. "Microsoft Windows (9x/NT/2000/XP/YP/ZP",  º
  º "Microsoft", "bugfix" and "exploit" are trademarks of Microsoft Corp.      º
+ º Also "killing people for oil" and "torturing for freedom" are trademarks   º
+ º of american government.                                                    º
  º                                                                            º
  ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
      ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

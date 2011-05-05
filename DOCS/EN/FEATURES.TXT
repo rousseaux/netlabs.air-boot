@@ -24,8 +24,7 @@
  º  - Repair-Mode, AiR-BOOT disc/CD-ROM is able to repair AiR-BOOT without    º
  º     resetting the configuration                                            º
  º  - MBR-Protection under Real-Mode                                          º
- º  - Linux Kernel Support (from FAT-16 partitions), Kernel-Commandline and   º
- º     automagically, but configurable root-partition                         º
+ º  - IBM OS/2 / eCS LVM Support                                              º
  º                                                                            º
  ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
  º                                                                            º
@@ -41,7 +40,7 @@
  º  - Windows NT/2000/XP                                                      º
  º                                                                            º
  º AiR-BOOT is compatible to LVM, the Logical Volume Manager available for    º
- º  OS/2, eComStation and Linux-variants.                                     º
+ º  OS/2 and eComStation.                                                     º
  º                                                                            º
  º AiR-BOOT is able to get booted from CD-ROM. Simply generate a floppy disc, º
  º  get its image and use this to burn your own AiR-BOOT CD-ROM.              º

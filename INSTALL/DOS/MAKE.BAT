@@ -1,0 +1,21 @@
+@echo off
+rem Do actual build...
+call ..\..\env\dos.bat
+%assembler% airboot.asm
+if errorlevel 1 goto Failed
+%linker% airboot.obj >nul
+if errorlevel 1 goto Failed
+%exe2bin% airboot.exe airboot.com >nul
+if errorlevel 1 goto Failed
+copy airboot.com ..\..\RELEASE\DOS\airboot.com
+
+rem Cleanup
+del airboot.com
+del airboot.exe
+del airboot.obj
+goto ExitMe
+
+:Failed
+echo Errorlevel not 0, make failed
+:ExitMe
+pause

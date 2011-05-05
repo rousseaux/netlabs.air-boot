@@ -7,8 +7,7 @@
  º  l'horrible DOS :)                                                         º
  º                                                                            º
  º 1. Prenez une disquette vierge formatt‚e. Mettez la dans votre lecteur A:  º
- º    et d‚marrez le fichier AIRBS_xx.EXE de l'archive AiR-BOOT (o— xx est    º
- º    votre code de langue).                                                  º
+ º    et d‚marrez le fichier MAKEDISK.COM de l'archive AiR-BOOT.              º
  º                                                                            º
  º 2. V‚rifiez votre r‚glage CMOS (dans le bios). Des‚lectionnez 'Virus       º
  º     Warning', si cette option est disponible, et changez la s‚quence de    º

@@ -1,3 +1,20 @@
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                                          AiR-BOOT SETUP / ALL SETUP MENUS
 ; v001 - Italiano - di Stefano Gualtieri
@@ -27,6 +44,7 @@ TXT_SETUP_LetterNo             equ 'N'
 
 ; Basic Options - Items - Max Length: 23
 ;----------------------------------|---------------------|------------------
+TXT_SETUP_DefaultSelection     db 'Selezione Standard', 0
 TXT_SETUP_DefaultPart          db 'Partizione Predefinita', 0
 TXT_SETUP_TimedBoot            db 'Avvio Temporizzato', 0
 TXT_SETUP_TimedBootDelay       db 'Tempo Avvio Temp. (sec)', 0
@@ -57,13 +75,15 @@ TXT_SETUP_ContinueBIOSboot     db 'Continua Avvio dal BIOS', 0
 
 ; Extended Options - Items - Max Length: 23
 ;----------------------------------|---------------------|------------------
-TXT_SETUP_LinuxKernelPart      db 'Partiz. kernel Linux', 0
-TXT_SETUP_LinuxDefaultKernel   db 'Kernel Linux predef.', 0
-TXT_SETUP_LinuxRootPart        db 'Partizione Root Linux', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_LinuxKernelPart      db 'Partiz. kernel Linux', 0
+;TXT_SETUP_LinuxDefaultKernel   db 'Kernel Linux predef.', 0
+;TXT_SETUP_LinuxRootPart        db 'Partizione Root Linux', 0
+; This here may be larger than 23 chars...
+;TXT_SETUP_DefLinuxCmd          db 'DEFINIRE LINEA DI COMANDO LINUX', 0
+TXT_SETUP_IgnoreLVM            db 'Ignorare LVM info.', 0
 TXT_SETUP_ForceLBAUsage        db 'Forza uso LBA del BIOS', 0
 TXT_SETUP_ExtPartMShack        db 'Est-Part MS Workaround', 0
-; This here may be larger than 23 chars...
-TXT_SETUP_DefLinuxCmd          db 'DEFINIRE LINEA DI COMANDO LINUX', 0
 
 ; DYNAMIC LENGTH, maximum 11 chars excluding ending zero
 ;----------------------------------|---------|------------------------------
@@ -71,7 +91,8 @@ TXT_SETUP_MAGIC_Enabled        db 'Attivato', 0
 TXT_SETUP_MAGIC_Disabled       db 'Disattivato', 0
 TXT_SETUP_MAGIC_Detailed       db 'Dettagli', 0
 TXT_SETUP_MAGIC_NoBootable     db 'No Avviab.', 0
-TXT_SETUP_MAGIC_NoLinux        db 'No Linux', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_MAGIC_NoLinux        db 'No Linux', 0
 TXT_SETUP_MAGIC_DoNothing      db 'Nessuna Az.', 0
 TXT_SETUP_MAGIC_ResetTime      db 'Reset Timer', 0
 TXT_SETUP_MAGIC_StopTime       db 'Ferma Timer', 0
@@ -159,10 +180,8 @@ TXT_SETUPHELP_HideSetup:       db 'Definisce lo stato', 0
 
 ; Basic Options - Help
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_DefaultPart      db 'Cambia la partizione', 0
-                               db 'predefinita usata', 0
-                               db 'nell''Avvio', 0
-                               db 'Temporizzato', 0
+TXT_SETUPHELP_DefaultSelection db 'Cambia la selezione', 0
+                               db 'standard', 0
                                db 0
 TXT_SETUPHELP_TimedBoot        db 'AiR-BOOT procede', 0
                                db 'automaticamente dopo', 0
@@ -274,15 +293,25 @@ TXT_SETUPHELP_ContinueBIOSboot db 'Restituisce il', 0
 
 ; Extended Options - Help
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_LinuxKernelPart  db 'Partizione FAT-16', 0
-                               db 'contenente i vari', 0
-                               db 'kernels di Linux', 0
-                               db 0
-TXT_SETUPHELP_LinuxDefaultKrnl db 'Definisce il nome del', 0
-                               db 'kernel predefinito', 0
-                               db 0
-TXT_SETUPHELP_LinuxRootPart    db 'Cambia la partizione', 0
-                               db 'root di Linux', 0
+; [Linux support removed since v1.02]
+;TXT_SETUPHELP_LinuxKernelPart  db 'Partizione FAT-16', 0
+;                               db 'contenente i vari', 0
+;                               db 'kernels di Linux', 0
+;                               db 0
+;TXT_SETUPHELP_LinuxDefaultKrnl db 'Definisce il nome del', 0
+;                               db 'kernel predefinito', 0
+;                               db 0
+;TXT_SETUPHELP_LinuxRootPart    db 'Cambia la partizione', 0
+;                               db 'root di Linux', 0
+;                               db 0
+;TXT_SETUPHELP_DefLinuxCmd:     db 'Definisce la linea di', 0
+;                               db 'comando per Linux, se', 0
+;                               db 'disponibile', 0
+;                               db 0
+;----------------------------------|--------------------|-------------------
+TXT_SETUPHELP_IgnoreLVM        db 'Se attivato AiR-BOOT', 0
+                               db 'non cerca neanche LVM', 0
+                               db 'informazione.', 0
                                db 0
 TXT_SETUPHELP_ForceLBAUsage    db 'Forza l''uso delle API', 0
                                db 'LBA del BIOS invece', 0
@@ -294,10 +323,6 @@ TXT_SETUPHELP_ExtPartMShack    db 'Abilita il cambiamento', 0
                                db 'estesa, da "type id"', 0
                                db 'standard a tipo MS', 0
                                db '(definito dal P-flag)', 0
-                               db 0
-TXT_SETUPHELP_DefLinuxCmd:     db 'Definisce la linea di', 0
-                               db 'comando per Linux, se', 0
-                               db 'disponibile', 0
                                db 0
 
 ; Maximum 26 chars (should not be reached)
@@ -326,9 +351,10 @@ TXT_SETUP_AreYouSure2          db '(S/N)', 0
 
 ; Maximum 60 chars (should not be reached)
 ;----------------------------------|----------------------------------------------------------|
-TXT_SETUP_EnterLinuxCmdLine    db 'Inserire/modificare la linea di comando per Linux:', 0
-TXT_SETUP_NoLinuxInstalled     db 'Linux non installato nel sistema', 0
-TXT_SETUP_NoLDLpartition       db 'Partizione selezionata non HPFS/FAT16', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_EnterLinuxCmdLine    db 'Inserire/modificare la linea di comando per Linux:', 0
+;TXT_SETUP_NoLinuxInstalled     db 'Linux non installato nel sistema', 0
+TXT_SETUP_NoLDLpartition       db 'Partizione selezionata non HPFS/FAT16/JFS', 0
 
 ; Maximum 34 chars (should not be reached)
 ;----------------------------------|--------------------------------|-------
@@ -344,11 +370,9 @@ TXT_SETUP_DriveLetter          db 'Lettera Partizione', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'Premere C a Z', 0
 
-IFNDEF ReleaseCommercial
-   ; Colors for special words hard-coded. Keep all 0s.
-   TXT_SETUP_LowerMessage      db 'Programma ',0,'gratuito',0,' per uso privato non commerciale.',0
-                               db 'Proibita ',0,'ASSOLUTAMENTE',0,' distribuzione o uso di AiR-BOOT in ',0,'-OGNI-',0,' modo,',0
-                               db 'in caso di pagamento del prodotto o del servizio fornito con esso.',0
-                               db 'Se si vuole usare AiR-BOOT secondo ',0,'altre condizioni',0,', ',0,'preinstallarlo',0,' o ',0
-                               db 'distribuirlo',0,' , contattatemi via e-mail: ',0,'kiewitz@netlabs.org',0,' !',0
-ENDIF
+; Colors for special words hard-coded. Keep all 0s.
+;TXT_SETUP_LowerMessage         db 'Programma ',0,'gratuito',0,' per uso privato non commerciale.',0
+;                               db 'Proibita ',0,'ASSOLUTAMENTE',0,' distribuzione o uso di AiR-BOOT in ',0,'-OGNI-',0,' modo,',0
+;                               db 'in caso di pagamento del prodotto o del servizio fornito con esso.',0
+;                               db 'Se si vuole usare AiR-BOOT secondo ',0,'altre condizioni',0,', ',0,'preinstallarlo',0,' o ',0
+;                               db 'distribuirlo',0,' , contattatemi via e-mail: ',0,'kiewitz@netlabs.org',0,' !',0

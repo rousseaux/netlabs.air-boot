@@ -1,25 +1,13 @@
 
-  ù Ä ÄÄÄÄÍÍ = Ä  ù  Ä = ÍÍÄÄÄÄ Ä ù
-  ³                               ³
-     ÜÛÛÛÛÛÛÛÜ   ÜÛÜ  ÜÛÛÛÛÛÛÛÛÜ          ú  úÄÄÄÍÄÄÍÄÍÍÄÄÍÍÍÍÄÍÍÍÍÍÍÍÍÍÎÄ
-  ³ ÛÛÛÛßßßÛÛÛÛ ÛÛÛÛÛ ÛÛÛß   ßÛÛÛ ³            AiR ON-Line Software     º
-  º ÛÛÛÛÜÜÜÛÛÛÛ ÛÛÛÛÛ ÛÛÛÜ   ÜÛÛÛ º      ú ÄÄÄÄÍÄÍÍÄÄÍÍÍÍÄÍÍÍÍÍÍÍÍÄÍÍÍÍÍÎÄ
-  º ÛÛÛÛÛÛÛÛÛÛÛ ÛÛÛÛÛ ÛÛÛÛÛÛÛÛÛß  º                                     º
-  º ÛÛÛÛ   ÛÛÛÛ ÛÛÛÛÛ ÛÛÛÛ ßÛÛÛÛÜ º     ³                               º
-  ³ ßÛÛß   ßÛÛß  ßÛß  ßÛÛß   ßÛÛß ³     ³   Developer Information for   ³
-                   ÜÜÜ                  ³        AiR-BOOT v1.01         ³
-  ù              ÜÛÛß             ù     ³                               ³
-       ÄÄÄÄÄÄÄ ÜÛÛß                     º                               ³
-  ³     Ú¿Ú¿³ÜÛÛÛÜÜÛÛÛÜ           ³     º                               ³
-  º     ÀÙ³ÀÙßÛÛÛßßÜÛÛß           º     º                               ú
-  º    ÄÄÄÄÄÄÄ    ÜÛÛÝ            º     º
-  º              ÜÛÛÛÄÄÄÄÄÄÄÄÄ    º    ÄÎÍÍÍÄÍÍÍÍÍÄÍÍÍÍÄÍÍÄÄÍÄÄÍÄÄÄúÄÄ  ú
-  º             ÜÛÛÛÝ³ ³Ú¿³³Ä     º
-  ³            ÜÛÛÛÛ ÀÄ³³ÀÙ³Ä     ³
-              ßÛÛÛÛÝÄÄÄÄÄÄÄÄÄÄ
-  ³             ßß                ³
-  ù Ä´-=’iç éï-Liïî SéŸâW’çî=-ÃÄÄ ù
-
+     ÖÄ[ Developer Information for AiR-BOOT v1.05+ ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º This documentation is meant for developers that wish to support AiR-BOOT.  º
+ º  It explains detection, verification and reading/changing configuration of º
+ º  AiR-BOOT.                                                                 º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
 
    1.1  - Foreword
    2.1  - Detection
@@ -36,26 +24,27 @@
   ===================
 
         This document defines several aspects of AiR-BOOT v0.26b+ and is
-         currently on the level of AiR-BOOT v1.01.
+         currently on the level of AiR-BOOT v1.05+.
 
         AiR-BOOT is an advanced multi-boot-loader that resides completly in
          MBR/track-0. It has built-in colored menu-driven setup,
          Virus-Detection and much more.
 
-        This documentation is meant for other developers that want to detect
-         and/or support AiR-BOOT and modify some configuration values.
-
         Please keep in mind that you are responsible for doing those changes
          the documented, correct manner. AiR-BOOT is able to fix some
          configuration values like Default-Partition, because the user could
-         have killed that partition, but AiR-BOOT is not completely
+         have killed that partition as well, but AiR-BOOT is not completely
          error-tolerant. Work as defined in this documentation and everything
          will work as expected.
 
         All offsets are zero-based, which means offset 1 is the 2nd byte.
          Everything is meant to be in Intel-Order.
 
-        You may contact the author via e-mail using: kiewitz@netlabs.org.
+        AiR-BOOT and its source is available via
+         http://air-boot.sourceforge.net
+
+        You may contact the author via
+         m_kiewitz [AT] users [DOT] sourceforge [DOT] net
 
 
   ====================
@@ -134,8 +123,9 @@
                                               'G' for german
                                               'I' for italian
                                               'R' for russian
-                                              'U' for english
+                                              'E' for english (v1.01+)
                                               'S' for swedish
+                                              'U' for USA (removed in v1.01+)
          TotalCodeSectors   : BYTE          - counting from sector 2
          CheckSumOfCode     : WORD          - explained later
         -----------------------------------------------------------------------
@@ -182,7 +172,9 @@
         Please note: MajorVersion/MinorVersion/ReleaseLanguage may NOT have to
                       match the Version in the basic information structure.
                       This is the version of AiR-BOOT that installed the Config
-                      area.
+                      area. It may be as well the current data structure level.
+                      Anyway, you need to get the code version to find out what
+                      data structure is used.
 
         Code used for verification in x86 assembly:
 
@@ -222,13 +214,20 @@
          Identifier         : STRING * 13   - 'AiRCFG-TABLE­'
          MajorVersion       : BYTE          - in BCD
          MinorVersion       : BYTE          - in BCD
-         ReleaseLanguage    : BYTE          - normally 'U' for USA/english
+         ReleaseLanguage    : BYTE          - normally 'E' for English
          EditCounter        : DWORD         - Will be increased on every save
          CheckSumOfConfig   : WORD          - explained in [2.3]
          Partitions         : BYTE          - Partitions count in IPT
          BootPartitions     : BYTE          - Removed since v0.28b
-         DefaultPartition   : BYTE          - Default-partition no (zero based)
+         DefaultSelection   : BYTE          - Default-selection no (zero based)
+                                               FFh - nothing bootable
+                                               [additions/changes v1.02+]
+                                               FFh - Floppy Boot
+                                               FEh - BIOS continue (CD-ROM,etc.)
+                                               80h - nothing bootable
          LastPartition      : BYTE          - Last-booted-partition (zero based)
+                                               Even under v1.02+, this never
+                                               contains floppy or Resume-BIOS
          TimedBoot          : BYTE          - 0 - Timed Boot disabled
                                               1 - Timed Boot enabled
          TimedSeconds       : BYTE          - How many seconds till Timed Boot
@@ -272,6 +271,7 @@
          BootPassword       : QWORD         - Not documented
          RudeProtection     : BYTE          - Removed since v0.28b
          LinuxPartition     : BYTE          - Linux Root partition no (0-based)
+                                               [not used anymore since 1.02+]
          TimedKeyHandling   : BYTE          - 0 - Do nothing
                                               1 - Reset time
                                               2 - Stop time
@@ -285,6 +285,7 @@
                                               3 - ZIP/LS120
          CooperBars         : BYTE          - 0 - Disabled
                                               1 - Enabled
+         [following contents are not used anymore - since 1.02]
          LinuxCommandLine   : STRING * 75   - Linux Command Line (0-terminated)
          LinuxKrnlPartition : BYTE          - 0FFh - Disabled
                                               Otherwise no of partition
@@ -297,6 +298,7 @@
                                                if Partition got booted, this
                                                field will get filled with spaces
          LinuxKernelNameEnd2: BYTE          - Fixed ZERO
+         [End of contents that are not used anymore]
          ExtPartitionMShack : BYTE          - 0 - Disabled
                                               1 - MS Work-Around Enabled
          AutomaticBoot      : BYTE          - Automatic Booting (0.94+)
@@ -304,10 +306,15 @@
                                               1 - Enabled (only for one time)
          AutomaticPartition : BYTE          - Automatic Booting (0.94+)
                                                Partition no (zero based)
+                                               FFh - Floppy booting
+                                               FEh - BIOS continue (CD-ROM,ZIP)
          ForceLBAUsage      : BYTE          - Forces BIOS LBA API Usage (1.00+)
                                               0 - Disabled
                                               1 - Enabled
-         Reserved           : STRING * 254  - RESERVED
+         IgnoreLVM          : BYTE          - Ignores LVM information (1.02+)
+                                              0 - Disabled (do not ignore)
+                                              1 - Enabled
+         Reserved           : STRING * 253  - RESERVED
          AutoDriveLetter    : STRING * 5    - RESERVED CONTENT (0.94+)
                                                (used by Installer/2)
          BIOScontIPTentry   : STRING * 34   - RESERVED CONTENT
@@ -340,13 +347,15 @@
         -----------------------------------------------------------------------
          Contents: AiR-BOOT internal partition table entry (IPT)
         =======================================================================
-         SerialNumber       : DWORD         - Serial number of partition
+         SerialNumber       : DWORD         - Serial number of partition /
+                                               Partition ID from LVM
                                                (if available)
-         PartitionName      : STRING * 11   - Name of the partition
-                                               (in sync with boot-record)
+         PartitionName      : STRING * 11   - Name of the partition (in sync
+                                               with LVM and/or boot-record)
          Drive              : BYTE          - Drive of partition (INT 13h-like)
          PartitionID        : BYTE          - unhidden ID of partition
                                                (08h == NTFS, thanx M$)
+                                               (FCh == JFS - v1.05+)
          Flags              : BYTE          - Bit 0 - BootAble
                                               Bit 1 - VIBR Detection
                                               Bit 2 - Hide Feature used
@@ -390,19 +399,25 @@
          order, which means if you want to hide partition 0, 2 and 3 the string
          should look like this: 00h 02h 03h FFh (and 26 more FFhs)
 
-        The logical-drive-letters string is 30-bytes long. One byte per
-         partition. It's used for OS/2 use ONLY and it's only definable for
-         HPFS or FAT16 partitions. If you enable/disable the driveletter, then
-         YOU are required to change the corresponding partition's Drive-Letter
-         flag accordingly.
+        The boot-drive-letters string is 30-bytes long. One byte per partition.
+         It's used for OS/2 / eCS use ONLY and it's only definable for HPFS and
+         FAT16 partitions. If you enable/disable the driveletter, then YOU are
+         required to change the corresponding partition's Drive-Letter flag
+         accordingly.
+
+         Since 1.02, AiR-BOOT supports LVM driveletter adjustment and will
+         change the driveletter of the partition that is to be booted.
 
         -----------------------------------------------------------------------
          Contents: AiR-BOOT hide configuration
         =======================================================================
          HideConfiguration  : STRING * 30   - for one partition each
           * 30 -> 900 Bytes (due maximum of 30 partitions in IPT)
-         DriveLetters       : STRING * 30   - Drive Letters of all partitions
-                                               (0h - disabled) [since v0.92+]
+         DriveLetters       : STRING * 30   - Boot driveletters of partitions
+                                               [since v0.92+]
+                                               00h - disabled
+                                               80h - "C"
+                                               81h - "D"...
          Reserved           : STRING * 84   - RESERVED
          Identifier         : STRING * 10   - 'AiRBOOTHID'
         -----------------------------------------------------------------------

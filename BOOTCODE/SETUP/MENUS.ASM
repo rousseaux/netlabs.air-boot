@@ -1,20 +1,20 @@
-
-; Disclaimer:
-;=============
-; The sourcecode is released via www.netlabs.org CVS *ONLY*.
-;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
-;  You may recompile the source and do *PRIVATE* modifications, but please keep
-;  in mind that modifying this code needs at least *some* assembly skill. If
-;  you mess up your system, because you needed to hack your way through, don't
-;  blame me. Releasing a customized version of AiR-BOOT, selling it in any form
-;  or reusing parts of this source is *PROHIBITED*. Ask me, if you have some
-;  idea about new functionality *before* developing the code, otherwise I will
-;  definitely reject it. Also please accept, that I have some basic design
-;  rules on AiR-BOOT and I will maintain them at all costs, so this won't get
-;  another GRUB.
-
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                                           AiR-BOOT SETUP / MENU STRUCTURE
 ;---------------------------------------------------------------------------
@@ -100,9 +100,11 @@ SETUP_BasicOptions:
                 db      0                ; Where Current Item will get saved
                 dw      offset TXT_SETUPHELP_SUBMENU ; Pointer to help info
                 ; The Menu-Items start here...
-                dw      offset SETUPMAGIC_ChangePartition, offset CFG_PartDefault
-                dw      offset TXT_SETUP_DefaultPart, offset TXT_SETUPHELP_DefaultPart
+                dw      offset SETUPMAGIC_ChangeDefaultSelection, offset CFG_PartDefault
+                dw      offset TXT_SETUP_DefaultSelection, offset TXT_SETUPHELP_DefaultSelection
                 dw      6 dup (0)
+                ; ATTENTION: ChangeDefaultSelection is redrawn hardcoded in
+                ;             SETUPMAGIC_ChangeFloppyDisplay.
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_TimedBoot
                 dw      offset TXT_SETUP_TimedBoot, offset TXT_SETUPHELP_TimedBoot
                 dw      6 dup (0)
@@ -122,7 +124,7 @@ SETUP_BasicOptions:
                 dw      offset TXT_SETUP_RememberTimedBoot, offset TXT_SETUPHELP_RememberTimeBoot
                 dw      6 dup (0)
                 ; The Menu-Items of the right side start here...
-                dw      offset SETUPMAGIC_EnableDisable, offset CFG_IncludeFloppy
+                dw      offset SETUPMAGIC_ChangeFloppyDisplay, offset CFG_IncludeFloppy
                 dw      offset TXT_SETUP_IncludeFloppy, offset TXT_SETUPHELP_IncludeFloppy
                 dw      6 dup (0)
                 dw      0, 0
@@ -193,30 +195,41 @@ SETUP_ExtendedBootOptions:
                 db      0                ; Where Current Item will get saved
                 dw      offset TXT_SETUPHELP_SUBMENU ; Pointer to help information
                 ; The Menu-Items start here...
-                dw      offset SETUPMAGIC_ChangeLinuxKernelPart, offset CFG_LinuxKrnlPartition
-                dw      offset TXT_SETUP_LinuxKernelPart, offset TXT_SETUPHELP_LinuxKernelPart
+; [Linux support removed since v1.02]
+;                dw      offset SETUPMAGIC_ChangeLinuxKernelPart, offset CFG_LinuxKrnlPartition
+;                dw      offset TXT_SETUP_LinuxKernelPart, offset TXT_SETUPHELP_LinuxKernelPart
+;                dw      6 dup (0)
+;                dw      offset SETUPMAGIC_ChangeLinuxDefaultKernel, offset CFG_LinuxDefaultKernel
+;                dw      offset TXT_SETUP_LinuxDefaultKernel, offset TXT_SETUPHELP_LinuxDefaultKrnl
+;                dw      6 dup (0)
+;                dw      offset SETUPMAGIC_ChangeLinuxRootPart, offset CFG_LinuxRootPartition
+;                dw      offset TXT_SETUP_LinuxRootPart, offset TXT_SETUPHELP_LinuxRootPart
+;                dw      6 dup (0)
+                dw      offset SETUPMAGIC_EnableDisable, offset CFG_IgnoreLVM
+                dw      offset TXT_SETUP_IgnoreLVM, offset TXT_SETUPHELP_IgnoreLVM
                 dw      6 dup (0)
-                dw      offset SETUPMAGIC_ChangeLinuxDefaultKernel, offset CFG_LinuxDefaultKernel
-                dw      offset TXT_SETUP_LinuxDefaultKernel, offset TXT_SETUPHELP_LinuxDefaultKrnl
-                dw      6 dup (0)
-                dw      offset SETUPMAGIC_ChangeLinuxRootPart, offset CFG_LinuxRootPartition
-                dw      offset TXT_SETUP_LinuxRootPart, offset TXT_SETUPHELP_LinuxRootPart
-                dw      6 dup (0)
-                dw      0, 0
-                dw      0, 0
-                dw      0, 0
-                dw      0, 0
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_ForceLBAUsage
                 dw      offset TXT_SETUP_ForceLBAUsage, offset TXT_SETUPHELP_ForceLBAUsage
                 dw      6 dup (0)
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_ExtPartitionMShack
                 dw      offset TXT_SETUP_ExtPartMShack, offset TXT_SETUPHELP_ExtPartMShack
                 dw      6 dup (0)
+                dw      0, 0
+                dw      0, 0
+                dw      0, 0
+                dw      0, 0
+                dw      0, 0
+                dw      0, 0
+                dw      0, 0
+                dw      0, 0
                 ; The Menu-Items of the right side start here...
                 dw      0, 0
                 dw      0, 0
-                dw      offset SETUP_EnterMenu_LinuxCommandLine, 0
-                dw      offset TXT_SETUP_DefLinuxCmd, offset TXT_SETUPHELP_DefLinuxCmd
+; [Linux support removed since v1.02]
+                dw      0, 0
+                dw      0, 0
+;                dw      offset SETUP_EnterMenu_LinuxCommandLine, 0
+;                dw      offset TXT_SETUP_DefLinuxCmd, offset TXT_SETUPHELP_DefLinuxCmd
                 dw      0, 0
                 dw      0, 0
                 dw      0, 0

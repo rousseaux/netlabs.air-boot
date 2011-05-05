@@ -1,38 +1,32 @@
-
-; Disclaimer:
-;=============
-; The sourcecode is released via www.netlabs.org CVS *ONLY*.
-;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
-;  You may recompile the source and do *PRIVATE* modifications, but please keep
-;  in mind that modifying this code needs at least *some* assembly skill. If
-;  you mess up your system, because you needed to hack your way through, don't
-;  blame me. Releasing a customized version of AiR-BOOT, selling it in any form
-;  or reusing parts of this source is *PROHIBITED*. Ask me, if you have some
-;  idea about new functionality *before* developing the code, otherwise I will
-;  definitely reject it. Also please accept, that I have some basic design
-;  rules on AiR-BOOT and I will maintain them at all costs, so this won't get
-;  another GRUB.
-
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                                             AiR-BOOT / PARTiTiON SCANNING
 ;---------------------------------------------------------------------------
 
-; Note: This is complex code. Also some of these functions have DS != CS, so
-;        make sure that you know what you are doing in here.
+; Note: This is complex code. So make sure that you know what you are doing in
+;        here.
 
 PARTSCAN_ScanForPartitions      Proc Near  Uses
    ; Reset X-Reference
    call    PARTSCAN_ResetXref
 
-   push    ds si
-      push    0040h
-      pop     ds
-      mov     si, 0075h
-      mov     dh, ds:[si]                ; 40:75 -> POST: Total Harddiscs == DL
-   pop     si ds
-   mov     TotalHarddiscs, dh
+   mov     dh, TotalHarddiscs
    xor     al, al
    mov     NewPartitions, al
 
@@ -66,21 +60,22 @@ PARTSCAN_ScanForPartitions      Proc Near  Uses
    mov     cx, LocIPT_MaxPartitions/2
    rep     movsw
 
-   ; Search for any Linux partition and remember, if it got found...
-   mov     si, offset PartitionTable
-   movzx   cx, CFG_Partitions
-   xor     dl, dl                        ; DL - Is Linux here ?
-   or      cx, cx
-   jz      PSSFP_NoPartitions
-  PSSFP_LinuxLoop:
-      cmp     bptr [si+LocIPT_SystemID], 083h  ; Hard-Coded
-      jne     PSSFP_NoLinux
-      mov     dl, 1                      ; Linux found...
-     PSSFP_NoLinux:
-      add     si, LocIPT_LenOfIPT
-   loop    PSSFP_LinuxLoop
-  PSSFP_NoPartitions:
-   mov     GotLinux, dl                  ; Set Flag
+; [Linux support removed since v1.02]
+;   ; Search for any Linux partition and remember, if it got found...
+;   mov     si, offset PartitionTable
+;   movzx   cx, CFG_Partitions
+;   xor     dl, dl                        ; DL - Is Linux here ?
+;   or      cx, cx
+;   jz      PSSFP_NoPartitions
+;  PSSFP_LinuxLoop:
+;      cmp     bptr [si+LocIPT_SystemID], 083h  ; Hard-Coded
+;      jne     PSSFP_NoLinux
+;      mov     dl, 1                      ; Linux found...
+;     PSSFP_NoLinux:
+;      add     si, LocIPT_LenOfIPT
+;   loop    PSSFP_LinuxLoop
+;  PSSFP_NoPartitions:
+;   mov     GotLinux, dl                  ; Set Flag
 
    ; ...and finally check, if we need to set a Drive-Letter
    mov     dl, AutoDrvLetter
@@ -124,6 +119,8 @@ PARTSCAN_ScanDriveForPartitions Proc Near  Uses
   PSSDFP_LoadThisPartition:
    call    DriveIO_LoadPartition
    jc      PSSDFP_InvalidPartition
+   ; LVM Support - Reads LVM Information Sector
+   call    DriveIO_LoadLVMSector
    call    PARTSCAN_ScanPartition
    IFDEF ReleaseCode
       call    DriveIO_SavePartition
@@ -134,34 +131,68 @@ PARTSCAN_ScanDriveForPartitions Proc Near  Uses
    ret
 PARTSCAN_ScanDriveForPartitions EndP
 
+; Scans Current Partition for Extended Partitions, if found, AX,BX,CX,DX will
+; be set to this location and Carry will be set
+PARTSCAN_ScanPartitionForExtended Proc Near  Uses si
+   mov     si, offset PartitionSector+446 ; DS:SI - 1st partition entry
+   xor     ax, ax
+  PSSPFE_ScanLoop:
+      mov     al, [si+LocBRPT_SystemID]
+      cmp     al, 5                      ; Is Partition EXTENDED ?
+      je      PSSPFE_ExtendedPartition
+      cmp     al, 0Fh                    ; Is Partition EXTENDED (M$) ?
+      je      PSSPFE_ExtendedPartition
+      jmp     PSSPFE_IgnorePartition
+     PSSPFE_ExtendedPartition:
+      mov     ax, wptr [si+LocBRPT_RelativeBegin]
+      mov     bx, wptr [si+LocBRPT_RelativeBegin+2]
+      add     ax, wptr [ExtendedAbsPos+0] ; Adjust...
+      adc     bx, wptr [ExtendedAbsPos+2] ; (Shit Design!)
+      test    [ExtendedAbsPosSet], 1
+      jnz     PSSPFE_ExtendedMainKnown
+      mov     wptr [ExtendedAbsPos+0], ax
+      mov     wptr [ExtendedAbsPos+2], bx
+      mov     [ExtendedAbsPosSet], 1
+     PSSPFE_ExtendedMainKnown:
+      mov     cx, wptr [si+LocBRPT_BeginSector] ; Cylinder/Sector
+      mov     dh, bptr [si+LocBRPT_BeginHead]   ; Head
+      mov     dl, bptr [CurPartition_Location+4] ; Drive
+      stc
+      jmp     PSSPFE_EndOfSearch
+     PSSPFE_IgnorePartition:
+      add     si, LocBRPT_LenOfEntry
+   cmp     si, 500+offset PartitionSector
+   jb      PSSPFE_ScanLoop
+   clc
+  PSSPFE_EndOfSearch:
+   ret
+PARTSCAN_ScanPartitionForExtended EndP
+
 ; The following routines have NOT *DS* set to CS, so we must address via ES
-PARTSCAN_ScanPartition          Proc Near  Uses ax ds si
-   push    ExecBaseSeg
-   pop     ds
-   mov     si, ExecBasePtr
-   add     si, 446                       ; DS:SI - First Partition-Entry
+PARTSCAN_ScanPartition          Proc Near  Uses ax si
+   mov     si, offset PartitionSector+446 ; DS:SI - 1st Partition-Entry
   PSSP_ScanLoop:
-      mov     al, bptr ds:[si+LocBRPT_SystemID]
+      mov     al, bptr [si+LocBRPT_SystemID]
       cmp     al, 5                      ; Is Partition EXTENDED ?
       je      PSSP_IgnorePartition
       cmp     al, 0Fh                    ; Is Partition EXTENDED (M$-DOS7) ?
       je      PSSP_IgnorePartition
       cmp     al, 0                      ; Is Partition EMPTY ?
       je      PSSP_IgnorePartition
-      ; Ignore this Partitions, because there are no real Partitions
+      ; Ignore these partitions, because there are no real Partitions
       call    PARTSCAN_CheckThisPartition
      PSSP_IgnorePartition:
       ; L”scht das Boot-Able Flag...
-      and     byte ptr ds:[si+LocBRPT_Flags], 7Fh ; Reset the Active-Flag
+      and     byte ptr [si+LocBRPT_Flags], 7Fh ; Reset the Active-Flag
       add     si, LocBRPT_LenOfEntry     ; 16 Bytes per partition entry
-   cmp     si, 500+ExecBasePtr
+   cmp     si, 500+offset PartitionSector
    jb      PSSP_ScanLoop
    ; If we are on first HDD and in primary partition table -> mark primary
-   cmp     bptr es:[CurPartition_Location+4], 80h ; Drive
+   cmp     bptr [CurPartition_Location+4], 80h ; Drive
    jne     PSSP_NoMarkPrimary
-   cmp     wptr es:[CurPartition_Location+0], 0
+   cmp     wptr [CurPartition_Location+0], 0
    jne     PSSP_NoMarkPrimary
-   cmp     wptr es:[CurPartition_Location+2], 0 ; Absolute Location
+   cmp     wptr [CurPartition_Location+2], 0 ; Absolute Location
    jne     PSSP_NoMarkPrimary
    call    PART_MarkFirstGoodPrimary
   PSSP_NoMarkPrimary:
@@ -174,27 +205,23 @@ MBR_NoName_Patched           db  15 dup (0)
 ; LocIPT-table. If the same partition is found there, Flags&CRC are taken from
 ; the old table, otherwise they are generated freshly.
 ; Will also fill out PartitionXref to sync HideConfig later
-;        In: DS:SI - Partition-Entry (16-Bytes)
-;            ES    - is CS
-;             (DS is *NOT* CS here)
-PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
+;        In: SI - Points to Partition-Entry (16-Bytes)
+PARTSCAN_CheckThisPartition     Proc Near  Uses di si
    local   PartSystemID:byte, PartTypeFlags:byte
-   local   PartCRC:word, PartPtr:dword
+   local   PartCRC:word, PartPtr:word
 
-   mov     ax, ds
-   mov     wptr [PartPtr+2], ax          ; ...
-   mov     wptr [PartPtr+0], si          ; Save Pointer to PartitionEntry
+   mov     wptr [PartPtr], si          ; Save Pointer to PartitionEntry
 
-   mov     al, bptr ds:[si+LocBRPT_SystemID]
+   mov     al, bptr [si+LocBRPT_SystemID]
    mov     PartSystemID, al
 
-   mov     cx, wptr ds:[si+LocBRPT_BeginSector] ; Cylinder/Sector
-   mov     dh, bptr ds:[si+LocBRPT_BeginHead] ; Head
-   mov     dl, bptr es:[CurPartition_Location+4] ; Drive
-   mov     ax, wptr ds:[si+LocBRPT_RelativeBegin] ; Absolute Sector
-   mov     bx, wptr ds:[si+LocBRPT_RelativeBegin+2]
-   add     ax, wptr es:[CurPartition_Location+0] ; +Partition-Absolute
-   adc     bx, wptr es:[CurPartition_Location+2] ;  sectors
+   mov     cx, wptr [si+LocBRPT_BeginSector] ; Cylinder/Sector
+   mov     dh, bptr [si+LocBRPT_BeginHead] ; Head
+   mov     dl, bptr [CurPartition_Location+4] ; Drive
+   mov     ax, wptr [si+LocBRPT_RelativeBegin] ; Absolute Sector
+   mov     bx, wptr [si+LocBRPT_RelativeBegin+2]
+   add     ax, wptr [CurPartition_Location+0] ; +Partition-Absolute
+   adc     bx, wptr [CurPartition_Location+2] ;  sectors
    call    DriveIO_LoadTmpSector         ; Loads Boot record
    ; Sets up DS:SI - TmpSector
 
@@ -217,42 +244,82 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
    ; AH - File System Flags
    ; SI - Boot-Record of Partition
    ; DI - File System Name
-   ; DS==CS here
    ;================================
 
+   cmp     PartSystemID, 07h          ; We got IFS here?
+   jne     PCCTP_IFSdone
+   ; Check, if 'JFS ' is at DWORD offset 36h
+   cmp     wptr [si+36h], 'FJ'
+   jne     PCCTP_IFSnoJFS
+   cmp     wptr [si+38h], ' S'
+   jne     PCCTP_IFSnoJFS
+   mov     PartSystemID, 0FCh         ; FC is JFS internally
+   jmp     PCCTP_IFSdone
+  PCCTP_IFSnoJFS:
+   ; Check, if 'HPFS' is at DWORD offset 36h
+   cmp     wptr [si+36h], 'PH'
+   jne     PCCTP_ProbablyNTFS
+   cmp     wptr [si+38h], 'SF'
+   je      PCCTP_IFSdone              ; 07 is HPFS internally
+  PCCTP_ProbablyNTFS:
+   inc     PartSystemID               ; 08 is NTFS instead of 07
+  PCCTP_IFSdone:
+
+   ; First check, if LVM Information Sector is available and this partition
+   ;  is supported.
+   push    ax dx si di
+      mov     si, wptr [PartPtr]
+      mov     ax, wptr [si+LocBRPT_RelativeBegin] ; Absolute Sector
+      mov     dx, wptr [si+LocBRPT_RelativeBegin+2]
+      add     ax, wptr [CurPartition_Location+0] ; +Partition-Absolute
+      adc     dx, wptr [CurPartition_Location+2] ;  sectors
+      mov     si, offset LVMSector
+      call    LVM_SearchForPartition     ; Search for DX:AX partition
+      jnc     PCCTP_CheckBootRecord
+      ; Check, if volume has driveletter assigned and remember it for later
+      mov     al, [si+LocLVM_VolumeLetter]
+      or      al, al
+      jnz     PCCTP_HasVolumeLetter
+      mov     al, 1                      ; 0 would mean "not LVM supported"
+     PCCTP_HasVolumeLetter:
+      ; Save VolumeLetter in separate table
+      movzx   bx, NewPartitions          ; NewPartitions is one behind here, so
+      mov     [PartitionVolumeLetters+bx], al ; it's already a zero-based offset
+      ; Now copy VolumeID and VolumeName to temporary space
+      mov     di, offset MBR_NoName_Patched
+      mov     ax, [si+LocLVM_PartitionID]
+      stosw
+      mov     ax, [si+LocLVM_PartitionID+2]
+      stosw                              ; Set Serial-Field to LVM-VolumeID
+      add     si, LocLVM_PartitionName
+      mov     cx, 5
+      rep     movsw                      ; Copy LVM-PartitionName to Temp Space
+      movsb                              ;  (11 bytes in total)
+   pop     di si dx ax
+   mov     si, offset MBR_NoName_Patched
+   xor     ah, ah                        ; no Flags_NoPartName
+   jmp     PCCTP_NameSearchInIPT
+
+     PCCTP_CheckBootRecord:
+   pop     di si dx ax
    test    ah, FileSysFlags_NoName       ; No-Name-Flag ? -> No Partition Name
    jnz     PCCTP_ThereIsNoName           ;                    available
-      cmp     PartSystemID, 07h          ; We got IFS here?
-      jne     PCCTP_NotNTFS
-      ; Check, if 'HPFS' is at DWORD offset 36h
-      cmp     wptr ds:[si+36h], 'PH'
-      jne     PCCTP_SeemsNTFS
-      cmp     wptr ds:[si+38h], 'SF'
-      je      PCCTP_NotNTFS
-     PCCTP_SeemsNTFS:
-      inc     PartSystemID
-      jmp     PCCTP_ThereIsNoName
-     PCCTP_NotNTFS:
+      ; We check for NTFS (got detected a little bit earlier in this routine)
+      cmp     PartSystemID, 08h          ; We got IFS/NTFS here?
+      jne     PCCTP_IsNoNTFS
+      jmp     PCCTP_ThereIsNoName        ; NTFS has no volume label
+     PCCTP_IsNoNTFS:
+      add     si, 2Bh                    ; DS:SI - Partition-Name
       test    ah, FileSysFlags_FAT32     ; FAT32 specific name getting ?
       jz      PCCTP_ResumeNormal
       add     si, 1Ch                    ; Fix for FAT 32, shiat
      PCCTP_ResumeNormal:
-      add     si, 2Bh                    ; DS:SI - Partition-Name
       mov     cx, 11                     ;         11 bytes length
       call    PART_CheckForValidPartName
       jnc     PCCTP_ThereIsNoName
-;      jnc     PCCTP_SetNameToNoName
       sub     si, 4                      ; DS:SI -> Serial&Name (15-Bytes)
       xor     ah, ah                     ; no Flags_NoPartName
-      jmp     PCCTP_NameSearchInIPT
-
-; WAS: NTFS/HPFS detection problem
-;     PCCTP_SetNameToNoName:
-;      cmp     PartSystemID, 07h          ; We got HPFS that failed ?
-;      jne     PCCTP_NotHPFS              ; -> is NTFS (internal type 08h)
-;      inc     PartSystemID               ; All that fails is Microsoft <bg>
-;     PCCTP_NotHPFS:
-;      jmp     PCCTP_ThereIsNoName
+;      jmp     PCCTP_NameSearchInIPT
 
       ;=======================================================
       ; NAME SEARCH in IPT-Table
@@ -262,11 +329,12 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
      PCCTP_NameSearchInIPT:
       xor     ah, ah                     ; no Flags_NoPartName cause PartName valid
       mov     di, offset PartitionTable  ; ES:DI - IPT-Start
-      mov     dl, es:CFG_Partitions
+      mov     dl, CFG_Partitions
       or      dl, dl
-      jz      PCCTP_NameCompFailed
+      jnz     PCCTP_SerialNameCompLoop
+      jmp     PCCTP_CompareFailed
      PCCTP_SerialNameCompLoop:
-         mov     al, es:[di+LocIPT_Flags]
+         mov     al, [di+LocIPT_Flags]
          test    al, Flags_NowFound
          jnz     PCCTP_SerialNameAlreadyFound
          ; Now compare IPT with current Partition
@@ -284,7 +352,7 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
       mov     di, offset PartitionTable  ; ES:DI - IPT-Start
       mov     dl, CFG_Partitions
      PCCTP_NameCompLoop:
-         mov     al, es:[di+LocIPT_Flags]
+         mov     al, [di+LocIPT_Flags]
          test    al, Flags_NowFound
          jnz     PCCTP_NameAlreadyFound
          ; Now compare IPT with current Partition
@@ -295,10 +363,10 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
             repz    cmpsb
          pop     di si
          jne     PCCTP_NameNoMatch
-         mov     cx, ds:[si+0]           ; Get Serial
-         mov     es:[di+0], cx
-         mov     cx, ds:[si+2]
-         mov     es:[di+2], cx           ; ...and put it into IPT
+         mov     cx, [si+0]           ; Get Serial
+         mov     [di+0], cx
+         mov     cx, [si+2]
+         mov     [di+2], cx           ; ...and put it into IPT
          jmp     PCCTP_Match
         PCCTP_NameNoMatch:
         PCCTP_NameAlreadyFound:
@@ -306,32 +374,74 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
       dec     dl
       jnz     PCCTP_NameCompLoop
      PCCTP_NameCompFailed:
+
+      ; So finally we search for Location and PartitionID
+      push    si
+         ; Initialize some stuff for Location-Search
+         mov     dh, PartSystemID
+         mov     si, [PartPtr]           ; DS:SI - Cur Partition Table
+         ; Relative Sector to MBR/EPR
+         mov     cx, wptr [si+LocBRPT_RelativeBegin]
+         mov     bx, wptr [si+LocBRPT_RelativeBegin+2]
+         add     cx, [CurPartition_Location+0]
+         add     bx, [CurPartition_Location+2]
+         ; BX:CX - Absolute First Sector of Partition on HDD
+      pop     si
+      mov     di, offset PartitionTable  ; ES:DI - IPT-Start
+      mov     dl, CFG_Partitions
+     PCCTP_NameLocCompLoop:
+         mov     al, [di+LocIPT_Flags]
+         test    al, Flags_NowFound
+         jnz     PCCTP_NameLocAlreadyFound
+         ; Now compare IPT with current Partition
+         cmp     dh, [di+LocIPT_SystemID]
+         jne     PCCTP_NameLocMismatch
+         cmp     cx, [di+LocIPT_AbsoluteBegin]
+         jne     PCCTP_NameLocMismatch
+         cmp     bx, [di+LocIPT_AbsoluteBegin+2]
+         jne     PCCTP_NameLocMismatch
+         ; We matched location, now copy the current PartitionID and Name to
+         ;  the old IPT.
+         push    di
+            add     di, LocIPT_Serial    ; DS:SI - LocIPT-Serial&Name
+            mov     cx, 15
+            rep     movsb                ; Copy 15 bytes
+         pop     di
+         jmp     PCCTP_Match
+        PCCTP_NameLocMismatch:
+        PCCTP_NameLocAlreadyFound:
+         add     di, LocIPT_LenOfIPT
+      dec     dl
+      jnz     PCCTP_NameLocCompLoop
+      ; None of the searches worked, so forget it...
       jmp     PCCTP_CompareFailed
 
   PCCTP_ThereIsNoName:
-      ; First, try to find this partition by comparing location and PartitionID
+      ; Try to find this partition by comparing location and PartitionID
       ;  aka LocIPT_AbsoluteBegin:dword and LocIPT_SystemID
       ; If found, simply go to the normal match-routine, otherwise use the
       ;  File-System-Name to build the Volume-Label for the New IPT Entry.
       mov     dh, PartSystemID
-      push    ds
-         lds     si, dptr PartPtr        ; DS:SI - Cur Partition Entry
-         ; Relative Sector to MBR/EPR
-         mov     cx, wptr ds:[si+LocBRPT_RelativeBegin]
-         mov     bx, wptr ds:[si+LocBRPT_RelativeBegin+2]
-         add     cx, cs:[CurPartition_Location+0]
-         add     bx, cs:[CurPartition_Location+2]
-         ; BX:CX - Absolute First Sector of Partition on HDD
-      pop     ds
+      mov     si, [PartPtr]           ; DS:SI - Cur Partition Table
+      ; Relative Sector to MBR/EPR
+      mov     cx, wptr [si+LocBRPT_RelativeBegin]
+      mov     bx, wptr [si+LocBRPT_RelativeBegin+2]
+      add     cx, [CurPartition_Location+0]
+      add     bx, [CurPartition_Location+2]
       ; Build a standard-Volume Label from FileSystemNamePtr
       ;  We have to call SearchFileSysName again because of NTFS
       push    ax cx
          mov     al, dh
          call    PART_SearchFileSysName   ; We want SI here <- FileSystemNamePtr
          mov     di, offset MBR_NoName_Patched
-         add     di, 4                   ; Skip Serial-Field
-         mov     cx, 8
-         rep     movsb                   ; Copy FileSystemName to Temp Space
+         xor     ax, ax
+         stosw
+         stosw                           ; Set Serial-Field to "NUL"
+         mov     cx, 4
+         rep     movsw                   ; Copy FileSystemName to Temp Space
+         xor     ax, ax
+         stosw
+         stosb                           ; Fill last 3 bytes with "NUL"
          mov     si, offset MBR_NoName_Patched
       pop     cx ax
       ;=======================================================
@@ -344,19 +454,19 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
      PCCTP_LocSearchInIPT:
       mov     ah, Flags_NoPartName       ;set Flags_NoPartName, PartName invalid
       mov     di, offset PartitionTable  ; ES:DI - IPT-Start
-      mov     dl, es:CFG_Partitions
+      mov     dl, CFG_Partitions
       or      dl, dl
       jz      PCCTP_LocCompFailed
      PCCTP_LocCompLoop:
-         mov     al, es:[di+LocIPT_Flags]
+         mov     al, [di+LocIPT_Flags]
          test    al, Flags_NowFound
          jnz     PCCTP_LocAlreadyFound
          ; Now compare IPT with current Partition
-         cmp     dh, es:[di+LocIPT_SystemID]
+         cmp     dh, [di+LocIPT_SystemID]
          jne     PCCTP_LocMismatch
-         cmp     cx, es:[di+LocIPT_AbsoluteBegin]
+         cmp     cx, [di+LocIPT_AbsoluteBegin]
          jne     PCCTP_LocMismatch
-         cmp     bx, es:[di+LocIPT_AbsoluteBegin+2]
+         cmp     bx, [di+LocIPT_AbsoluteBegin+2]
          jne     PCCTP_LocMismatch
          jmp     PCCTP_Match
         PCCTP_LocMismatch:
@@ -378,22 +488,22 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
    ; Save the new location of this partition in the Xref-Table
    ;  for converting HideConfig.
    mov     dh, dl
-   mov     dl, es:CFG_Partitions
+   mov     dl, CFG_Partitions
    sub     dl, dh
    mov     dh, NewPartitions             ; is actually a counter
    call    PARTSCAN_DefXref              ; DL-IPT-Partition, DH-NewPartition
 
    ; Get Saved-Flags...
-   mov     cl, byte ptr es:[di+LocIPT_Flags]     ; Use saved Flags
+   mov     cl, bptr [di+LocIPT_Flags]    ; Use saved Flags
 
    ; ...and Saved-CRC if available...
-   mov     ax, wptr es:[di+LocIPT_BootRecordCRC]
+   mov     ax, wptr [di+LocIPT_BootRecordCRC]
    or      ax, ax
    jz      PCCTP_UseNewComputedCRC
    mov     PartCRC, ax                   ; Use saved IPT-CRC
   PCCTP_UseNewComputedCRC:
    ; ...and mark partition in IPT as already found
-   or      byte ptr es:[di+LocIPT_Flags], Flags_NowFound
+   or      bptr [di+LocIPT_Flags], Flags_NowFound
    ; ...get Serial&Name from IPT-table...
    mov     si, di
    add     si, LocIPT_Serial             ; DS:SI - LocIPT-Serial&Name
@@ -411,7 +521,7 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
 
    mov     al, PartTypeFlags
    ; May I auto-add partitions ?
-   test    es:CFG_PartitionsDetect, 1
+   test    CFG_PartitionsDetect, 1
    jz      PCCTP_MayNotAddAny ; add, but non-bootable
    test    al, FileSysFlags_BootAble     ; AH kam von SearchFileSysName
    jnz     PCCTP_PerhapsBootAble
@@ -446,7 +556,7 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
 
    ; Calculate Pointer to IPT
    mov     di, offset NewPartTable       ; ES:DI - NewPartTable
-   movzx   ax, es:NewPartitions
+   movzx   ax, NewPartitions
    mov     bl, LocIPT_LenOfIPT
    mul     bl
    add     di, ax                        ; ES:DI - Last+1 Entry of NewPartTable
@@ -458,8 +568,8 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
       rep     movsb
    pop     cx
 
-   lds     si, dptr PartPtr              ; DS:SI - Cur Partition Entry
-   mov     al, bptr es:[CurPartition_Location+4] ; Drive
+   mov     si, [PartPtr]                 ; DS:SI - Cur Partition Entry
+   mov     al, bptr [CurPartition_Location+4] ; Drive
    stosb
    mov     al, PartSystemID              ; Unhidden SystemID
    stosb
@@ -467,18 +577,18 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
    stosb 
    mov     ax, PartCRC                   ; BootRecordCRC...
    stosw
-   mov     al, bptr ds:[si+LocBRPT_BeginHead]
+   mov     al, bptr [si+LocBRPT_BeginHead]
    stosb
-   mov     ax, wptr ds:[si+LocBRPT_BeginSector] ; Cylinder/Sector
+   mov     ax, wptr [si+LocBRPT_BeginSector] ; Cylinder/Sector
    stosw
-   mov     al, bptr es:[CurPartition_Location+5] ; Head of Part-Table
+   mov     al, bptr [CurPartition_Location+5] ; Head of Part-Table
    stosb
-   mov     ax, wptr es:[CurPartition_Location+6] ; Cylinder/Sector
+   mov     ax, wptr [CurPartition_Location+6] ; Cylinder/Sector
    stosw
-   mov     ax, wptr ds:[si+LocBRPT_RelativeBegin]
-   mov     bx, wptr ds:[si+LocBRPT_RelativeBegin+2]
-   mov     cx, wptr es:[CurPartition_Location+0] ; +Partition-Absolute
-   mov     dx, wptr es:[CurPartition_Location+2] ;  sectors
+   mov     ax, wptr [si+LocBRPT_RelativeBegin]
+   mov     bx, wptr [si+LocBRPT_RelativeBegin+2]
+   mov     cx, wptr [CurPartition_Location+0] ; +Partition-Absolute
+   mov     dx, wptr [CurPartition_Location+2] ;  sectors
    add     ax, cx
    adc     bx, dx
    stosw
@@ -488,12 +598,10 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
    stosw
    mov     ax, dx
    stosw
-   inc     es:NewPartitions              ; NEW IPT Entry DONE
+   inc     NewPartitions                 ; NEW IPT Entry DONE
 
-   cmp     es:NewPartitions, LocIPT_MaxPartitions
+   cmp     NewPartitions, LocIPT_MaxPartitions
    jbe     PCCTP_NotTooManyPartitions
-   mov     ax, cs
-   mov     ds, ax
    mov     si, offset TXT_TooManyPartitions
    call    MBR_Teletype
    jmp     MBR_HaltSystem
@@ -501,14 +609,17 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
   PCCTP_NotTooManyPartitions:
    ; UNHIDE PARTITION, if it was hidden previously
    mov     al, PartSystemID
-   cmp     al, 08h                       ; internally NTFS ?
-   jne     PCCTP_NoInternalNTFS
-   dec     al
-  PCCTP_NoInternalNTFS:
-   mov     bptr ds:[si+LocBRPT_SystemID], al
+   cmp     al, 08h                       ; internally IFS/NTFS?
+   je      PCCTP_GotInternalIFS
+   cmp     al, 0FCh                      ; internally IFS/JFS?
+   jne     PCCTP_NoInternalIFS
+  PCCTP_GotInternalIFS:
+   mov     al, 07h
+  PCCTP_NoInternalIFS:
+   mov     bptr [si+LocBRPT_SystemID], al
 
-   ; Calculate Size of this partition...
-   movzx   ax, es:NewPartitions
+   ; Calculate Size of this partition and put it into separate table...
+   movzx   ax, NewPartitions
    dec     ax
    mov     bx, ax
    shl     ax, 1
@@ -516,62 +627,18 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di ds si
    add     ax, bx                        ; My way [tm] of multiplying with 6
    mov     di, offset PartitionSizeTable
    add     di, ax                        ; DI - Partition Size-Element
-   mov     ax, wptr ds:[si+LocBRPT_AbsoluteLength] ; Sector-Size
-   mov     bx, wptr ds:[si+LocBRPT_AbsoluteLength+2]
+   mov     ax, wptr [si+LocBRPT_AbsoluteLength] ; Sector-Size
+   mov     bx, wptr [si+LocBRPT_AbsoluteLength+2]
    call    PART_FillOutSizeElement
    ret
 PARTSCAN_CheckThisPartition     EndP
-
-; Scans Current Partition for Extended Partitions, if found, AX,BX,CX,DX will
-; be set to this location and Carry will be set
-PARTSCAN_ScanPartitionForExtended Proc Near  Uses ds si
-   mov     ax, ExecBaseSeg
-   mov     ds, ax
-   mov     si, ExecBasePtr
-   add     si, 446                       ; DS:SI - First Partition Entry
-   xor     ax, ax
-  PSSPFE_ScanLoop:
-      mov     al, ds:[si+LocBRPT_SystemID]
-      cmp     al, 5                      ; Is Partition EXTENDED ?
-      je      PSSPFE_ExtendedPartition
-      cmp     al, 0Fh                    ; Is Partition EXTENDED (M$) ?
-      je      PSSPFE_ExtendedPartition
-      jmp     PSSPFE_IgnorePartition
-     PSSPFE_ExtendedPartition:
-      mov     ax, wptr ds:[si+LocBRPT_RelativeBegin]
-      mov     bx, wptr ds:[si+LocBRPT_RelativeBegin+2]
-      add     ax, wptr es:[ExtendedAbsPos+0] ; Adjust...
-      adc     bx, wptr es:[ExtendedAbsPos+2] ; (Shit Design!)
-      test    es:[ExtendedAbsPosSet], 1
-      jnz     PSSPFE_ExtendedMainKnown
-      mov     wptr es:[ExtendedAbsPos+0], ax
-      mov     wptr es:[ExtendedAbsPos+2], bx
-      mov     cs:[ExtendedAbsPosSet], 1
-     PSSPFE_ExtendedMainKnown:
-      mov     cx, wptr ds:[si+LocBRPT_BeginSector] ; Cylinder/Sector
-      mov     dh, bptr ds:[si+LocBRPT_BeginHead]   ; Head
-      mov     dl, bptr es:[CurPartition_Location+4] ; Drive
-      stc
-      jmp     PSSPFE_EndOfSearch
-     PSSPFE_IgnorePartition:
-      add     si, LocBRPT_LenOfEntry
-   cmp     si, 500+ExecBasePtr
-   jb      PSSPFE_ScanLoop
-   clc
-  PSSPFE_EndOfSearch:
-   ret
-PARTSCAN_ScanPartitionForExtended EndP
 
 ; ===================
 ;  X-REFERENCE STUFF -> PartitionXref
 ; ===================
 
-; The following routines have DS==CS again
-
 ; Reset X-Reference
-PARTSCAN_ResetXref              Proc Near   Uses ax cx es di
-   push    cs
-   pop     es
+PARTSCAN_ResetXref              Proc Near   Uses ax cx di
    mov     di, offset PartitionXref      ; X-Reference for later syncing
    mov     cx, LocIPT_MaxPartitions
    mov     ax, 0FFFFh                    ; Fill up with FFh

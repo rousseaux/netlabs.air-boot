@@ -25,8 +25,7 @@
  º  - Reparatur-Modus, AiR-BOOT Floppy/CD-ROM kann AiR-BOOT reparieren ohne   º
  º     die Konfiguration zurckzustellen                                      º
  º  - MBR-Schutz unter Real-Mode                                              º
- º  - Linux Kernel Untersttzung (fr FAT-16 Partitionen), Kernel-            º
- º     Kommandozeile                                                          º
+ º  - IBM OS/2 / eCS LVM Support                                              º
  º                                                                            º
  ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
  º                                                                            º
@@ -41,7 +40,7 @@
  º  - Windows NT/2000/XP                                                      º
  º                                                                            º
  º AiR-BOOT ist kompatibel zu LVM, dem Logischen Volumen Manager, der fr     º
- º  OS/2, eComStation und Linux-Varianten verfgbar ist.                      º
+ º  OS/2 und eComStation verfgbar ist.                                       º
  º                                                                            º
  º AiR-BOOT kann auch von CD-ROM installiert werden. Einfach das Image einer  º
  º  Installations-Floppy dumpen und dieses auf CD brennen.                    º

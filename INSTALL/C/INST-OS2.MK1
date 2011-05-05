@@ -1,0 +1,26 @@
+!define BLANK ""
+D:\Projects\air-boot\INSTALL\C\install.obj : D:\Projects\air-boot\INSTALL\C\&
+install.c .AUTODEPEND
+ @D:
+ cd D:\Projects\air-boot\INSTALL\C
+ *wcc386 install.c -i="D:\WATCOM2/h;D:\WATCOM2/h/os2" -w4 -e25 -zq -od -d2 -&
+6r -bt=os2 -fo=.obj -mf
+
+D:\Projects\air-boot\INSTALL\C\inst-os2.exe : D:\Projects\air-boot\INSTALL\C&
+\install.obj .AUTODEPEND
+ @D:
+ cd D:\Projects\air-boot\INSTALL\C
+ @%write inst-os2.lk1 FIL install.obj
+ @%append inst-os2.lk1 
+!ifneq BLANK ""
+ *wlib -q -n -b inst-os2.imp 
+ @%append inst-os2.lk1 LIBR inst-os2.imp
+!endif
+ *wlink name inst-os2 d all SYS os2v2 op maxe=25 op q @inst-os2.lk1
+!ifneq BLANK ""
+ rc -i $[: -i D:\WATCOM2\h -i D:\WATCOM2\h\os2  inst-os2.exe
+!endif
+ copy inst-os2.exe ..\..\RELEASE\OS2\airboot2.exe
+ del install.obj
+ 
+

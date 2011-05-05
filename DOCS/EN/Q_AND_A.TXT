@@ -47,51 +47,22 @@
  º                                                                            º
  º    This had to be done JUST because of Microsoft. I can't stand this any   º
  º     longer. There is no need for such checking. It's not documented        º
- º     anywhere and the CLI is bullshit anyway, because one does not need to  º
- º     disable interrupts to change stack or something. Any skilled assembly  º
- º     programmer knows this.                                                 º
- º                                                                            º
- º Q: Hey, why did you code this ? 'NT BOOT'/'OS/2 BOOTMAN'/'LILO' are great. º
- º A: Yeah, sure. Let me say something about those things.                    º
- º     NT BOOT is crap. 100 KBytes for a BOOTMANAGER ? Are you nuts ? And it  º
- º     definitly needs Windows NT installed. (or a FAT partition?!)           º
- º     OS/2 BOOTMAN needs a primary partition, so just 3 are left.            º
- º     LILO is stupid. First it can not boot Linux, if Linux resides not on   º
- º     the first harddisk (at least the last time, I tried). It's loading the º
- º     Linux Kernel via HackIn, that I can't stand as well. And it's not that º
- º     easy to install and setup. It has to get adjusted, when you add new    º
- º     partitions to your harddrive. etc. etc. etc.                           º
- º                                                                            º
- º     Most bootmanagers need a specific OS installed, so this isn't good as  º
- º     well. btw.: If you add a new partition to a drive containing Linux,    º
- º           LILO will not find the root partition anymore (haha, nice try).  º
- º           That's your "premier" boot-manager. phew. AiR-BOOT will find it  º
- º           (normally) automatically on-the-fly and boot it like normal.     º
+ º     anywhere and the CLI was needed on some of the earliest x86 computers  º
+ º     when changing stack. Anyway it's not needed in the MBR at least not    º
+ º     at offset 0.                                                           º
  º                                                                            º
  º Q: Ohhh man, what do you got against LILO. It's soooo good.                º
  º A: Well, I had nothing against it, till it nearly erased my projects       º
  º     partition. It was FAT and this nice little bugger overwrote some       º
  º     internals *as documented* without even giving me any warning message.  º
- º     I see LILO as on the same level as Mickeysoft products. Just believing º
+ º     I see LILO as on the same level as Microsoft products. Just believing  º
  º     they would rule the whole computer and could do anything.              º
- º     During AiR-BOOT alpha testing, it NEVER corrupted any partition table. º
- º     The only problems were crashs, so I had to restore the old MBR.        º
+ º     Even all AiR-BOOT alphas never corrupted any partition table.          º
+ º     The only problems were crashs, so I had to restore to an older MBR.    º
  º     During late beta testing, it never got any problems. And if there were º
- º     any, I just inserted the AiR-BOOT disc and wups, the problem was gone. º
+ º     any, I just inserted the AiR-BOOT disc and the problem was gone.       º
  º     (btw: that's the way I noticed that Partition Magic 3.x overwrites     º
- º      some sectors in the MBR).                                             º
- º                                                                            º
- º Q: So many options, no one will ever need this. Guess you wasted your time º
- º A: Okay, well, perhaps there are too much options, and perhaps it's crap.  º
- º     I believe many users will use different options, so they are good as   º
- º     they are. Too much options would be, if the program is too slow or     º
- º     handling is too difficult, but not in AiR-BOOT. It's tiny in size,     º
- º     easy to setup...just like your BIOS. I have included REAL on-line      º
- º     help, too. Not the way in most BIOSes. I included fancy things, like   º
- º     color menus...look at BIOSes from 1989. They were really ugly. Colored º
- º     menus are somewhat cool. But I know, you are the one with WindowsNT,   º
- º     which thinks it's the best OS in the world. You never tried OS/2, nor  º
- º     Unix/Linux. You want a GUI, but you hate those silly colored-windows.  º
+ º      quietly some sectors in track 0).                                     º
  º                                                                            º
  º Q: I believe you have copied the text of your boot-menu from DocsBoot.     º
  º A: You are right. DocsBoot is cool, but you had to setup using a DOS-exe.  º

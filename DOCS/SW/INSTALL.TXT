@@ -6,7 +6,7 @@
  º Notera: Du beh”ver aldrig att beh”va boota fula DOS igen :)                º
  º                                                                            º
  º 1. Ta en tom, formaterad diskett. Stoppa in den i enhet A: och starta      º
- º     filen AIRBS_xx.EXE fr†n AiR-BOOT arkivet (d„r xx „r din landskod).     º
+ º     filen MAKEDISK.COM fr†n AiR-BOOT arkivet.                              º
  º                                                                            º
  º 2. Kontrollera din CMOS-Setup. Avaktivera 'Virus Varning', om den optionen º
  º     „r tillg„nglig och „ndra boot-sekvensen till n†got, d„r A: „r det      º

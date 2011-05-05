@@ -1,0 +1,21 @@
+
+ PLEASE READ AT LEAST INSTALL.TXT, BETTER READ THE WHOLE \DOCS\-DIRECTORY.
+  IT'S REALLY IMPORTANT, THAT YOU DO.
+
+ If you got a prior version of AiR-BOOT installed on your system, just make a
+  new AiR-BOOT INSTALL disc and boot from it. You should get prompted, that you
+  may update your copy of AiR-BOOT. Configuration will remain intact.
+
+ You may now also use one of the native installers. Please read DOCS\TOOLS.txt
+  before you do.
+
+ Changes this time:
+  - 10th anniversary edition
+  - AiR-BOOT is now released under GPLv3, sourcecode on sourceforge.net
+  - Direct installer now also available for DOS/Win9X and WinNT environment
+  - MakeDisk utility rewritten
+  - Native OS/2 installer rewritten
+  - ISO for bootable CD-ROM included
+  - Fixed bug in setup for driveletter
+
+ Release-Version: 1.06 on 24.05.2009

@@ -1,0 +1,23 @@
+!define BLANK ""
+D:\Projects\air-boot\INSTALL\CD-ROM\MAKEISO\makeiso.obj : D:\Projects\air-bo&
+ot\INSTALL\CD-ROM\MAKEISO\makeiso.c .AUTODEPEND
+ @D:
+ cd D:\Projects\air-boot\INSTALL\CD-ROM\MAKEISO
+ *wcc386 makeiso.c -i="D:\WATCOM2/h;D:\WATCOM2/h/os2" -w4 -e25 -zq -od -d2 -&
+6r -bt=os2 -fo=.obj -mf
+
+D:\Projects\air-boot\INSTALL\CD-ROM\MAKEISO\makeiso.exe : D:\Projects\air-bo&
+ot\INSTALL\CD-ROM\MAKEISO\makeiso.obj .AUTODEPEND
+ @D:
+ cd D:\Projects\air-boot\INSTALL\CD-ROM\MAKEISO
+ @%write makeiso.lk1 FIL makeiso.obj
+ @%append makeiso.lk1 
+!ifneq BLANK ""
+ *wlib -q -n -b makeiso.imp 
+ @%append makeiso.lk1 LIBR makeiso.imp
+!endif
+ *wlink name makeiso d all SYS os2v2 op maxe=25 op q @makeiso.lk1
+!ifneq BLANK ""
+ rc -i $[: -i D:\WATCOM2\h -i D:\WATCOM2\h\os2  makeiso.exe
+!endif
+

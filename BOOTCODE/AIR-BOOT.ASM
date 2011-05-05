@@ -1,38 +1,39 @@
-
-; Disclaimer:
-;=============
-; The sourcecode is released via www.netlabs.org CVS *ONLY*.
-;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
-;  You may recompile the source and do *PRIVATE* modifications, but please keep
-;  in mind that modifying this code needs at least *some* assembly skill. If
-;  you mess up your system, because you needed to hack your way through, don't
-;  blame me. Releasing a customized version of AiR-BOOT, selling it in any form
-;  or reusing parts of this source is *PROHIBITED*. Ask me, if you have some
-;  idea about new functionality *before* developing the code, otherwise I will
-;  definitely reject it. Also please accept, that I have some basic design
-;  rules on AiR-BOOT and I will maintain them at all costs, so this won't get
-;  another GRUB.
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 
 ;---------------------------------------------------------------------------
 ;                                                      AiR-BOOT / MAIN-CODE
 ;---------------------------------------------------------------------------
+; 
 
 ; If ReleaseCode is not defined, it will produce debug-able code...
 ReleaseCode                 equ    -1
-; ReleaseCommercial           equ    -1
 
 JUMPS
 
 ; All Special Equs for this project
 
 IFDEF ReleaseCode
-   ExecBaseSeg              equ     00000h
-   ExecBasePtr              equ     07C00h ; BIOS starts our MBR at 0:7C00
+   StartBaseSeg             equ     00000h
+   StartBasePtr             equ     07C00h ; BIOS starts our MBR at 0:7C00
   ELSE
-   ExecBaseSeg              equ     03567h ; Adjust to DOS segment
-   ExecBasePtr              equ     00100h
+   StartBaseSeg             equ     03A98h ; Adjust to DOS segment
+   StartBasePtr             equ     00100h
 ENDIF
 BootBaseSeg                 equ      8000h
 BootBasePtr                 equ         0h ; We put our MBR to this location
@@ -45,8 +46,8 @@ VideoIO_Page2               equ     0BA00h
 VideoIO_Page4               equ     0BC00h
 VideoIO_FXSegment           equ     0A000h
 
-Include ..\..\..\JimiHelp\asm.inc\stdmacro.inc
-Include ..\INSTALL\GLOBAL.ASM\airboot.inc
+Include ..\INCLUDE\asm.inc
+;Include ..\INCLUDE\DOS\airboot.inc
 
 TextChar_WinLineRight       equ       0C4h ; 'Ä'
 TextChar_WinLineDown        equ       0B3h ; '³'
@@ -73,6 +74,21 @@ LocBRPT_RelativeBegin       equ          8
 LocBRPT_AbsoluteLength      equ         12
 
 LocBR_Magic                 equ        510
+
+; Offsets for LVM Information Sector
+LocLVM_SignatureStart       equ          0
+LocLVM_SignatureByte0       equ          2
+LocLVM_CRC                  equ          8  ; CRC is a DWORD
+LocLVM_MaxEntries           equ          4
+LocLVM_StartOfEntries       equ         60  ; (contains maximum of 4 entries)
+LocLVM_LenOfEntry           equ         60
+LocLVM_VolumeID             equ          0  ; is DWORD
+LocLVM_PartitionID          equ          4  ; is DWORD
+LocLVM_PartitionSize        equ          8  ; is DWORD
+LocLVM_PartitionStart       equ         12  ; is DWORD
+LocLVM_VolumeLetter         equ         18  ; is BYTE (Letter C-Z or 0)
+LocLVM_VolumeName           equ         20  ; 20 bytes
+LocLVM_PartitionName        equ         40  ; 20 bytes
 
 ; Offsets for IPT (Internal Partition Table)
 LocIPT_MaxPartitions        equ         30  ; Maximum LocIPT_MaxPartitions
@@ -104,6 +120,7 @@ Flags_SpecialMarker         equ   10000000b ; temp only for HiddenSetup
 FileSysFlags_BootAble       equ   00000001b ; Is this Partition boot-able ?
 FileSysFlags_FAT32          equ   00010000b ; FAT 32 specific name getting
 FileSysFlags_NoName         equ   00100000b ; No Name - use PartitionName
+FileSysFlags_DriveLetter    equ   01000000b ; DriveLetter Feature possible
 
 Keys_Up                     equ         48h
 Keys_Down                   equ         50h
@@ -138,21 +155,24 @@ code_seg        segment public use16
 
                             org 00000h                          ; Sector 1
 ;---------------------------------------------------------------------------
-AiR_BOOT:     cli
+AiR_BOOT:     cli                        ; Some M$ operating systems need a CLI
+                                         ;  here otherwise they will go beserk
+                                         ;  and will do funny things during
+                                         ;  boot phase, it's laughable!
               db      0EBh               ; JMP-Short -> MBR_Start
-              db      'AiRBOOT', 02h, 03h, 20h, 03h, 01h, 01h, TXT_LanguageID
+              db      'AiRBOOT', 13h, 03h, 20h, 06h, 01h, 06h, TXT_LanguageID
               ; ID String, Date and Version Number, U for US version
               db      1                  ; Total Sectors Count,
                                          ;  Will get overwritten by FIXBSET.exe
 MBR_CheckCode dw      0                  ; Check-Sum for Code
 
 MBR_Start:    sti                        ;    This opcode is dedicated to:
-              cld                        ;          =FUCK MICROSOFT=
-              mov     ax, ExecBaseSeg    ;        fuck every M$-coder,
-              mov     ds, ax             ;      fuck every M$-executive,
-              mov     si, ExecBasePtr    ;    fuck every M$-supporter and
-              mov     ax, BootBaseSeg    ; fuck everyone that is working for
-              mov     es, ax             ;     that evil business. k?thx
+              cld                        ;    =MICROSOFT JUMP DEPARTMENT=
+              mov     ax, StartBaseSeg
+              mov     ds, ax
+              mov     si, StartBasePtr
+              mov     ax, BootBaseSeg
+              mov     es, ax
               mov     di, BootBasePtr
               IFDEF ReleaseCode
                  mov     cx, 256
@@ -170,13 +190,14 @@ MBR_HaltSystem:
               xor     cx, cx
               mov     dx, 500
               int     15h                ; Wait to display the whole screen :]
-MBR_FuckUpSys:cli
-              jmp     MBR_FuckUpSys
+MBR_HaltSys:  cli
+              jmp     MBR_HaltSys
 
               db      'FUCKMS:>'
-              jmp     MBR_Start          ; WE HAVE TO DO THIS CAUSE MICKEYSOFT
-                                         ;  This needs to be at THIS fixed
-                                         ;  location, don't modify it.
+              jmp     MBR_Start          ; We jump here, because I needed to
+                                         ;  insert a CLI on start and did not
+                                         ;  want to change AiR-BOOT detection
+                                         ;  because of Microsoft inventions...
 
               db      'LOAD ERROR!', 0
 MBR_LoadError                   Proc Near  Uses
@@ -249,20 +270,24 @@ MBR_RealStart:
               mov     ax, 0205h          ; Read 5 sectors
               int     13h
               jnc     MBR_ConfigCopy_NoError
+             MBR_ConfigCopy_LoadError:
               call    MBR_LoadError      ; Will Abort BootUp
              MBR_ConfigCopy_NoError:
               mov     bx, offset FurtherMoreLoad
               mov     dx, 0080h          ; First harddrive, Sector 2
               mov     cx, 0002h
               mov     ah, 02h
-              mov     al, ds:[TotalSectorsUsedPtr]
+              mov     al, ds:[10h]
               int     13h
               jnc     MBR_RealStart_NoError
-              call    MBR_LoadError      ; Will Abort BootUp
+              jmp     MBR_ConfigCopy_LoadError
+              ; [v1.05+]
+              ; Signature for IBM's LVM to detect our "powerful" features ;)
+              db      'I13X'
              MBR_RealStart_NoError:
               ; Now Check Code with CheckSum
               mov     si, offset FurtherMoreLoad
-              movzx   cx, bptr ds:[TotalSectorsUsedPtr]
+              movzx   cx, bptr ds:[10h]
               xor     bx, bx
              MBR_RealStart_CheckCodeLoop:
                  call    MBR_GetCheckOfSector
@@ -290,10 +315,11 @@ FurtherMoreLoad:
                         ; 01h -> Boot-Able
                         ; 10h -> FAT32 - Name Getting Scheme
                         ; 20h -> No Name To Get (use Partition Name)
+                        ; 40h -> 'L' flag possible
                 db      'AiRSYS-TABLE'
-FileSysIDs:     db      01h, 11h,01h, 04h,014h,01h, 06h,016h,01h, 0Eh,00Eh,01h
-                db      07h, 17h,01h, 08h,017h,21h, 35h,035h,00h,0EBh,0EBh,01h
-                db      09h, 19h,11h, 0Bh,01Bh,11h, 0Ch,01Ch,11h, 01h,001h,01h
+FileSysIDs:     db      01h, 11h,01h, 04h,014h,01h, 06h,016h,41h, 0Eh,00Eh,01h
+                db      07h, 17h,41h, 08h,017h,21h, 35h,035h,20h,0FCh,017h,41h
+                db      09h, 19h,11h, 0Bh,01Bh,11h, 0Ch,01Ch,11h,0EBh,0EBh,01h
                 db      63h, 63h,21h, 81h,081h,21h, 83h,083h,21h, 40h,040h,21h
                 db     0A5h,0A5h,21h,0A6h,0A6h,21h, 82h,082h,20h,0A7h,0A7h,21h
                 db      63h, 63h,21h, 4Dh,04Dh,21h, 4Eh,04Eh,21h, 4Fh,04Fh,21h
@@ -305,8 +331,8 @@ FileSysIDs:     db      01h, 11h,01h, 04h,014h,01h, 06h,016h,01h, 0Eh,00Eh,01h
                 db      16 dup (0)
 
 FileSysNames:   db      'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
-                db      'HPFS    ', 'NTFS    ', 'LVM-Data', 'BeOS    '
-                db      'FAT32   ', 'FAT32   ', 'FAT32   ', '        '
+                db      'HPFS    ', 'NTFS    ', 'LVM-Data', 'JFS     '
+                db      'FAT32   ', 'FAT32   ', 'FAT32   ', 'BeOS    '
                 db      'Unix    ', 'Minix   ', 'Linux   ', 'Venix   ' ; x row ;)
                 db      'BSD/386 ', 'OpenBSD ', 'LinuxSwp', 'NeXTSTEP'
                 db      'GNU HURD', 'QNX     ', 'QNX     ', 'QNX     '
@@ -330,11 +356,12 @@ AiR_BOOT_Start:  mov     ax, VideoIO_Page1
                  call    SETUP_CheckEnterSETUP
                  call    AFTERCRAP_Main
 
-                 ; Now get FAT16-Linux Kernel Partition, If requested
-                 cmp     [CFG_LinuxKrnlPartition], 0FFh
-                 je      MBR_Main_NoLinuxKrnlPartition
-                 call    LINUX_InitFAT16access
-                MBR_Main_NoLinuxKrnlPartition:
+; [Linux support removed since v1.02]
+;                 ; Now get FAT16-Linux Kernel Partition, If requested
+;                 cmp     [CFG_LinuxKrnlPartition], 0FFh
+;                 je      MBR_Main_NoLinuxKrnlPartition
+;                 call    LINUX_InitFAT16access
+;                MBR_Main_NoLinuxKrnlPartition:
 
                  ; SetUp PartitionPointers for BootMenu (filter non-bootable)
                  call    PART_CalculateMenuPartPointers
@@ -393,6 +420,9 @@ AiR_BOOT_Start:  mov     ax, VideoIO_Page1
                  call    PASSWORD_AskChangeBootPwd
 
                  IFNDEF ReleaseCode
+                    ; Debug Code to terminate DOS .COM program - used for
+                    ;  testing AiR-BOOT
+                    int 3
                     mov     ax, 6200h
                     int     21h
                     mov     es, bx
@@ -415,12 +445,14 @@ Include REGULAR\OTHER.asm                ; Other Routines
 
 Include SETUP\MAiN.ASM                   ; The whole AiR-BOOT SETUP
 Include SPECiAL\ViRUS.asm                ; Virus Detection / Anti-Virus
-Include SPECiAL\FAT16.asm                ; FAT-16 Support
-Include SPECiAL\LINUX.asm                ; Linux Kernel Support
-Include SPECiAL\F00K\BILLSUXX.asm        ; Extended Partition - Micro$haft-Hack
+; [Linux support removed since v1.02]
+;Include SPECiAL\FAT16.asm                ; FAT-16 Support
+;Include SPECiAL\LINUX.asm                ; Linux Kernel Support
+Include SPECiAL\F00K\BILLSUXX.asm        ; Extended Partition - Microsoft-Hack
 Include SPECiAL\SOUND.asm                ; Sound
 Include SPECiAL\APM.asm                  ; Power Managment Support
 Include SPECiAL\FX.asm                   ; l33t Cooper-Bars/Scrolling <bg>
+Include SPECiAL\LVM.asm                  ; LVM-specific code
 IFDEF TXT_IncludeCyrillic
    Include SPECiAL\CHARSET.asm           ; Charset Support (e.g. Cyrillic)
 ENDIF
@@ -440,7 +472,9 @@ Include TEXT\CHARSET.asm                 ; Special Video Charsets (if needed)
                             org 06C00h                          ; Sector 55
 Configuration:
                              db 'AiRCFG-TABLE­'
-                             db 01h, 00h, 'U' ; "Compressed" ID String
+                             db 01h, 02h, 'U' ; "Compressed" ID String
+                             ; This is still version 1.02, because nothing got
+                             ;  changed...
 
 CFG_LastTimeEditLow          dw     0    ; Last Time Edited Stamp (will incr every setup)
 CFG_LastTimeEditHi           dw     0    ; second 16 bit part...
@@ -503,6 +537,7 @@ CFG_ExtPartitionMShack       db     0    ; Extended Partition M$-Hack Global Ena
 CFG_AutomaticBoot            db     0    ; Automatic Booting (only one bootup)
 CFG_PartAutomatic            db     0    ; Partition-No for automatic booting
 CFG_ForceLBAUsage            db     0    ; LBA-BIOS-API forced on any HDD I/O
+CFG_IgnoreLVM                db     0    ; Ignores any LVM-Information
 
 ; VIR variables are for the AiR-BOOT Anti Virus Code
 ; Most of them are backups of Interrupt Points, so we can check, if a
@@ -594,6 +629,8 @@ MBR_BackUpMBR                db 'AiR-BOOT MBR-BackUp - Just to fill this sector 
                             org 0A000h                          ; Uninitialized
 ; This space actually gets initialized in PreCrap to NUL (till EndOfVariables)
 BeginOfVariables:
+PartitionSector              db   512 dup (?) ; Temporary Sector for Partition
+LVMSector:                   db   512 dup (?) ; Temporary Sector for LVM
 TmpSector:                   db   512 dup (?) ; Temporary Sector
 TmpSector2:
 ; Everything used to build a new IPT and reference it to the old one
@@ -605,9 +642,14 @@ PartitionSizeTable:          db   180 dup (?) ; Size-Table (6 bytes per partitio
 PartitionPointers            dw    52 dup (?) ; Maximum is 52 entries till now
 PartitionPointerCount        db     ?         ; Count of total Partition Pointers
 PartitionXref                db    30 dup (?) ; X-Reference Table
+PartitionVolumeLetters       db    30 dup (?) ; Volume-Letters
+                                              ;  0 - no LVM support
+                                              ;  1 - LVM support, but no letter
+                                              ;  'C'-'Z' - assigned drive letter
 
-TotalHarddiscs               db     ?    ; Total harddrives (by POST)
-NewPartitions                db     ?    ; Freshly found partitions
+TotalHarddiscs               db     ?         ; Total harddrives (by POST)
+LBASwitchTable               db   128 dup (?) ; Bit 25-18 for CHS/LBA Switching
+NewPartitions                db     ?         ; Freshly found partitions
 
 VideoIO_Segment              dw     ?    ; Segment for Video I/O
 
@@ -620,7 +662,8 @@ CurIO_UseExtension           db     ?    ; 1-Use INT 13h EXTENSIONS
 CurIO_Scanning               db     ?    ; 1-AiR-BOOT is scanning partitions
                                          ;    (for detailed error message)
 
-GotLinux                     db     ?    ; 1-Linux found
+; [Linux support removed since v1.02]
+;GotLinux                     db     ?    ; 1-Linux found
 
 Menu_EntrySelected           db     ?    ; Which partition we boot this time...
 Menu_UpperPart               db     ?    ; Which number (Base=0) is the partition upper pos
@@ -651,6 +694,7 @@ SETUP_OldPwd                 db    17 dup (?)
 SETUP_NewPwd                 db    17 dup (?)
 SETUP_VerifyPwd              db    17 dup (?)
 StartSoundPlayed             db     ?
+ChangePartNameSave           db     ?
 
 FX_UseCount                  dw     ?
 FX_OverallTimer              dw     ?
@@ -663,27 +707,30 @@ FX_WideScrollerAbsDirection  db     ?
 FX_WideScrollerBounceSpeed   db     ?
 FX_CooperBarsTimer           dw     ?
 
-FAT16_Drive                  db     ?    ; FAT-16: Drive of FAT16-partition
-FAT16_AbsPartitionBegin      dd     ?    ; FAT-16: LBA Begin of Partition
-FAT16_SecsPerCluster         db     ?    ; FAT-16: Sectors Per Cluster
-FAT16_NumOfRootEntries       dw     ?    ; FAT-16: Number of Root Entries
-FAT16_SecsPerFAT             dw     ?    ; FAT-16: Sectors Per FAT
-FAT16_AbsFATBegin            dd     ?    ; FAT-16: LBA Begin of FAT
-FAT16_AbsRootBegin           dd     ?    ; FAT-16: LBA Begin of Root
-FAT16_AbsClusterBegin        dd     ?    ; FAT-16: LBA Begin of Clusters
-FAT16_FATCacheSector         db     ?    ; FAT-16: FAT-Sector No in Cache
-FAT16_FATCache               db   512 dup (?) ; FAT-16: FAT-Area Cache
-
-LINUX_KernelEntries          db   680 dup (?) ; 34*20 -> Space for Kernel-Entries
-LINUX_KernelNo               db     ?         ; Total of Kernels in KernelEntries
-LINUX_KernelSizeTable        db   120 dup (?) ; Size-Table (6 bytes per kernel)
+; [Linux support removed since v1.02]
+;FAT16_Drive                  db     ?    ; FAT-16: Drive of FAT16-partition
+;FAT16_AbsPartitionBegin      dd     ?    ; FAT-16: LBA Begin of Partition
+;FAT16_SecsPerCluster         db     ?    ; FAT-16: Sectors Per Cluster
+;FAT16_NumOfRootEntries       dw     ?    ; FAT-16: Number of Root Entries
+;FAT16_SecsPerFAT             dw     ?    ; FAT-16: Sectors Per FAT
+;FAT16_AbsFATBegin            dd     ?    ; FAT-16: LBA Begin of FAT
+;FAT16_AbsRootBegin           dd     ?    ; FAT-16: LBA Begin of Root
+;FAT16_AbsClusterBegin        dd     ?    ; FAT-16: LBA Begin of Clusters
+;FAT16_FATCacheSector         db     ?    ; FAT-16: FAT-Sector No in Cache
+;FAT16_FATCache               db   512 dup (?) ; FAT-16: FAT-Area Cache
+;
+;LINUX_KernelEntries          db   680 dup (?) ; 34*20 -> Space for Kernel-Entries
+;LINUX_KernelNo               db     ?         ; Total of Kernels in KernelEntries
+;LINUX_KernelSizeTable        db   120 dup (?) ; Size-Table (6 bytes per kernel)
 EndOfVariables:
 
+; Dynamically Generated Tables - do not need to get initialized with NUL
 FX_CooperColors              db   672 dup (?) ; 7 cooper bars*96 - runtime calculated
 FX_CooperState:              db     7 dup (?)
 FX_SinusPos:                 db     7 dup (?)
 FX_CooperPos:                dw     7 dup (?)
 CharsetTempBuffer            db  4096 dup (?) ; Uninitialized Charset buffer
+LVM_CRCTable:                dd   256 dup (?) ; LVM-CRC (->SPECiAL\LVM.asm)
 
 code_seg	ends
 		end	air_boot

@@ -24,9 +24,7 @@
  º     wijziging van het MBR).                                                º
  º  - MBR-beveiliging (Real-Mode).                                            º
  º  - Toewijzen van de gewenste letter in OS/2.                               º
- º  - Linux Kernel Support (vanuit FAT-16 partities), Kernel-opdrachtlijn en  º
- º     automatische cre‰eren van de root-partitie (automatisch en toch confi- º
- º      gureerbaar).                                                          º
+ º  - IBM OS/2 / eCS LVM Support                                              º
  º                                                                            º
  ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
  º                                                                            º
@@ -42,7 +40,7 @@
  º  - Windows NT/2000/XP                                                      º
  º                                                                            º
  º AiR-BOOT is compatibel met de LVM (Logical Volume Manager) beschikbaar bij º
- º  OS/2, eComStation en sommige Linuxvarianten.                              º
+ º  OS/2 en eComStation.                                                      º
  º                                                                            º
  º AiR-BOOT kan worden opgestart vanf CD-ROM. U dient eerst de basisdiskette  º
  º  aan te maken, en dan met "image" ervan naar de CD-RW te branden.          º

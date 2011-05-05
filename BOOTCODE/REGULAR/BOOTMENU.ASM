@@ -1,20 +1,20 @@
-
-; Disclaimer:
-;=============
-; The sourcecode is released via www.netlabs.org CVS *ONLY*.
-;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
-;  You may recompile the source and do *PRIVATE* modifications, but please keep
-;  in mind that modifying this code needs at least *some* assembly skill. If
-;  you mess up your system, because you needed to hack your way through, don't
-;  blame me. Releasing a customized version of AiR-BOOT, selling it in any form
-;  or reusing parts of this source is *PROHIBITED*. Ask me, if you have some
-;  idea about new functionality *before* developing the code, otherwise I will
-;  definitely reject it. Also please accept, that I have some basic design
-;  rules on AiR-BOOT and I will maintain them at all costs, so this won't get
-;  another GRUB.
-
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                                                      AiR-BOOT / BOOT-MENU
 ;---------------------------------------------------------------------------
@@ -184,20 +184,6 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
    mov     cx, 0C04h
    call    VideoIO_Color
 
-   IFDEF ReleaseCommercial
-      mov     si, offset RegisteredTo
-      call    GetLenOfString
-      mov     dx, 144Eh
-      sub     dl, cl
-      mov     cx, dx
-      call    VideoIO_Locate
-      mov     al, TextChar_WinRep4
-      call    VideoIO_PrintSingleChar
-      call    VideoIO_Print
-      mov     al, TextChar_WinRep5
-      call    VideoIO_PrintSingleChar
-   ENDIF
-
    ; Additional message how to enter setup
    mov     si, offset TXT_BootMenuEnterSetup
    call    GetLenOfString
@@ -225,7 +211,7 @@ BOOTMENU_BuildGoodBye           Proc Near   Uses es di
    mov     cx, 0D05h
    call    VideoIO_Color
    mov     bx, 0101h
-   mov     dx, 0450h
+   mov     dx, 0550h
    call    VideoIO_MakeWindow            ; Information-Window
    xor     di, di
    mov     cx, 10
@@ -270,16 +256,16 @@ BOOTMENU_BuildGoodBye           Proc Near   Uses es di
    call    VideoIO_Print                 ; Print Copyright to the end...
    mov     cx, 0303h
    call    VideoIO_Locate
-   IFDEF ReleaseCommercial
-      mov     si, offset RegisteredTo
-     ELSE
-      mov     si, offset BootEndMsg         ; Print End-Message...
-   ENDIF
+   mov     si, offset BootEndMsg         ; Print End-Message...
+   call    VideoIO_Print
+   mov     cx, 0403h
+   call    VideoIO_Locate
+   mov     si, offset BootEndMsg2        ; Print GPL-Message...
    call    VideoIO_Print
    ; -------------------------------------------
    mov     ah, 02h
    mov     bh, 00h
-   mov     dx, 0500h                     ; Sets cursor location to 6, 0
+   mov     dx, 0600h                     ; Sets cursor location to 7, 1
    int     10h
    call    VideoIO_CursorOn
    ret
@@ -365,7 +351,7 @@ BOOTMENU_BuildPartitionText     Proc Near   Uses ax cx dx si
    mov     cx, 0D01h
    call    VideoIO_Color                 ; Violet, blue
    mov     si, PartPointer
-   mov     al, cs:[si+LocIPT_Drive]
+   mov     al, [si+LocIPT_Drive]
    sub     al, 7Fh                       ; Will only display numbers up to 99,
    call    VideoIO_PrintByteNumber       ;  so only showing harddrives...
    add     dh, 5
@@ -410,7 +396,7 @@ BOOTMENU_BuildPartitionText     Proc Near   Uses ax cx dx si
    movzx   cx, dh
    call    VideoIO_Locate
    mov     si, PartPointer
-   mov     al, cs:[si+LocIPT_SystemID]
+   mov     al, [si+LocIPT_SystemID]
    call    PART_SearchFileSysName
    mov     cx, 0C01h
    call    VideoIO_Color                 ; Hrot, Blau
@@ -497,7 +483,6 @@ BOOTMENU_ReColorPart            Proc Near   Uses bx cx es di
 BOOTMENU_ReColorPart            EndP
 
 
-
 ; Calculate Menu-Variables for Boot-Menu, these use the filtered Part-Pointers
 BOOTMENU_ResetMenuVars          Proc Near   Uses dx
    xor     dl, dl                        ; Partition at Pos 0 == 1st
@@ -519,24 +504,10 @@ BOOTMENU_ResetMenuVars          Proc Near   Uses dx
    mov     dl, PartitionPointerCount
    mov     Menu_TotalParts, dl
 
-   ; Now copy the device-name to the ContBIOSbootSeq-IPT entry
-   movzx   bx, CFG_ResumeBIOSbootSeq
-   dec     bx
-   shl     bx, 1
-   mov     si, wptr [ContinueBIOSbootTable+bx]
-   mov     di, offset BIOScontIPTentry+LocIPT_Name
-   push    di
-      mov     cx, 11
-      mov     al, ' '
-      rep     stosb
-   pop     di
-  BMRMV_BootDeviceCopyLoop:
-      lodsb
-      or      al, al
-      jz      BMRMV_NoResumeBootSeq
-      stosb
-      jmp     BMRMV_BootDeviceCopyLoop
-  BMRMV_NoResumeBootSeq:
+   ; Copy device-name to the ContBIOSbootSeq-IPT entry
+   ;  Normally this does not need to get done here, but is done for safety
+   ;  reasons if e.g. IPT got changed by SETUP, but that setup was discarded.
+   call    PART_UpdateResumeBIOSName
 
    ; Default-Partition -> Filtered View -> Menu_EntryDefault
    mov     dl, CFG_PartDefault
@@ -553,20 +524,21 @@ BOOTMENU_ResetMenuVars          Proc Near   Uses dx
    call    PART_ConvertFromStraight
    mov     Menu_EntryAutomatic, dl
 
-   ; Okay, now we check if Default/Last Kernel Partition Name is available...
-   ;  if so, simply set Menu_EntryDefault/Menu_EntryLast.
-   mov     si, offset CFG_LinuxDefaultKernel
-   call    LINUX_SearchKernelName        ; DL - Filtered Entry No
-   cmp     dl, 0FFh
-   je      BMRMV_DefaultKernelNF
-   mov     Menu_EntryDefault, dl
-  BMRMV_DefaultKernelNF:
-   mov     si, offset CFG_LinuxLastKernel
-   call    LINUX_SearchKernelName        ; DL - Filtered Entry No
-   cmp     dl, 0FFh
-   je      BMRMV_LastKernelNF
-   mov     Menu_EntryLast, dl
-  BMRMV_LastKernelNF:
+; [Linux support removed since v1.02]
+;   ; Okay, now we check if Default/Last Kernel Partition Name is available...
+;   ;  if so, simply set Menu_EntryDefault/Menu_EntryLast.
+;   mov     si, offset CFG_LinuxDefaultKernel
+;   call    LINUX_SearchKernelName        ; DL - Filtered Entry No
+;   cmp     dl, 0FFh
+;   je      BMRMV_DefaultKernelNF
+;   mov     Menu_EntryDefault, dl
+;  BMRMV_DefaultKernelNF:
+;   mov     si, offset CFG_LinuxLastKernel
+;   call    LINUX_SearchKernelName        ; DL - Filtered Entry No
+;   cmp     dl, 0FFh
+;   je      BMRMV_LastKernelNF
+;   mov     Menu_EntryLast, dl
+;  BMRMV_LastKernelNF:
 
    ; restlichen Variablen berechnen...
    mov     dl, Menu_TotalParts
@@ -608,23 +580,23 @@ BOOTMENU_SetVarsAfterMenu Proc Near  Uses
    jz      BMSVAM_DontRememberBoot
    mov     dl, Menu_EntrySelected
    call    PART_ConvertToStraight        ; CFG_PartLast is non-filtered
-   mov     di, offset CFG_LinuxLastKernel
-   mov     cx, 11
+;   mov     di, offset CFG_LinuxLastKernel
+;   mov     cx, 11
    cmp     dl, 0FDh                      ; Dont Remember on Floppy/CD-ROM/etc.
    ja      BMSVAM_DontRememberBoot
-   je      BMSVAM_RememberKernelBoot     ; but remember Kernel-Bootings...
+;   je      BMSVAM_RememberKernelBoot     ; but remember Kernel-Bootings...
    mov     CFG_PartLast, dl              ; Remember partition in CFG_PartLast
-   mov     al, ' '
-   rep     stosb                         ; SPACE out CFG_LinuxLastKernel
+;   mov     al, ' '
+;   rep     stosb                         ; SPACE out CFG_LinuxLastKernel
   BMSVAM_DontRememberBoot:
    ret
-
-  BMSVAM_RememberKernelBoot:
-   mov     dl, Menu_EntrySelected
-   call    PART_GetPartitionPointer      ; SI - Pointer to Kernel Entry...
-   add     si, LocIPT_Name
-   rep     movsb                         ; Copy KernelName 2 CFG_LinuxLastKernel
-   ret
+;
+;  BMSVAM_RememberKernelBoot:
+;   mov     dl, Menu_EntrySelected
+;   call    PART_GetPartitionPointer      ; SI - Pointer to Kernel Entry...
+;   add     si, LocIPT_Name
+;   rep     movsb                         ; Copy KernelName 2 CFG_LinuxLastKernel
+;   ret
 BOOTMENU_SetVarsAfterMenu       EndP
 
 ; Actually does the Boot-Menu Interaction
@@ -682,9 +654,9 @@ BOOTMENU_Execute                Proc Near   Uses es di
       ; Wait 2 Seconds everytime
       push    ax dx
          call    TIMER_GetTicCount
-         cmp     dx, wptr cs:[FloppyGetNameTimer+2]
+         cmp     dx, wptr [FloppyGetNameTimer+2]
          ja      BME_ExpiredGetFloppy
-         cmp     ax, wptr cs:[FloppyGetNameTimer+0]
+         cmp     ax, wptr [FloppyGetNameTimer+0]
          jb      BME_NoFloppyNameExpired
         BME_ExpiredGetFloppy:
          call    BOOTMENU_ResetGetFloppy
@@ -824,8 +796,8 @@ BOOTMENU_ResetTimedBoot         Proc Near   Uses ax
    call    TIMER_GetTicCount
    add     ax, CFG_TimedDelay
    adc     dx, 0
-   mov     word ptr cs:[TimedTimeOut], ax
-   mov     word ptr cs:[TimedTimeOut+2], dx
+   mov     wptr [TimedTimeOut], ax
+   mov     wptr [TimedTimeOut+2], dx
    ret
 BOOTMENU_ResetTimedBoot         EndP
 
@@ -834,7 +806,7 @@ BOOTMENU_ResetGetFloppy         Proc Near   Uses ax
    call    TIMER_GetTicCount
    add     ax, 36                      ; 18*2 -> 2 seconds
    adc     dx, 0
-   mov     word ptr cs:[FloppyGetNameTimer], ax
-   mov     word ptr cs:[FloppyGetNameTimer+2], dx
+   mov     word ptr [FloppyGetNameTimer], ax
+   mov     word ptr [FloppyGetNameTimer+2], dx
    ret
 BOOTMENU_ResetGetFloppy         EndP

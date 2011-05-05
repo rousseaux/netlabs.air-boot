@@ -1,3 +1,20 @@
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                                          AiR-BOOT SETUP / ALL SETUP MENUS
 ; v001 - Dutch - by Kris Steenhaut
@@ -27,7 +44,7 @@ TXT_SETUP_LetterNo             equ 'N'
 
 ; Basic Options - Items - Max Length: 23
 ;----------------------------------|---------------------|------------------
-TXT_SETUP_DefaultPart          db 'Standaardpartitie', 0
+TXT_SETUP_DefaultSelection     db 'Standaardkeuze', 0
 TXT_SETUP_TimedBoot            db 'Opstart met wachttijd', 0
 TXT_SETUP_TimedBootDelay       db 'Wachttijd: aantal sec', 0
 TXT_SETUP_TimedKeyHandling     db 'Toetsuitvoer regelen', 0
@@ -57,15 +74,16 @@ TXT_SETUP_ContinueBIOSboot     db 'Opstarten van :', 0
 
 ; Extended Options - Items - Max Length: 23
 ;----------------------------------|---------------------|------------------
-TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partitie', 0
-TXT_SETUP_LinuxDefaultKernel   db 'Linux Standaard Kernel', 0
-TXT_SETUP_LinuxRootPart        db 'Linux hoofdafdeling', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partitie', 0
+;TXT_SETUP_LinuxDefaultKernel   db 'Linux Standaard Kernel', 0
+;TXT_SETUP_LinuxRootPart        db 'Linux hoofdafdeling', 0
+; This here may be larger than 23 chars...
+;TXT_SETUP_DefLinuxCmd          db 'Opdrachtenreeks voor Linux', 0
+TXT_SETUP_IgnoreLVM            db 'LVM-gegevens negeren', 0
 TXT_SETUP_ForceLBAUsage        db 'Enkel BIOS-LBA', 0
 TXT_SETUP_ExtPartMShack        db 'Ext-Part MS Workaround', 0
 ;----------------------------------|---------------------|------------------
-
-; This here may be larger than 23 chars...
-TXT_SETUP_DefLinuxCmd          db 'Opdrachtenreeks voor Linux', 0
 
 ; DYNAMIC LENGTH, maximum 11 chars excluding ending zero
 ;----------------------------------|---------|------------------------------
@@ -73,7 +91,8 @@ TXT_SETUP_MAGIC_Enabled        db 'Actief', 0
 TXT_SETUP_MAGIC_Disabled       db 'Niet actief', 0
 TXT_SETUP_MAGIC_Detailed       db 'Alles', 0
 TXT_SETUP_MAGIC_NoBootable     db 'Geen opstbr', 0
-TXT_SETUP_MAGIC_NoLinux        db 'Geen Linux', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_MAGIC_NoLinux        db 'Geen Linux', 0
 TXT_SETUP_MAGIC_DoNothing      db 'Negeren', 0
 TXT_SETUP_MAGIC_ResetTime      db 'Tijd op nul', 0
 TXT_SETUP_MAGIC_StopTime       db 'Onderbreken', 0
@@ -161,8 +180,8 @@ TXT_SETUPHELP_HideSetup:       db 'Bepaal hoe de andere', 0
 
 ; Basic Options - Help
 ;----------------------------------|--------------------|--------------------
-TXT_SETUPHELP_DefaultPart      db 'Wijzigt de standaard-', 0
-                               db 'partitie. Ook als er', 0
+TXT_SETUPHELP_DefaultSelection db 'Wijzigt de standaard-', 0
+                               db 'selectie. Ook als er', 0
                                db 'een wachttijd werd', 0
                                db 'ingesteld.' ,0
                                db 0
@@ -276,16 +295,27 @@ TXT_SETUPHELP_ContinueBIOSboot db 'Terug naar BIOS om op', 0
 
 ; Extended Options - Help
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_LinuxKernelPart  db 'Bepaald de FAT-16', 0
-                               db 'partitie voor uw Li-', 0
-                               db 'nux kernelbestanden.', 0
-                               db 0
-TXT_SETUPHELP_LinuxDefaultKrnl db 'Specifieert de Linux', 0
-                               db 'standaard kernel be-', 0
-                               db 'standsnaam.', 0
-                               db 0
-TXT_SETUPHELP_LinuxRootPart    db 'Linux opstart-', 0
-                               db 'partitie wijzigen.', 0
+; [Linux support removed since v1.02]
+;TXT_SETUPHELP_LinuxKernelPart  db 'Bepaald de FAT-16', 0
+;                               db 'partitie voor uw Li-', 0
+;                               db 'nux kernelbestanden.', 0
+;                               db 0
+;TXT_SETUPHELP_LinuxDefaultKrnl db 'Specifieert de Linux', 0
+;                               db 'standaard kernel be-', 0
+;                               db 'standsnaam.', 0
+;                               db 0
+;TXT_SETUPHELP_LinuxRootPart    db 'Linux opstart-', 0
+;                               db 'partitie wijzigen.', 0
+;                               db 0
+;TXT_SETUPHELP_DefLinuxCmd:     db 'Opdrachten voor Linux', 0
+;                               db 'instellen, indien', 0
+;                               db 'Linux beschikbaar.', 0
+;                               db 0
+;----------------------------------|--------------------|-------------------
+TXT_SETUPHELP_IgnoreLVM        db 'Werd deze optie', 0
+                               db 'geactiveerd,dan worden', 0
+                               db 'LVM-gegevens als', 0
+                               db 'onbestaande beschouwd.', 0
                                db 0
 TXT_SETUPHELP_ForceLBAUsage    db 'Uitschakelen van de', 0
                                db 'combinatie van LBA', 0
@@ -298,10 +328,6 @@ TXT_SETUPHELP_ExtPartMShack    db 'Schakelt dynamische', 0
                                db 'part. type id naar', 0
                                db 'standaard of MS-Invent', 0
                                db '(gedef. door P optie)', 0
-                               db 0
-TXT_SETUPHELP_DefLinuxCmd:     db 'Opdrachten voor Linux', 0
-                               db 'instellen, indien', 0
-                               db 'Linux beschikbaar.', 0
                                db 0
 
 ; Maximum 26 chars (should not be reached)
@@ -330,9 +356,10 @@ TXT_SETUP_AreYouSure2          db '(J/N)', 0
 
 ; Maximum 60 chars (should not be reached)
 ;----------------------------------|----------------------------------------------------------|
-TXT_SETUP_EnterLinuxCmdLine    db 'U kan nu Linux opdrachten invoeren of wijzigen:', 0
-TXT_SETUP_NoLinuxInstalled     db 'Linux niet aanwezig op uw systeem!', 0
-TXT_SETUP_NoLDLpartition       db 'Deze partitie werd noch FAT16 noch hpfs geformatteerd!', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_EnterLinuxCmdLine    db 'U kan nu Linux opdrachten invoeren of wijzigen:', 0
+;TXT_SETUP_NoLinuxInstalled     db 'Linux niet aanwezig op uw systeem!', 0
+TXT_SETUP_NoLDLpartition       db 'Deze partitie werd noch FAT16/HPFS/JFS geformatteerd!', 0
 
 ; Maximum 34 chars (should not be reached)
 ;----------------------------------|--------------------------------|-------
@@ -348,11 +375,9 @@ TXT_SETUP_DriveLetter          db 'Partitie letter', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'Kies uit C @ Z', 0
 
-IFNDEF ReleaseCommercial
-   ; Colors for special words hard-coded. Keep all 0s.
-   TXT_SETUP_LowerMessage:     db 'U mag dit programma ',0,'vrijelijk',0,' gebruiken ten privaten titel.',0
-                               db 'U mag in ',0,'GEEN GEVAL',0,' AiR-BOOT gebruiken/verdelen indien dit op ',0,'-ENIGERLEI-',0,0
-                               db 'manier, gepaard gaat met een geldelijke vergoeding.',0
-                               db 'Wilt u AiR-BOOT gebruiken ',0,'in andere omstandigheden',0,', ',0,'zoals voorge‹nstalleerd',0,' of',0
-                               db 'afzonderlijk verdeeld',0,', vraag het dan via email aan: ',0,'kiewitz@netlabs.org',0,' !',0
-ENDIF
+; Colors for special words hard-coded. Keep all 0s.
+;TXT_SETUP_LowerMessage:        db 'U mag dit programma ',0,'vrijelijk',0,' gebruiken ten privaten titel.',0
+;                               db 'U mag in ',0,'GEEN GEVAL',0,' AiR-BOOT gebruiken/verdelen indien dit op ',0,'-ENIGERLEI-',0,0
+;                               db 'manier, gepaard gaat met een geldelijke vergoeding.',0
+;                               db 'Wilt u AiR-BOOT gebruiken ',0,'in andere omstandigheden',0,', ',0,'zoals voorge‹nstalleerd',0,' of',0
+;                               db 'afzonderlijk verdeeld',0,', vraag het dan via email aan: ',0,'kiewitz@netlabs.org',0,' !',0

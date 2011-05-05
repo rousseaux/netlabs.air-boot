@@ -1,3 +1,20 @@
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                                          AiR-BOOT SETUP / ALL SETUP MENUS
 ; v046 - Swedish - by Bjîrn Sîderstrîm
@@ -27,7 +44,7 @@ TXT_SETUP_LetterNo             equ 'N'
 
 ; Basic Options - Items - Max Length: 23
 ;----------------------------------|---------------------|------------------
-TXT_SETUP_DefaultPart          db 'Standard Partition', 0
+TXT_SETUP_DefaultSelection     db 'Standard Partition', 0
 TXT_SETUP_TimedBoot            db 'Tidstyrd Bootning', 0
 TXT_SETUP_TimedBootDelay       db 'TidsBoot Fîrdrîj (sek)', 0
 TXT_SETUP_TimedKeyHandling     db 'Tids Tangenthantering', 0
@@ -57,13 +74,16 @@ TXT_SETUP_ContinueBIOSboot     db 'FortsÑtt BIOS Boot Sekv', 0
 
 ; Extended Options - Items - Max Length: 23
 ;----------------------------------|---------------------|------------------
-TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partition', 0
-TXT_SETUP_LinuxDefaultKernel   db 'Linux Standard KÑrna', 0
-TXT_SETUP_LinuxRootPart        db 'Linux Root Partition', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_LinuxKernelPart      db 'Linux Kernel Partition', 0
+;TXT_SETUP_LinuxDefaultKernel   db 'Linux Standard KÑrna', 0
+;TXT_SETUP_LinuxRootPart        db 'Linux Root Partition', 0
+; This here may be larger than 23 chars...
+;TXT_SETUP_DefLinuxCmd          db 'DEFINIERA KOMMANDORAD FôR LINUX', 0
+TXT_SETUP_IgnoreLVM            db 'Ignore LVM information', 0
+; ###
 TXT_SETUP_ForceLBAUsage        db 'Forc BIOS-LBA AnvÑndn.', 0
 TXT_SETUP_ExtPartMShack        db 'Ext-Part MS Workaround', 0
-; This here may be larger than 23 chars...
-TXT_SETUP_DefLinuxCmd          db 'DEFINIERA KOMMANDORAD FôR LINUX', 0
 
 ; DYNAMIC LENGTH, maximum 11 chars excluding ending zero
 ;----------------------------------|---------|------------------------------
@@ -71,7 +91,8 @@ TXT_SETUP_MAGIC_Enabled        db 'Aktiverad', 0
 TXT_SETUP_MAGIC_Disabled       db 'Avaktiverad', 0
 TXT_SETUP_MAGIC_Detailed       db 'Detaljerad', 0
 TXT_SETUP_MAGIC_NoBootable     db 'Ej Bootbar', 0
-TXT_SETUP_MAGIC_NoLinux        db 'Ej Linux', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_MAGIC_NoLinux        db 'Ej Linux', 0
 TXT_SETUP_MAGIC_DoNothing      db 'Gîr Inget', 0
 TXT_SETUP_MAGIC_ResetTime      db 'èterst. Tid', 0
 TXT_SETUP_MAGIC_StopTime       db 'Stopp Tid', 0
@@ -159,6 +180,11 @@ TXT_SETUPHELP_HideSetup:       db 'VÑlj status fîr', 0
 
 ; Basic Options - Help
 ;----------------------------------|--------------------|-------------------
+TXT_SETUPHELP_DefaultSelection db 'Changes your default', 0
+                               db 'selection. It can be', 0
+                               db 'used on Timed Boot.', 0
+                               db 0
+; ####
 TXT_SETUPHELP_DefaultPart      db 'éndrar din standard', 0
                                db 'partition. Den kan', 0
                                db 'anvÑndas vid Tidstyrd', 0
@@ -276,18 +302,28 @@ TXT_SETUPHELP_ContinueBIOSboot db 'Om aktiverad, kommer', 0
 
 ; Extended Options - Help
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_LinuxKernelPart  db 'Definierar FAT-16', 0
-                               db 'partition som', 0
-                               db 'innehÜller dina', 0
-                               db 'Linux kÑrnor.', 0
+; [Linux support removed since v1.02]
+;TXT_SETUPHELP_LinuxKernelPart  db 'Definierar FAT-16', 0
+;                               db 'partition som', 0
+;                               db 'innehÜller dina', 0
+;                               db 'Linux kÑrnor.', 0
+;                               db 0
+;TXT_SETUPHELP_LinuxDefaultKrnl db 'Definiera din', 0
+;                               db 'standardkÑrnas', 0
+;                               db 'filnamn.', 0
+;                               db 0
+;TXT_SETUPHELP_LinuxRootPart    db 'éndrar din Linux', 0
+;                               db 'root partition.', 0
+;                               db 0
+;TXT_SETUPHELP_DefLinuxCmd:     db 'Definierar kommando', 0
+;                               db 'rad fîr Linux, om', 0
+;                               db 'tillgÑngligt.', 0
+;                               db 0
+TXT_SETUPHELP_IgnoreLVM        db 'If activated, AiR-BOOT', 0
+                               db 'won''t even look for', 0
+                               db 'LVM information.', 0
                                db 0
-TXT_SETUPHELP_LinuxDefaultKrnl db 'Definiera din', 0
-                               db 'standardkÑrnas', 0
-                               db 'filnamn.', 0
-                               db 0
-TXT_SETUPHELP_LinuxRootPart    db 'éndrar din Linux', 0
-                               db 'root partition.', 0
-                               db 0
+; ###
 TXT_SETUPHELP_ForceLBAUsage    db 'Forc. anvÑndning av', 0
                                db 'BIOS LBA APIs', 0
                                db 'istÑllet fîr mixad anv.', 0
@@ -298,10 +334,6 @@ TXT_SETUPHELP_ExtPartMShack    db 'Aktiverar dyn. Ñndring', 0
                                db 'skriv id fîr standard', 0
                                db 'eller MS-uppfinnade.', 0
                                db '(definierad av P-flag)', 0
-                               db 0
-TXT_SETUPHELP_DefLinuxCmd:     db 'Definierar kommando', 0
-                               db 'rad fîr Linux, om', 0
-                               db 'tillgÑngligt.', 0
                                db 0
 
 ; Maximum 26 chars (should not be reached)
@@ -330,9 +362,10 @@ TXT_SETUP_AreYouSure2          db '(J/N)', 0
 
 ; Maximum 60 chars (should not be reached)
 ;----------------------------------|----------------------------------------------------------|
-TXT_SETUP_EnterLinuxCmdLine    db 'Var vÑnlig ange/modifiera din Linux kommando-rad:', 0
-TXT_SETUP_NoLinuxInstalled     db 'Du har inte Linux installerat', 0
-TXT_SETUP_NoLDLpartition       db 'Den valda partitionen Ñr inte varken HPFS eller FAT16', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_EnterLinuxCmdLine    db 'Var vÑnlig ange/modifiera din Linux kommando-rad:', 0
+;TXT_SETUP_NoLinuxInstalled     db 'Du har inte Linux installerat', 0
+TXT_SETUP_NoLDLpartition       db 'Den valda partitionen Ñr inte varken HPFS/FAT16/JFS', 0
 
 ; Maximum 34 chars (should not be reached)
 ;----------------------------------|--------------------------------|-------
@@ -348,11 +381,9 @@ TXT_SETUP_DriveLetter          db 'Partition Bokstav', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'Tryck C-Z', 0
 
-IFNDEF ReleaseCommercial
-   ; Colors for special words hard-coded. Keep all 0s.
-   TXT_SETUP_LowerMessage      db 'Detta program Ñr ',0,'fritt',0,' fîr icke-kommersiell privat anvÑndning.',0
-                               db 'Du fÜr ',0,'INTE',0,' distribuera/anvÑnda AiR-BOOT i ',0,'-NèGON-',0,' form,',0
-                               db 'om du erhÜller pengar fîr den distribuerade produkten eller servicen.',0
-                               db 'Om du vill anvÑnda AiR-BOOT i ',0,'andra sammanhang',0,', ',0,'fîrinstallera',0,' eller',0
-                               db 'distribuera',0,' den, var vÑnlig och kontakta mig via e-mail: ',0,'kiewitz@netlabs.org',0,' !',0
-ENDIF
+; Colors for special words hard-coded. Keep all 0s.
+;TXT_SETUP_LowerMessage         db 'Detta program Ñr ',0,'fritt',0,' fîr icke-kommersiell privat anvÑndning.',0
+;                               db 'Du fÜr ',0,'INTE',0,' distribuera/anvÑnda AiR-BOOT i ',0,'-NèGON-',0,' form,',0
+;                               db 'om du erhÜller pengar fîr den distribuerade produkten eller servicen.',0
+;                               db 'Om du vill anvÑnda AiR-BOOT i ',0,'andra sammanhang',0,', ',0,'fîrinstallera',0,' eller',0
+;                               db 'distribuera',0,' den, var vÑnlig och kontakta mig via e-mail: ',0,'kiewitz@netlabs.org',0,' !',0

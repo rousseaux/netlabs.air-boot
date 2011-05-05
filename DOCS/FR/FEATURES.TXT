@@ -29,8 +29,7 @@
  º  - En mode de r‚paration, le CD-ROM ou la disquette AiR-BOOT est capable   º
  º     de r‚parer AiR-BOOT sans effacer les paramŠtres de configuration       º
  º  - Protection du secteur d'amor‡age en mode r‚el                           º
- º  - Support du noyau Linux (depuis des partitions FAT-16), Ligne de         º
- º     commande Kernel et partition de root automatique, mais configurable    º
+ º  - Support du IBM OS/2 / eCS LVM                                           º
  º                                                                            º
  ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
  º                                                                            º
@@ -41,12 +40,12 @@
  º     (il est mˆme possible de d‚marrer depuis des partitions logiques, donc º
  º      de ne pas utiliser le gestionnaire d'amor‡age fourni avec OS/2)       º
  º  - BeOS                                                                    º
- º  - Unix/Linux (avec ou sans LILO)                                          º
+ º  - Unix/Linux (avec LILO)                                                  º
  º  - Windows 95/98/ME (c…d MS-DOS)                                           º
  º  - Windows NT/2000/XP                                                      º
  º                                                                            º
  º AiR-BOOT est compatible avec le LVM, gestionnaire de volumes logiques      º
- º  disponible pour OS/2, eComStation et certaines variantes de Linux.        º
+ º  disponible pour OS/2 et eComStation.                                      º
  º                                                                            º
  º AiR-BOOT peut d‚marrer depuis un CD-ROM. Il suffit de cr‚er une disquette  º
  º  d'amor‡age, de prendre son image et de l'utiliser ensuite pour graver son º

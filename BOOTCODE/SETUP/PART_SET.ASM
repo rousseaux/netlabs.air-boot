@@ -1,20 +1,20 @@
-
-; Disclaimer:
-;=============
-; The sourcecode is released via www.netlabs.org CVS *ONLY*.
-;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
-;  You may recompile the source and do *PRIVATE* modifications, but please keep
-;  in mind that modifying this code needs at least *some* assembly skill. If
-;  you mess up your system, because you needed to hack your way through, don't
-;  blame me. Releasing a customized version of AiR-BOOT, selling it in any form
-;  or reusing parts of this source is *PROHIBITED*. Ask me, if you have some
-;  idea about new functionality *before* developing the code, otherwise I will
-;  definitely reject it. Also please accept, that I have some basic design
-;  rules on AiR-BOOT and I will maintain them at all costs, so this won't get
-;  another GRUB.
-
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                                          AiR-BOOT SETUP / PARTITION SETUP
 ;---------------------------------------------------------------------------
@@ -106,20 +106,20 @@ PARTSETUP_Main                  Proc Near   Uses
 
   PSM_KeyBootAble:
    call    PART_GetPartitionPointer      ; Gets Partition (DL) Pointer -> SI
-   mov     al, cs:[si+LocIPT_Flags]
+   mov     al, [si+LocIPT_Flags]
    xor     al, Flags_BootAble
-   mov     cs:[si+LocIPT_Flags], al
+   mov     [si+LocIPT_Flags], al
    call    PARTSETUP_DrawPartitionInfo
    call    PARTSETUP_BuildChoiceBar
    jmp     PSM_MainLoop
 
   PSM_KeyVIBRdetection:
    call    PART_GetPartitionPointer      ; Gets Partition (DL) Pointer -> SI
-   mov     al, cs:[si+LocIPT_Flags]
+   mov     al, [si+LocIPT_Flags]
    xor     al, Flags_VIBR_Detection
-   mov     cs:[si+LocIPT_Flags], al
+   mov     [si+LocIPT_Flags], al
    xor     ax, ax
-   mov     wptr cs:[si+LocIPT_BootRecordCRC], ax
+   mov     wptr [si+LocIPT_BootRecordCRC], ax
    call    PARTSETUP_DrawPartitionInfo
    call    PARTSETUP_BuildChoiceBar
    jmp     PSM_MainLoop
@@ -142,9 +142,9 @@ PARTSETUP_Main                  Proc Near   Uses
 
   PSM_KeyDriveLetterExtMShack:
    call    PART_GetPartitionPointer      ; Gets Partition (DL) Pointer -> SI
-   mov     al, cs:[si+LocIPT_Flags]
+   mov     al, [si+LocIPT_Flags]
    xor     al, Flags_ExtPartMShack
-   mov     cs:[si+LocIPT_Flags], al
+   mov     [si+LocIPT_Flags], al
    call    PARTSETUP_DrawPartitionInfo
    call    PARTSETUP_BuildChoiceBar
    jmp     PSM_MainLoop
@@ -342,7 +342,7 @@ PARTSETUP_DrawPartitionInfo     Proc Near   Uses ax bx cx dx si
    call    VideoIO_PrintByteNumber
    mov     al, '/'
    call    VideoIO_PrintSingleChar
-   mov     al, cs:[si+LocIPT_Drive]
+   mov     al, [si+LocIPT_Drive]
    sub     al, 7Fh
    call    VideoIO_PrintByteNumber
 
@@ -362,7 +362,7 @@ PARTSETUP_DrawPartitionInfo     Proc Near   Uses ax bx cx dx si
    add     cl, 13
    call    VideoIO_Locate
    ; This is using a sub-routine for each flag. Is better that way.
-   mov     bl, cs:[si+LocIPT_Flags]
+   mov     bl, [si+LocIPT_Flags]
    mov     bh, bl
    mov     al, TXT_SETUP_FlagLetterBootable
    and     bl, Flags_BootAble
@@ -391,7 +391,7 @@ PARTSETUP_DrawPartitionInfo     Proc Near   Uses ax bx cx dx si
       mov     cx, 0C01h
       call    VideoIO_Color              ; Bright Red, Blue
    pop     cx
-   mov     al, cs:[si+LocIPT_SystemID]
+   mov     al, [si+LocIPT_SystemID]
    call    PART_SearchFileSysName
    mov     cl, 8
    call    VideoIO_FixedPrint
@@ -531,8 +531,10 @@ PARTSETUP_LowerScrollMarker     EndP
 
 ; This is called from MBRS_Routines_PartitionSetup
 ;        In: DL - Partition to ChangeName
-; Destroyed: ax
-PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si es di
+; Destroyed: ax bx cx
+PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
+   push    ds
+   pop     es                            ; we need DS==ES in here for MOVSB etc.
    call    PART_GetPartitionPointer      ; Gets the PartitionPointer for DL in SI
 
    ; First deactivate current active bar
@@ -550,53 +552,114 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si es di
    add     ch, 7      ; Y-Position add-on fixed 7
    call    VideoIO_Locate                ; Goes to CX
 
-   mov     al, cs:[si+LocIPT_Flags]
-   xor     dx, dx                        ; Remove "Magic" from DX...
-   test    al, Flags_NoPartName
-   jnz     PSCPN_ChangeButNoBRsave       ; -> No Boot-Record Changing/Saving
+   mov     ChangePartNameSave, 0         ; Don't save to BR / LVM Sector
 
+   ; We compare, if our IPT contains the same partition name as in BR or LVM
+   ;  This is done for security purposes, because if they match, we will update
+   ;  the name in both - IPT and BR/LVM.
+   movzx   bx, dl
+   cmp     [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
+   je      PSCPN_NotLVMSupported
+
+   ; ------------------------------------------------------------[LVM CHECK]---
+   ; Load LVM-Sector here and seek to PartitionName
+   ; Set CurPartition_Location information of destination partition
+   mov     ax, wptr [si+LocIPT_AbsolutePartTable]
+   mov     wptr [CurPartition_Location+0], ax
+   mov     ax, wptr [si+LocIPT_AbsolutePartTable+2]
+   mov     wptr [CurPartition_Location+2], ax
+   mov     ah, bptr [si+LocIPT_LocationPartTable+0]
+   mov     al, [si+LocIPT_Drive]
+   mov     wptr [CurPartition_Location+4], ax
+   mov     ax, wptr [si+LocIPT_LocationPartTable+1]
+   mov     wptr [CurPartition_Location+6], ax
+   mov     di, si                        ; Put SI into DI
+   call    DriveIO_LoadLVMSector
+   jnc     PSCPN_LVMGotError             ; Security again, if problem -> halt
+   push    dx
+      mov     ax, wptr [di+LocIPT_AbsoluteBegin]
+      mov     dx, wptr [di+LocIPT_AbsoluteBegin+2]
+      call    LVM_SearchForPartition
+   pop     dx
+   jnc     PSCPN_LVMGotError             ; Not Found? -> display error and halt
+   add     si, LocLVM_PartitionName
+   xchg    si, di                        ; SI-IPTEntry, DI-LVM PartName
+   jmp     PSCPN_CheckPartName           ; Check, if match...
+
+  PSCPN_LVMGotError:
+   jmp     MBR_LoadError
+
+;   mov     si, di                        ; Restore SI and bootrecord fall-back
+  PSCPN_NotLVMSupported:
+   ; ----------------------------------------------------[BOOT-RECORD CHECK]---
    ; Load Boot-Record...
-   mov     ax, wptr cs:[si+LocIPT_AbsoluteBegin+0]
-   mov     bx, wptr cs:[si+LocIPT_AbsoluteBegin+2]
-   mov     cx, cs:[si+LocIPT_LocationBegin+1]
-   mov     dh, cs:[si+LocIPT_LocationBegin+0]
-   mov     dl, cs:[si+LocIPT_Drive]
-   call    DriveIO_LoadPartition
-
-   ; Now check again, if IPT-Label is MATCHING the name in boot-record
-   ; If not simply don't save to boot-record, just security here...
-   push    ExecBaseSeg
-   pop     es
-   mov     di, ExecBasePtr
+   push    dx
+      mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
+      mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
+      mov     cx, [si+LocIPT_LocationBegin+1]
+      mov     dh, [si+LocIPT_LocationBegin+0]
+      mov     dl, [si+LocIPT_Drive]
+      call    DriveIO_LoadPartition
+   pop     dx
+   ; We seek to Partition Label within boot-record here
+   mov     di, offset PartitionSector
    push    si
-      mov     al, cs:[si+LocIPT_SystemID]
+      mov     al, [si+LocIPT_SystemID]
       call    PART_SearchFileSysName
       ; Replies AH - FileSysFlags, AL - UnhiddenID, SI - FileSysNamePtr
    pop     si
+   test    ah, FileSysFlags_NoName       ; If NoName by FileSysFlag
+   jnz     PSCPN_LetUserEditPartName     ;  -> don't put it into BR at anytime
    test    ah, FileSysFlags_FAT32        ; FAT32 specific name getting
    jz      PSCPN_ResumeNormal
    add     di, 1Ch                       ; Fix fr FAT 32, shit
   PSCPN_ResumeNormal:
    add     di, 2Bh                       ; ES:DI - Name der Partition
+
+   ; This code is used for BR and LVM checking
+  PSCPN_CheckPartName:
    mov     cx, 11                        ; Partition-Name-Length = 11 Bytes
-   xor     dx, dx                        ; Remove "Magic" from DX...
    push    si di
       add     si, LocIPT_Name            ; DS:SI -> Partition-Name
       repz    cmpsb
    pop     di si
-   jne     PSCPN_ChangeButNoBRsave       ; -> No Boot-Record Changing/Saving
-   mov     dx, 0BABEh                    ; Magic - So Boot-Record will get saved
-   ; Let user change the name...
-  PSCPN_ChangeButNoBRsave:
+   jne     PSCPN_LetUserEditPartName     ; -> No BR/LVM Changing/Saving
+   mov     ChangePartNameSave, 1         ; Remember, so we will save to BR
+
+  PSCPN_LetUserEditPartName:
+   ; User will now edit the volume label...
    mov     cx, 11
    add     si, LocIPT_Name               ; DS:SI -> Partition-Name
    call    VideoIO_LetUserEditString     ; -> does actual editing
-   jnc     PSCPN_UserAbort               ; Did user abort ?
-   ; ENTERd...
-   cmp     dx, 0BABEh                    ; Do we have Magic in CX ?
-   jne     PSCPN_UserAbort               ; Just jump over Boot-Record SAVE
+   jnc     PSCPN_AllDone                 ; Did user abort ?
 
-   ; Save it as well in Partition's Boot Record...
+   test    ChangePartNameSave, 1
+   jz      PSCPN_AllDone                 ; Actually we just skip BR/LVM-Save
+
+   ; Check, where to save 2nd destination to...
+   movzx   bx, dl
+   cmp     [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
+   je      PSCPN_SaveBootRecord
+   ; -------------------------------------------------------------[LVM SAVE]---
+   ; Copy 11 bytes from IPT into LVM-Sector also fill 9 bytes with NUL
+   mov     cx, 11
+   push    si
+      rep     movsb
+   pop     si
+   xor     al, al
+   mov     cx, 9
+   rep     stosb
+   ; Update LVM-CRC now...
+   mov     si, offset LVMSector
+   call    LVM_UpdateSectorCRC
+   IFDEF ReleaseCode
+      call    DriveIO_SaveLVMSector      ; Save sector
+   ENDIF
+   jmp     PSCPN_AllDone
+
+   ; -----------------------------------------------------[BOOT-RECORD SAVE]---
+  PSCPN_SaveBootRecord:
+   ; Copy 11 bytes from IPT to Boot-Record
    mov     cx, 11
    push    si
       rep     movsb                      ; Copy IPT-name to Boot-Record
@@ -609,15 +672,16 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si es di
    sub     si, LocIPT_Name               ; Now pointer points to base again...
    call    PART_UpdateBootRecordCRC
 
-  PSCPN_UserAbort:
+  PSCPN_AllDone:
+   ; This here is done for safety, because we misused CurPartition_Location
+   xor     ax, ax
+   mov     di, offset CurPartition_Location
+   mov     cx, 4
+   rep     stosw                         ; NUL out CurPartition_Location
    ret
 PARTSETUP_ChangePartitionName   EndP
 
-
-
-
 ; =============================================================================
-
 ; This is called from MBRS_Routines_PartitionSetup
 ;        In: DL - Partition to HiddenSetup
 ; Destroyed: ax
@@ -694,9 +758,9 @@ PARTHIDESETUP_Main              Proc Near   Uses dx
 
   PHSM_KeyToogle:
    call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
-   mov     al, cs:[si+LocIPT_Flags]
+   mov     al, [si+LocIPT_Flags]
    xor     al, Flags_SpecialMarker
-   mov     cs:[si+LocIPT_Flags], al
+   mov     [si+LocIPT_Flags], al
    call    PARTHIDESETUP_DrawPartitionInfo
    call    PARTHIDESETUP_BuildChoiceBar
    jmp     PHSM_MainLoop
@@ -870,7 +934,7 @@ PARTHIDESETUP_DrawPartitionInfo Proc Near   Uses dx
       call    VideoIO_PrintSingleChar
       ; Display "Type" field aka "HPFS" without ending NULs/Spaces
       push    si
-         mov     al, cs:[si+LocIPT_SystemID]
+         mov     al, [si+LocIPT_SystemID]
          call    PART_SearchFileSysName
          mov     cx, 8
          call    GetLenOfName
@@ -889,7 +953,7 @@ PARTHIDESETUP_DrawPartitionInfo Proc Near   Uses dx
       mov     cl, 10
       call    VideoIO_PrintSingleMultiChar ; Fill up area with spaces
       ; Finally draw Hidden/Unhidden
-      mov     bl, cs:[si+LocIPT_Flags]
+      mov     bl, [si+LocIPT_Flags]
       mov     si, offset TXT_SETUP_MAGIC_Unhidden
       and     bl, Flags_SpecialMarker
       jz      PHSDPI_IsNotHidden
@@ -995,7 +1059,7 @@ PARTHIDESETUP_GetHideConfigAndSpread Proc Near Uses ax dx si di
    ; First check HideFeature-Flag on selected partition.
    ;  if it's not set, don't do anything...
    call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
-   mov     al, cs:[si+LocIPT_Flags]
+   mov     al, [si+LocIPT_Flags]
    test    al, Flags_HideFeature
    jz      PHSGHCAS_EndOfEntries
   PHSGHCAS_SomethingHidden:
@@ -1008,14 +1072,14 @@ PARTHIDESETUP_GetHideConfigAndSpread Proc Near Uses ax dx si di
    ;  0FFh is end-marker / maximum entries = CFG_Partitions
    mov     cl, CFG_Partitions
   PHSGHCAS_SpreadLoop:
-      mov     dl, cs:[di]
+      mov     dl, [di]
       inc     di
       cmp     dl, 0FFh
       je      PHSGHCAS_EndOfEntries
       call    PART_GetPartitionPointer   ; Pointer for partition DL to SI
-      mov     al, cs:[si+LocIPT_Flags]
+      mov     al, [si+LocIPT_Flags]
       or      al, Flags_SpecialMarker    ; Set marker
-      mov     cs:[si+LocIPT_Flags], al
+      mov     [si+LocIPT_Flags], al
    dec     cl
    jnz     PHSGHCAS_SpreadLoop
   PHSGHCAS_EndOfEntries:
@@ -1044,13 +1108,13 @@ PARTHIDESETUP_CollectHideConfigAndPutToTable Proc Near Uses ax si es di
       xor     ch, ch
       mov     cl, CFG_Partitions
      PHSCHCAPTT_CollectLoop:
-         mov     bl, cs:[si+LocIPT_Flags]
+         mov     bl, [si+LocIPT_Flags]
          test    bl, Flags_SpecialMarker
          jz      PHSCHCAPTT_NoMarker
          mov     ds:[di], ch             ; Write byte-Entry
          inc     di
          xor     bl, Flags_SpecialMarker ; Reset Flag
-         mov     cs:[si+LocIPT_Flags], bl
+         mov     [si+LocIPT_Flags], bl
         PHSCHCAPTT_NoMarker:
          add     si, LocIPT_LenOfIPT
       inc     ch
@@ -1062,11 +1126,11 @@ PARTHIDESETUP_CollectHideConfigAndPutToTable Proc Near Uses ax si es di
    jne     PHSCHCAPTT_SomethingToHide
    ; Nothing to hide...so UNSET the Hidden-Feature Flag
    call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
-   mov     al, cs:[si+LocIPT_Flags]
+   mov     al, [si+LocIPT_Flags]
    mov     ah, Flags_HideFeature
    not     ah
    and     al, ah
-   mov     cs:[si+LocIPT_Flags], al
+   mov     [si+LocIPT_Flags], al
    ret
 
   PHSCHCAPTT_SomethingToHide:
@@ -1081,9 +1145,9 @@ PARTHIDESETUP_CollectHideConfigAndPutToTable Proc Near Uses ax si es di
 
    ; Something to hide...so SET the Hidden-Feature Flag
    call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
-   mov     al, cs:[si+LocIPT_Flags]
+   mov     al, [si+LocIPT_Flags]
    or      al, Flags_HideFeature
-   mov     cs:[si+LocIPT_Flags], al
+   mov     [si+LocIPT_Flags], al
    ret
 PARTHIDESETUP_CollectHideConfigAndPutToTable EndP
 
@@ -1094,10 +1158,13 @@ PARTHIDESETUP_CollectHideConfigAndPutToTable EndP
 ; Destroyed: ax
 PARTSETUP_DriveLetterSetup      Proc Near  Uses dx si es di
    call    PART_GetPartitionPointer      ; Gets the PartitionPointer for DL in SI
-   cmp     bptr cs:[si+LocIPT_SystemID], 06h ; Hardcoded FAT16
-   je      PSDLS_GotLDLP
-   cmp     bptr cs:[si+LocIPT_SystemID], 07h ; Hardcoded HPFS
-   je      PSDLS_GotLDLP
+   ; SystemID must support DriveLetter feature (FAT16, HPFS, JFS)
+   mov     al, bptr [si+LocIPT_SystemID]
+   push    si
+      call    PART_SearchFileSysName
+   pop     si
+   test    ah, FileSysFlags_DriveLetter
+   jnz     PSDLS_GotLDLP
 
    ; Drive-Letter feature only possible on HPFS/FAT16 (OS/2) systems
    mov     cx, 0C04h

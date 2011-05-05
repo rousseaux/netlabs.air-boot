@@ -6,7 +6,7 @@
  º  Daarna bent u dan wel voor eeuwig en altijd bevrijd van Dos. :-)          º
  º                                                                            º
  º 1. Stop een lege of geformatteerde diskette in station A:                  º
- º     start dan AIRBS_DT.COM vanaf een (de) opdrachtregel.                   º
+ º     start dan MAKEDISK.COM vanaf een (de) opdrachtregel.                   º
  º                                                                            º
  º 2. Herstart uw PC, en ga naar de bios-setup. Schakel "virus-warning" uit,  º
  º     en stel station A: in als eerste opstartoptie.                         º

@@ -5,8 +5,8 @@
  ∫  Sie Unix/Linux benutzen, mÅssen Sie zumindest einmal DOS booten.          ∫
  ∫                                                                            ∫
  ∫ 1. Sie benîtigen eine leere, formatierte Floppy. Legen Sie diese Diskette  ∫
- ∫     in Laufwerk A: und starten Sie die Datei AIRBS_xx.COM vom AiR-BOOT     ∫
- ∫     Archiv (xx ist ihr dazugehîriger Sprachen-Code).                       ∫
+ ∫     in Laufwerk A: und starten Sie die Datei MAKEDISK.COM vom AiR-BOOT     ∫
+ ∫     Archiv.                                                                ∫
  ∫                                                                            ∫
  ∫ 2. öberprÅfen Sie ihr CMOS-Setup. Deaktivieren Sie 'Virus Warning', sofern ∫
  ∫     diese Option verfÅgbar ist und Ñndern Sie die Boot-Sequenz, so dass A: ∫

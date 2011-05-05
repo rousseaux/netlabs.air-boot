@@ -1,3 +1,20 @@
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;------------------------------------------------------------------------------
 ;                                                        AiR-BOOT / OTHER TEXT
 ; v046 - Swedish - by Bj”rn S”derstr”m
@@ -36,8 +53,8 @@ TXT_BootMenuHelpText2:         db 'V„lj annan med pilarna, eller tryck [TAB] f”r
 TXT_BootMenuEnterSetup         db 'F10 f”r att kommma till Setup', 0
 
 ; Dynamic Length (till 80 chars)
-TXT_BrokenPartitionTable:      db 13, 10, ' - Your system has at least one broken partition table entry or your harddrive'
-                               db 13, 10, '   contains bad sectors. Systemet haltat.', 0
+TXT_BrokenPartitionTable:      db 13, 10, ' - Ditt system har minst en bruten partitionstabellspost eller har din h†rddisk'
+                               db 13, 10, '   trasiga sektorer. Systemet haltat.', 0
 TXT_TooManyPartitions:         db 13, 10, ' - F”r m†nga partitioner hittades. AiR-BOOT st”der endast upp till 30.', 0
 TXT_NoBootAble:                db 13, 10, ' - Ingen bootningsbar partition definierad. Systemet haltat.', 0
 TXT_BIOSchanged:               db 13, 10, ' - BIOS ŽNDRAT, var v„nlig kontrollera ditt system efter virus, f”r att vara s„ker.'

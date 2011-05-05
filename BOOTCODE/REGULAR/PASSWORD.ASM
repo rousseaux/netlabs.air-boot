@@ -1,27 +1,27 @@
-
-; Disclaimer:
-;=============
-; The sourcecode is released via www.netlabs.org CVS *ONLY*.
-;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
-;  You may recompile the source and do *PRIVATE* modifications, but please keep
-;  in mind that modifying this code needs at least *some* assembly skill. If
-;  you mess up your system, because you needed to hack your way through, don't
-;  blame me. Releasing a customized version of AiR-BOOT, selling it in any form
-;  or reusing parts of this source is *PROHIBITED*. Ask me, if you have some
-;  idea about new functionality *before* developing the code, otherwise I will
-;  definitely reject it. Also please accept, that I have some basic design
-;  rules on AiR-BOOT and I will maintain them at all costs, so this won't get
-;  another GRUB.
-
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                                                       AiR-BOOT / PASSWORD
 ;---------------------------------------------------------------------------
 
 ; Don't ask me, what I'm doing in here to encode the passwords. I don't even
 ;  know by myself anymore. It's some kind of hash and I hope that it isn't weak
-;  and some mad uber-hacker-god will laugh about it.
+;  and some mad uber-hacker-god will laugh about it - but i bet so ;-)
 
 PASSWORD_AskSystemPwd           Proc Near   Uses ax bx si di
    ; Asks System Password, if set...
@@ -48,6 +48,15 @@ PASSWORD_AskChangeBootPwd       Proc Near   Uses ax bx si di
   PACBP_NoPassword:
    ret
 PASSWORD_AskChangeBootPwd       EndP
+
+;CFG_MasterPassword           dw 0101Fh   ; Encoded Password (this is just CR)
+;                             dw 07A53h
+;                             dw 0E797h
+;                             dw 0A896h
+; BUGBUG - If unspecified password to ask, check if one of our two are CR
+;          And if that's the case, we need to skip over checking that one.
+;          If both are CR, return to caller
+
 
 ;        In: ax - Magic for AskPassword Subroutine
 ;            si - Text to show, when asking for password

@@ -1,20 +1,20 @@
-
-; Disclaimer:
-;=============
-; The sourcecode is released via www.netlabs.org CVS *ONLY*.
-;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
-;  You may recompile the source and do *PRIVATE* modifications, but please keep
-;  in mind that modifying this code needs at least *some* assembly skill. If
-;  you mess up your system, because you needed to hack your way through, don't
-;  blame me. Releasing a customized version of AiR-BOOT, selling it in any form
-;  or reusing parts of this source is *PROHIBITED*. Ask me, if you have some
-;  idea about new functionality *before* developing the code, otherwise I will
-;  definitely reject it. Also please accept, that I have some basic design
-;  rules on AiR-BOOT and I will maintain them at all costs, so this won't get
-;  another GRUB.
-
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                         AiR-BOOT SETUP / GENERIC & GENERAL SETUP ROUTINES
 ;---------------------------------------------------------------------------
@@ -486,85 +486,56 @@ SETUP_DrawMenuBase              Proc Near   Uses
    mov     cx, 0328h
    call    VideoIO_LocateToCenter        ; LocateToCenter 3, 40 using TotalLen
    call    VideoIO_Print                 ; 'Translated By' as well...
-   IFNDEF ReleaseCommercial
-      ; -------------------------------------------- Lower 1st Line
-      mov     si, offset TXT_SETUP_LowerMessage
-      mov     cl, 3
-      call    GetLenOfStrings               ; CX - Len of 3 Strings at [si]
-      mov     dx, cx
-      mov     cx, 1328h
-      call    VideoIO_LocateToCenter        ; LocateToCenter 19, 40 using TotalLen
-      mov     si, offset TXT_SETUP_LowerMessage
-      call    VideoIO_Print                 ; Begin using WHITE...
-      mov     cx, 0A00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; continue green - 'free'
-      mov     cx, 0F00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; finish using WHITE...
-      ; -------------------------------------------- Lower 2nd Line
-      mov     cl, 5
-      call    GetLenOfStrings               ; CX - Len of 5 Strings at [si]
-      mov     dx, cx
-      mov     cx, 1528h
-      call    VideoIO_LocateToCenter        ; LocateToCenter 21, 40 using TotalLen
-      call    VideoIO_Print                 ; Begin using WHITE again...
-      mov     cx, 0C00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; contine red - 'NOT'
-      mov     cx, 0F00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; more White...
-      mov     cx, 0C00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; contine red - '-ANY-'
-      mov     cx, 0F00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; more White...
-      ; -------------------------------------------- Lower 3rd Line
-      call    GetLenOfString                ; CX - Len of String at [si]
-      mov     dx, cx
-      mov     cx, 1628h
-      call    VideoIO_LocateToCenter        ; LocateToCenter 22, 40 using TotalLen
-      call    VideoIO_Print                 ; Begin using WHITE again...
-      ; -------------------------------------------- Lower 4th Line
-      mov     cl, 5
-      call    GetLenOfStrings               ; CX - Len of 5 Strings at [si]
-      mov     dx, cx
-      mov     cx, 1828h
-      call    VideoIO_LocateToCenter        ; LocateToCenter 24, 40 using TotalLen
-      call    VideoIO_Print                 ; Begin White (again)...
-      mov     cx, 0A00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; continue green - 'other environments'
-      mov     cx, 0F00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; white...
-      mov     cx, 0A00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; green - 'preinstall'
-      mov     cx, 0F00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; finish white...
-      ; -------------------------------------------- Lower 5th Line
-      mov     cl, 4
-      call    GetLenOfStrings               ; CX - Len of 4 Strings at [si]
-      mov     dx, cx
-      mov     cx, 1928h
-      call    VideoIO_LocateToCenter        ; LocateToCenter 25, 40 using TotalLen
-      mov     cx, 0A00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; green - 'distribute'
-      mov     cx, 0F00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; ...some white...
-      mov     cx, 0B00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; and finally the e-mail adress
-      mov     cx, 0F00h
-      call    VideoIO_Color
-      call    VideoIO_Print                 ; finish using WHITE
-   ENDIF
+   ; -------------------------------------------- Lower 1st Line
+   mov     si, offset TXT_SETUP_LowerMessage
+   mov     cl, 2
+   call    GetLenOfStrings               ; CX - Len of 5 Strings at [si]
+   mov     dx, cx
+   mov     cx, 1329h
+   call    VideoIO_LocateToCenter        ; LocateToCenter 21, 40 using TotalLen
+   call    VideoIO_Print                 ; Begin using WHITE again...
+   mov     cx, 0C00h
+   call    VideoIO_Color
+   call    VideoIO_Print                 ; contine red - 'GPLv3+'
+   ; -------------------------------------------- Lower 2nd Line
+   mov     cl, 1
+   call    GetLenOfStrings               ; CX - Len of 3 Strings at [si]
+   mov     dx, cx
+   mov     cx, 1429h
+   call    VideoIO_LocateToCenter        ; LocateToCenter 19, 40 using TotalLen
+   mov     cx, 0F00h
+   call    VideoIO_Color                 ; White...
+   call    VideoIO_Print                 ; Begin using WHITE...
+   ; -------------------------------------------- Lower 3rd Line
+   mov     cl, 1
+   call    GetLenOfString                ; CX - Len of String at [si]
+   mov     dx, cx
+   mov     cx, 1629h
+   call    VideoIO_LocateToCenter        ; LocateToCenter 22, 40 using TotalLen
+   mov     cx, 0F00h
+   call    VideoIO_Color                 ; White...
+   call    VideoIO_Print                 ; For more information...
+   ; -------------------------------------------- Lower 4th Line
+   mov     cl, 1
+   call    GetLenOfStrings               ; CX - Len of 5 Strings at [si]
+   mov     dx, cx
+   mov     cx, 1729h
+   call    VideoIO_LocateToCenter        ; LocateToCenter 24, 40 using TotalLen
+   mov     cx, 0B00h
+   call    VideoIO_Color
+   call    VideoIO_Print                 ; homepage
+   ; -------------------------------------------- Lower 5th Line
+   mov     cl, 2
+   call    GetLenOfStrings               ; CX - Len of 4 Strings at [si]
+   mov     dx, cx
+   mov     cx, 1929h
+   call    VideoIO_LocateToCenter        ; LocateToCenter 25, 40 using TotalLen
+   mov     cx, 0700h
+   call    VideoIO_Color
+   call    VideoIO_Print                 ; white - 'contact via e-mail'...
+   mov     cx, 0800h
+   call    VideoIO_Color
+   call    VideoIO_Print                 ; and finally the e-mail adress
    ret
 SETUP_DrawMenuBase              EndP
 
@@ -671,17 +642,18 @@ SETUP_EnterMenu_ExtendedOptions Proc Near   Uses dx bp
    ret
 SETUP_EnterMenu_ExtendedOptions EndP
 
-SETUP_EnterMenu_LinuxCommandLine Proc Near  Uses dx bp
-   test    GotLinux, 1
-   jz      SEMLCL_NoLinux
-   call    SETUP_EnterMenu_EnterLinuxCmdLine
-   ret
-  SEMLCL_NoLinux:
-   mov     cx, 0C04h
-   mov     si, offset TXT_SETUP_NoLinuxInstalled
-   call    SETUP_ShowErrorBox
-   ret
-SETUP_EnterMenu_LinuxCommandLine EndP
+; [Linux support removed since v1.02]
+;SETUP_EnterMenu_LinuxCommandLine Proc Near  Uses dx bp
+;   test    GotLinux, 1
+;   jz      SEMLCL_NoLinux
+;   call    SETUP_EnterMenu_EnterLinuxCmdLine
+;   ret
+;  SEMLCL_NoLinux:
+;   mov     cx, 0C04h
+;   mov     si, offset TXT_SETUP_NoLinuxInstalled
+;   call    SETUP_ShowErrorBox
+;   ret
+;SETUP_EnterMenu_LinuxCommandLine EndP
 
 SETUP_EnterMenu_DefineMasterPassword Proc Near Uses
    mov     di, offset CFG_MasterPassword
@@ -697,65 +669,66 @@ SETUP_EnterMenu_DefineBootPassword EndP
 
 ; ============================================================================
 
-SETUP_EnterMenu_EnterLinuxCmdLine Proc Near Uses
-   mov     cx, 0D05h
-   call    VideoIO_Color
-   mov     bx, 0C02h
-   mov     dx, 0F4Fh
-   call    VideoIO_MakeWindow
-   mov     cx, 0F05h
-   call    VideoIO_Color
-
-   mov     si, offset TXT_SETUP_EnterLinuxCmdLine
-   call    GetLenOfString                ; CX - Len of Error Message
-   mov     dx, cx
-   mov     cx, 0D28h
-   call    VideoIO_LocateToCenter        ; LocateToCenter 13, 40 using LenOfStr
-   call    VideoIO_Print                 ; Writes 'Please enter Linux-CmdLine'
-
-   mov     cx, 0E05h
-   call    VideoIO_Color
-   mov     cx, 0E04h
-   call    VideoIO_Locate
-   mov     al, ' '
-   mov     cl, 74
-   call    VideoIO_PrintSingleMultiChar
-   mov     cx, 0E04h
-   call    VideoIO_Locate
-   mov     si, offset CFG_LinuxCommandLine
-   push    si
-      call    VideoIO_Print              ; Writes Linux Command-Line
-   pop     si
-   mov     cx, 0E04h
-   call    VideoIO_Locate
-
-   push    cs
-   pop     es                            ; ES == CS
-   mov     di, offset TmpSector
-   mov     cx, 37
-   rep     movsw                         ; Copy LinuxCmdLine -> TmpSectorSpace
-
-   mov     si, offset TmpSector
-   mov     cx, 74
-   call    VideoIO_LetUserEditString     ; -> does actual editing
-   jnc     SEMELCL_UserAbort             ; Did user abort ?
-
-   ; Otherwise copy TmpSectorSpace to LinuxCmdLine
-   mov     di, offset CFG_LinuxCommandLine
-   mov     cx, 74
-   call    GetLenOfName                  ; Get real length of Cmd-Line into CX
-   jz      SEMELCL_NulLine
-   rep     movsb
-  SEMELCL_NulLine:
-   mov     ax, 75
-   sub     ax, cx
-   mov     cx, ax
-   xor     al, al
-   rep     stosb                         ; Fill up with NULs
-
-  SEMELCL_UserAbort:
-   ret
-SETUP_EnterMenu_EnterLinuxCmdLine EndP
+; [Linux support removed since v1.02]
+;SETUP_EnterMenu_EnterLinuxCmdLine Proc Near Uses
+;   mov     cx, 0D05h
+;   call    VideoIO_Color
+;   mov     bx, 0C02h
+;   mov     dx, 0F4Fh
+;   call    VideoIO_MakeWindow
+;   mov     cx, 0F05h
+;   call    VideoIO_Color
+;
+;   mov     si, offset TXT_SETUP_EnterLinuxCmdLine
+;   call    GetLenOfString                ; CX - Len of Error Message
+;   mov     dx, cx
+;   mov     cx, 0D28h
+;   call    VideoIO_LocateToCenter        ; LocateToCenter 13, 40 using LenOfStr
+;   call    VideoIO_Print                 ; Writes 'Please enter Linux-CmdLine'
+;
+;   mov     cx, 0E05h
+;   call    VideoIO_Color
+;   mov     cx, 0E04h
+;   call    VideoIO_Locate
+;   mov     al, ' '
+;   mov     cl, 74
+;   call    VideoIO_PrintSingleMultiChar
+;   mov     cx, 0E04h
+;   call    VideoIO_Locate
+;   mov     si, offset CFG_LinuxCommandLine
+;   push    si
+;      call    VideoIO_Print              ; Writes Linux Command-Line
+;   pop     si
+;   mov     cx, 0E04h
+;   call    VideoIO_Locate
+;
+;   push    cs
+;   pop     es                            ; ES == CS
+;   mov     di, offset TmpSector
+;   mov     cx, 37
+;   rep     movsw                         ; Copy LinuxCmdLine -> TmpSectorSpace
+;
+;   mov     si, offset TmpSector
+;   mov     cx, 74
+;   call    VideoIO_LetUserEditString     ; -> does actual editing
+;   jnc     SEMELCL_UserAbort             ; Did user abort ?
+;
+;   ; Otherwise copy TmpSectorSpace to LinuxCmdLine
+;   mov     di, offset CFG_LinuxCommandLine
+;   mov     cx, 74
+;   call    GetLenOfName                  ; Get real length of Cmd-Line into CX
+;   jz      SEMELCL_NulLine
+;   rep     movsb
+;  SEMELCL_NulLine:
+;   mov     ax, 75
+;   sub     ax, cx
+;   mov     cx, ax
+;   xor     al, al
+;   rep     stosb                         ; Fill up with NULs
+;
+;  SEMELCL_UserAbort:
+;   ret
+;SETUP_EnterMenu_EnterLinuxCmdLine EndP
 
 ;        In: di - Place for Password to be defined
 ; Destroyed: None
@@ -1207,37 +1180,98 @@ SETUPMAGIC_ChangeBootDelay      Proc Near   Uses ax cx dx ds si es di
    ret
 SETUPMAGIC_ChangeBootDelay      EndP
 
-; Used by : Default Partition
-; Value   : Partition Number (Base=0, None=FFh)
+; Used by : Default Selection
+; Value   : Partition Number (Base=0, None=80h, ContinueBIOS=FEh, Floppy=FFh)
 ; Method  : Changes to another bootable partition
-; Logic   : if no bootable partitions are found -> will set FFh
-;           if already set to FFh -> will search through all partitions
-SETUPMAGIC_ChangePartition      Proc Near   Uses ax cx dx si es di
+; Logic   : if no bootable selections are found -> will set 80h
+;           if already set to 80h -> will search through all selections
+SETUPMAGIC_ChangeDefaultSelection Proc Near   Uses ax cx dx si es di
    mov     di, si
-   mov     dl, ds:[bx]                   ; Cur Partition No.
+   mov     dl, ds:[bx]                   ; Cur Selection No.
    push    bx
       pushf
-         cmp     dl, 0FFh
-         jne     SMCP_IsPartitionNo
-         inc     dl
-        SMCP_IsPartitionNo:
-         ; We use BL in here for tracking how many partitions left
+         cmp     dl, 080h
+         jne     SMCP_AlreadyGotSelection
+         ; Start at partition 0. So Continue-BIOS and Floppy will go last
+         xor     dl, dl
+        SMCP_AlreadyGotSelection:
+         ; We use BL in here for tracking how many selections left
          mov     bl, CFG_Partitions
+         cmp     dl, 0FEh
+         jb      SMCP_DoneAdjust
+         je      SMCP_AdjustContinueBIOS
+         cmp     CFG_IncludeFloppy, 0
+         jne     SMCP_DoneAdjust
+         dec     dl                      ; No Floppy? -> Try Resume-BIOS
+        SMCP_AdjustContinueBIOS:
+         cmp     CFG_ResumeBIOSbootSeq, 0
+         jne     SMCP_DoneAdjust
+         xor     dl, dl                  ; No Resume-BIOS? -> Start partition 0
+        SMCP_DoneAdjust:
          mov     dh, bl
          inc     bl
          dec     dh
+         or      cl, cl                        ; CL==0?    -> Decrease
+         jz      SMCP_SubstractSelection       ; otherwise -> Increase
       popf
-      jc      SMCP_DoNotModify
-     SMCP_RejectPartition:
-      call    SETUPMAGIC_InternalCheckUp ; CheckUp DL (max. CFG_Partitions-1)
-     SMCP_DoNotModify:
+      jc      SMCP_Dec_ModifyDone
+     SMCP_Inc_RejectPartition:
+      inc     dl                         ; Increase Selection No
+      cmp     dl, CFG_Partitions
+      jb      SMCP_Inc_ModifyDone
+      cmp     dl, 0FFh
+      je      SMCP_Inc_TryFloppy
+      mov     dl, 0FEh                   ; Try Resume-BIOS
+      cmp     CFG_ResumeBIOSbootSeq, 0
+      jne     SMCP_Inc_ModifyDone
+      inc     dl                         ; Try Floppy
+     SMCP_Inc_TryFloppy:
+      cmp     CFG_IncludeFloppy, 0
+      jne     SMCP_Inc_ModifyDone
+      cmp     CFG_Partitions, 0
+      je      SMCP_NoBootable
+      inc     dl                         ; Now start at partition 0 again
+     SMCP_Inc_ModifyDone:
       dec     bl
       jz      SMCP_NoBootable
       ; Get Partition-Pointer (SI) from Partition-Number (DL)
       call    PART_GetPartitionPointer
       mov     ax, ds:[si+LocIPT_Flags]
       test    ax, Flags_BootAble
-      jz      SMCP_RejectPartition
+      jz      SMCP_Inc_RejectPartition
+      jmp     SMCP_GotSelection
+
+     SMCP_SubstractSelection:
+      popf
+      jc      SMCP_Dec_ModifyDone
+     SMCP_Dec_RejectPartition:
+      dec     dl                         ; Decrease Selection No
+      cmp     dl, 0FDh
+      jb      SMCP_Dec_ModifyDone        ; <FDh -> We are done
+      je      SMCP_Dec_TryPartition
+      cmp     dl, 0FFh
+      jb      SMCP_Dec_TryResumeBIOS
+      cmp     CFG_IncludeFloppy, 0
+      jne     SMCP_Dec_ModifyDone
+      dec     dl
+     SMCP_Dec_TryResumeBIOS:
+      cmp     CFG_ResumeBIOSbootSeq, 0
+      jne     SMCP_Dec_ModifyDone
+     SMCP_Dec_TryPartition:
+      mov     dl, CFG_Partitions
+      or      dl, dl
+      jz      SMCP_NoBootable
+      dec     dl                         ; Now start at last partition again
+     SMCP_Dec_ModifyDone:
+      dec     bl
+      jz      SMCP_NoBootable
+      ; Get Partition-Pointer (SI) from Partition-Number (DL)
+      call    PART_GetPartitionPointer
+      mov     ax, ds:[si+LocIPT_Flags]
+      test    ax, Flags_BootAble
+      jz      SMCP_Dec_RejectPartition
+
+     SMCP_GotSelection:
    pop     bx
    mov     ds:[bx], dl                   ; neue Partition setzen
    add     si, LocIPT_Name               ; Location of Name
@@ -1252,7 +1286,7 @@ SETUPMAGIC_ChangePartition      Proc Near   Uses ax cx dx si es di
 
      SMCP_NoBootable:
    pop     bx
-   mov     dl, 0FFh                      ; "No Bootable"
+   mov     dl, 080h                      ; "No Bootable"
    mov     ds:[bx], dl                   ; set that one
    mov     si, offset TXT_SETUP_MAGIC_NoBootable
    push    cs
@@ -1260,142 +1294,145 @@ SETUPMAGIC_ChangePartition      Proc Near   Uses ax cx dx si es di
    add     di, LocMENU_ItemPack
    call    SETUPMAGIC_InternalCopyTillNUL
    ret
-SETUPMAGIC_ChangePartition      EndP
+SETUPMAGIC_ChangeDefaultSelection EndP
 
-SETUPMAGIC_ChangeLinuxKernelPart Proc Near   Uses ax cx dx si es di
-   mov     di, si
-   mov     dl, ds:[bx]                   ; Cur Partition No.
-   push    bx
-      jc      SMCLKP_DoNotModify
-     SMCLKP_NowGoOn:
-      mov     dh, CFG_Partitions         ; CFG_Partitions is Base==1
-      inc     dl                         ; +1 -> 00h instead FFh -> Disabled
-     SMCLKP_RejectPartition:
-      call    SETUPMAGIC_InternalCheckUp ; CheckUp DL (max. CFG_Partitions)
-     SMCLKP_DoNotModify:
-      or      dl, dl
-      jz      SMCLKP_FunctionDisabled
-      ; Get Partition-Pointer (SI) to Partition-To-Boot (DL)
-      dec     dl
-      call    PART_GetPartitionPointer
-      inc     dl
-      cmp     bptr ds:[si+LocIPT_SystemID], 06h ; FAT-16 required
-      jne     SMCLKP_RejectPartition
-   pop     bx
-   add     si, LocIPT_Name               ; Location of Name
-   push    cs
-   pop     es
-   add     di, LocMENU_ItemPack          ; DI points to ItemPack
-   mov     cx, 11
-   rep     movsb                         ; Copy cur PartitionName to ItemPack
-   xor     al, al
-   stosb                                 ; Ending Zero
-  SMCLKP_WriteNewValue:
-   dec     dl
-   mov     ds:[bx], dl                   ; Set new partition number
-   ret
+; [Linux support removed since v1.02]
+;SETUPMAGIC_ChangeLinuxKernelPart Proc Near   Uses ax cx dx si es di
+;   mov     di, si
+;   mov     dl, ds:[bx]                   ; Cur Partition No.
+;   push    bx
+;      jc      SMCLKP_DoNotModify
+;     SMCLKP_NowGoOn:
+;      mov     dh, CFG_Partitions         ; CFG_Partitions is Base==1
+;      inc     dl                         ; +1 -> 00h instead FFh -> Disabled
+;     SMCLKP_RejectPartition:
+;      call    SETUPMAGIC_InternalCheckUp ; CheckUp DL (max. CFG_Partitions)
+;     SMCLKP_DoNotModify:
+;      or      dl, dl
+;      jz      SMCLKP_FunctionDisabled
+;      ; Get Partition-Pointer (SI) to Partition-To-Boot (DL)
+;      dec     dl
+;      call    PART_GetPartitionPointer
+;      inc     dl
+;      cmp     bptr ds:[si+LocIPT_SystemID], 06h ; FAT-16 required
+;      jne     SMCLKP_RejectPartition
+;   pop     bx
+;   add     si, LocIPT_Name               ; Location of Name
+;   push    cs
+;   pop     es
+;   add     di, LocMENU_ItemPack          ; DI points to ItemPack
+;   mov     cx, 11
+;   rep     movsb                         ; Copy cur PartitionName to ItemPack
+;   xor     al, al
+;   stosb                                 ; Ending Zero
+;  SMCLKP_WriteNewValue:
+;   dec     dl
+;   mov     ds:[bx], dl                   ; Set new partition number
+;   ret
+;
+;     SMCLKP_FunctionDisabled:
+;   pop     bx
+;   mov     si, offset TXT_SETUP_MAGIC_Disabled
+;   push    cs
+;   pop     es
+;   add     di, LocMENU_ItemPack          ; DI points to ItemPack...
+;   call    SETUPMAGIC_InternalCopyTillNUL
+;   jmp     SMCLKP_WriteNewValue
+;SETUPMAGIC_ChangeLinuxKernelPart EndP
 
-     SMCLKP_FunctionDisabled:
-   pop     bx
-   mov     si, offset TXT_SETUP_MAGIC_Disabled
-   push    cs
-   pop     es
-   add     di, LocMENU_ItemPack          ; DI points to ItemPack...
-   call    SETUPMAGIC_InternalCopyTillNUL
-   jmp     SMCLKP_WriteNewValue
-SETUPMAGIC_ChangeLinuxKernelPart EndP
+; [Linux support removed since v1.02]
+;SETUPMAGIC_ChangeLinuxRootPart  Proc Near   Uses ax cx dx si es di
+;   mov     di, si
+;   pushf                                 ; lame, but it's not working other ways
+;      test    ds:[GotLinux], 1
+;      jnz     SMCLRP_GotLinux
+;   popf
+;   add     di, LocMENU_ItemPack          ; DI points to ItemPack
+;   mov     si, offset TXT_SETUP_MAGIC_NoLinux
+;   push    cs
+;   pop     es
+;   call    SETUPMAGIC_InternalCopyTillNUL
+;   ret
+;     SMCLRP_GotLinux:
+;      mov     dl, ds:[bx]                ; Cur Partition No.
+;      mov     dh, CFG_Partitions
+;      dec     dh
+;   popf
+;   push    bx
+;      jc      SMCLRP_DoNotModify         ; Thou shall not modify :)
+;     SMCLRP_RejectPartition:
+;      call    SETUPMAGIC_InternalCheckUp ; CheckUp DL (max. CFG_Partitions-1)
+;     SMCLRP_DoNotModify:
+;      ; Get Partition-Pointer (SI) to Partition-To-Boot (DL)
+;      call    PART_GetPartitionPointer
+;      cmp     bptr ds:[si+LocIPT_SystemID], 083h
+;      jne     SMCLRP_RejectPartition
+;   pop     bx
+;   mov     ds:[bx], dl
+;   push    cs
+;   pop     es
+;   add     di, LocMENU_ItemPack          ; DI points to ItemPack...
+;   push    di
+;      mov     cx, 12
+;      xor     al, al
+;      rep     stosb                      ; Fill with NULs
+;   pop     di
+;   call    LINUX_TranslateToDEV          ; now translate thingie (DL)
+;   ret
+;SETUPMAGIC_ChangeLinuxRootPart  EndP
 
-SETUPMAGIC_ChangeLinuxRootPart  Proc Near   Uses ax cx dx si es di
-   mov     di, si
-   pushf                                 ; lame, but it's not working other ways
-      test    ds:[GotLinux], 1
-      jnz     SMCLRP_GotLinux
-   popf
-   add     di, LocMENU_ItemPack          ; DI points to ItemPack
-   mov     si, offset TXT_SETUP_MAGIC_NoLinux
-   push    cs
-   pop     es
-   call    SETUPMAGIC_InternalCopyTillNUL
-   ret
-     SMCLRP_GotLinux:
-      mov     dl, ds:[bx]                ; Cur Partition No.
-      mov     dh, CFG_Partitions
-      dec     dh
-   popf
-   push    bx
-      jc      SMCLRP_DoNotModify         ; Thou shall not modify :)
-     SMCLRP_RejectPartition:
-      call    SETUPMAGIC_InternalCheckUp ; CheckUp DL (max. CFG_Partitions-1)
-     SMCLRP_DoNotModify:
-      ; Get Partition-Pointer (SI) to Partition-To-Boot (DL)
-      call    PART_GetPartitionPointer
-      cmp     bptr ds:[si+LocIPT_SystemID], 083h
-      jne     SMCLRP_RejectPartition
-   pop     bx
-   mov     ds:[bx], dl
-   push    cs
-   pop     es
-   add     di, LocMENU_ItemPack          ; DI points to ItemPack...
-   push    di
-      mov     cx, 12
-      xor     al, al
-      rep     stosb                      ; Fill with NULs
-   pop     di
-   call    LINUX_TranslateToDEV          ; now translate thingie (DL)
-   ret
-SETUPMAGIC_ChangeLinuxRootPart  EndP
-
+; [Linux support removed since v1.02]
 ; CH-ItemNo, CL-Add/Sub, BX-PtrToVariable, SI-ItemPack
-SETUPMAGIC_ChangeLinuxDefaultKernel Proc Near   Uses ax cx dx si es di
-   mov     di, si
-   jc      SMCLDK_DoNotEdit
-
-   ; --- Edit Linux Default Kernel Name ---
-   mov     cl, 29                        ; Left side: 29
-   test    ch, 1000b
-   jz      SMCLDK_NoRightSide
-   and     ch, 111b
-   mov     cl, 68                        ; Right side: 68
-  SMCLDK_NoRightSide:
-   add     ch, 6                         ; Koordinate umberechnen
-   push    cx
-      call    VideoIO_Locate
-      mov     cx, 0E01h
-      call    VideoIO_Color              ; Yellow on Blue
-      mov     cl, 12
-      mov     si, offset CFG_LinuxDefaultKernel
-      call    VideoIO_FixedPrint         ; Print out [SI] (Length = CL)
-   pop     cx
-   call    VideoIO_Locate
-   mov     cl, 11
-   mov     si, offset CFG_LinuxDefaultKernel
-   call    VideoIO_LetUserEditString
-
-   ; Final-Process string (which means upper-case it)
-   mov     cl, 11
-  SMCLDK_FinalProcessLoop:
-      mov     al, bptr ds:[si]
-      cmp     al, 'a'
-      jb      SMCLDK_FinalProcessSkip
-      cmp     al, 'z'
-      ja      SMCLDK_FinalProcessSkip
-      sub     al, 20h
-     SMCLDK_FinalProcessSkip:
-      mov     bptr ds:[si], al
-      inc     si
-   dec     cl
-   jnz     SMCLDK_FinalProcessLoop
-   ; --- End of Edit Linux Default Kernel Name ---
-
-  SMCLDK_DoNotEdit:
-   push    cs
-   pop     es
-   add     di, LocMENU_ItemPack          ; DI points to ItemPack...
-   mov     si, offset CFG_LinuxDefaultKernel
-   mov     cx, 6                         ; Copy from CFG-Space to ItemPack
-   rep     movsw
-   ret
-SETUPMAGIC_ChangeLinuxDefaultKernel EndP
+;SETUPMAGIC_ChangeLinuxDefaultKernel Proc Near   Uses ax cx dx si es di
+;   mov     di, si
+;   jc      SMCLDK_DoNotEdit
+;
+;   ; --- Edit Linux Default Kernel Name ---
+;   mov     cl, 29                        ; Left side: 29
+;   test    ch, 1000b
+;   jz      SMCLDK_NoRightSide
+;   and     ch, 111b
+;   mov     cl, 68                        ; Right side: 68
+;  SMCLDK_NoRightSide:
+;   add     ch, 6                         ; Koordinate umberechnen
+;   push    cx
+;      call    VideoIO_Locate
+;      mov     cx, 0E01h
+;      call    VideoIO_Color              ; Yellow on Blue
+;      mov     cl, 12
+;      mov     si, offset CFG_LinuxDefaultKernel
+;      call    VideoIO_FixedPrint         ; Print out [SI] (Length = CL)
+;   pop     cx
+;   call    VideoIO_Locate
+;   mov     cl, 11
+;   mov     si, offset CFG_LinuxDefaultKernel
+;   call    VideoIO_LetUserEditString
+;
+;   ; Final-Process string (which means upper-case it)
+;   mov     cl, 11
+;  SMCLDK_FinalProcessLoop:
+;      mov     al, bptr ds:[si]
+;      cmp     al, 'a'
+;      jb      SMCLDK_FinalProcessSkip
+;      cmp     al, 'z'
+;      ja      SMCLDK_FinalProcessSkip
+;      sub     al, 20h
+;     SMCLDK_FinalProcessSkip:
+;      mov     bptr ds:[si], al
+;      inc     si
+;   dec     cl
+;   jnz     SMCLDK_FinalProcessLoop
+;   ; --- End of Edit Linux Default Kernel Name ---
+;
+;  SMCLDK_DoNotEdit:
+;   push    cs
+;   pop     es
+;   add     di, LocMENU_ItemPack          ; DI points to ItemPack...
+;   mov     si, offset CFG_LinuxDefaultKernel
+;   mov     cx, 6                         ; Copy from CFG-Space to ItemPack
+;   rep     movsw
+;   ret
+;SETUPMAGIC_ChangeLinuxDefaultKernel EndP
 
 SETUPMAGIC_ChangeTimedKeyHandling Proc Near   Uses ax cx dx ds si es di
    mov     di, si
@@ -1451,6 +1488,22 @@ SETUPMAGIC_ChangeBootMenu       Proc Near   Uses ax cx dx ds si es di
    ret
 SETUPMAGIC_ChangeBootMenu       EndP
 
+SETUPMAGIC_ChangeFloppyDisplay  Proc Near   Uses cx dx si es di
+   call    SETUPMAGIC_EnableDisable      ; forward call
+   cmp     CFG_PartDefault, 0FFh         ; Default-Selection is us?
+   jne     SMCFD_Done
+   xor     ch, ch
+   mov     CFG_PartDefault, ch           ; Reset Default-Selection to 1st part
+   ; We need to fill up Item 0 (Default-Selection)...
+   call    SETUP_FillUpItemPack_Now
+   ; ...and display it on screen (so the user thinks that we are not dumb)
+   ; This is hardcoded, but there is no other way.
+   xor     dl, dl
+   call    SETUP_DrawDeSelectItem        ; Redraw Item 0
+  SMCFD_Done:
+   ret
+SETUPMAGIC_ChangeFloppyDisplay  EndP
+
 SETUPMAGIC_ChangeBIOSbootSeq    Proc Near   Uses ax bx cx dx si di
    mov     di, si
    mov     dl, ds:[bx]                   ; Cur Timed-Key-Handling
@@ -1463,6 +1516,9 @@ SETUPMAGIC_ChangeBIOSbootSeq    Proc Near   Uses ax bx cx dx si di
    or      dl, dl
    jnz     SMCBBS_Enabled
    mov     si, offset TXT_SETUP_MAGIC_Disabled
+   cmp     CFG_PartDefault, 0FEh         ; Default-Selection is us?
+   jne     SMCBBS_CopyThiz
+   mov     CFG_PartDefault, dl           ; Reset Default-Selection to 1st part
    jmp     SMCBBS_CopyThiz
   SMCBBS_Enabled:
    dec     dl
@@ -1474,5 +1530,7 @@ SETUPMAGIC_ChangeBIOSbootSeq    Proc Near   Uses ax bx cx dx si di
    push    cs
    pop     es
    call    SETUPMAGIC_InternalCopyTillNUL
+   ; Copy device-name to the ContBIOSbootSeq-IPT entry
+   call    PART_UpdateResumeBIOSName
    ret
 SETUPMAGIC_ChangeBIOSbootSeq    EndP

@@ -1,0 +1,94 @@
+     ÖÄ[ Native AiR-BOOT Installer ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º A native AiR-BOOT installer is now available for various operating systems º
+ º  Please note: If your operating system is not listed, you should use a     º
+ º                bootable floppy/CD-ROM for installation.                    º
+ º                                                                            º
+ º               Also you SHOULD create a bootable floppy/CD-ROM for easy     º
+ º                repair purposes anyway.                                     º
+ º                                                                            º
+ º AiRBOOT.com  - Pure DOS/Windows 9x environment                             º
+ º AiRBOOTW.exe - WinNT environment (Windows NT/2000/XP/Vista)                º
+ º AiRBOOT2.exe - OS/2 environment                                            º
+ º MAKEDISK.com - DOS program that creates a bootable AiR-BOOT floppy         º
+ º                                                                            º
+ º All those installers require AiRBOOT.bin in their current directory.       º
+ º                                                                            º
+ º Commandline-parameters for installers:                                     º
+ º  /forcecode    - always writes code to harddrive                           º
+ º  /forceconfig  - always writes configuration to harddrive                  º
+ º  /silent       - automatically installs/updates AiR-BOOT                   º
+ º                                                                            º
+ º CD-ROM\AiRBOOT.iso - AiR-BOOT ISO for burning bootable CD-ROM              º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ DOS Utilities ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º DOS\SETABOOT.com - CLI Utility to control AiR-BOOT under DOS environment.  º
+ º                                                                            º
+ º /? for help                                                                º
+ º /T:x sets timeout value to x seconds                                       º
+ º /T:NO disables timeout                                                     º
+ º /B restarts the system                                                     º
+ º /IBA:name restarts the system and automatically boot from partition/volume º
+ º            specified as "name".                                            º
+ º                                                                            º
+ º DOS\INITHDD.com - CLI Utility to initialize harddrive.                     º
+ º  This program writes a fresh MBR to harddrive 0, IF harddrive 0 does not   º
+ º   yet contain any valid MBR. It's meant to be used during image deployment º
+ º   and does not offer any commandline-options.                              º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ WinNT Utilities ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º No utilities are currently available for WinNT.                            º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+
+     ÖÄ[ OS/2 Utilities ]ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ ÖÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ·
+ º                                                                            º
+ º OS2\SETABOOT.exe, a OS/2 SETBOOT replacement for use with AiR-BOOT.        º
+ º  It's supporting almost every commandline switch, but /X nor /N.           º
+ º  On the other side, it has a special switch called /XWP to automatically   º
+ º  migrate AiR-BOOT bootable partitions into XWorkPlace Shutdown menu.       º
+ º                                                                            º
+ º SETABOOT needs to be accessible somewhere from PATH for XWorkPlace booting º
+ º  to work.                                                                  º
+ º                                                                            º
+ º AiR-BOOT supports IBM's OS/2 LVM. It will use LVM information for          º
+ º  identifying partitions and it's also able to change boot-drive-letters    º
+ º  on-the-fly during bootup. So if you want to make a full-working rescue    º
+ º  bootdrive, simply copy it over to another partition using xcopy and set   º
+ º  set the 'L'-flag on both partitions to the required drive-letter.         º
+ º                                                                            º
+ º If LVM information is found for a partition, that information is used by   º
+ º  by AiR-BOOT (like the partition name etc.). If no LVM information is      º
+ º  found, AiR-BOOT gets the partition name from the boot record of the       º
+ º  partition (if possible). Changing the partition name will also change the º
+ º  the partition name in the LVM information/boot record - depending where   º
+ º  it was read from in the first place.                                      º
+ º                                                                            º
+ º Also please note that AiR-BOOT uses the PARTITION NAME of the LVM          º
+ º  information. Under LVM, there are partition AND volume names. There is    º
+ º  also Mini-LVM - used e.g. by eComStation installer - it will set BOTH     º
+ º  names. Please do not get confused by it.                                  º
+ º                                                                            º
+ º AiR-BOOT will also modify LVM driveletters, if the 'L' flag is set on a    º
+ º  specified partition and that partition is being booted from. It will then º
+ º  then become that driveletter and any partition, that was using it, will   º
+ º  get it removed.                                                           º
+ º                                                                            º
+ º [v1.05] AiR-BOOT is now able to detect bootable JFS partitions. It's       º
+ º          required to set the partition id to 07h (IFS).                    º
+ º                                                                            º
+ ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
+     ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

@@ -6,8 +6,7 @@
  º  to boot ugly DOS again :)                                                 º
  º                                                                            º
  º 1. Get a blank, formatted disc. Insert this disc into drive A: and start   º
- º     the file AIRBS_xx.EXE from the AiR-BOOT archive (where xx is your      º
- º     language code).                                                        º
+ º     the file MAKEDISK.COM from the AiR-BOOT archive.                       º
  º                                                                            º
  º 2. Check your CMOS-Setup. Deselect 'Virus Warning', if this option is      º
  º     available and change the boot-sequence to something, where A: is the   º

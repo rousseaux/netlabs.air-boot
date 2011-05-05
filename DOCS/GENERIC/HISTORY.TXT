@@ -143,28 +143,74 @@
  º         ³             ³        ³ [+] Bad BIOS INT 10h compatibility fix    º
  º         ³             ³        ³ [+] Swedish localization available        º
  ºÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
- º   1.01  ³  2 Mar 2003 ³ [WARP] ³ [!] NO WAR FOR CONTROL OVER OIL RESOURCES º
+ º   1.01  ³ 20 Mar 2003 ³ [WARP] ³ [!] My feelings go to Iraqi civilians     º
+ º         ³             ³        ³ [!] License change: If you are or were    º
+ º         ³             ³        ³      working indirectly or directly for   º
+ º         ³             ³        ³      american government and/or military, º
+ º         ³             ³        ³      then you are NOT allowed to use this º
+ º         ³             ³        ³      software in any case and you are     º
+ º         ³             ³        ³      supposed to delete it NOW. Downloads º
+ º         ³             ³        ³      from .gov computers are now blocked. º
  º         ³             ³        ³ [-] Issue with NTFS detected as being     º
- º         ³             ³        ³      HPFS fixed                           º
  º         ³             ³        ³ [+] Broken partition table error message  º
  º         ³             ³        ³      instead of "LOAD ERROR"              º
  º         ³             ³        ³ [+] Minor changes                         º
+ ºÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º   1.02  ³ 12 May 2004 ³ [WARP] ³ [!] Imperialismn sucks                    º
+ º         ³             ³        ³ [+] Being closed source again...          º
+ º         ³             ³        ³ [+] LVM Support                           º
+ º         ³             ³        ³      Dynamic changing of bootdrive letter º
+ º         ³             ³        ³      Partition names are taken from LVM   º
+ º         ³             ³        ³ [+] Matching is now even more forgiving   º
+ º         ³             ³        ³ [+] Floppy and Resume-BIOS may be used    º
+ º         ³             ³        ³      for default selection and timed boot º
+ º         ³             ³        ³ [+] SETABOOT (OS/2): Small changes        º
+ º         ³             ³        ³ [+] SETABOOT (DOS):  New utility to       º
+ º         ³             ³        ³      control AiR-BOOT under bare DOS      º
+ º         ³             ³        ³ [-] Linux kernel support dropped          º
+ ºÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º   1.03  ³ 18 Oct 2004 ³ [WARP] ³ [!] Every dead american soldier is a step º
+ º         ³             ³        ³      to Vietnam 2 for USA and final peace º
+ º         ³             ³        ³      for iraq                             º
+ º         ³             ³        ³ [+] Undocumented /4 now supported via     º
+ º         ³             ³        ³      OS/2 setaboot.                       º
+ º         ³             ³        ³ [-] NTFS was detected as HPFS on LVMified º
+ º         ³             ³        ³      drives. Now fixed.                   º
+ º         ³             ³        ³ [+] os2.txt contains more information     º
+ ºÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º   1.04  ³ 27 Nov 2004 ³ [WARP] ³ [+] Improved CHS<->LBA access switching   º
+ ºÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º   1.05  ³ 13 Mar 2006 ³ [WARP] ³ [+] JFS with IFS partition id is now      º
+ º         ³             ³        ³      detected and is also able to boot up º
+ º         ³             ³        ³ [+] Harddrive number is shown, when brokenº
+ º         ³             ³        ³      partition table was detected         º
+ º         ³             ³        ³ [+] I13X signature now included in MBR,   º
+ º         ³             ³        ³      LVM doesn't delete us anymore        º
+ ºÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄ³ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
+ º   1.06  ³ 24 May 2009 ³ [WARP] ³ [!] 10th anniversary edition              º
+ º         ³             ³        ³ [+] AiR-BOOT is now released under GPLv3, º
+ º         ³             ³        ³      sourcecode on sourceforge.net        º
+ º         ³             ³        ³ [+] Direct installer now also available   º
+ º         ³             ³        ³      for DOS/Win9X and WinNT environment  º
+ º         ³             ³        ³ [+] MakeDisk utility rewritten            º
+ º         ³             ³        ³ [+] Native OS/2 installer rewritten       º
+ º         ³             ³        ³ [+] ISO for bootable CD-ROM included      º
+ º         ³             ³        ³ [-] Fixed bug in setup for driveletter    º
  ºÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
- º [BETA] úúúúúú Internal Beta-Version ³ [WARP] úúúúúúúúúúúú Official Release º
- º [REG] úúúúúúúúúú Registered Version ³ [iNST] úúúúúúúúúúúúú iNSTALL and Co. º
- ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
  º Technial Problems ?                                                        º
  º                                                                            º
- º         By E-Mail: kiewitz@netlabs.org                                     º
- º Official Homepage: http://AiR-BOOT.netlabs.org                             º
- º                     (including anonymous CVS to sourcecode)                º
- º     KiewitzSoft @: http://eComStation.ru/kiewitzsoft/                      º
+ º Official Homepage: http://AiR-BOOT.sourceforge.net                         º
+ º Author via E-Mail: m_kiewitz [AT] users [DOT] sourceforge [DOT] net        º
+ º                                                                            º
+ º AiR-BOOT v1.06+ is released under GPLv3. Sourcecode is available from the  º
+ º  official homepage.                                                        º
  º                                                                            º
  º At this point, I want to thank several people that helped me to improve    º
  º  AiR-BOOT and fix some problems/incompatibilities:                         º
  º                                                                            º
  º  Hex1753, Mike Reichel, Robert Traynor, chusty@attglobal.net, Tod Morcott, º
- º   Teruel de Campo, Irv Spalten, Chris Carroll, Warp5, MaxWarp & Jake       º
+ º   Teruel de Campo, Irv Spalten, Chris Carroll, Warp5, MaxWarp & Jake,      º
+ º   Peter Weilbacher and Veit Kannegieser.                                   º
  º                                                                            º
  º  ...and especially the translators that wasted so much time on it...       º
  º                                                                            º
@@ -174,6 +220,8 @@
  º   AiR-BOOT - Russian - by Denis Tazetdinov                                 º
  º   AiR-BOOT - Swedish - by Bj”rn S”derstr”m                                 º
  º   AiR-BOOT - German  - by myself ;)                                        º
+ º                                                                            º
+ º  Special thanx to Jan van Wijk for the LVM-CRC polynom!                    º
  º                                                                            º
  ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                          ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
      ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

@@ -25,8 +25,7 @@
  º  - Reparations-L„ge, AiR-BOOT disk/CD-ROM „r kapabel att reparera AiR-BOOT º
  º     utan att †terst„lla konfigurationen                                    º
  º  - MBR-Skydd i Real-L„ge                                                   º
- º  - Linux K„rna St”d (fr†n FAT-16 partitioner), K„rna-Kommandorad och       º
- º     automatisk, med konfigureringsbar root-partition                       º
+ º  - IBM OS/2 / eCS LVM Support                                              º
  º                                                                            º
  ºÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄº
  º                                                                            º
@@ -42,7 +41,7 @@
  º  - Windows NT/2000/XP                                                      º
  º                                                                            º
  º AiR-BOOT „r kompatibel med LVM, Logical Volume Manager som „r tillg„nglig  º
- º  f”r OS/2, eComStation och Linux-varianter.                                º
+ º  f”r OS/2 och eComStation.                                                 º
  º                                                                            º
  º AiR-BOOT kan bootas fr†n CD-ROM. Skapa helt enkelt en diskett, f†nga dess  º
  º  image och anv„nd den f”r att br„nna din egen AiR-BOOT CD-ROM.             º

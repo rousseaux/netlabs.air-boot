@@ -1,3 +1,20 @@
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                                          AiR-BOOT SETUP / ALL SETUP MENUS
 ; v001 - English - by Martin Kiewitz
@@ -27,7 +44,7 @@ TXT_SETUP_LetterNo             equ 'N'
 
 ; Basic Options - Items - Max Length: 23
 ;----------------------------------|---------------------|------------------
-TXT_SETUP_DefaultPart          db 'Раздел по умолчанию', 0
+TXT_SETUP_DefaultSelection     db 'Выбор по-умолчанию', 0
 TXT_SETUP_TimedBoot            db 'Автоматическая загрузка', 0
 TXT_SETUP_TimedBootDelay       db 'Время автозагрузки (с)', 0
 TXT_SETUP_TimedKeyHandling     db 'Клавиши в автозагрузке', 0
@@ -57,13 +74,15 @@ TXT_SETUP_ContinueBIOSboot     db 'Загрузка через BIOS', 0
 
 ; Extended Options - Items - Max Length: 23
 ;----------------------------------|---------------------|------------------
-TXT_SETUP_LinuxKernelPart      db 'Раздел ядра Linux', 0
-TXT_SETUP_LinuxDefaultKernel   db 'Ядро Linux по умолчанию', 0
-TXT_SETUP_LinuxRootPart        db 'Раздел корня Linux', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_LinuxKernelPart      db 'Раздел ядра Linux', 0
+;TXT_SETUP_LinuxDefaultKernel   db 'Ядро Linux по умолчанию', 0
+;TXT_SETUP_LinuxRootPart        db 'Раздел корня Linux', 0
+; This here may be larger than 23 chars...
+;TXT_SETUP_DefLinuxCmd          db 'ЗАДАЙТЕ КОМАНДНУЮ СТРОКУ ДЛЯ LINUX', 0
+TXT_SETUP_IgnoreLVM            db 'Игнорировать данные LVM', 0
 TXT_SETUP_ForceLBAUsage        db 'Использовать BIOS-LBA', 0
 TXT_SETUP_ExtPartMShack        db 'Разделы для MS-систем', 0
-; This here may be larger than 23 chars...
-TXT_SETUP_DefLinuxCmd          db 'ЗАДАЙТЕ КОМАНДНУЮ СТРОКУ ДЛЯ LINUX', 0
 
 ; DYNAMIC LENGTH, maximum 11 chars excluding ending zero
 ;----------------------------------|---------|------------------------------
@@ -71,7 +90,8 @@ TXT_SETUP_MAGIC_Enabled        db 'Включено', 0
 TXT_SETUP_MAGIC_Disabled       db 'Выключено', 0
 TXT_SETUP_MAGIC_Detailed       db 'Детально', 0
 TXT_SETUP_MAGIC_NoBootable     db 'Не загруж.', 0
-TXT_SETUP_MAGIC_NoLinux        db 'Не Linux', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_MAGIC_NoLinux        db 'Не Linux', 0
 TXT_SETUP_MAGIC_DoNothing      db 'Бездейств.', 0
 TXT_SETUP_MAGIC_ResetTime      db 'Сначала', 0
 TXT_SETUP_MAGIC_StopTime       db 'Стоп время', 0
@@ -158,10 +178,8 @@ TXT_SETUPHELP_HideSetup:       db 'Выберите состояние,', 0
 
 ; Basic Options - Help
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_DefaultPart      db 'Меняет Ваш раздел по', 0
-                               db 'умолчанию. Он может', 0
-                               db 'быть использован для', 0
-                               db 'автозагрузки.', 0
+TXT_SETUPHELP_DefaultSelection db 'Сменить Ваш выбор', 0
+                               db 'по-умолчанию.', 0
                                db 0
 TXT_SETUPHELP_TimedBoot        db 'AiR-BOOT продолжит', 0
                                db 'загрузку после ука-', 0
@@ -260,15 +278,25 @@ TXT_SETUPHELP_ContinueBIOSboot db 'Эта опция позволит', 0
 
 ; Extended Options - Help
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_LinuxKernelPart  db 'Раздел FAT-16, на', 0
-                               db 'котором расположены', 0
-                               db 'Ваши ядра Linux.', 0
-                               db 0
-TXT_SETUPHELP_LinuxDefaultKrnl db 'Имя файла для ядра', 0
-                               db 'по умолчанию.', 0
-                               db 0
-TXT_SETUPHELP_LinuxRootPart    db 'Раздел с корневым', 0
-                               db 'каталогом Linux.', 0
+; [Linux support removed since v1.02]
+;TXT_SETUPHELP_LinuxKernelPart  db 'Раздел FAT-16, на', 0
+;                               db 'котором расположены', 0
+;                               db 'Ваши ядра Linux.', 0
+;                               db 0
+;TXT_SETUPHELP_LinuxDefaultKrnl db 'Имя файла для ядра', 0
+;                               db 'по умолчанию.', 0
+;                               db 0
+;TXT_SETUPHELP_LinuxRootPart    db 'Раздел с корневым', 0
+;                               db 'каталогом Linux.', 0
+;                               db 0
+;TXT_SETUPHELP_DefLinuxCmd:     db 'Командная строка для', 0
+;                               db 'загрузки Linux, если', 0
+;                               db 'необходимо.', 0
+;                               db 0
+TXT_SETUPHELP_IgnoreLVM        db 'При включении этой', 0
+                               db 'опции AiR-BOOT не', 0
+                               db 'будет искать', 0
+                               db 'информацию LVM', 0
                                db 0
 TXT_SETUPHELP_ForceLBAUsage    db 'Требудет использование', 0
                                db 'BIOS LBA API вместо', 0
@@ -280,10 +308,6 @@ TXT_SETUPHELP_ExtPartMShack    db 'Включает динамическую', 0
                                db 'разделов в стандартный', 0
                                db 'или MS.', 0
                                db '(указать через P-флаг)', 0
-                               db 0
-TXT_SETUPHELP_DefLinuxCmd:     db 'Командная строка для', 0
-                               db 'загрузки Linux, если', 0
-                               db 'необходимо.', 0
                                db 0
 
 ; Maximum 26 chars (should not be reached)
@@ -312,9 +336,10 @@ TXT_SETUP_AreYouSure2          db '(Y/N)', 0
 
 ; Maximum 60 chars (should not be reached)
 ;----------------------------------|----------------------------------------------------------|
-TXT_SETUP_EnterLinuxCmdLine    db 'Введите или исправьте командную строку:', 0
-TXT_SETUP_NoLinuxInstalled     db 'У Вас не установлен Linux', 0
-TXT_SETUP_NoLDLpartition       db 'Выбранный раздел не является HPFS или FAT16', 0
+; [Linux support removed since v1.02]
+;TXT_SETUP_EnterLinuxCmdLine    db 'Введите или исправьте командную строку:', 0
+;TXT_SETUP_NoLinuxInstalled     db 'У Вас не установлен Linux', 0
+TXT_SETUP_NoLDLpartition       db 'Выбранный раздел не является HPFS/FAT16/JFS', 0
 
 ; Maximum 34 chars (should not be reached)
 ;----------------------------------|--------------------------------|-------
@@ -330,11 +355,9 @@ TXT_SETUP_DriveLetter          db 'Буква раздела', 0
 ;----------------------------------|-----------------|----------------------
 TXT_SETUPHELP_DriveLetter      db 'Нажмите C-Z', 0
 
-IFNDEF ReleaseCommercial
-   ; Colors for special words hard-coded. Keep all 0s.
-   TXT_SETUP_LowerMessage      db 'Эта программа ',0,'бесплатна',0,' для некоммерческого использования.',0
-                               db 'Вы ',0,'НЕ',0,' можете распространять/использовать AiR-BOOT в ',0,'-ЛЮБОЙ-',0,' форме,',0
-                               db 'если Вы получаете за это деньги.',0
-                               db 'Если Вы хотите использовать AiR-BOOT в ',0,'в других системах',0,', ',0,'предустанавливать',0,' или',0
-                               db 'распространять',0,' свяжитесь со мной по e-mail: ',0,'kiewitz@netlabs.org',0,' !',0
-ENDIF
+; Colors for special words hard-coded. Keep all 0s.
+;TXT_SETUP_LowerMessage         db 'Эта программа ',0,'бесплатна',0,' для некоммерческого использования.',0
+;                               db 'Вы ',0,'НЕ',0,' можете распространять/использовать AiR-BOOT в ',0,'-ЛЮБОЙ-',0,' форме,',0
+;                               db 'если Вы получаете за это деньги.',0
+;                               db 'Если Вы хотите использовать AiR-BOOT в ',0,'в других системах',0,', ',0,'предустанавливать',0,' или',0
+;                               db 'распространять',0,' свяжитесь со мной по e-mail: ',0,'kiewitz@netlabs.org',0,' !',0

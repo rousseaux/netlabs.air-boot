@@ -6,8 +6,7 @@
  º  non sara' piu' necessario avviare ancora dall'orrifico DOS :)             º
  º                                                                            º
  º 1. Inserire un disco vuoto e formattato nel drive A: e avviare il          º
- º     programma AIRBS_xx.EXE dall'archivio di AiR-BOOT (dove xx e' la        º
- º     abbreviazione della lingua).                                           º
+ º     programma MAKEDISK.COM dall'archivio di AiR-BOOT.                      º
  º                                                                            º
  º 2. Controllare il setup del BIOS. Deselezionare 'Virus Warning', se tale   º
  º     opzione e' disponibile e cambiare la sequenza di avvio in modo che A:  º

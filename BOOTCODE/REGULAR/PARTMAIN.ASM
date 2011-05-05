@@ -1,20 +1,20 @@
-
-; Disclaimer:
-;=============
-; The sourcecode is released via www.netlabs.org CVS *ONLY*.
-;  You MUST NOT upload it to other servers nor republish it in any way.
-;  The sourcecode is still COPYRIGHTED and NOT RELEASED UNDER GPL.
-;  It's (c) Copyright 1998-2003 by Martin Kiewitz.
-;  You may recompile the source and do *PRIVATE* modifications, but please keep
-;  in mind that modifying this code needs at least *some* assembly skill. If
-;  you mess up your system, because you needed to hack your way through, don't
-;  blame me. Releasing a customized version of AiR-BOOT, selling it in any form
-;  or reusing parts of this source is *PROHIBITED*. Ask me, if you have some
-;  idea about new functionality *before* developing the code, otherwise I will
-;  definitely reject it. Also please accept, that I have some basic design
-;  rules on AiR-BOOT and I will maintain them at all costs, so this won't get
-;  another GRUB.
-
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
 ;---------------------------------------------------------------------------
 ;                                     AiR-BOOT / PARTiTiON REGULAR ROUTINES
 ;---------------------------------------------------------------------------
@@ -23,26 +23,27 @@ PART_FixUpDefaultPartitionValues Proc Near  Uses dx si di
    ; Fix-Up Default and Last Partition - If lost, search for Bootable
    xor     bl, bl
    mov     dl, CFG_PartDefault
-   call    PART_FixUpPartitionNumber
+   call    PART_FixUpSelectionNumber
    mov     CFG_PartDefault, dl
    mov     dl, CFG_PartLast
-   call    PART_FixUpPartitionNumber
+   call    PART_FixUpSelectionNumber
    mov     CFG_PartLast, dl
    mov     dl, CFG_PartAutomatic
-   call    PART_FixUpPartitionNumber
+   call    PART_FixUpSelectionNumber
    mov     CFG_PartAutomatic, dl
 
-   ; Fix-Up Linux Kernel Partition - If lost, search for FAT-16
-   mov     bl, 06h
-   mov     dl, CFG_LinuxKrnlPartition
-   call    PART_FixUpPartitionNumber
-   mov     CFG_LinuxKrnlPartition, dl
-
-   ; Fix-Up Linux Root Partition - If lost, search for Linux partition (83h)
-   mov     bl, 83h
-   mov     dl, CFG_LinuxRootPartition
-   call    PART_FixUpPartitionNumber
-   mov     CFG_LinuxRootPartition, dl
+; [Linux support removed since v1.02]
+;   ; Fix-Up Linux Kernel Partition - If lost, search for FAT-16
+;   mov     bl, 06h
+;   mov     dl, CFG_LinuxKrnlPartition
+;   call    PART_FixUpPartitionNumber
+;   mov     CFG_LinuxKrnlPartition, dl
+;
+;   ; Fix-Up Linux Root Partition - If lost, search for Linux partition (83h)
+;   mov     bl, 83h
+;   mov     dl, CFG_LinuxRootPartition
+;   call    PART_FixUpPartitionNumber
+;   mov     CFG_LinuxRootPartition, dl
    ret
 PART_FixUpDefaultPartitionValues EndP
 
@@ -61,17 +62,31 @@ PART_FixUpDefaultPartitionValues EndP
 ;        In: DL - Number of partition
 ;            BL - Requested Partition ID
 ;       Out: DL - New number of partition (guessed normally ;)
-PART_FixUpPartitionNumber       Proc Near Uses ax cx
-   cmp     dl, 0FFh
-   je      PFUPN_PartitionDisabled
+PART_FixUpSelectionNumber       Proc Near Uses ax cx
+   cmp     dl, 080h
+   je      PFUPN_SelectionDisabled
+   ja      PFUPN_SpecialSelection
    call    PARTSCAN_GetXref              ; DL - PartitionNo prev IPT
    cmp     dh, 0FFh                      ; DH -> Partition No in new IPT
-   je      PFUPN_PartitionGone
-  PFUPN_PartitionDisabled:
+   je      PFUPN_SelectionGone
+   mov     dl, dh
+  PFUPN_SelectionDisabled:
    ret
 
-   ; Partition is not referenced in New-IPT, so dig for requested partition
-  PFUPN_PartitionGone:
+  PFUPN_SpecialSelection:
+   cmp     dl, 0FEh                      ; Resume-BIOS?
+   ja      PFUPN_SpecialSelectionFloppy
+   cmp     CFG_ResumeBIOSbootSeq, 0
+   je      PFUPN_SelectionGone
+   jmp     PFUPN_Found
+  PFUPN_SpecialSelectionFloppy:
+   cmp     CFG_IncludeFloppy, 0
+   je      PFUPN_SelectionGone
+   jmp     PFUPN_Found
+
+   ; Partition is not referenced in New-IPT or Resume-BIOS/Floppy selected, but
+   ;  actual media is disabled...so dig for requested partition
+  PFUPN_SelectionGone:
    mov     cl, CFG_Partitions
    or      cl, cl
    jz      PFUPN_NothingFound            ; No partitions available -> so fail
@@ -93,7 +108,7 @@ PART_FixUpPartitionNumber       Proc Near Uses ax cx
    ; Search for Partition ID "BL"
   PFUPN_BootableSearchLoop:
       call    PART_GetPartitionPointer   ; Gets SI for partition DL
-      mov     al, cs:[si+LocIPT_Flags]
+      mov     al, ds:[si+LocIPT_Flags]
       and     al, Flags_BootAble
       jnz     PFUPN_Found
       dec     cl
@@ -105,26 +120,44 @@ PART_FixUpPartitionNumber       Proc Near Uses ax cx
    jmp     PFUPN_PartIDsearchLoop
 
   PFUPN_NothingFound:
-   mov     dl, 0FFh                      ; Now being Disabled
+   mov     dl, 080h                      ; Now being Disabled
   PFUPN_Found:
    ret
-PART_FixUpPartitionNumber       EndP
+PART_FixUpSelectionNumber       EndP
 
 ; ============================================================================
-;        In: CS:SI - IPT-Entry of partition
-;            ExecBaseSeg:Ptr - Actual Boot-Record of partition
+;        In: DS:SI - IPT-Entry of partition
+;            DS:PartitionSector - Actual Boot-Record of partition
 ;       Out: *none* (BootRecordCRD updated)
 PART_UpdateBootRecordCRC        Proc Near Uses bx
-   push    ds si
-      push    ExecBaseSeg
-      pop     ds
-      mov     si, offset ExecBasePtr
-      mov     bx, 4B4Dh            ; Magic: 'MK'
-      call    MBR_GetCheckOfSector
-   pop     si ds
-   mov     cs:[si+LocIPT_BootRecordCRC], bx
+   mov     si, offset PartitionSector
+   mov     bx, 4B4Dh            ; Magic: 'MK'
+   call    MBR_GetCheckOfSector
+   mov     [si+LocIPT_BootRecordCRC], bx
    ret
 PART_UpdateBootRecordCRC        EndP
+
+; Copies the device-name to the Resume-BIOS IPT entry
+PART_UpdateResumeBIOSName       Proc Near Uses ax bx cx si di
+   movzx   bx, CFG_ResumeBIOSbootSeq
+   dec     bx
+   shl     bx, 1
+   mov     si, wptr [ContinueBIOSbootTable+bx]
+   mov     di, offset BIOScontIPTentry+LocIPT_Name
+   push    di
+      mov     cx, 11
+      mov     al, ' '
+      rep     stosb
+   pop     di
+  PURBN_BootDeviceCopyLoop:
+      lodsb
+      or      al, al
+      jz      PURBN_NoResumeBootSeq
+      stosb
+      jmp     PURBN_BootDeviceCopyLoop
+  PURBN_NoResumeBootSeq:
+   ret
+PART_UpdateResumeBIOSName       EndP
 
 ; ============================================================================
 ;  Partition-Pointer Functions
@@ -165,18 +198,19 @@ PART_CalculateMenuPartPointers Proc Near Uses si
    add     bx, 2
   PCMPP_NoResumeBootSeqInclude:
 
-   ; Now include all Linux Kernels, if any available...
-   movzx   cx, LINUX_KernelNo
-   or      cx, cx
-   jz      PCMPP_NoLinuxKernels
-   mov     ax, offset LINUX_KernelEntries
-  PCMPP_KernelLoop:
-      mov     ds:[bx], ax
-      add     bx, 2
-      add     ax, LocIPT_LenOfIPT
-   dec     cx
-   jnz     PCMPP_KernelLoop
-  PCMPP_NoLinuxKernels:
+; [Linux support removed since v1.02]
+;   ; Now include all Linux Kernels, if any available...
+;   movzx   cx, LINUX_KernelNo
+;   or      cx, cx
+;   jz      PCMPP_NoLinuxKernels
+;   mov     ax, offset LINUX_KernelEntries
+;  PCMPP_KernelLoop:
+;      mov     ds:[bx], ax
+;      add     bx, 2
+;      add     ax, LocIPT_LenOfIPT
+;   dec     cx
+;   jnz     PCMPP_KernelLoop
+;  PCMPP_NoLinuxKernels:
 
    movzx   cx, CFG_Partitions ; LocIPT_MaxPartitions
    or      cx, cx
@@ -200,14 +234,14 @@ PART_CalculateMenuPartPointers EndP
 
 ; Gets a pointer to the given partition
 ;        In: DL - Number of partition
-;       Out: SI - Pointer to it (use CS)
+;       Out: SI - Pointer to it
 PART_GetPartitionPointer        Proc Near   Uses bx
    cmp     dl, 0FEh
    je      PGPP_IsBIOSbootSeq            ; FEh -> Resume BIOS boot Sequence
    ja      PGPP_IsFloppy                 ; FFh -> Floppy
    movzx   bx, dl
    shl     bx, 1
-   mov     si, wptr cs:[PartitionPointers+bx]
+   mov     si, wptr [PartitionPointers+bx]
    ret
   PGPP_IsBIOSbootSeq:
    mov     si, offset BIOScontIPTentry
@@ -249,16 +283,18 @@ PART_ConvertToStraight          Proc Near   Uses
    cmp     ax, offset FloppyIPTentry
    jb      PCTS_IsBIOSbootSeq
    je      PCTS_IsFloppy
-   cmp     ax, offset LINUX_KernelEntries
-   jae     PCTS_IsKernelEntry
+; [Linux support removed since v1.02]
+;   cmp     ax, offset LINUX_KernelEntries
+;   jae     PCTS_IsKernelEntry
    sub     ax, offset PartitionTable
    mov     bl, LocIPT_LenOfIPT
    div     bl                      ; Divide with IPTlength
    mov     dl, al
    ret
-  PCTS_IsKernelEntry:
-   mov     dl, 0FDh
-   ret
+; [Linux support removed since v1.02]
+;  PCTS_IsKernelEntry:
+;   mov     dl, 0FDh
+;   ret
   PCTS_IsBIOSbootSeq:
    mov     dl, 0FEh
    ret
@@ -270,11 +306,19 @@ PART_ConvertToStraight          EndP
 ;        In: DL - Number of partition in straight view
 ;       Out: DL - Number of partition in filtered view
 PART_ConvertFromStraight        Proc Near    Uses es di
+   cmp     dl, 0FEh
+   jb      PCFS_IsPartition
+   mov     ax, offset BIOScontIPTentry
+   je      PCFS_DoSearch
+   mov     ax, offset FloppyIPTentry
+   jmp     PCFS_DoSearch
+  PCFS_IsPartition:
    ; First we get Partition-Offset in AX
    movzx   ax, dl
    mov     bl, LocIPT_LenOfIPT
    mul     bl
    add     ax, offset PartitionTable
+  PCFS_DoSearch:
    ; Now search for this offset in our filtered Partition-Pointer-Table
    push    cs
    pop     es
@@ -296,15 +340,17 @@ PART_ConvertFromStraight        EndP
 ;       Out: SI - Pointer to corresponding Size-Element
 ; Destroyed: AX
 PART_GetSizeElementPointer      Proc Near   Uses bx
-   cmp     ax, offset LINUX_KernelEntries
-   jae     PGSEP_IsKernelEntry
+; [Linux support removed since v1.02]
+;   cmp     ax, offset LINUX_KernelEntries
+;   jae     PGSEP_IsKernelEntry
    mov     si, offset PartitionSizeTable
    sub     ax, offset PartitionTable
-   jmp     PGSEP_Continue
-  PGSEP_IsKernelEntry:
-   mov     si, offset LINUX_KernelSizeTable
-   sub     ax, offset LINUX_KernelEntries
-  PGSEP_Continue:
+;   jmp     PGSEP_Continue
+; [Linux support removed since v1.02]
+;  PGSEP_IsKernelEntry:
+;   mov     si, offset LINUX_KernelSizeTable
+;   sub     ax, offset LINUX_KernelEntries
+;  PGSEP_Continue:
    mov     bl, LocIPT_LenOfIPT
    div     bl                            ; Divide with IPTlength
    movzx   bx, al
@@ -380,6 +426,7 @@ PART_FillOutSizeElement         EndP
 ;              VIBR checking, if wanted
 ;              install MBR Protection, if wanted
 ;              Special Boot Support, if needed (OS/2 Extended partitions)
+;              Copy boot-sector to StartBase
 ;              run boot sector...
 PART_StartPartition             Proc Near   Uses ax dx es di
    local BootPartNo:byte
@@ -388,6 +435,8 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
    call    PART_ConvertToStraight        ; ...we save straight view for later...
    mov     BootPartNo, dl
+   ; Straight - FFh -> Floppy boot
+   ;            FEh -> BIOS continue (CD-ROM, ZIP, etc.)
 
    ; We need straight pointers from now on, so calculate the table...
    call    PART_CalculateStraightPartPointers
@@ -396,8 +445,8 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    ;  in this whole routine...it may never get messed up.
 
    push    si
-      mov     dl, cs:[si+LocIPT_Drive]
-      mov     dh, cs:[si+LocIPT_SystemID]
+      mov     dl, [si+LocIPT_Drive]
+      mov     dh, [si+LocIPT_SystemID]
       ; Copy Partition-Name to BootingNow area for display purposes
          add     si, LocIPT_Name
          mov     cx, 11
@@ -410,8 +459,9 @@ PART_StartPartition             Proc Near   Uses ax dx es di
          stosb              ; Ending Zero
       mov     si, offset TXT_BootingNow1
       call    MBR_Teletype
-      cmp     dh, 0FDh
-      je      PSP_IsKernel
+; [Linux support removed since v1.02]
+;      cmp     dh, 0FDh
+;      je      PSP_IsKernel
       or      dl, dl
       jnz     PSP_IsHarddisc
       ; When booting floppy/CD-ROM/etc., we got other text to be displayed...
@@ -419,15 +469,16 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       call    MBR_Teletype
       jmp     PSP_IsFloppyCDROMetc
 
-     PSP_IsKernel:
-      IFDEF ReleaseCode
-         ; Save configuration on HDD boots (save CFG_LinuxLastKernel)
-         call    DriveIO_SaveConfiguration
-      ENDIF
-      call    MBR_Teletype       ; Prints out BootingNow2 including KernelName
-      mov     si, offset TXT_BootingNowKernel
-      call    MBR_Teletype
-      jmp     PSP_IsFloppyCDROMetc
+; [Linux support removed since v1.02]
+;    PSP_IsKernel:
+;      IFDEF ReleaseCode
+;         ; Save configuration on HDD boots (save CFG_LinuxLastKernel)
+;         call    DriveIO_SaveConfiguration
+;      ENDIF
+;      call    MBR_Teletype       ; Prints out BootingNow2 including KernelName
+;      mov     si, offset TXT_BootingNowKernel
+;      call    MBR_Teletype
+;      jmp     PSP_IsFloppyCDROMetc
 
      PSP_IsHarddisc:
       IFDEF ReleaseCode
@@ -439,17 +490,16 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       call    MBR_Teletype
    pop     si                            ; restores SI (IPT-pointer)
 
-   mov     ax, wptr cs:[si+LocIPT_AbsolutePartTable+0]
-   mov     bx, wptr cs:[si+LocIPT_AbsolutePartTable+2]
-   mov     cx, wptr cs:[si+LocIPT_LocationPartTable+1]
-   mov     dh, bptr cs:[si+LocIPT_LocationPartTable+0]
-   mov     dl, cs:[si+LocIPT_Drive]
+   mov     ax, wptr [si+LocIPT_AbsolutePartTable+0]
+   mov     bx, wptr [si+LocIPT_AbsolutePartTable+2]
+   mov     cx, wptr [si+LocIPT_LocationPartTable+1]
+   mov     dh, bptr [si+LocIPT_LocationPartTable+0]
+   mov     dl, [si+LocIPT_Drive]
    call    DriveIO_LoadPartition         ; Load Table...
    ; --------------------------------------------------- MODIFY PARTITION TABLE
-   push    ExecBaseSeg
+   push    cs
    pop     es
-   mov     di, ExecBasePtr
-   add     di, 446                ; DS:SI - Erster Partitionseintrag
+   mov     di, offset PartitionSector+446 ; ES:DI - First Partitionentry
 
    ; Remove all active-flags for safety reasons, primary partition table will
    ;  have one partition set active by ScanPartition-routine.
@@ -463,10 +513,10 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    pop     di
 
    ; Put the partition-to-be-booted location into registers...
-   mov     ax, wptr cs:[si+LocIPT_AbsoluteBegin+0]
-   mov     bx, wptr cs:[si+LocIPT_AbsoluteBegin+2]
-   sub     ax, wptr cs:[si+LocIPT_AbsolutePartTable+0]
-   sbb     bx, wptr cs:[si+LocIPT_AbsolutePartTable+2]
+   mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
+   mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
+   sub     ax, wptr [si+LocIPT_AbsolutePartTable+0]
+   sbb     bx, wptr [si+LocIPT_AbsolutePartTable+2]
    ; BX:AX - absolute position of partition relative to partition table
    ; ...and search for it...
   PSP_SearchLoop:
@@ -477,7 +527,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       jmp     PSP_SearchMatch
      PSP_SearchMismatch:
       add     di, LocBRPT_LenOfEntry     ; 16 Bytes per Partition-Entry
-   cmp     di, 500+ExecBasePtr
+   cmp     di, 500+offset PartitionSector
    jb      PSP_SearchLoop
    jmp     MBR_HaltSystem
 
@@ -492,8 +542,8 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    ; Now check if the partition to get booted is above 8 GB.
    ;  If yes, set magic bytes 'I13X' at 3000:0 for boot-loader to recognize.
    ;  This method is (c) by IBM <g>
-   mov     ax, wptr cs:[si+LocIPT_AbsoluteBegin+0]
-   mov     bx, wptr cs:[si+LocIPT_AbsoluteBegin+2]
+   mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
+   mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
    add     ax, wptr es:[di+LocBRPT_AbsoluteLength+0] ; Add length to absolute
    adc     bx, wptr es:[di+LocBRPT_AbsoluteLength+2] ;  begin location
    ; BX:AX -> Absolute End-Position of Partition
@@ -514,7 +564,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
   PSP_NoI13X:
 
    ; now check, if we need to hide any partition
-   test    byte ptr cs:[si+LocIPT_Flags], Flags_HideFeature
+   test    byte ptr [si+LocIPT_Flags], Flags_HideFeature
    jz      PSP_NoHideFeature
    ; --------------------------------------------------------- PARTITION HIDING
       push    si
@@ -531,7 +581,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       ;  0FFh is end-marker / maximum entries = CFG_Partitions
       mov     cl, CFG_Partitions
      PSP_PartitionsHideLoop:
-         mov     dl, cs:[di]
+         mov     dl, es:[di]
          inc     di
          cmp     dl, 0FFh
          je      PSP_EndOfHideProcess    ; -> End of Hiding
@@ -542,10 +592,10 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       ; --- HIDE COMPLETED ---
       ; So something got hidden and we have to remark a primary partition,
       ;  if we are booting something non-primary from 1st hdd.
-      cmp     bptr ds:[si+LocIPT_Drive], 80h
+      cmp     bptr [si+LocIPT_Drive], 80h
       ja      PSP_HideAdjustPrimaryMark  ; When booting any hdd, but 1st
-      mov     ax, wptr ds:[si+LocIPT_AbsolutePartTable]
-      mov     bx, wptr ds:[si+LocIPT_AbsolutePartTable+2]
+      mov     ax, wptr [si+LocIPT_AbsolutePartTable]
+      mov     bx, wptr [si+LocIPT_AbsolutePartTable+2]
       or      ax, ax
       jnz     PSP_HideAdjustPrimaryMark  ; or booting non-primary partition
       or      bx, bx                     ;  on 1st harddrive.
@@ -564,6 +614,20 @@ PART_StartPartition             Proc Near   Uses ax dx es di
      PSP_NoHideAdjustPrimaryMark:
 
   PSP_NoHideFeature:
+   ; Check, if we are supposed to ignore LVM altogether...
+   test    [CFG_IgnoreLVM], 1
+   jnz     PSP_NoLVMReassignment
+   ; --------------------------------------------------------- LVM REASSIGNMENT
+      ; Driveletter must be set for this partition
+      test    byte ptr [si+LocIPT_Flags], Flags_DriveLetter
+      jz      PSP_NoLVMReassignment
+      movzx   bx, BootPartNo             ; EntryNumber is straight view
+      mov     al, bptr [DriveLetters+bx]
+      sub     al, 3Dh                    ; Convert e.g. 80h -> 'C'
+      cmp     al, bptr [PartitionVolumeLetters+bx]
+      je      PSP_NoLVMReassignment      ; If driveletters match -> no change
+      call    LVM_DoLetterReassignment   ; Give partition SI letter AL
+  PSP_NoLVMReassignment:
    push    si
    ; ------------------------------------------------------- -"PLEASE WAIT..."-
   PSP_IsFloppyCDROMetc:
@@ -583,11 +647,12 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
    ; -------------------------------------------------- SPECIAL BOOT PROCESSING
    ; Check here, if the Boot shall be done via resume to BIOS...
-   mov     al, bptr cs:[si+LocIPT_SystemID]
+   mov     al, bptr [si+LocIPT_SystemID]
    cmp     al, 0FEh                      ; Via BIOS ? (aka resume BIOS boot sequence)
    je      PSP_ResumeBIOSbootSeq
-   cmp     al, 0FDh                      ; Kernel-Booting ?
-   je      PSP_KernelBooting
+; [Linux support removed since v1.02]
+;   cmp     al, 0FDh                      ; Kernel-Booting ?
+;   je      PSP_KernelBooting
    jmp     PSP_StartNormal
 
   PSP_ResumeBIOSbootSeq:
@@ -596,39 +661,38 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    dw      0FFF0h
    dw      0F000h
 
-  PSP_KernelBooting:
-   call    LINUX_LoadKernel              ; DS:SI - Entry Pointer to Kernel
-   db      0EAh                          ; if return to here -> Reboot
-   dw      0FFF0h
-   dw      0F000h
+; [Linux support removed since v1.02]
+;  PSP_KernelBooting:
+;   call    LINUX_LoadKernel              ; DS:SI - Entry Pointer to Kernel
+;   db      0EAh                          ; if return to here -> Reboot
+;   dw      0FFF0h
+;   dw      0F000h
 
-   ; ==================================================================
-   ;  FROM THIS POINT ON, ONLY *SI* REGISTER IS NEEDED TO BE PRESERVED
-   ; ==================================================================
+   ; =======================================================================
+   ;  FROM THIS POINT ON, ONLY DS and SI REGISTER IS NEEDED TO BE PRESERVED
+   ; =======================================================================
 
   PSP_StartNormal:
-   mov     ax, wptr cs:[si+LocIPT_AbsoluteBegin+0]
-   mov     bx, wptr cs:[si+LocIPT_AbsoluteBegin+2]
-   mov     cx, cs:[si+LocIPT_LocationBegin+1]
-   mov     dh, cs:[si+LocIPT_LocationBegin+0]
-   mov     dl, cs:[si+LocIPT_Drive]
+   mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
+   mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
+   mov     cx, [si+LocIPT_LocationBegin+1]
+   mov     dh, [si+LocIPT_LocationBegin+0]
+   mov     dl, [si+LocIPT_Drive]
    call    DriveIO_LoadPartition         ; Loads boot-sector...
 
    test    CFG_DetectVIBR, 1
    jz      PSP_NoVIBR
-   test    byte ptr cs:[si+LocIPT_Flags], Flags_VIBR_Detection
+   test    byte ptr [si+LocIPT_Flags], Flags_VIBR_Detection
    jz      PSP_NoVIBR
    ; ---------------------------------------------------------- CHECKS FOR VIBR
-      push    ds si
-         push    ExecBaseSeg
-         pop     ds
-         mov     si, offset ExecBasePtr
+      push    si
+         mov     si, offset PartitionSector
          mov     bx, 4B4Dh               ; Magic: 'MK'
          call    MBR_GetCheckOfSector
-      pop     si ds
-      cmp     cs:[si+LocIPT_BootRecordCRC], bx
+      pop     si
+      cmp     [si+LocIPT_BootRecordCRC], bx
       je      PSP_NoVIBR
-      mov     bx, cs:[si+LocIPT_BootRecordCRC]
+      mov     bx, [si+LocIPT_BootRecordCRC]
       or      bx, bx
       jz      PSP_NoVIBR
       ; Oh Oh, got a virus :(
@@ -644,7 +708,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    test    CFG_ProtectMBR, 1
    jz      PSP_NoMBRprotect
    ; -------------------------------------------------- INSTALLS MBR-PROTECTION
-   push    si                            ; We need SI later...
+   push    ds si                         ; We need DS:SI later...
       ; First subtract 1024 bytes from Base-Memory...
       push    ds
          mov     ax, 40h
@@ -657,24 +721,22 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
       ; Now copy in our code (to DX:0)...
 
-      mov     ax, cs
-      mov     ds, ax
-      mov     si, offset MBR_Protection   ; DS:SI - Source Image
+      mov     si, offset MBR_Protection  ; DS:SI - Source Image
       mov     es, dx
-      xor     di, di                      ; ES:DI - Destination
+      xor     di, di                     ; ES:DI - Destination
       mov     cx, 512
-      rep     movsw                       ; Move 1024 bytes...
+      rep     movsw                      ; Move 1024 bytes...
 
       ; Now fill in variables...
 
       xor     ax, ax
       mov     ds, ax
       mov     si, 10h*4
-      xor     di, di                      ; INT 10h Vector to MBR Protection
+      xor     di, di                     ; INT 10h Vector to MBR Protection
       movsd
-      mov     si, 13h*4                   ; INT 13h Vector to MBR Protection
+      mov     si, 13h*4                  ; INT 13h Vector to MBR Protection
       movsd
-      mov     al, CFG_IgnoreWriteToMBR    ; Option to MBR Protection
+      mov     al, CFG_IgnoreWriteToMBR   ; Option to MBR Protection
       stosb
 
       ; Now switch INT 13h vector to MBR Protection
@@ -682,19 +744,17 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       sub     si, 4
       mov     ax, 9
       mov     ds:[si], ax
-      mov     ds:[si+2], dx               ; Vector hardcoded at DS:0009
+      mov     ds:[si+2], dx              ; Vector hardcoded at DS:0009
       ; MBR-Protection now active :)
-   pop     si                          ; Restore SI
+   pop     si ds                         ; Restore DS:SI
 
    ; ------------------------------------------------ SPECIAL PARTITION SUPPORT
    ; needed by OS/2 Warp / eComStation
   PSP_NoMBRprotect:
-   cmp     bptr cs:[si+LocIPT_SystemID], 08      ; I hate Microsuck NTFS check
+   cmp     bptr [si+LocIPT_SystemID], 08 ; I hate Microsuck NTFS check
    je      PSP_NoSpecialSupport
 
-      push    ExecBaseSeg
-      pop     es
-      mov     di, ExecBasePtr            ; ES:DI - Actual Boot-Record
+      mov     di, offset PartitionSector ; ES:DI - Actual Boot-Record
       ; Special Support Detection
       mov     ax, wptr es:[di+24]
       cmp     ax, 003Fh                  ; Physical Layout-Sectors... Safety check
@@ -706,24 +766,33 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       cmp     al, 80h                    ; Drive Letter
       jne     PSP_NoSpecialSupport
       ; Special Support needed
-      mov     al, bptr cs:[si+LocIPT_Drive]
+      mov     al, bptr [si+LocIPT_Drive]
       mov     bptr es:[di+36], al        ; Write Actual Drive-Letter
-      mov     ax, cs:[si+LocIPT_AbsoluteBegin]
+      mov     ax, [si+LocIPT_AbsoluteBegin]
       mov     wptr es:[di+28], ax        ; Fixing Hidden Sectors count
-      mov     ax, cs:[si+LocIPT_AbsoluteBegin+2]
+      mov     ax, [si+LocIPT_AbsoluteBegin+2]
       mov     wptr es:[di+30], ax        ; Done by OS/2 BootMan as well...
 
    ; ------------------------------------------------ LOGICAL PARTITION SUPPORT
   PSP_NoSpecialSupport:
-   test    byte ptr cs:[si+LocIPT_Flags], Flags_DriveLetter
+   test    byte ptr [si+LocIPT_Flags], Flags_DriveLetter
    jz      PSP_NoLogicalSupport
 
       movzx   bx, BootPartNo             ; EntryNumber is straight view
-      mov     al, bptr cs:[DriveLetters+bx]
+      mov     al, bptr [DriveLetters+bx]
       mov     bptr es:[di+37], al        ; Write Drive Letter (OS/2 only)
 
-   ; ---------------------------------------------------- NOW START BOOT-RECORD
+   ; -------------------------------------------- COPY BOOT-RECORD TO STARTBASE
   PSP_NoLogicalSupport:
+   push    si
+      mov     ax, StartBaseSeg
+      mov     es, ax
+      mov     cx, 256
+      mov     si, offset PartitionSector
+      mov     di, StartBasePtr
+      rep     movsw
+   pop     si
+   ; ---------------------------------------------------- NOW START BOOT-RECORD
    xor     ax, ax
    xor     bx, bx
    xor     cx, cx
@@ -731,35 +800,34 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    mov     es, ax                        ; DS == ES == 0
    xor     dh, dh                        ; Drive supported by BIOS
    mov     dl, cs:[si+LocIPT_Drive]      ; Drive Physical No
-   db      0EAh                          ; JUMP TO Entry Point...Bye Bye
-   dw      ExecBasePtr
-   dw      ExecBaseSeg
+   IFDEF ReleaseCode
+      db      0EAh                          ; JUMP TO Entry Point...Bye Bye
+      dw      StartBasePtr
+      dw      StartBaseSeg
+   ENDIF
 PART_StartPartition             EndP
 
 ; This routine is called to hide a partition
 ;        In: DL - Partition to hide
 ; Destroyed: None
-PART_HidePartition              Proc Near   Uses ax bx cx dx si es di
+PART_HidePartition              Proc Near   Uses ax bx cx dx si di
    call    PART_GetPartitionPointer      ; Pointer to partition (DL) -> SI
 
    ; First load the partition table of that partition...
-   mov     ax, wptr cs:[si+LocIPT_AbsolutePartTable+0]
-   mov     bx, wptr cs:[si+LocIPT_AbsolutePartTable+2]
-   mov     cx, wptr cs:[si+LocIPT_LocationPartTable+1]
-   mov     dh, bptr cs:[si+LocIPT_LocationPartTable+0]
-   mov     dl, cs:[si+LocIPT_Drive]
+   mov     ax, wptr [si+LocIPT_AbsolutePartTable+0]
+   mov     bx, wptr [si+LocIPT_AbsolutePartTable+2]
+   mov     cx, wptr [si+LocIPT_LocationPartTable+1]
+   mov     dh, bptr [si+LocIPT_LocationPartTable+0]
+   mov     dl, [si+LocIPT_Drive]
    call    DriveIO_LoadPartition
    ; Partition-Table now LOADED
-   push    ExecBaseSeg
-   pop     es
-   mov     di, ExecBasePtr
-   add     di, 446                       ; DS:SI - 1st partitionentry...
+   mov     di, offset PartitionSector+446 ; ES:DI - 1st partitionentry...
 
    ; Put our partition's location into registers...
-   mov     ax, wptr cs:[si+LocIPT_AbsoluteBegin+0]
-   mov     bx, wptr cs:[si+LocIPT_AbsoluteBegin+2]
-   sub     ax, wptr cs:[si+LocIPT_AbsolutePartTable+0]
-   sbb     bx, wptr cs:[si+LocIPT_AbsolutePartTable+2]
+   mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
+   mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
+   sub     ax, wptr [si+LocIPT_AbsolutePartTable+0]
+   sbb     bx, wptr [si+LocIPT_AbsolutePartTable+2]
    ; BX:AX - absolute position of partition relative to partition table
    ; ...and search for it...
   PHP_SearchLoop:
@@ -770,7 +838,7 @@ PART_HidePartition              Proc Near   Uses ax bx cx dx si es di
       jmp     PHP_SearchMatch
      PHP_SearchMismatch:
       add     di, LocBRPT_LenOfEntry     ; 16 Bytes per partition entry
-   cmp     di, 500+ExecBasePtr
+   cmp     di, 500+offset PartitionSector
    jb      PHP_SearchLoop
    jmp     MBR_HaltSystem                ; not found, something is wrong here
 
@@ -791,12 +859,8 @@ PART_HidePartition              EndP
 ;  a buggy implementation, because the MBR-code should normally check,
 ;  *not* the BIOS. This one *could* cause havoc to some systems, but I can't
 ;  do anything else.
-; =In this routine DS may not be equal CS=
-PART_MarkFirstGoodPrimary       Proc Near   Uses ax si es di
-   push    ExecBaseSeg
-   pop     es
-   mov     di, ExecBasePtr
-   add     di, 446                       ; DS:SI - First Partition-Entry
+PART_MarkFirstGoodPrimary       Proc Near   Uses ax si di
+   mov     di, offset PartitionSector+446 ; DS:SI - 1st partitionentry
    ; First action to do: Remove the active flag from every partition
    push    di
       mov     cl, 4
@@ -826,11 +890,10 @@ PART_MarkFirstGoodPrimary       Proc Near   Uses ax si es di
       je      PMPP_SearchHit
      PMPP_Search1NoHit:
       add     di, LocBRPT_LenOfEntry     ; 16 Bytes per Partition-Entry
-   cmp     di, 500+ExecBasePtr
+   cmp     di, 500+offset PartitionSector
    jb      PMPP_Search1Loop
 
-   mov     di, ExecBasePtr
-   add     di, 446                       ; DS:SI - First Partition-Entry
+   mov     di, offset PartitionSector+446 ; DS:SI - 1st Partition-Entry
    ; Second Search, hit on anything that is not an extended partition
    ;  (05 or 0Fh)
   PMPP_Search2Loop:
@@ -843,7 +906,7 @@ PART_MarkFirstGoodPrimary       Proc Near   Uses ax si es di
       jne     PMPP_SearchHit
      PMPP_Search2NoHit:
       add     di, LocBRPT_LenOfEntry     ; 16 Bytes per Partition-Entry
-   cmp     di, 500+ExecBasePtr
+   cmp     di, 500+offset PartitionSector
    jb      PMPP_Search2Loop
    jmp     PMPP_SearchFailed
 
@@ -858,10 +921,8 @@ PART_MarkFirstGoodPrimary       EndP
 ;       Out: AL - Unhidden File-System-ID, AH - Flags for this File-System
 ;            SI - Pointer to Name (8char)
 ; Destroyed: *none*
-PART_SearchFileSysName          Proc Near  Uses ds bx dx
+PART_SearchFileSysName          Proc Near  Uses bx dx
    movzx   bx, al
-   push    cs
-   pop     ds
    mov     si, offset FileSysIDs
   PSFSN_SearchLoop:
       lodsw                              ; AL - NormalID, AH-HiddenID
@@ -891,10 +952,8 @@ PART_SearchFileSysName          EndP
 ; Searches the Hidden ID corresponding to a FileSysID (PartitionID)
 ;        In: AL - FileSysID
 ;       Out: AL - Hidden File-System-ID
-PART_SearchFileSysHiddenID      Proc Near  Uses ds bx
+PART_SearchFileSysHiddenID      Proc Near  Uses bx
    movzx   bx, al
-   push    cs
-   pop     ds
    mov     si, offset FileSysIDs
   PSFSHI_SearchLoop:
       lodsw                              ; AL - NormalID, AH-HiddenID
