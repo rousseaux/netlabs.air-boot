@@ -22,6 +22,11 @@
 ; Checks system for stealth-virus...if any is found, MBR will get restored and
 ; system will get halted. On Non-Real-Mode this will only save Interrupt Vectors.
 ; Segment Registers preserved
+
+IFDEF ModuleNames
+DB 'VIRUS',0
+ENDIF
+
 VIRUS_CheckForStealth      Proc Near  Uses ds si es di
    xor     al, al
    mov     cx, 4
@@ -153,7 +158,8 @@ ANTIVIR_SaveBackUpMBR           Proc Near  Uses ax bx cx dx es
    pop     es
    mov     bx, BootBasePtr
    mov     dx, 0080h
-   mov     cx, 003Ch                     ; First Harddrive, Sector 60
+   ;mov     cx, 003Ch                     ; First Harddrive, Sector 60
+   mov     cx, image_size / sector_size  ; Harddisc 0, Sector 60 (or 62 for extended version)
    mov     ax, 0301h                     ; Write 1 Sector
    int     13h
    ret
@@ -165,7 +171,8 @@ ANTIVIR_CheckBackUpMBR          Proc Near  Uses
    pop     es ds
    mov     bx, offset TmpSector
    mov     dx, 0080h
-   mov     cx, 003Ch                     ; Harddisc 0, Sector 60
+   ;mov     cx, 003Ch                     ; Harddisc 0, Sector 60
+   mov     cx, image_size / sector_size  ; Harddisc 0, Sector 60 (or 62 for extended version)
    mov     ax, 0201h                     ; Load 1 Sector
    pushf
    call    dword ptr cs:[CFG_VIR_INT13]  ; Get Sector 60 directly (w/o INT 13h)

@@ -19,6 +19,10 @@
 ;                                                          AiR-BOOT / TIMER
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'TIMER',0
+ENDIF
+
 ; This here is one of the rare cases that I'm using DIV and MUL opcodes. I
 ;  could have coded around them in here as well, but I was too lazy. Most of
 ;  the time, I'm not using them. If you want to look at something "leet", look
@@ -38,7 +42,10 @@ TIMER_GetTicCount               EndP
 ;        In: AL - Timer-Tics to wait
 ;       Out: Nothing
 TIMER_WaitTicCount              Proc Near   Uses ax bx dx
-   movzx   bx, al
+   ;movzx   bx, al
+   mov   bl,al
+   mov   bh,0
+
    call    TIMER_GetTicCount
    add     bx, ax                        ; BX - Required lower Tic
   TWTC_Loop:
@@ -61,7 +68,10 @@ TIMER_TranslateSecToTic         Proc Near   Uses bx dx
    mov     bl, 91
    mul     bl                            ; Result * 91
    mov     dx, ax
-   movzx   ax, bh
+   ;movzx   ax, bh
+   mov   al,bh
+   mov   ah,0
+
    mov     bl, 18
    mul     bl                            ; Remainder * 18
    add     ax, dx                        ; Add both together...
@@ -79,14 +89,20 @@ TIMER_TranslateTicToSec         Proc Near   Uses bx dx
    mov     dl, 91
    div     dl                            ; Tics : 91
    mov     dh, al
-   movzx   ax, ah
+   ;movzx   ax, ah
+   mov   al,ah
+   mov   ah,0
+
    mov     dl, 18
    div     dl                            ; Remainder : 18
    xor     ah, ah                        ; We dont need that remainder
    xchg    dh, al
    mov     bl, 5
    mul     bl                            ; Result * 5
-   movzx   dx, dh
+   ;movzx   dx, dh
+   mov   dl,dh
+   mov   dh,0
+
    add     ax, dx                        ; Add both together...
    ret
   TTTTS_Overflow:

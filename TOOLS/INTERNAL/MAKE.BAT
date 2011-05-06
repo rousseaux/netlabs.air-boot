@@ -5,7 +5,7 @@ call ..\..\env\dos.bat
 if errorlevel 1 goto Failed
 %linker% fixcode.obj >nul
 if errorlevel 1 goto Failed
-%exe2bin% fixcode.exe fixcode.com >nul
+%exe2bin% FIXCODE.EXE FIXCODE.COM >nul
 if errorlevel 1 goto Failed
 
 rem Cleanup
@@ -16,4 +16,4 @@ goto ExitMe
 :Failed
 echo Errorlevel not 0, make failed
 :ExitMe
-pause
+rem pause

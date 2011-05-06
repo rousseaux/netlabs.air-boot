@@ -39,9 +39,13 @@
 ; I could implement some more file-systems into AiR-BOOT, but instead I did
 ;  some nice menus, setup, text, cyrillic support, demo-coder effects, easy
 ;  handling, help, auto-detection and plenty of other stuff INTO AROUND 25k.
-; 
+;
 ; Oh, why is this code here? Because of 2 friends of mine. Otherwise I wouldnt
 ;  have done it as well as fat16.asm.
+
+IFDEF ModuleNames
+DB 'LINUX',0
+ENDIF
 
 Linux_TranslateBase     db '/dev/hd'
 Linux_KernelDirectory   db 'KERNELS    '
@@ -216,7 +220,7 @@ LINUX_LoadKernel                Proc Near  Uses ; Direct Jump, No Preserves
    ; DX - Starting-Cluster of Linux Kernel File
    mov     dx, ds:[si+LocIPT_LocationBegin]
    ; from now on, we don't need si anymore
-   
+
    ; Linux has 1 'BR' (which is crap) and some setup sectors
    ; we load them at 9000:0, what a luck, we are at 8000:0 :-))
    push    ds es
@@ -341,7 +345,7 @@ LINUX_LoadKernel                Proc Near  Uses ; Direct Jump, No Preserves
    test    bptr ds:[0211h], 01h
    jz      LLL_LoadNormalKernel
    jmp     LLL_LoadBigKernel
-         
+
   LLL_LoadNormalKernel:
    ; NORMAL KERNEL
 
@@ -457,7 +461,7 @@ MBR_Linux_GDT_Src       db          0, 0, 06h    ; Source is 6000:0
                         db          093h
                         dw          0
                         dw          0FFFFh
-MBR_Linux_GDT_Dst       db          0, 0, 10h    ; Dest is "10000:0" 
+MBR_Linux_GDT_Dst       db          0, 0, 10h    ; Dest is "10000:0"
                         db          093h
                         dw          0
                         dw          0, 0, 0, 0

@@ -28,7 +28,7 @@ code_seg        segment public use16
                 org     100h
 COM_StartUp:    jmp     COM_Init
 
-COM_Copyright   db 'AiR-BOOT Installer for DOS v1.00', 13, 10
+COM_Copyright   db 'AiR-BOOT Installer for DOS v1.07', 13, 10
                 db ' - (c) Copyright 2008-2009 by M. Kiewitz.', 13, 10
                 db 13, 10
                 db '-> ...Please wait... <-', 13, 10, 0
@@ -133,14 +133,14 @@ COM_CmdLineDone:; Now read airboot.bin into memory at DS:
 COM_DoneOpen:   mov     bx, ax           ; BX = Filehandle
 
                 mov     ah, 3Fh
-                mov     cx, 30720        ; Image size
+                mov     cx, image_size        ; Image size
                 mov     dx, offset BootImage
                 int     21h              ; DOS: READ FILE
                 jnc     COM_DoneRead
                 mov     si, offset COM_FailedRead
                 call    APIShowError
 
-COM_DoneRead:   cmp     ax, 30720
+COM_DoneRead:   cmp     ax, image_size
                 je      COM_DoneRead2
 COM_InvalidFile:mov     si, offset COM_FailedRead2
                 call    APIShowError

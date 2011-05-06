@@ -35,8 +35,24 @@ callfar Macro destination
 EndM
 
 ; Shortcuts for pointer-types
-bptr                            equ   byte ptr
-wptr                            equ   word ptr
-dptr                            equ  dword ptr
-qptr                            equ  qword ptr
-tptr                            equ  tbyte ptr
+bptr                             equ   byte ptr
+wptr                             equ   word ptr
+dptr                             equ  dword ptr
+qptr                             equ  qword ptr
+tptr                             equ  tbyte ptr
+
+
+sector_size                      equ   512
+image_size_60secs                equ   7800h
+image_size_62secs                equ   7c00h
+
+;image_size                       equ   image_size_60secs
+image_size                       equ   image_size_62secs
+
+sector_count                     equ   image_size / sector_size                  ; Image size in sectors
+
+IF image_size EQ image_size_60secs
+   partition_count               equ   30                                        ; Maximum number of partitions supported
+ELSE
+   partition_count               equ   45                                        ; Maximum number of partitions supported
+ENDIF

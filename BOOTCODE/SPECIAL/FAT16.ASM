@@ -19,6 +19,10 @@
 ;                                                 AiR-BOOT / FAT-16 SUPPORT
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'FAT16',0
+ENDIF
+
 ; Here is access code for accessing FAT-16 partitions. It's not a complete
 ;  File-API and only for simple readonly-access.
 ; It's currently only used by SPECIAL\LINUX.ASM for Linux Kernel Loading.
@@ -26,8 +30,8 @@
 ; Note: This code will ONLY WORK on computers with INT 13h Extension.
 ;        I did not want to code silly cylinder stuff here. I have also used
 ;        i386 code in here, because Linux requires so as well. Please note that
-;        I don't use i386 code anywhere (!) else in AiR-BOOT.
-;
+;        I don't use i386 code anywhere (!) else in AiR-BOOT.                    ; Rousseau: yes you did, movezx is 386-only :-)
+;                                                                                ; Replaced by 286 instructions.
 ; Initialize FAT-16 access on specified partition (required for following xs)
 ;        In: DS:SI - IPT-Entry that contains a FAT-16 partition
 ;       Out: None
@@ -130,7 +134,10 @@ FAT16_ReadCluster               Proc Near  Uses eax bx
       mov    DriveIO_DAP_Transfer, eax   ; Read to 9000:DI
       mov    ax, dx
       sub    ax, 2                       ; Everything starts at Cluster 2
-      movzx  bx, FAT16_SecsPerCluster
+      ;movzx  bx, FAT16_SecsPerCluster
+      mov   bl,FAT16_SecsPerCluster
+      mov   bh,0
+
       mul    bx
       shl    edx, 16
       mov    dx, ax                      ; EDX - Relative to Cluster-Start
@@ -144,7 +151,10 @@ FAT16_ReadCluster               Proc Near  Uses eax bx
    shl    ax, 9
    add    di, ax
    ; Finally, look for next Cluster following to this one...
-   movzx  bx, dl
+   ;movzx  bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    shl    bx, 1                          ; BX - Offset within FAT-Table
    shr    dx, 8                          ; DX - FAT-Sector
    cmp    dl, FAT16_FATCacheSector
@@ -258,7 +268,10 @@ FAT16_ProcessKrnlDirectory      Proc Near  Uses ds si es di
             stosd                        ; +0 [DWORD] Empty Serial
          pop       ax
          mov    dx, si
-         movzx  cx, ah
+         ;movzx  cx, ah
+         mov   cl,ah
+         mov   ch,0
+
          rep    movsb
          mov    si, dx                   ; Restore SI
          add    si, 8

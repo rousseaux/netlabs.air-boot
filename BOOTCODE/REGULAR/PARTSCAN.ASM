@@ -19,6 +19,11 @@
 ;                                             AiR-BOOT / PARTiTiON SCANNING
 ;---------------------------------------------------------------------------
 
+
+IFDEF ModuleNames
+DB 'PARTSCAN',0
+ENDIF
+
 ; Note: This is complex code. So make sure that you know what you are doing in
 ;        here.
 
@@ -47,7 +52,10 @@ PARTSCAN_ScanForPartitions      Proc Near  Uses
    ; Now we copy the new IPT over the old one...
    mov     si, offset NewPartTable
    mov     di, offset PartitionTable
-   movzx   ax, NewPartitions
+   ;movzx   ax, NewPartitions
+   mov   al,NewPartitions
+   mov   ah,0
+
    mov     CFG_Partitions, al
    mov     bl, LocIPT_LenOfIPT
    mul     bl
@@ -57,8 +65,8 @@ PARTSCAN_ScanForPartitions      Proc Near  Uses
    ; and the New Logical Drive Letter table as well...
    mov     si, offset NewDriveLetters
    mov     di, offset DriveLetters
-   mov     cx, LocIPT_MaxPartitions/2
-   rep     movsw
+   mov     cx, LocIPT_MaxPartitions
+   rep     movsb
 
 ; [Linux support removed since v1.02]
 ;   ; Search for any Linux partition and remember, if it got found...
@@ -81,7 +89,10 @@ PARTSCAN_ScanForPartitions      Proc Near  Uses
    mov     dl, AutoDrvLetter
    or      dl, dl
    jz      PSSFP_NoAutoDriveLetter
-   movzx   cx, CFG_Partitions
+   ;movzx   cx, CFG_Partitions
+   mov   cl,CFG_Partitions
+   mov   ch,0
+
    or      cx, cx
    jz      PSSFP_NoAutoDriveLetter
    mov     si, offset PartitionTable
@@ -117,10 +128,14 @@ PARTSCAN_ScanDriveForPartitions Proc Near  Uses
    mov     wptr [ExtendedAbsPos+0], ax
    mov     wptr [ExtendedAbsPos+2], ax
   PSSDFP_LoadThisPartition:
-   call    DriveIO_LoadPartition
+
+   call    DriveIO_LoadPartition                                                 ; Rousseau: load a partition record
+
    jc      PSSDFP_InvalidPartition
+
    ; LVM Support - Reads LVM Information Sector
-   call    DriveIO_LoadLVMSector
+   call    DriveIO_LoadLVMSector                                                 ; Rousseau: load LVM sector
+
    call    PARTSCAN_ScanPartition
    IFDEF ReleaseCode
       call    DriveIO_SavePartition
@@ -222,7 +237,7 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
    mov     bx, wptr [si+LocBRPT_RelativeBegin+2]
    add     ax, wptr [CurPartition_Location+0] ; +Partition-Absolute
    adc     bx, wptr [CurPartition_Location+2] ;  sectors
-   call    DriveIO_LoadTmpSector         ; Loads Boot record
+   call    DriveIO_LoadTmpSector         ; Loads Boot record                     ; Rousseau: LOAD PARTITION BOOT RECORD !!
    ; Sets up DS:SI - TmpSector
 
    push    si
@@ -248,7 +263,7 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
 
    cmp     PartSystemID, 07h          ; We got IFS here?
    jne     PCCTP_IFSdone
-   ; Check, if 'JFS ' is at DWORD offset 36h
+   ; Check, if 'JFS ' is at DWORD offset 36h                                     ; Rousseau: JFS check (LVM / IPT?)
    cmp     wptr [si+36h], 'FJ'
    jne     PCCTP_IFSnoJFS
    cmp     wptr [si+38h], ' S'
@@ -283,18 +298,39 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
       mov     al, 1                      ; 0 would mean "not LVM supported"
      PCCTP_HasVolumeLetter:
       ; Save VolumeLetter in separate table
-      movzx   bx, NewPartitions          ; NewPartitions is one behind here, so
+      ;movzx   bx, NewPartitions          ; NewPartitions is one behind here, so
+      mov   bl,NewPartitions          ; NewPartitions is one behind here, so
+      mov   bh,0
+
       mov     [PartitionVolumeLetters+bx], al ; it's already a zero-based offset
       ; Now copy VolumeID and VolumeName to temporary space
       mov     di, offset MBR_NoName_Patched
       mov     ax, [si+LocLVM_PartitionID]
       stosw
       mov     ax, [si+LocLVM_PartitionID+2]
-      stosw                              ; Set Serial-Field to LVM-VolumeID
+      stosw
+                              ; Set Serial-Field to LVM-VolumeID
+      push     di
       add     si, LocLVM_PartitionName
+
       mov     cx, 5
       rep     movsw                      ; Copy LVM-PartitionName to Temp Space
-      movsb                              ;  (11 bytes in total)
+      movsb                               ;  (11 bytes in total)
+
+      pop   di
+      cmp   PartSystemID, 0ah
+
+      jne   PCCTP_NoIbmBm
+      mov   si, offset ibm_bm_name
+      mov   cx,5
+      rep   movsw
+      movsb
+
+
+
+   PCCTP_NoIbmBm:
+
+
    pop     di si dx ax
    mov     si, offset MBR_NoName_Patched
    xor     ah, ah                        ; no Flags_NoPartName
@@ -303,7 +339,12 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
      PCCTP_CheckBootRecord:
    pop     di si dx ax
    test    ah, FileSysFlags_NoName       ; No-Name-Flag ? -> No Partition Name
-   jnz     PCCTP_ThereIsNoName           ;                    available
+
+   jz      PCCTP_ThereIsAName
+   jmp     PCCTP_ThereIsNoName           ;                    available
+
+   PCCTP_ThereIsAName:
+
       ; We check for NTFS (got detected a little bit earlier in this routine)
       cmp     PartSystemID, 08h          ; We got IFS/NTFS here?
       jne     PCCTP_IsNoNTFS
@@ -311,12 +352,19 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
      PCCTP_IsNoNTFS:
       add     si, 2Bh                    ; DS:SI - Partition-Name
       test    ah, FileSysFlags_FAT32     ; FAT32 specific name getting ?
+
       jz      PCCTP_ResumeNormal
+
       add     si, 1Ch                    ; Fix for FAT 32, shiat
      PCCTP_ResumeNormal:
       mov     cx, 11                     ;         11 bytes length
       call    PART_CheckForValidPartName
-      jnc     PCCTP_ThereIsNoName
+      jc    PCCTP_ThereIsAName2
+
+      jmp     PCCTP_ThereIsNoName
+
+   PCCTP_ThereIsAName2:
+
       sub     si, 4                      ; DS:SI -> Serial&Name (15-Bytes)
       xor     ah, ah                     ; no Flags_NoPartName
 ;      jmp     PCCTP_NameSearchInIPT
@@ -342,7 +390,13 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
          push    si di
             repz    cmpsb
          pop     di si
-         je      PCCTP_Match
+
+         jne   PCCTP_NoMatchYet
+
+         jmp      PCCTP_Match
+
+      PCCTP_NoMatchYet:
+
         PCCTP_SerialNameAlreadyFound:
          add     di, LocIPT_LenOfIPT
       dec     dl
@@ -476,7 +530,7 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
       jnz     PCCTP_LocCompLoop
      PCCTP_LocCompFailed:
       jmp     PCCTP_CompareFailed
-      
+
    ; ==================================
    ; =MATCH=, found partition in IPT...
    ;    AH - NoPartName-Flag (!MUST! be merged with Flags)
@@ -556,7 +610,10 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
 
    ; Calculate Pointer to IPT
    mov     di, offset NewPartTable       ; ES:DI - NewPartTable
-   movzx   ax, NewPartitions
+   ;movzx   ax, NewPartitions
+   mov   al,NewPartitions
+   mov   ah,0
+
    mov     bl, LocIPT_LenOfIPT
    mul     bl
    add     di, ax                        ; ES:DI - Last+1 Entry of NewPartTable
@@ -574,7 +631,7 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
    mov     al, PartSystemID              ; Unhidden SystemID
    stosb
    mov     al, cl                        ; Partition-Flags from register...
-   stosb 
+   stosb
    mov     ax, PartCRC                   ; BootRecordCRC...
    stosw
    mov     al, bptr [si+LocBRPT_BeginHead]
@@ -619,7 +676,10 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
    mov     bptr [si+LocBRPT_SystemID], al
 
    ; Calculate Size of this partition and put it into separate table...
-   movzx   ax, NewPartitions
+   ;movzx   ax, NewPartitions
+   mov   al,NewPartitions
+   mov   ah,0
+
    dec     ax
    mov     bx, ax
    shl     ax, 1
@@ -657,7 +717,10 @@ PARTSCAN_ResetXref              EndP
 ;            DH - Partition Number in NewPartitionTable
 ; Destroyed: None
 PARTSCAN_DefXref                Proc Near   Uses ax bx cx dx si di
-   movzx   bx, dl
+   ;movzx   bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    mov     bptr [PartitionXref+bx], dh      ; X-Reference
    ; Copy Hide-Config of IPT partition to new location in new table
    mov     si, offset HidePartitionTable
@@ -672,9 +735,15 @@ PARTSCAN_DefXref                Proc Near   Uses ax bx cx dx si di
    mov     cx, LocIPT_MaxPartitions
    rep     movsb                            ; Copy Hide-Config to NewHideTable
    ; Process Logical-Drive-Letter table as well...
-   movzx   bx, dl
+   ;movzx   bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    mov     al, bptr [DriveLetters+bx]       ; Get Drv-Letter from org. pos
-   movzx   bx, dh
+   ;movzx   bx, dh
+   mov   bl,dl
+   mov   bh,0
+
    mov     bptr [NewDriveLetters+bx], al    ; Put Drv-Letter to new pos
    ret
 PARTSCAN_DefXref                EndP
@@ -683,7 +752,10 @@ PARTSCAN_DefXref                EndP
 ;       Out: DH - Partition Number in NewPartitionTable
 ; Destroyed: None
 PARTSCAN_GetXref                Proc Near   Uses bx
-   movzx   bx, dl
+   ;movzx   bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    mov     dh, bptr [PartitionXref+bx]      ; X-Reference
    ret
 PARTSCAN_GetXref                EndP
@@ -701,7 +773,10 @@ PARTSCAN_SyncHideConfigWithXref Proc Near Uses ax bx cx dx si di
          lodsb                              ; Get Part-Pointer from Hide-Cfg
          cmp     al, 0FFh
          je      PSSHCWX_SyncEmpty
-         movzx   bx, al
+         ;movzx   bx, al
+         mov   bl,al
+         mov   bh,0
+
          mov     al, [PartitionXref+bx]     ; Translate it
          cmp     al, 0FFh
          je      PSSHCWX_PartLost
@@ -728,3 +803,5 @@ PARTSCAN_SyncHideConfigWithXref Proc Near Uses ax bx cx dx si di
    jnz     PSSHCWX_SyncPartLoop
    ret
 PARTSCAN_SyncHideConfigWithXref EndP
+
+ibm_bm_name:   db 'IBM BootMan',0

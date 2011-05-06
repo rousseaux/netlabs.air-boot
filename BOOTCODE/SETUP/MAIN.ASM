@@ -19,6 +19,10 @@
 ;                         AiR-BOOT SETUP / GENERIC & GENERAL SETUP ROUTINES
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'MAIN',0
+ENDIF
+
 LocMENU_RoutinePtr           equ          0
 LocMENU_VariablePtr          equ          2
 LocMENU_ItemNamePtr          equ          4
@@ -65,6 +69,22 @@ SETUP_SwitchToSelectedItem      Proc Near   Uses ax cx
 SETUP_SwitchToSelectedItem      EndP
 
 SETUP_CheckEnterSETUP           Proc Near   Uses
+
+
+
+   ; Rousseau: added
+   ;mov     SETUP_ExitEvent, 0
+   ;xor     al, al                        ; -PARTITION SETUP PreDefines-
+   ;mov     PartSetup_UpperPart, al       ; Upper-Partition == 0
+   ;mov     PartSetup_ActivePart, al      ; Active-Partition == 0
+
+   ; Setup PartitionPointers-Table...again (needed when re-entering setup)
+   ;call    PART_CalculateStraightPartPointers
+   ;call    VideoIO_DBG_WriteString
+   ; Rousseau: end added
+
+
+
    test    CFG_AutoEnterSetup, 1
    jnz     SCES_ForceEnter
    mov     al, SETUP_KeysOnEntry
@@ -151,9 +171,13 @@ SETUP_MenuTask                  Proc Near   Uses ; the main-menu routine
       cmp     ah, Keys_ESC
       je      SMT_KeyEsc
       cmp     ah, Keys_F1
-      je      SMT_KeyHelp
+      jne   skip_xx
+      jmp      SMT_KeyHelp
+   skip_xx:
       cmp     ah, Keys_F10
-      je      SMT_SaveAndExitNOW
+      jne   skip_yy
+      jmp      SMT_SaveAndExitNOW
+   skip_yy:
       ; ASCII values...
       cmp     al, Keys_Space
       je      SMT_KeyPlus
@@ -263,11 +287,15 @@ SETUP_MenuTask                  Proc Near   Uses ; the main-menu routine
    jmp     SMT_DirectExecute
 SETUP_MenuTask                  EndP
 
+
+
+CLR_MENU_WINDOW_CLASSIC    = 0e01h
+CLR_MENU_WINDOW_BM   = 0e01h
 ;        In: BP - Pointer to Menu
 ;       Out: DH - Active Item on Screen
 SETUP_DrawMenuOnScreen          Proc Near   Uses
    call    SETUP_DrawMenuWindow
-   mov     cx, 0E01h
+   mov     cx, CLR_MENU_WINDOW_BM
    call    VideoIO_Color
    xor     ch, ch
   SDMOS_Loop:
@@ -293,22 +321,29 @@ SETUP_FillUpItemPacks           Proc Near Uses cx
    ret
 SETUP_FillUpItemPacks           EndP
 
+
+
+CLR_SELECTED_ITEM_CLASSIC  = 0f04h
+CLR_SELECTED_ITEM_BM = 0f04h
 ; Displays selected Item on screen
 ;        In: DH - Active Item
 ; Destroyed: None
 SETUP_DrawSelectItem            Proc Near Uses cx
-   mov     cx, 0F04h
+   mov     cx, CLR_SELECTED_ITEM_BM
    call    VideoIO_Color
    mov     ch, dh
    call    SETUP_DrawItemOnScreen
    ret
 SETUP_DrawSelectItem            EndP
 
+
+CLR_DESELECTED_ITEM_CLASSIC  = 0e01h
+CLR_DESELECTED_ITEM_BM  = 0e01h
 ; Display last-selected Item on screen (De-Select)
 ;        In: DL - Active Item
 ; Destroyed: None
 SETUP_DrawDeSelectItem          Proc Near Uses cx
-   mov     cx, 0E01h
+   mov     cx, CLR_DESELECTED_ITEM_BM
    call    VideoIO_Color
    mov     ch, dl
    call    SETUP_DrawItemOnScreen
@@ -355,7 +390,7 @@ SETUP_DrawItemOnScreen          Proc Near   Uses ax cx dx si es
   SDIOS_Name_NoItemName:
    mov     wptr TextColorFore, dx
    ret
-         
+
    ; ------------------------------------------------------ Draw ITEMPACK
   SDIOS_ItemPackDraw:
    add     ch, 6                         ; Fix coordinate...
@@ -367,7 +402,11 @@ SETUP_DrawItemOnScreen          Proc Near   Uses ax cx dx si es
          inc     cl
         SDIOS_ItemPack_NoFixUpItemPack:
          call    VideoIO_Locate
-         mov     cx, 0F01h
+
+CLR_ITEM_PACK_CLASSIC   = 0f01h
+CLR_ITEM_PACK_BM  = 0f01h
+
+         mov     cx, CLR_ITEM_PACK_BM
          call    VideoIO_Color           ; White on blue background
          mov     si, ds:[si+LocMENU_ItemNamePtr] ; SI - Name of Item
          or      si, si
@@ -417,6 +456,8 @@ SETUP_FillUpItemPack_Now        Proc Near Uses ax bx si
    call    ax                            ; CH-ItemNo, CL-Add/Sub, BX-PtrToVar
    ret
 SETUP_FillUpItemPack_Now        EndP
+
+
 
 SETUP_DrawMenuWindow            Proc Near   Uses es
    mov     cx, 0901h
@@ -473,7 +514,15 @@ SETUP_DrawMenuBase              Proc Near   Uses
    pop     si
    mov     cl, CopyrightVersionLen
    call    VideoIO_FixedPrint            ; and 'vX.XX'.
-   add     si, 3
+
+   ; Rousseau:
+   ; Strange, had to adjust this value.
+   ; Somewhere some offset changed...
+   ; Possibly happened with the movzx change to 286 instructions because some
+   ; offsets are hard coded.
+   ;add     si, 3
+   add     si, 2
+
    call    GetLenOfString                ; CX - Len of "Copyright" string
    mov     dx, cx
    mov     cx, 0228h
@@ -870,7 +919,7 @@ SETUP_LetEnterPassword          Proc Near   Uses bx cx dx si es di
    call    SOUND_PreBootMenu
    mov     si, di                        ; DS:SI - Current Password
    xor     dl, dl
-   ; DL - location of cursor (first=0)         
+   ; DL - location of cursor (first=0)
   SLEP_Loop:
    mov     cx, EnterPwd_Location
    call    VideoIO_Locate
@@ -909,7 +958,11 @@ SETUP_LetEnterPassword          Proc Near   Uses bx cx dx si es di
   SLEP_CorrectPwdChar:
    cmp     dl, 8
    je      SLEP_SkipThiz
-   movzx   bx, dl
+
+   ;movzx   bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    mov     ds:[si+bx], al
    mov     al, 42                        ; fixed star :]
    mov     ds:[si+bx+8], al
@@ -919,7 +972,11 @@ SETUP_LetEnterPassword          Proc Near   Uses bx cx dx si es di
    cmp     dl, 0
    je      SLEP_SkipThiz
    dec     dl
-   movzx   bx, dl
+
+   ;movzx   bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    mov     al, 32
    mov     ds:[si+bx], al
    mov     ds:[si+bx+8], al
@@ -1097,7 +1154,11 @@ SETUPMAGIC_InternalCopyTillNUL  Proc Near Uses ax cx
    sub     al, cl
    jz      SMICTN_NoFiller
    dec     al
-   movzx   cx, al
+
+   ;movzx   cx, al
+   mov   cl,al
+   mov   ch,0
+
    xor     al, al
    rep     stosb                         ; and fill up with NULs, if required
   SMICTN_NoFiller:
@@ -1522,7 +1583,11 @@ SETUPMAGIC_ChangeBIOSbootSeq    Proc Near   Uses ax bx cx dx si di
    jmp     SMCBBS_CopyThiz
   SMCBBS_Enabled:
    dec     dl
-   movzx   bx, dl
+
+   ;movzx   bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    shl     bx, 1
    mov     si, wptr [ContinueBIOSbootTable+bx]
   SMCBBS_CopyThiz:

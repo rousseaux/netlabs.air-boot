@@ -16,6 +16,13 @@
 //  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
 //
 
+/*
+// Rousseau: 2011-02-05
+// - Made volumes compare case insensitive so fs-label matches volume-name on command-line.  (around line 510)
+//   This means bootable volumes cannot not have the same and only differ in case.
+*/
+
+
 #define INCL_BASE
 #define INCL_WINSHELLDATA
 #define INCL_DOS
@@ -61,7 +68,7 @@ typedef struct _AiRBOOTCODESIG {
 typedef AiRBOOTCODESIG *PAiRBOOTCODESIG;
 
 typedef struct _AiRBOOTCONFIG {
-   CHAR   Identifier[13];
+   CHAR   Identifier[13];                                                        // Rousseau: INVISIBLE CHAR AT END !
    UCHAR  MajorVersion;
    UCHAR  MinorVersion;
    CHAR   ReleaseLanguage;
@@ -109,8 +116,13 @@ typedef struct _AiRBOOTCONFIG {
    UCHAR  AutomaticBoot;
    UCHAR  AutomaticPartition;
    UCHAR  ForceLBAUsage;
+   UCHAR  IgnoreLVM;
+   UCHAR  Reserved[82];
+   CHAR   InstallVolume[12];
  } AiRBOOTCONFIG;
 typedef AiRBOOTCONFIG *PAiRBOOTCONFIG;
+
+
 
 typedef struct _AiRBOOTIPENTRY {
    ULONG  SerialNumber;
@@ -138,6 +150,21 @@ USHORT          AiRBOOT_ConfigCheckSum = 0;
 UCHAR           AiRBOOT_IPTCount = 0;
 
 
+/* Executables to search for */
+PCHAR	classic_setboots[] = {
+   "SETBM.EXE",
+   NULL
+};
+
+
+/*
+// ProtoTypes.
+*/
+BOOL Track0DetectAirBoot (BOOL* ab_bad);
+BOOL Track0WriteAiRBOOTConfig (void);
+
+
+
    USHORT CountHarddrives (void) {
       USHORT NumDrives = 0;
 
@@ -148,7 +175,7 @@ UCHAR           AiRBOOT_IPTCount = 0;
 
    USHORT OS2_GetIOCTLHandle () {
       USHORT IOCTLHandle = 0;
- 
+
       if (DosPhysicalDisk(INFO_GETIOCTLHANDLE, &IOCTLHandle, sizeof(IOCTLHandle),"1:" , 3) != 0)
          return 0;
       return IOCTLHandle;
@@ -235,6 +262,38 @@ UCHAR           AiRBOOT_IPTCount = 0;
       DosClose(DosHandle);
     }
 
+
+APIRET QueryBootDrive(char *bootdrv)
+{
+	ULONG	aulSysInfo[QSV_MAX]	= {0};                                             // System Information Data Buffer
+	APIRET	rc				= NO_ERROR;											               // Return code
+
+	if(bootdrv==0) return 1;
+
+	rc = DosQuerySysInfo(1L,														            // Request all available system
+							QSV_MAX ,												               // information
+							(PVOID)aulSysInfo,										            // Pointer to buffer
+							sizeof(ULONG)*QSV_MAX);									            // Size of the buffer
+
+	if (rc != NO_ERROR) {
+		return 1;
+	}
+	else {
+		//printf("Bootable drive: %c:\n",
+		//		aulSysInfo[QSV_BOOT_DRIVE-1]+'A'-1);  /* Max length of path name */
+		bootdrv[0]=aulSysInfo[QSV_BOOT_DRIVE-1]+'A'-1;
+
+		/*
+		printf("Total physical memory is %u bytes.\n",
+				aulSysInfo[QSV_TOTPHYSMEM-1]);
+		*/
+
+		return 0;
+	}
+
+
+}
+
 USHORT GetChecksumOfSector (USHORT BaseCheck, USHORT SectorNo) {
    PUSHORT CurPos     = (PUSHORT)((ULONG)&Track0+(SectorNo-1)*512);
    USHORT  LengthLeft = 256;
@@ -245,77 +304,121 @@ USHORT GetChecksumOfSector (USHORT BaseCheck, USHORT SectorNo) {
    return BaseCheck;
  }
 
-BOOL Track0DetectAirBoot (void) {
-   USHORT ResultCheck;
-   USHORT CurSectorNo = 0;
 
-   AiRBOOT_CodeSig = (PAiRBOOTCODESIG)&Track0[2];
-   AiRBOOT_Config  = (PAiRBOOTCONFIG)&Track0[(55-1)*512];
-   AiRBOOT_IPT     = (PAiRBOOTIPENTRY)&Track0[(56-1)*512];
 
-   if (strncmp(AiRBOOT_CodeSig->Identifier, "AiRBOOT", 7)!=0) {
-      return FALSE;
-    }
 
-   if ((AiRBOOT_CodeSig->TotalCodeSectors)>53) {
-      puts ("SETABOOT: AiR-BOOT Code damaged!");
-      return FALSE;
-    }
+/*
+// If AiR-BOOT is not installed, the user probably meant to control OS/2 BM with this utility.
+// Since the functionality of this utility is for AiR-BOOT only, we will pass the request to
+// the OS/2 BM SETBOOT utility which is called SETBM.EXE as of eCS 2.01.
+// Since the objective here is to supply OS/2 BM SETBOOT compatibility, if SETBM.EXE is not found,
+// some other system locations are searched for the OS/2 version of SETBOOT.EXE.
+// Any SETBOOT.EXE that is found and that does not have a module-name of "setaboot" is invoked,
+// and passed along the command-line the user issued.
+// In this case also the return-value of the OS/2 version of SETBOOT.EXE is returned.
+*/
+int   DoClassicActions(int argc, char **argv) {
+   APIRET      rc             = -1;
+   RESULTCODES	crc			   = {-1,-1};
+   PTIB        ptib           = NULL;
+   PPIB        ppib           = NULL;
+   char        buffer[256]    = "\0";
+   char        cmdline[256]   = "\0";
+   PSZ         path           = NULL;
+   char        sresult[256]   = "\0";
+   char        bootdrive      = '?';
+   char*       p              = NULL;
+   int         i              = 0;
 
-   ResultCheck = 0; CurSectorNo = 0;
-   while (CurSectorNo<AiRBOOT_CodeSig->TotalCodeSectors) {
-      ResultCheck = GetChecksumOfSector(ResultCheck, CurSectorNo+2);
-      CurSectorNo++;
-    }
-   if (ResultCheck!=AiRBOOT_CodeSig->CheckSumOfCode) {
-      puts ("SETABOOT: AiR-BOOT Code damaged!");
-      return FALSE;
-    }
+   //printf("\nCLASSIC ACTIONS !! (%d)\n", argc);
 
-   if (strncmp(AiRBOOT_Config->Identifier, "AiRCFG-TABLE­", 13)!=0) {
-      puts ("SETABOOT: AiR-BOOT Config damaged!");
-      return FALSE;
-    }
+   rc = QueryBootDrive(&bootdrive);
 
-   // Set Config-CheckSum to 0
-   AiRBOOT_ConfigCheckSum = AiRBOOT_Config->CheckSumOfConfig;
-   AiRBOOT_Config->CheckSumOfConfig = 0;
+   rc = DosScanEnv("PATH", &path);
+   rc = DosSearchPath(SEARCH_CUR_DIRECTORY | SEARCH_IGNORENETERRS,
+                        path,
+                        classic_setboots[0],
+                        sresult,
+                        sizeof(sresult));
 
-   // Calculate CheckSum...
-   ResultCheck = 0; CurSectorNo = 55;
-   while (CurSectorNo<60) {
-      ResultCheck = GetChecksumOfSector(ResultCheck, CurSectorNo);
-      CurSectorNo++;
-    }
-   if (ResultCheck!=AiRBOOT_ConfigCheckSum) {
-      puts ("SETABOOT: AiR-BOOT Config damaged!");
-      return FALSE;
-    }
-   return TRUE;
- }
+   //printf("SRESULT: rc=%d, %s\n", rc, sresult);
 
-BOOL Track0WriteAiRBOOTConfig (void) {
-   USHORT ResultCheck;
-   USHORT CurSectorNo = 0;
+   if (rc) {
+      printf("\n");
+      printf("ERROR: SETBOOT (AiR-BOOT version)\n");
+      printf("Since the AiR-BOOT Boot Manager is not installed, this program (SETBOOT.EXE), funcions as a wrapper\n");
+      printf("to %s that should be used to control IBM Boot Manager.\n", classic_setboots[0]);
+      printf("However, %s could not be found in the PATH, the error-code is: %d\n", classic_setboots[0], rc);
+      printf("You can resolve this situation by renaming a valid SETBOOT.EXE to %s\n", classic_setboots[0]);
+      printf("and put it in your %c:\\OS2 directory.", bootdrive);
+      printf("\n");
+      exit(rc);
+   }
 
-   // Update Edit-Counter...
-   AiRBOOT_Config->EditCounter++;
-   AiRBOOT_Config->CheckSumOfConfig = 0;
 
-   // Calculate CheckSum...
-   ResultCheck = 0; CurSectorNo = 55;
-   while (CurSectorNo<60) {
-      ResultCheck = GetChecksumOfSector(ResultCheck, CurSectorNo);
-      CurSectorNo++;
-    }
-   AiRBOOT_Config->CheckSumOfConfig = ResultCheck;
 
-   if (!Track0Write())
-      return FALSE;
-   return TRUE;
- }
 
-int main (int argc, char **argv) {
+   memset(cmdline, 0, sizeof(cmdline));                                          // Clear the command-line buffer.
+   p = cmdline;                                                                  // Temporary pointer to insert arguments.
+   strcpy(p, sresult);                                                           // Copy the program-name.
+   p += strlen(sresult)+1;                                                       // Advance to point for space separated parameters.
+
+   /*
+   // Process all the arguments,
+   // inserting the separated by a space.
+   */
+   for (i=1; i<argc; i++) {
+      strcpy(p, argv[i]);                                                        // Copy the argument.
+      p += strlen(argv[i]);                                                      // Advance pointer past argument.
+      *p++ = ' ';                                                                // Space separation.
+   }
+
+   /*
+   for (i=0; i<100; i++) {
+      printf("%c", cmdline[i] ? cmdline[i] : '#');
+   }
+   printf("\n");
+   */
+
+   //printf("CMDLINE: %s\n", cmdline);
+   //printf("CMDLINE+: %s\n", cmdline+strlen(sresult)+1);
+
+   rc = DosExecPgm(buffer,
+            sizeof(buffer),
+            EXEC_SYNC,
+            cmdline,
+            NULL,
+            &crc,
+            sresult);
+
+   //rc = 3;
+   if (rc) {
+      printf("\n");
+      printf("ERROR: SETBOOT (AiR-BOOT version)\n");
+      printf("Since the AiR-BOOT Boot Manager is not installed, this program (SETBOOT.EXE), funcions as a wrapper\n");
+      printf("to %s that should be used to control IBM Boot Manager.\n", classic_setboots[0]);
+      printf("However, something went wrong when executing %s.\n", classic_setboots[0]);
+      printf("The error-code is: %d and the termination-code is: %d\n", rc, crc.codeTerminate);
+      printf("\n");
+      exit(rc);
+   }
+
+
+   //printf("DosExecPgm: rc=%08X, codeterminate=%08X, coderesult=%08X\n", rc, crc.codeTerminate, crc.codeResult);
+
+   /*
+   rc = DosGetInfoBlocks(&ptib, &ppib);
+
+   rc = DosQueryModuleName(ppib->pib_hmte, sizeof(buffer), buffer);
+   printf("MODULE: %s\n", buffer);
+   printf("CMDLINE: %s\n", ppib->pib_pchcmd);
+   */
+
+   return crc.codeResult;
+}
+
+
+int   DoAirBootActions(int argc, char **argv, BOOL ab_detected, BOOL ab_bad) {
    ULONG           CurArgument      = 0;
    ULONG           ArgumentLen      = 0;
    PCHAR           StartPos         = 0;
@@ -346,30 +449,92 @@ int main (int argc, char **argv) {
    ULONG           TmpLength2       = 0;
    ULONG           XWPBootCount     = 0;
    CHAR            XWPBootName[30][12];
-   CHAR            XWPBootCommand[30][28]; // 'setaboot /IBA:""' (16 chars)
+   CHAR            XWPBootCommand[30][28];                                       // 'setaboot /IBA:""' (16 chars)
    BOOL            XWPEntryFound    = FALSE;
+   BOOL            CDBoot           = FALSE;                                     // TRUE if booted from CD; New System will be added when using /4:"LABEL"
+   BOOL            Track0Loaded     = FALSE;                                     // Assume track0 did not load correctly.
+   BOOL            AiRBOOTBad       = FALSE;
+
+   //printf("\nAiR-BOOT ACTIONS !!\n");
+
+   AiRBOOTDetected = ab_detected;
+   AiRBOOTBad = ab_bad;
+
+   if (AiRBOOTBad)
+      return 1;
 
    // Use OSO001.MSG, so we safe us the trouble of translating :)
    if (!MSG_Init("OSO001.MSG"))
       return 1;
 
-   puts ("SETABOOT - AiR-BOOT Configuration Utility (OS/2) - (c) 2004-2009 by M. Kiewitz");
+   /*
+   // Rousseau: changed version to be the same as the AiR-BOOT is accompanies.
+   */
+   //puts ("SETABOOT - AiR-BOOT Configuration Utility (OS/2) - (c) 2004-2009 by M. Kiewitz");
+   puts ("SETABOOT v1.07 - AiR-BOOT Configuration Utility - (c) 2004-2011 by M. Kiewitz");
+
+
+   //return 0;
+
+   /*
+   // Rousseau:
+   // Log some debug stuff to (virtual) flop.
+   */
+   /*
+   {
+      char        buf[512]="\0";
+      FILE*       fp = NULL;
+      int         i = 0;
+
+      fp = fopen("A:\\SETBOOT.TXT", "a");
+      sprintf(buf, "Bliep");
+      fprintf(fp,"Program: %s\n", argv[0]);
+      fprintf(fp,"Arguments: %d\n", argc);
+      for (i=0; i<argc-1; i++) {
+         fprintf(fp, "Arg %d: %s\n", i+1, argv[i+1]);
+      }
+      fprintf(fp, "\n");
+      fclose(fp);
+   }
+   */
+
+
+
+   /*
+   // Rousseau: ## Enable boot-through when installing new system ##
+   // In the install-environment, the MEMDRIVE env-var is defined.
+   // This modifies the behavior after phase 1.
+   */
+   if (getenv("MEMDRIVE")) {
+      printf("CDBoot Environment.\n");
+      CDBoot = TRUE;
+   }
+
 
    if (argc==1) {
       MSG_Print (TXT_SYNTAX_Show);
       return 1;
     }
 
+
+
+
    // Now we check for AiR-BOOT existance...
+   /*
    if (CountHarddrives()>0) {
       if (Track0Load()) {
-         if (Track0DetectAirBoot()) AiRBOOTDetected = TRUE;
-       } else {
+         // Rousseau: Track0DetectAirBoot() will init globals.
+         if (Track0DetectAirBoot()) // REPLACE WITH BOOL
+            AiRBOOTDetected = TRUE;
+       }
+       else {
          MSG_Print (TXT_ERROR_DuringAccessHDD);
        }
-    } else {
-      MSG_Print (TXT_ERROR_DuringAccessHDD);
     }
+    else {
+      MSG_Print (TXT_ERROR_DuringAccessHDD);
+   }
+   */
 
    CurArgument = 1;
    while (CurArgument<argc) {
@@ -459,6 +624,7 @@ int main (int argc, char **argv) {
              }
 
             *StartPos = 0; StartPos++;
+
             // Search that partition in IPT of AiR-BOOT...
             if ((CurChar=='4') && (ArgumentLen==0)) {
                // '4:' and no partition name means disable automatic boot
@@ -474,10 +640,34 @@ int main (int argc, char **argv) {
                return 1;
              }
 
+
+            /*
+            // Rousseau:
+            // Insert label of newly installed system in AiR-BOOT configuration.
+            // Note that it is changed to uppercase because AiR-BOOT uses the FS-label when
+            // scanning partitions and LVM-info is not found. (Otherwise PART-label)
+            // The auto-boot flag is not set in this case as this is handled by the AiR-BOOT loader.
+            */
+            if (CDBoot) {
+               strncpy(AiRBOOT_Config->InstallVolume, _strupr(StartPos), ArgumentLen);
+               AiRBOOT_Config->InstallVolume[ArgumentLen] = '\0';
+               printf("Writing Install Volume: %s to AiR-BOOT configuration.\n", AiRBOOT_Config->InstallVolume);
+               Track0WriteAiRBOOTConfig();
+               return 0;
+            }
+
+
+
+
             BadValue = TRUE;
             CurPartitionNo = 0; CurIPTEntry = AiRBOOT_IPT;
             while (CurPartitionNo<AiRBOOT_Config->Partitions) {
-               if (strncmp(CurIPTEntry->PartitionName, StartPos, ArgumentLen)==0) {
+               /*
+               // Rousseau: Changed below to case-insensitive compare.
+               // This solves the part/vol-label (mixed-case) v.s. fs-label (upper-case) issue.
+               */
+               /*if (strncmp(CurIPTEntry->PartitionName, StartPos, ArgumentLen)==0) {*/
+               if (strnicmp(CurIPTEntry->PartitionName, StartPos, ArgumentLen)==0) {
                   if (ArgumentLen==11) {
                      BadValue = FALSE;
                      break;
@@ -494,6 +684,7 @@ int main (int argc, char **argv) {
                 }
                CurPartitionNo++; CurIPTEntry++;
              }
+
 
             if (BadValue) {
                puts ("SETABOOT: Partition not found in IPT.");
@@ -601,7 +792,7 @@ int main (int argc, char **argv) {
 
       PrfWriteProfileData (HINI_USERPROFILE, "XWorkplace", "RebootTo", XWPOrgStringPtr, XWPStringSize);
       free(XWPOrgStringPtr);
-       
+
       puts ("SETABOOT: XWorkPlace updated.");
       return 0;
     }
@@ -610,7 +801,8 @@ int main (int argc, char **argv) {
          MSG_Print (TXT_ERROR_NoBootManager);
          return 1;
        }
-      printf ("SETABOOT: AiR-BOOT %X.%02X detected.\n\n", AiRBOOT_CodeSig->MajorVersion, AiRBOOT_CodeSig->MinorVersion);
+      printf("SETABOOT: AiR-BOOT %X.%02X detected.\n\n", AiRBOOT_CodeSig->MajorVersion, AiRBOOT_CodeSig->MinorVersion);
+      //printf("DEBUG: InstallVolume: %s\n", AiRBOOT_Config->InstallVolume);
       if (AiRBOOT_Config->BootMenuActive) {
          if (AiRBOOT_Config->TimedBoot) {
             itoa (AiRBOOT_Config->TimedSeconds, (PCHAR)&TempBuffer, 10);
@@ -696,4 +888,137 @@ int main (int argc, char **argv) {
       RebootSystem();
     }
    return 0;
+
+
+
+}
+
+
+/*
+// Rousseau:
+// Global pointers will be initialized here !
+*/
+BOOL Track0DetectAirBoot (BOOL* ab_bad) {
+   USHORT ResultCheck;
+   USHORT CurSectorNo = 0;
+
+   /* Globals that get initialized */
+   AiRBOOT_CodeSig = (PAiRBOOTCODESIG)&Track0[2];
+   AiRBOOT_Config  = (PAiRBOOTCONFIG)&Track0[(55-1)*512];
+   AiRBOOT_IPT     = (PAiRBOOTIPENTRY)&Track0[(56-1)*512];
+
+   if (strncmp(AiRBOOT_CodeSig->Identifier, "AiRBOOT", 7)!=0) {
+      *ab_bad = FALSE;
+      return FALSE;
+    }
+
+   if ((AiRBOOT_CodeSig->TotalCodeSectors)>53) {
+      puts ("SETABOOT: AiR-BOOT Code damaged!");
+      *ab_bad = TRUE;
+      return TRUE;
+    }
+
+   ResultCheck = 0; CurSectorNo = 0;
+   while (CurSectorNo<AiRBOOT_CodeSig->TotalCodeSectors) {
+      ResultCheck = GetChecksumOfSector(ResultCheck, CurSectorNo+2);
+      CurSectorNo++;
+    }
+   if (ResultCheck!=AiRBOOT_CodeSig->CheckSumOfCode) {
+      puts ("SETABOOT: AiR-BOOT Code damaged!");
+      *ab_bad = TRUE;
+      return TRUE;
+    }
+
+   if (strncmp(AiRBOOT_Config->Identifier, "AiRCFG-TABLE­", 13)!=0) {            // Rousseau: INVISIBLE CHAR HERE !
+      puts ("SETABOOT: AiR-BOOT Config damaged!");
+      *ab_bad = TRUE;
+      return TRUE;
+    }
+
+   // Set Config-CheckSum to 0
+   AiRBOOT_ConfigCheckSum = AiRBOOT_Config->CheckSumOfConfig;
+   AiRBOOT_Config->CheckSumOfConfig = 0;
+
+   // Calculate CheckSum...
+   ResultCheck = 0; CurSectorNo = 55;
+   while (CurSectorNo<60) {
+      ResultCheck = GetChecksumOfSector(ResultCheck, CurSectorNo);
+      CurSectorNo++;
+    }
+   if (ResultCheck!=AiRBOOT_ConfigCheckSum) {
+      puts ("SETABOOT: AiR-BOOT Config damaged!");
+      *ab_bad = TRUE;
+      return TRUE;
+    }
+   *ab_bad = FALSE;
+   return TRUE;
+ }
+
+BOOL Track0WriteAiRBOOTConfig (void) {
+   USHORT ResultCheck;
+   USHORT CurSectorNo = 0;
+
+   // Update Edit-Counter...
+   AiRBOOT_Config->EditCounter++;
+   AiRBOOT_Config->CheckSumOfConfig = 0;
+
+   // Calculate CheckSum...
+   ResultCheck = 0; CurSectorNo = 55;
+   while (CurSectorNo<60) {
+      ResultCheck = GetChecksumOfSector(ResultCheck, CurSectorNo);
+      CurSectorNo++;
+    }
+   AiRBOOT_Config->CheckSumOfConfig = ResultCheck;
+
+   if (!Track0Write())
+      return FALSE;
+   return TRUE;
+ }
+
+
+/*
+// Rousseau: # This is the main entry-point #
+// Special behavior if eCS is booted from CDROM and phase 1 called this program.
+// In that case, the name of the newly installed system is put in the AiR-BOOT configuration.
+// This will cause AiR-BOOT to boot through after phase 1.
+*/
+int main (int argc, char **argv) {
+   BOOL  AiRBOOTDetected   = FALSE;
+   BOOL  Track0Loaded      = FALSE;                                              // Assume track0 did not load correctly.
+   BOOL  AiRBOOTBad        = FALSE;
+   int   rc                = -1;
+
+
+   /*
+   // Rousseau: ## Changed order to first check for AiR-BOOT existance ##
+   // If AiR-BOOT is not installed, all action is passed-thru to IBM SETBOOT (SETBM.EXE).
+   */
+
+
+   /*
+   // Try to load track zero.
+   // We don't care if no harddisk is present, since we first want to know if AiR-BOOT is
+   // installed to adjust our behaviour.
+   // If it's not installed, or a loading error occurs, all actions will be deferred to
+   // IBM SETBOOT (SETBM.EXE).
+   // This means we also let IBM SETBOOT handle the situation in which no HD's are present.
+   */
+   Track0Loaded = Track0Load();
+
+   /*
+   // Now see if AiR-BOOT is present.
+   // If there was a loading error, no AiR-BOOT signature will be present, so
+   // we pass-thru to IBM SETBOOT.
+   */
+   AiRBOOTDetected = Track0DetectAirBoot(&AiRBOOTBad);
+
+   if (AiRBOOTDetected) {
+      rc = DoAirBootActions(argc, argv, AiRBOOTDetected, AiRBOOTBad);
+   }
+   else {
+      rc = DoClassicActions(argc, argv);
+   }
+
+
+   return rc;
  }

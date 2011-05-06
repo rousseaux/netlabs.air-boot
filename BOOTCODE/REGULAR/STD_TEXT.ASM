@@ -19,23 +19,42 @@
 ;                                                           AiR-BOOT / TEXT
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'STD_TEXT',0
+ENDIF
+
 ; If you modify this Copyright and release this under your own name,
 ;  I'm going to sue your cheap ass, rape your dog and blow up your house. =)
 
-CopyrightVersionLen   equ   5
-Copyright             db ' AiR-BOOT v1.06 - (c) 1998-2009 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
-BootEndMsg            db 'Free usage allowed, as long as you dont or have not worked for US government', 0
-BootEndMsg2           db 'This is GPLv3+ software. Please visit http://AiR-BOOT.sourceforge.net', 0
+CopyrightVersionLen   equ   6
+;Copyright             db ' AiR-BOOT v1.06 - (c) 1998-2009 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
+Copyright             db ' AiR-BOOT v1.07 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
+;Copyright             db ' AiR-BOOT v1.07 - (c) 2011 M. Kiewitz - Rousseau test-version >502G (build: #24)', 0
+;Copyright             db ' AiR-BOOT v1.07 - (c) 2011 M. Kiewitz   -  Release Candidate 1  -  (build: #25)', 0
+;Copyright             db ' AiR-BOOT v1.07 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz (rc2-b27)', 0
+;Copyright             db ' AiR-BOOT v1.07 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz (rc3-b31)', 0
+;Copyright             db ' AiR-BOOT v1.07 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz (rc4-b33)', 0
+;Copyright             db ' AiR-BOOT v1.07 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz (rc5-b35)', 0
+
+;BootEndMsg            db 'Free usage allowed, as long as you dont or have not worked for US government', 0
+
+; Rousseau: switch around
+BootEndMsg           db 'This is GPLv3+ software. Please visit http://AiR-BOOT.sourceforge.net', 0
+BootEndMsg2            db 'http://www.gnu.org/licenses/gpl.txt', 0
+
+AuxInitMsg           db 'Initializing Serial Communications on COM',0
 
 CheckID_MBR           db 'AiRBOOT'
 BrokenHDD             db ' (HDDx)', 0
 
 ; Colors for special words hard-coded. Keep all 0s.
 TXT_SETUP_LowerMessage      db 'This software is released under ', 0, 'GPLv3+.', 0
-                            db 'It may not be used by US government', 0
+;                            db 'It may not be used by US government', 0
+                            db 'http://www.gnu.org/licenses/gpl.txt', 0
                             db 'For more information and source, please visit', 0
                             db 'http://AiR-BOOT.sourceforge.net', 0
-                            db 'Contact via e-mail: ', 0, 'm_kiewitz [AT] users.sourceforge.net', 0
+;                            db 'Contact via e-mail: ', 0, 'm_kiewitz [AT] users.sourceforge.net', 0
+                            db 'Contact via e-mail: ', 0, 'airboot@ecomstation.com', 0
 
 ContinueBIOSbootTable dw offset TXT_SETUP_MAGIC_CDROM
                       dw offset TXT_SETUP_MAGIC_Network

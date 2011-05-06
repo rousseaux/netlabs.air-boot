@@ -19,12 +19,19 @@
 ;                                                            AiR-BOOT / LVM
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'LVM',0
+ENDIF
+
 LVM_InitCRCTable                Proc Near   Uses
    ; Initializes our LVM-CRC-Table
    xor    cl, cl
    mov    di, offset LVM_CRCTable
   LVM_ICRCT_Loop:
-      movzx  ax, cl
+      ;movzx  ax, cl
+      mov   al,cl
+      mov   ah,0
+
       xor    dx, dx                      ; DX:AX - CRC-Value
       mov    ch, 8
      LVM_ICRCT_Loop2:
@@ -85,7 +92,7 @@ LVM_GetSectorCRC                EndP
 LVM_CheckSectorSignature        Proc Near   Uses
    test    [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
    jnz     LVMCSS_InvalidSignature       ;  any sector is bad!
-   cmp     wptr [si+LocLVM_SignatureStart], 5202h
+   cmp     wptr [si+LocLVM_SignatureStart], 5202h                                ; Rousseau: identify LVM sector
    jne     LVMCSS_InvalidSignature
    cmp     wptr [si+LocLVM_SignatureStart+2], 'BM'
    jne     LVMCSS_InvalidSignature

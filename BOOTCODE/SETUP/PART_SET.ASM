@@ -19,6 +19,10 @@
 ;                                          AiR-BOOT SETUP / PARTITION SETUP
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'PART_SET',0
+ENDIF
+
 ; This here is called from Menu in AIR-BSET.asm
 PARTSETUP_Main                  Proc Near   Uses
    ; Build Fixed Content...
@@ -57,11 +61,20 @@ PARTSETUP_Main                  Proc Near   Uses
       cmp     al, TXT_SETUP_FlagLetterVIBR
       je      PSM_KeyVIBRdetection
       cmp     al, TXT_SETUP_FlagLetterHide
-      je      PSM_KeyHiddenSetup
+
+      jne   skip_x
+      jmp      PSM_KeyHiddenSetup
+   skip_x:
       cmp     al, TXT_SETUP_FlagLetterDrvLetter
-      je      PSM_KeyDriveLetterForceSetup
+
+      jne   skip_y
+      jmp      PSM_KeyDriveLetterForceSetup
+   skip_y:
+
       cmp     al, TXT_SETUP_FlagLetterExtMShack
-      je      PSM_KeyDriveLetterExtMShack
+      jne   skip_z
+      jmp      PSM_KeyDriveLetterExtMShack
+   skip_z:
       jmp     PSM_MainLoop
 
   PSM_KeyESC:
@@ -330,7 +343,7 @@ PARTSETUP_DrawPartitionInfo     Proc Near   Uses ax bx cx dx si
    mov     al, NoOfPart
    inc     al
    call    VideoIO_PrintByteNumber
-   
+
    ; Display "No Hd" field aka "01/01"
    call    VideoIO_Locate
    push    cx
@@ -425,7 +438,7 @@ PARTSETUP_BuildChoiceBar        Proc Near   Uses
    mov     cl, 10h
    call    PARTSETUP_ReColorPart
 
-   ; Running Fixing 
+   ; Running Fixing
    cmp     dh, 0FFh
    jne     PSBCB_NoUnderflow
    xor     dh, dh
@@ -557,7 +570,11 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    ; We compare, if our IPT contains the same partition name as in BR or LVM
    ;  This is done for security purposes, because if they match, we will update
    ;  the name in both - IPT and BR/LVM.
-   movzx   bx, dl
+
+   ;movzx   bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    cmp     [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
    je      PSCPN_NotLVMSupported
 
@@ -637,7 +654,11 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    jz      PSCPN_AllDone                 ; Actually we just skip BR/LVM-Save
 
    ; Check, where to save 2nd destination to...
-   movzx   bx, dl
+
+   ;movzx   bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    cmp     [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
    je      PSCPN_SaveBootRecord
    ; -------------------------------------------------------------[LVM SAVE]---
@@ -774,7 +795,11 @@ PARTHIDESETUP_Main              EndP
 ; Draw all standard-things for HiddenSetup, dynamic content not included.
 PARTHIDESETUP_DrawMenuBase      Proc Near   Uses dx
    ; PartSetup_HiddenX1
-   mov     cx, 0D05h                     ; Lila on lila
+
+CLR_PART_HIDE_WINDOW_BASE_CLASSIC   = 0d05h
+CLR_PART_HIDE_WINDOW_BASE_BM   = 0a02h
+
+   mov     cx, CLR_PART_HIDE_WINDOW_BASE_BM                    ; Lila on lila
    call    VideoIO_Color
    mov     bh, 05h
    mov     bl, PartSetup_HiddenX
@@ -791,11 +816,20 @@ PARTHIDESETUP_DrawMenuBase      Proc Near   Uses dx
    call    VideoIO_Locate
    mov     al, 'µ'
    call    VideoIO_PrintSingleChar
-   mov     cx, 0E05h                     ; Yellow on Lila
+
+CLR_PART_HIDE_WINDOW_LABEL_CLASSIC = 0e05h
+CLR_PART_HIDE_WINDOW_LABEL_BM = 0e02h
+
+   mov     cx, CLR_PART_HIDE_WINDOW_LABEL_BM                     ; Yellow on Lila
    call    VideoIO_Color
    mov     si, offset TXT_SETUP_HideFeature
    call    VideoIO_Print
-   mov     cx, 0D05h                     ; Lila on lila
+
+CLR_PART_HIDE_WINDOW_BORDER_CLASSIC = 0d05h
+CLR_PART_HIDE_WINDOW_BORDER_BM = 0d02h
+
+
+   mov     cx, CLR_PART_HIDE_WINDOW_BORDER_BM                     ; Lila on lila
    call    VideoIO_Color
    mov     al, 'Æ'
    call    VideoIO_PrintSingleChar
@@ -850,7 +884,11 @@ PARTHIDESETUP_DrawMenuBase      Proc Near   Uses dx
 ;   call    MBR_PrintSingleChar
 
    ; --- Make ':' Line down
-   mov     cx, 0F05h                     ; Yellow on Lila
+
+CLR_PART_HIDE_MENU_BASE_CLASSIC  = 0f05h
+CLR_PART_HIDE_MENU_BASE_BM  = 0f02h
+
+   mov     cx, CLR_PART_HIDE_MENU_BASE_BM                     ; Yellow on Lila
    call    VideoIO_Color
    mov     ch, 07h
    mov     cl, PartSetup_HiddenX
@@ -872,8 +910,12 @@ PARTHIDESETUP_RefreshPartitions Proc Near   Uses dx
       inc     dl
    dec     dh
    jnz     PHSRP_Loop
+
+CLR_PART_HIDE_MENU_MARKERS_CLASSIC = 0d05h
+CLR_PART_HIDE_MENU_MARKERS_BM = 0a02h
+
    ; At last calculate Scroll-Markers
-   mov     cx, 0D05h                     ; Lila on lila
+   mov     cx, CLR_PART_HIDE_MENU_MARKERS_BM                     ; Lila on lila                          ; Hide Feature Markers
    call    VideoIO_Color
    mov     cx, 0603h                     ; 6, +3
    add     cl, PartSetup_HiddenX
@@ -918,7 +960,11 @@ PARTHIDESETUP_DrawPartitionInfo Proc Near   Uses dx
    call    VideoIO_Locate
    push    cx
       ; Display "Label" field aka "OS2" without ending NULs/Spaces
-      mov     cx, 0F05h
+
+CLR_PART_HIDE_LABEL_CLASSIC   = 0f05h
+CLR_PART_HIDE_LABEL_BM = 0f02h
+
+      mov     cx, CLR_PART_HIDE_LABEL_BM
       call    VideoIO_Color              ; Bright White on Lila
       push    si
          add     si, LocIPT_Name
@@ -926,7 +972,11 @@ PARTHIDESETUP_DrawPartitionInfo Proc Near   Uses dx
          call    GetLenOfName
          call    VideoIO_FixedPrint
       pop     si
-      mov     cx, 0D05h
+
+CLR_PART_HIDE_WINDOW_FS_CLASSIC   = 0d05h
+CLR_PART_HIDE_WINDOW_FS_BM = 0a02h
+
+      mov     cx, CLR_PART_HIDE_WINDOW_FS_BM
       call    VideoIO_Color              ; Bright Lila on Lila
       mov     al, ' '
       call    VideoIO_PrintSingleChar
@@ -947,7 +997,11 @@ PARTHIDESETUP_DrawPartitionInfo Proc Near   Uses dx
    add     cl, PartSetup_HiddenAdd
    call    VideoIO_Locate
    push    cx
-      mov     cx, 0E05h
+
+CLR_PART_HIDE_WINDOW_CHOISES_CLASSIC   = 0e05h
+CLR_PART_HIDE_WINDOW_CHOISES_BM   = 0e02h
+
+      mov     cx, CLR_PART_HIDE_WINDOW_CHOISES_BM
       call    VideoIO_Color              ; Yellow on Lila
       mov     al, ' '
       mov     cl, 10
@@ -979,11 +1033,14 @@ PARTHIDESETUP_BuildChoiceBar    Proc Near   Uses
    call    VideoIO_WaitRetrace
   PHSBCB_SkipRetrace:
 
+CLR_PART_HIDE_WINDOW_MENU_BAR_CLASSIC  = 5eh
+CLR_PART_HIDE_WINDOW_MENU_BAR_BM = 2eh
+
    ; Deactivate current active bar
-   mov     cl, 5Eh                       ; Yellow on Lila
+   mov     cl, CLR_PART_HIDE_WINDOW_MENU_BAR_BM                       ; Yellow on Lila
    call    PARTHIDESETUP_ReColorPart
 
-   ; Running Fixing 
+   ; Running Fixing
    cmp     dh, 0FFh
    jne     PHSBCB_NoUnderflow
    xor     dh, dh
@@ -1014,7 +1071,11 @@ PARTHIDESETUP_BuildChoiceBar    Proc Near   Uses
   PHSBCB_NoScrolling:
 
    ; Activate fresh active bar
-   mov     cl, 1Fh                       ; Bright White on Blue
+
+CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR_CLASSIC = 1fh
+CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR_BM   = 1fh
+
+   mov     cl, CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR_BM                       ; Bright White on Blue
    call    PARTHIDESETUP_ReColorPart
    ; Now DL==DH
    ret
@@ -1177,7 +1238,10 @@ PARTSETUP_DriveLetterSetup      Proc Near  Uses dx si es di
    call    PARTSETUPDL_DrawMenuBase      ; DL - partition-no
 
    ; Now get the Logical-Drive-Letter for that partition...
-   movzx   bx, dl
+   ;movzx   bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    mov     dl, bptr [DriveLetters+bx]
 
    push    bx
@@ -1263,7 +1327,11 @@ PARTSETUPDL_DrawMenuBase        Proc Near   Uses dx si
    mov     PartSetup_HiddenX, al
 
    ; Draw base-window
-   mov     cx, 0D05h                     ; Lila on lila
+
+CLR_PART_DL_XX_CLASSIC = 0d05h
+CLR_PART_DL_XX_BM = 0a02h
+
+   mov     cx, CLR_PART_DL_XX_BM                     ; Lila on lila
    call    VideoIO_Color
    mov     bh, 06h
    mov     bl, PartSetup_HiddenX
@@ -1280,18 +1348,31 @@ PARTSETUPDL_DrawMenuBase        Proc Near   Uses dx si
       call    VideoIO_Locate
       mov     al, 'µ'
       call    VideoIO_PrintSingleChar
-      mov     cx, 0E05h                  ; Yellow on Lila
+
+CLR_PART_DL_WINDOW_TITLE_CLASSIC  = 0e05h
+CLR_PART_DL_WINDOW_TITLE_BM  = 0e02h
+
+      mov     cx, CLR_PART_DL_WINDOW_TITLE_BM                  ; Yellow on Lila
       call    VideoIO_Color
       mov     si, offset TXT_SETUP_DriveLetter
       call    VideoIO_Print
-      mov     cx, 0D05h                  ; Lila on lila
+
+CLR_PART_DL_WINDOW_BORDER2_CLASSIC  = 0d05h
+CLR_PART_DL_WINDOW_BORDER2_BM  = 0a02h
+
+      mov     cx, CLR_PART_DL_WINDOW_BORDER2_BM                 ; Lila on lila
       call    VideoIO_Color
       mov     al, 'Æ'
       call    VideoIO_PrintSingleChar
    pop     bx
    ; Display help-information
    mov     si, offset TXT_SETUPHELP_DriveLetter
-   mov     cx, 0D05h                     ; Lila on lila
+
+CLR_PART_DL_SETUP_HELP_CLASSIC = 0d05h
+CLR_PART_DL_SETUP_HELP_BM = 0a02h
+
+
+   mov     cx, CLR_PART_DL_SETUP_HELP_BM                     ; Lila on lila
    call    VideoIO_Color
 
    call    GetLenOfString                ; CX - Len of string
@@ -1305,7 +1386,7 @@ PARTSETUPDL_DrawMenuBase        Proc Near   Uses dx si
    call    VideoIO_Print
    mov     al, '>'
    call    VideoIO_PrintSingleChar
-   ; 
+   ;
    mov     cx, 0F01h                     ; Bright White on Blue
    call    VideoIO_Color
    mov     cx, 0805h                     ; Position 8, 5

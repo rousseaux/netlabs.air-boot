@@ -19,6 +19,10 @@
 ;                                     AiR-BOOT / PARTiTiON REGULAR ROUTINES
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'PARTMAIN',0
+ENDIF
+
 PART_FixUpDefaultPartitionValues Proc Near  Uses dx si di
    ; Fix-Up Default and Last Partition - If lost, search for Bootable
    xor     bl, bl
@@ -139,7 +143,10 @@ PART_UpdateBootRecordCRC        EndP
 
 ; Copies the device-name to the Resume-BIOS IPT entry
 PART_UpdateResumeBIOSName       Proc Near Uses ax bx cx si di
-   movzx   bx, CFG_ResumeBIOSbootSeq
+   ;movzx   bx, CFG_ResumeBIOSbootSeq
+   mov   bl,CFG_ResumeBIOSbootSeq
+   mov   bh,0
+
    dec     bx
    shl     bx, 1
    mov     si, wptr [ContinueBIOSbootTable+bx]
@@ -212,7 +219,10 @@ PART_CalculateMenuPartPointers Proc Near Uses si
 ;   jnz     PCMPP_KernelLoop
 ;  PCMPP_NoLinuxKernels:
 
-   movzx   cx, CFG_Partitions ; LocIPT_MaxPartitions
+   ;movzx   cx, CFG_Partitions ; LocIPT_MaxPartitions
+   mov   cl,CFG_Partitions ; LocIPT_MaxPartitions
+   mov   ch,0
+
    or      cx, cx
    jz      PCMPP_NoPartitions
   PCMPP_Loop:
@@ -239,7 +249,10 @@ PART_GetPartitionPointer        Proc Near   Uses bx
    cmp     dl, 0FEh
    je      PGPP_IsBIOSbootSeq            ; FEh -> Resume BIOS boot Sequence
    ja      PGPP_IsFloppy                 ; FFh -> Floppy
-   movzx   bx, dl
+   ;movzx   bx, dl
+   mov   bl,dl
+   mov   bh,0
+
    shl     bx, 1
    mov     si, wptr [PartitionPointers+bx]
    ret
@@ -277,9 +290,12 @@ PART_GetPartitionNumber         EndP
 ;        In: DL - Number of partition in filtered view
 ;       Out: DL - Number of partition in straight view
 PART_ConvertToStraight          Proc Near   Uses
-   movzx   bx, dl
-   shl     bx, 1
-   mov     ax, wptr cs:[PartitionPointers+bx]
+   ;movzx   bx, dl
+   mov   bl,dl                                  ; partition number to bl
+   mov   bh,0                                   ; zero extend to word
+
+   shl     bx, 1                                ; convert to word index
+   mov     ax, wptr cs:[PartitionPointers+bx]   ; get the partition pointer
    cmp     ax, offset FloppyIPTentry
    jb      PCTS_IsBIOSbootSeq
    je      PCTS_IsFloppy
@@ -314,7 +330,10 @@ PART_ConvertFromStraight        Proc Near    Uses es di
    jmp     PCFS_DoSearch
   PCFS_IsPartition:
    ; First we get Partition-Offset in AX
-   movzx   ax, dl
+   ;movzx   ax, dl
+   mov   al,dl
+   mov   ah,0
+
    mov     bl, LocIPT_LenOfIPT
    mul     bl
    add     ax, offset PartitionTable
@@ -353,7 +372,10 @@ PART_GetSizeElementPointer      Proc Near   Uses bx
 ;  PGSEP_Continue:
    mov     bl, LocIPT_LenOfIPT
    div     bl                            ; Divide with IPTlength
-   movzx   bx, al
+   ;movzx   bx, al
+   mov   bl,al
+   mov   bh,0
+
    shl     ax, 1
    shl     bx, 2
    add     ax, bx                        ; My way of multiplying with 6
@@ -408,10 +430,17 @@ PART_FillOutSizeElement         Proc Near   Uses cx dx
       jz      PFOSE_EndOfDigitLoop
       dec     di                         ; Go to previous char
       jmp     PFOSE_DigitLoop
-      
+
   PFOSE_EndOfDigitLoop:
    ret
 PART_FillOutSizeElement         EndP
+
+
+
+
+; ###################
+; # START PARTITION #
+; ###################
 
 ; Starts Partition DL from Internal Partition Table.
 ;        In: DL - Number of partition (filtered view)
@@ -453,11 +482,11 @@ PART_StartPartition             Proc Near   Uses ax dx es di
          call    GetLenOfName
          mov     di, offset TXT_BootingNowPartName
          jz      PSP_NoName
-         rep     movsb
+         rep     movsb                                                           ; Copy label-name to boot
         PSP_NoName:
          xor     al, al
          stosb              ; Ending Zero
-      mov     si, offset TXT_BootingNow1
+      mov     si, offset TXT_BootingNow1                                         ; "Booting the system using "
       call    MBR_Teletype
 ; [Linux support removed since v1.02]
 ;      cmp     dh, 0FDh
@@ -483,7 +512,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
      PSP_IsHarddisc:
       IFDEF ReleaseCode
          ; Save configuration on HDD boots (save CFG_PartLast)
-         call    DriveIO_SaveConfiguration
+         call    DriveIO_SaveConfiguration                                       ; Rouaaseu: SAVE CONFIGURATION !
       ENDIF
       call    MBR_Teletype     ; Prints out BootingNow2 including PartitionName
       mov     si, offset TXT_BootingNowPartition
@@ -495,7 +524,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    mov     cx, wptr [si+LocIPT_LocationPartTable+1]
    mov     dh, bptr [si+LocIPT_LocationPartTable+0]
    mov     dl, [si+LocIPT_Drive]
-   call    DriveIO_LoadPartition         ; Load Table...
+   call    DriveIO_LoadPartition         ; Load Table...                         ; Rousseau: LOAD PARTITION !
    ; --------------------------------------------------- MODIFY PARTITION TABLE
    push    cs
    pop     es
@@ -535,7 +564,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
   PSP_SearchMatch:
    or      byte ptr es:[di+LocBRPT_Flags], 80h ; set ACTIVE partition
    IFDEF ReleaseCode
-      call    DriveIO_SavePartition      ; Saves the Partition-Table
+      call    DriveIO_SavePartition      ; Saves the Partition-Table             ; Rousseau: SAVE PARTITION !
    ENDIF
 
    ; ---------------------------------------------------------- OS/2 / eCS I13X
@@ -548,19 +577,24 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    adc     bx, wptr es:[di+LocBRPT_AbsoluteLength+2] ;  begin location
    ; BX:AX -> Absolute End-Position of Partition
 
-   test    CFG_ForceLBAUsage, 1
+   test    CFG_ForceLBAUsage, 1                                                  ; Rousseau: LBA
    jnz     PSP_ForceI13X
-   ; LBA-boundary at 16450560 (FB0400h)
+   ; LBA-boundary at 16450560 (FB0400h) (16320x16x63)
    cmp     bx, 00FBh
    jb      PSP_NoI13X
   PSP_ForceI13X:
-   push    es di
+   push    es di si
       mov     ax, 3000h
       mov     es, ax
       xor     di, di
+      ; Blokkeert starten van IBM BM !!
       mov     wptr es:[di], '1I'
       mov     wptr es:[di+2], 'X3'
-   pop     di es
+
+      ;mov      si,3000h
+      ;call     AuxIO_DumpSector
+
+   pop     si di es
   PSP_NoI13X:
 
    ; now check, if we need to hide any partition
@@ -606,10 +640,10 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       xor     bx, bx
       mov     cx, 0001h                  ; Cylinder 0, Sector 1
       mov     dx, 0080h                  ; First HD, Head 0
-      call    DriveIO_LoadPartition      ; Load Primary Partition Table
+      call    DriveIO_LoadPartition      ; Load Primary Partition Table          ; Rousseau: LOAD MBR !
       call    PART_MarkFirstGoodPrimary
       IFDEF ReleaseCode
-         call    DriveIO_SavePartition   ; Saves the Partition-Table
+         call    DriveIO_SavePartition   ; Saves the Partition-Table             ; Rousseau: SAVE MBR !
       ENDIF
      PSP_NoHideAdjustPrimaryMark:
 
@@ -621,7 +655,10 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       ; Driveletter must be set for this partition
       test    byte ptr [si+LocIPT_Flags], Flags_DriveLetter
       jz      PSP_NoLVMReassignment
-      movzx   bx, BootPartNo             ; EntryNumber is straight view
+      ;movzx   bx, BootPartNo             ; EntryNumber is straight view
+      mov   bl,BootPartNo             ; EntryNumber is straight view
+      mov   bh,0
+
       mov     al, bptr [DriveLetters+bx]
       sub     al, 3Dh                    ; Convert e.g. 80h -> 'C'
       cmp     al, bptr [PartitionVolumeLetters+bx]
@@ -678,7 +715,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    mov     cx, [si+LocIPT_LocationBegin+1]
    mov     dh, [si+LocIPT_LocationBegin+0]
    mov     dl, [si+LocIPT_Drive]
-   call    DriveIO_LoadPartition         ; Loads boot-sector...
+   call    DriveIO_LoadPartition         ; Loads boot-sector...                  ; Rousseau: LOAD PART BOOT-SECTOR !!
 
    test    CFG_DetectVIBR, 1
    jz      PSP_NoVIBR
@@ -733,9 +770,15 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       mov     ds, ax
       mov     si, 10h*4
       xor     di, di                     ; INT 10h Vector to MBR Protection
-      movsd
+      ;movsd
+      movsw
+      movsw
+
       mov     si, 13h*4                  ; INT 13h Vector to MBR Protection
-      movsd
+      ;movsd
+      movsw
+      movsw
+
       mov     al, CFG_IgnoreWriteToMBR   ; Option to MBR Protection
       stosb
 
@@ -752,33 +795,93 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    ; needed by OS/2 Warp / eComStation
   PSP_NoMBRprotect:
    cmp     bptr [si+LocIPT_SystemID], 08 ; I hate Microsuck NTFS check
-   je      PSP_NoSpecialSupport
+
+   ;je      PSP_NoSpecialSupport
 
       mov     di, offset PartitionSector ; ES:DI - Actual Boot-Record
       ; Special Support Detection
       mov     ax, wptr es:[di+24]
       cmp     ax, 003Fh                  ; Physical Layout-Sectors... Safety check
-      ja      PSP_NoSpecialSupport
+
+
+      ; Rousseau: # Boot Logical Partitions)
+      ; FreeDOS and eCS on extpart on non-huge needs special support. (old ja jump)
+      ; PC-DOS7 on huge pri fat16 2G works with both (XP too) when at start of disk. (also when offset at 20MiB)
+      ; PCD7 bonkt vast als in 2GiB log at start of space. "Starting PC DOS..." verschijnt. PCD Loader probleem.
+      ; Offset van start-of-disk bij PCD7 niet meer dan 2GiB maken.
+      ; Special is needed to boot ECS-CXXVAC (log-part) on Douwskie Box with 40G disk.
+      ; FreeDOS 20G PRI SOD op 400G start niet met special.
+      ; Heeft drive-id op 26h (36d) van 0dh !
+      ; WinXP werkt met special en not-special op 400G normal geo.
+      ; eCS op PRI op 2G met os2 ext geo werkt ook met beide.
+      ; eCS LOG werkt niet zonder special op 400G.
+      ; (hidden secs op 3F en moet 3F00 zijn; BM staat ervoor, 3F00=255*63+63)
+      ; Laatste 63 is MBR.
+      ;
+      ; It seems PRI's already get special treatment in that they get their hidden secs updated.
+      ; (100MB HD, moved 50MB PRI-DOS part UP, DFSee complains about wrong hidden, but AiR-BOOT corrects it before booting)
+
+      ; FreeDOS zet 63 in SPT in BPB op 255/255 geo !!!!
+
+      ; PC-DOS7 wil vaak niet starten als er meerdere pri's actief zijn.
+      ; Logo verschijnt wel maar start niet door.
+
+
+      ; Display volume-name
+      pushf
+      push     si
+      add      si, LocIPT_Name
+      call     MBR_TeletypeVolName
+      xor      si,si
+      call     MBR_TeletypeNL                                                    ; Rousseau: Just before booting the selected partition
+      pop      si
+      popf
+
+
+
+      jmp     special                                                            ; Rousseau: GOT IT !!! (LOG-BOOT) (alleen op huge disks !)
+      ;jmp      PSP_NoSpecialSupport
+      ;ja      PSP_NoSpecialSupport                                              ; Rousseau: original M. Kiewitz...
+      ;jbe     PSP_NoSpecialSupport                                               ;   had to change to opposite !
+
+
       mov     ax, wptr es:[di+26]
       cmp     ax, 00FFh                  ; Physical Layout-Heads... Safety check
       ja      PSP_NoSpecialSupport
       mov     al, bptr es:[di+36]
-      cmp     al, 80h                    ; Drive Letter
+      cmp     al, 80h                    ; Drive Letter (ID)
       jne     PSP_NoSpecialSupport
+
       ; Special Support needed
+special:
+      ; Write actual drive-letter to partition boot-record.
+      ; This is according to BPB.
       mov     al, bptr [si+LocIPT_Drive]
-      mov     bptr es:[di+36], al        ; Write Actual Drive-Letter
+      ; Also an influence with FreeDOS !
+      ; Generates JFS ERROR when not set correctly !!!
+      mov     bptr es:[di+36], al               ; Write Actual Drive-Letter (80h id first drive)        !!!!!!!!!!!!!!!!!!!!!!!
+
+      ; This could be incorrect when a partition is moved,
+      ; or the system installer puts the wrong value here.
+      ; FreeDOS (log-part) i.e. puts 03fH (63d) here, eventhough it is not a the start of the disk.
+      ; This fixing is done by OS/2 BM as well, according to Martin.
       mov     ax, [si+LocIPT_AbsoluteBegin]
-      mov     wptr es:[di+28], ax        ; Fixing Hidden Sectors count
+      mov     wptr es:[di+28], ax               ; low word of hidden sectors
       mov     ax, [si+LocIPT_AbsoluteBegin+2]
-      mov     wptr es:[di+30], ax        ; Done by OS/2 BootMan as well...
+      mov     wptr es:[di+30], ax               ; high word of hidden sectors
 
    ; ------------------------------------------------ LOGICAL PARTITION SUPPORT
   PSP_NoSpecialSupport:
+
+;jmp   PSP_NoLogicalSupport
+
    test    byte ptr [si+LocIPT_Flags], Flags_DriveLetter
    jz      PSP_NoLogicalSupport
 
-      movzx   bx, BootPartNo             ; EntryNumber is straight view
+      ;movzx   bx, BootPartNo             ; EntryNumber is straight view
+      mov   bl,BootPartNo             ; EntryNumber is straight view
+      mov   bh,0
+
       mov     al, bptr [DriveLetters+bx]
       mov     bptr es:[di+37], al        ; Write Drive Letter (OS/2 only)
 
@@ -792,7 +895,38 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       mov     di, StartBasePtr
       rep     movsw
    pop     si
-   ; ---------------------------------------------------- NOW START BOOT-RECORD
+   ; ---------------------------------------------------- NOW START BOOT-RECORD  ; Rousseau: START PARTITION BOOT-RECORD !!
+
+
+IFDEF AuxDebug
+;   call     DEBUG_Dump2
+ENDIF
+
+               ;
+               ; ########################### WAIT FOR KEY ################################
+               ;
+
+   ; Rousseau:
+   ; Wait for key so we can see which volume is going to be started.
+   ;xor     ax, ax
+   ;int     16h
+   ;cmp     al, 1bh                        ; is escape-key ?
+   ;jne   skip_reenter
+
+   ;jmp      MBR_Main_ReEnterBootMenuPre   ; yep, re-enter boot-menu
+
+skip_reenter:
+
+
+
+
+
+
+
+
+   ;
+   ; BYE BYE
+   ;
    xor     ax, ax
    xor     bx, bx
    xor     cx, cx
@@ -800,12 +934,23 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    mov     es, ax                        ; DS == ES == 0
    xor     dh, dh                        ; Drive supported by BIOS
    mov     dl, cs:[si+LocIPT_Drive]      ; Drive Physical No
+
    IFDEF ReleaseCode
-      db      0EAh                          ; JUMP TO Entry Point...Bye Bye
+      db      0EAh                       ; JUMP TO Entry Point...Bye Bye
       dw      StartBasePtr
       dw      StartBaseSeg
    ENDIF
 PART_StartPartition             EndP
+
+
+
+
+
+
+
+
+
+
 
 ; This routine is called to hide a partition
 ;        In: DL - Partition to hide
@@ -922,7 +1067,10 @@ PART_MarkFirstGoodPrimary       EndP
 ;            SI - Pointer to Name (8char)
 ; Destroyed: *none*
 PART_SearchFileSysName          Proc Near  Uses bx dx
-   movzx   bx, al
+   ;movzx   bx, al
+   mov   bl,al
+   mov   bh,0
+
    mov     si, offset FileSysIDs
   PSFSN_SearchLoop:
       lodsw                              ; AL - NormalID, AH-HiddenID
@@ -942,18 +1090,24 @@ PART_SearchFileSysName          Proc Near  Uses bx dx
    ; AL is already Unhidden-ID
    mov     ah, dl
    ; AH is now the FileSystem-Flag
-   movzx   bx, bh
+   ;movzx   bx, bh
+   mov   bl,bh
+   mov   bh,0
+
    shl     bx, 3   ; Offsets * 8
    mov     si, offset FileSysNames
    add     si, bx
-   ret         
+   ret
 PART_SearchFileSysName          EndP
 
 ; Searches the Hidden ID corresponding to a FileSysID (PartitionID)
 ;        In: AL - FileSysID
 ;       Out: AL - Hidden File-System-ID
 PART_SearchFileSysHiddenID      Proc Near  Uses bx
-   movzx   bx, al
+   ;movzx   bx, al
+   mov   bl,al
+   mov   bh,0
+
    mov     si, offset FileSysIDs
   PSFSHI_SearchLoop:
       lodsw                              ; AL - NormalID, AH-HiddenID
@@ -1018,3 +1172,77 @@ PART_CheckForValidPartName      Proc Near   Uses ax cx dx si
    clc
    ret
 PART_CheckForValidPartName      EndP
+
+
+; Rousseau: added
+; Compare a volume-label in the IPT to the install-volume
+; SI holds pointer to entry in IPT
+; CY set if this entry is also the install-volume
+PART_IsInstallVolume            Proc Near   Uses ax cx dx si di
+      cld                                    ; Advance upwards with lodsb
+      mov   di, offset eCS_InstallVolume     ; Address of install-volume label (max. 11 chars)
+
+      mov   cx, 11                           ; Maximum length of label
+      xor   dl, dl                           ; Not found yet
+
+    ; Compare next character
+    PART_IsInstallVolumeNext:
+      lodsb                                  ; Load byte from SI (IPT-entry)
+      ;cmp      al,' '                        ; If space then use zero
+      ;jne      PART_IsInstallVolume_skip1
+      ;xor      al,al
+   PART_IsInstallVolume_skip1:
+      xchg     ah,al                         ; Save char to AH
+      xchg     si,di                         ; Exchange pointers
+      lodsb                                  ; Load byte from SI (install-volume label)
+      ;cmp      al,' '                        ; If space then use zero
+      ;jne      PART_IsInstallVolume_skip2
+      ;xor      al,al
+   PART_IsInstallVolume_skip2:
+      xchg     si,di                         ; Reexchange pointers
+      call     AuxIO_Teletype
+      call     CONV_ToUpper
+      call     AuxIO_Teletype
+      xchg     al,ah
+      call     AuxIO_Teletype
+      call     CONV_ToUpper
+      call     AuxIO_Teletype
+      call     AuxIO_TeletypeNL
+
+      ; Are both of them zero ?
+      ; Then the names could be the same, but cx must not equal 11
+      ; because that would indicate a null-string.
+      mov      dh,al
+      or       dh,ah
+      jz       PART_IsInstallVolumeFound
+
+      cmp      ah,al                         ; Are the the same ?
+      jnz      PART_IsInstallVolumeNotFound  ; Nope, compare ended
+      loop     PART_IsInstallVolumeNext      ; Yep, Compare next character
+
+   PART_IsInstallVolumeFound:
+      ; If CX is still 11 this was a zero string
+      ; and thus not a valid volume-name.
+      ; This should not occur as this function is only called when the first
+      ; byte is non-zero.
+      cmp      cx,11
+      je       PART_IsInstallVolumeNotFound
+      ; Found !
+      mov      dl,1                          ; Found
+      jmp      PART_IsInstallVolumeEnd
+
+
+   PART_IsInstallVolumeNotFound:
+      mov      dl,0
+      jmp      PART_IsInstallVolumeEnd
+
+
+   PART_IsInstallVolumeEnd:
+      ; Set the status in CY
+      mov      al,dl
+      add      al,'0'
+      call     AuxIO_TeletypeHexByte
+      call     AuxIO_TeletypeNL
+      rcr      dl,1                          ; Put found-flag in CY
+      ret
+PART_IsInstallVolume            EndP

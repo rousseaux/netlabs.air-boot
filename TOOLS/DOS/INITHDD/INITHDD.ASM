@@ -19,7 +19,7 @@
 JUMPS
 
 Include ..\..\..\include\asm.inc
-include ..\..\..\include\dos\airboot.inc
+;include ..\..\..\include\dos\airboot.inc
 
 		.386p
                 model large, basic
@@ -35,6 +35,7 @@ Introduction:           db 'INITHDD - AiR-BOOT Initialize HDD Utility (DOS) - (c
 TXT_ERROR_IO            db 'Could not access harddrive', 13, 10, 0
 TXT_ERROR_NotNeeded     db 'INITHDD: Initialization not needed.', 13, 10, 0
 TXT_Done                db 'INITHDD: HDD was successfully initialized.', 13, 10, 0
+TXT_Cleared             db 'INITHDD: Reserved Sectors successfully cleared.', 13, 10, 0      ; Rousseau: added
 
 StandardMBR:
    dw 02BFAh, 08EC0h, 0B8D0h, 07C00h, 0E08Bh, 0FCFBh, 0C02Bh, 0D88Eh, 000BEh
@@ -67,7 +68,7 @@ StandardMBR:
    dw 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h
    dw 00000h, 00000h, 00000h, 0AA55h
 
-   Include ..\..\..\include\DOS\Const.asm
+;   Include ..\..\..\include\DOS\Const.asm
 
 INITHDD_Start:  mov     ax, cs
                 mov     ds, ax
@@ -83,6 +84,7 @@ INITHDD_Start:  mov     ax, cs
                 mov     cx, 0001h
                 mov     ax, 0201h          ; Read 1 sector
                 int     13h
+                jnc     Clear                                                    ; Rousseau: added (only clear)
                 jnc     LoadMBR_NoError
                 mov     si, offset TXT_ERROR_IO
                 call    MBR_Teletype
@@ -90,7 +92,7 @@ INITHDD_Start:  mov     ax, cs
                LoadMBR_NoError:
                 ; Check Master-Boot-Record Signature
                 cmp     wptr ds:[CurMBR+01FEh], 0AA55h
-                je      AlreadyInitialized
+                ;;je      AlreadyInitialized                                     ; Rousseau: always initialize
 
                 mov     ax, cs
                 mov     es, ax           ; Make sure that ES is right
@@ -106,6 +108,14 @@ INITHDD_Start:  mov     ax, cs
                Done:
                 mov     si, offset TXT_Done
                 call    MBR_Teletype
+
+                ; Rousseau: added
+               Clear:
+                call    MBR_ClearReservedSectors
+                mov     si, offset TXT_Cleared
+                call    MBR_Teletype
+                ; Rousseau: end added
+
                 jmp     GoByeBye
 
                AlreadyInitialized:
@@ -131,7 +141,30 @@ MBR_Teletype                    Proc Near   Uses ax bx cx
    ret
 MBR_Teletype                    EndP
 
+
+; Rousseau: added
+MBR_ClearReservedSectors        Proc Near
+   mov   ax, cs
+   mov   es, ax                           ; Make sure that ES is right
+   mov   cx, 2                            ; Index of first reserved sector to clear
+  MBR_ClearReservedSectors_loop:
+   push  cx                               ; Put on stack for later use
+   mov   bx, offset ZeroSEC               ; Block of 0's
+   mov   dx, 0080h                        ; First harddrive, Sector in cx
+   ;mov   cx, 0001h
+   mov   ax, 0301h                        ; Function 03, 1 sector to write
+   int   13h
+   pop   cx                               ; Pop sector-index
+   inc   cx                               ; Next sector
+   cmp   cx, 62                           ; If below 63 (Possible LVM) then...
+   jbe   MBR_ClearReservedSectors_loop    ; Repeat
+   ret
+MBR_ClearReservedSectors        EndP
+
+
+
 CurMBR                  db      512 dup (?)
+ZeroSEC                 db      512 dup (0)                                      ; Rousseau: added
 
 code_seg	ends
 		end	air_boot_setup

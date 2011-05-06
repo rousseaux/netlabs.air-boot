@@ -18,4 +18,4 @@ goto ExitMe
 :Failed
 echo Errorlevel not 0, make failed
 :ExitMe
-pause
+rem pause

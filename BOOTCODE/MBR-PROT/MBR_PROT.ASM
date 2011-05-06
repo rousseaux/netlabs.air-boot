@@ -26,8 +26,13 @@ code_seg        segment public use16
                 assume cs:code_seg, ds:nothing, es:nothing, ss:nothing
                 org 0000h
 
-OldInterrupt10  dd      'kcuf'              ; we are nice aren't we ;-)
-OldInterrupt13  dd      'kcuf'
+; Yes you are :-)
+;OldInterrupt10  dd      'kcuf'              ; we are nice aren't we ;-)
+;OldInterrupt13  dd      'kcuf'
+
+OldInterrupt10  dd      0
+OldInterrupt13  dd      0
+
 MBR_IgnoreWrite db      0
 
 MBRP_Routine:
@@ -142,7 +147,7 @@ MBRProt_WriteBorderLine        Proc Near
    ret
 MBRProt_WriteBorderLine        EndP
 
-MBRP_Line1:     db      'ÕÍÍ´!ATTENTION! -> A VIRUS WAS FOUND <- !ATTENTION!ÃÍÍ¸'
+MBRP_Line1:     db      'ÕÍÍ´!ATTENTION! -> A V1RU5 WAS FOUND <- !ATTENTION!ÃÍÍ¸'
 MBRP_EmptyLine: db      '³                                                     ³'
                 db      '³ A program tried to write to your Master Boot Record ³'
                 db      '³     AiR-BOOT supposes this as a viral act, so it    ³'
@@ -150,7 +155,8 @@ MBRP_EmptyLine: db      '³                                                     ³
 MBRP_Line2:     db      '³ If you tried to install a OS or something like that ³'
                 db      '³  you have to deactivate MBR PROTECTION in AiR-BOOT  ³'
                 db      '³             or contact your supervisor.             ³'
-MBRP_Line3:     db      'ÔÍÍÍ´AiR-BOOT (c) Copyright by M. Kiewitz 1999-2009ÃÍÍ¾'
+;MBRP_Line3:     db      'ÔÍÍÍ´AiR-BOOT (c) Copyright by M. Kiewitz 1999-2009ÃÍÍ¾'
+MBRP_Line3:     db      'ÔÍÍÍ´AiR-BOOT (c) Copyright by M. Kiewitz 1999-2011ÃÍÍ¾'
 
 org             1023
                 db 0

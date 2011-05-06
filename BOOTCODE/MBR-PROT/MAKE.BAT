@@ -5,15 +5,17 @@ call ..\..\env\dos.bat
 if errorlevel 1 goto Failed
 %linker% mbr_prot.obj >nul
 if errorlevel 1 goto Failed
-%exe2bin% mbr_prot.exe fixcode.com >nul
+%exe2bin% mbr_prot.exe mbr_prot.com
+if errorlevel 1 goto Failed
+copy mbr_prot.com fixcode.com
 if errorlevel 1 goto Failed
 
 rem Cleanup
-del mbr_prot.exe
-del mbr_prot.obj
+::del mbr_prot.exe
+::del mbr_prot.obj
 goto ExitMe
 
 :Failed
 echo Errorlevel not 0, make failed
 :ExitMe
-pause
+rem pause

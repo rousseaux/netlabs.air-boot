@@ -19,6 +19,10 @@
 ;                                                  AiR-BOOT / SOUND SUPPORT
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'SOUND',0
+ENDIF
+
 ; Here is some sound code. Requested by Hex1753.
 
 SOUND_PreBootMenu              Proc Near  Uses ax
@@ -107,3 +111,21 @@ SOUND_WaitToSilence            Proc Near  Uses bx cx dx
    out    61h, al
    ret
 SOUND_WaitToSilence            EndP
+
+
+
+; Rousseau: added
+SOUND_Beep                     PROC Near
+   pushf
+   pusha
+
+   mov      al, 7
+   mov      bh, 0
+   mov      bl, 7
+   mov      ah, 0eh
+   int      10h
+
+   popa
+   popf
+   ret
+SOUND_Beep                     ENDP

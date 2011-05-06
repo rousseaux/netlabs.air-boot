@@ -19,6 +19,10 @@
 ;                                                            AiR-BOOT / F/X
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'FX',0
+ENDIF
+
 ; There you go. Some nice old-school demo coder effects :)
 ;  If you rip this code, I will ./ your ass. =]
 
@@ -267,7 +271,7 @@ FX_MakeMagicalStuff             Proc Near   Uses es
       inc     di
       cmp     di, FX_MaxScanLine
       jb      FX_MCS_VerticalLoop
- 
+
       mov     ax, FX_CooperBarsTimer
       dec     ax
       jnz     FX_MMS_CooperBarsPending
@@ -385,7 +389,10 @@ FX_CalculateCoopers             Proc Near   Uses
 
      FX_CC_ActiveState:
       ; increment SinusPos by 1
-      movzx   bx, bptr ds:[FX_SinusPos+si]
+      ;movzx   bx, bptr ds:[FX_SinusPos+si]
+      mov   bl,bptr ds:[FX_SinusPos+si]
+      mov   bh,0
+
       inc     bx
       mov     bptr ds:[FX_SinusPos+si], bl
       cmp     bl, 7Fh
@@ -408,7 +415,10 @@ FX_CalculateCoopers             EndP
 
 FX_CalculateWideScroller        Proc Near   Uses
    mov     bx, FX_WideScrollerCurPos
-   movzx   cx, FX_WideScrollerSpeed
+   ;movzx   cx, FX_WideScrollerSpeed
+   mov   cl,FX_WideScrollerSpeed
+   mov   ch,0
+
    test    FX_WideScrollerAbsDirection, 1
    jnz     FXCWS_RIGHT
    jmp     FXCWS_LEFT

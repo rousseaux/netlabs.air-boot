@@ -54,6 +54,10 @@
 ;  if help is requested TXT_SETUPHELP_PartitionSetup will get shown.
 ;
 
+IFDEF ModuleNames
+DB 'MENUS',0
+ENDIF
+
 LocMENU_LenOfMenuPtrBlock    equ          8
 LocMENU_LenOfItemPack        equ         12
 LocMENU_RoutinePtr           equ          0
@@ -62,7 +66,7 @@ LocMENU_ItemNamePtr          equ          4
 LocMENU_ItemHelpPtr          equ          6
 LocMENU_ItemPack             equ          8 ; only if VariablePtr>0
 
-SETUP_MainMenu: 
+SETUP_MainMenu:
                 db      0                ; Where Current Item will get saved
                 dw      offset TXT_SETUPHELP_MAIN ; Pointer to help information
                 ; The Menu-Items start here...
@@ -208,7 +212,7 @@ SETUP_ExtendedBootOptions:
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_IgnoreLVM
                 dw      offset TXT_SETUP_IgnoreLVM, offset TXT_SETUPHELP_IgnoreLVM
                 dw      6 dup (0)
-                dw      offset SETUPMAGIC_EnableDisable, offset CFG_ForceLBAUsage
+                dw      offset SETUPMAGIC_EnableDisable, offset CFG_ForceLBAUsage            ; Rousseau: LBA
                 dw      offset TXT_SETUP_ForceLBAUsage, offset TXT_SETUPHELP_ForceLBAUsage
                 dw      6 dup (0)
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_ExtPartitionMShack

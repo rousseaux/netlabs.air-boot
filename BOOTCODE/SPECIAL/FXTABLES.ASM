@@ -19,6 +19,10 @@
 ;                                                     AiR-BOOT / F/X TABLES
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'FXTABLES',0
+ENDIF
+
 ; Sinus-Table - 128xWORD = 256 Bytes
 FX_SinusTab dw 00101h, 00102h, 00103h, 00105h, 00107h, 0010Ah, 0010Dh, 00111h
     dw 00115h, 00119h, 0011Dh, 00122h, 00127h, 0012Dh, 00133h, 00139h, 00140h

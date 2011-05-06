@@ -19,6 +19,10 @@
 ;                                                 AiR-BOOT / OTHER ROUTINES
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'OTHER',0
+ENDIF
+
 ;        In: DS:SI - Pointer to begin of string
 ;            CX - Len of string
 ;       Out: CX - Supposed real len of string
@@ -71,7 +75,10 @@ GetLenOfStrings                Proc Near   Uses bx dx si
       inc     si
    dec     dh
    jnz     GLOSS_StringsLoop
-   movzx   cx, dl
+   ;movzx   cx, dl
+   mov   cl,dl
+   mov   ch,0
+
    ret
 GetLenOfStrings                EndP
 
@@ -85,6 +92,158 @@ PRECRAP_Main                    Proc Near  Uses
    rep     stosw
 
    mov     VideoIO_Segment, VideoIO_Page0
+
+   ; Don't use blinking attribute
+   call     VideoIO_NoBlinking
+
+   ; Get HardDriveCount
+   call    DriveIO_GetHardDriveCount
+
+
+               ; Rousseau: added
+               call    VideoIO_ClearScreen
+
+               ; Cursor to upper-left
+               mov     TextPosX, 0
+               mov     TextPosY, 0
+               call    VideoIO_CursorSet
+
+               ;mov     ax, VideoIO_Page1
+               ;call    VideoIO_BackUpTo   ; Copy BIOS POST to Second Page
+
+               ; Copyright
+               mov     si, offset Copyright
+               call    MBR_Teletype
+               xor     si,si
+               call    MBR_TeletypeNL
+
+
+               ;call    SOUND_Beep
+
+               ; Build Date
+               mov     si, offset BUILD_DATE
+               call    MBR_TeletypeNL
+
+               ; Initialize the com-port for debugging
+               call     AuxIO_Init
+
+               xor     si,si
+               call    MBR_TeletypeNL
+
+               xor      cx,cx
+            PRECRAP_Main_next_disk:
+
+               mov      dl,cl
+               or       dl,80h
+
+               call     DriveIO_GatherDiskInfo              ; Also used to fill the geo, should be separate function
+
+               mov      bx,offset HugeDisk
+               add      bx,cx
+               mov      [bx], al
+
+               call     DriveIO_LoadMasterLVMSector         ; returns ZF=1 if no valid LVM record found
+
+               pushf
+               mov      bx, offset TrueSecs
+               add      bx,cx
+               add      bx,cx
+               add      bx,cx
+               add      bx,cx
+               popf
+
+               ; bx now contains pointer to truesecs for this drive
+
+               jz       NoValidMasterLVM
+
+               mov      si,offset LVMSector
+               mov      ax,[si+LocLVM_Secs]
+               mov      word ptr [bx],ax
+               jmp      SkipUseBiosSecs
+
+
+            NoValidMasterLVM:
+               push     bx                   ; push truesecs pointer
+               mov      bx, offset BIOS_Secs
+               add      bx,cx
+               add      bx,cx
+               add      bx,cx
+               add      bx,cx
+
+               mov      ax,[bx]              ; get biossecs
+               pop      bx
+               mov      word ptr [bx],ax     ; store bios secs in truesecs
+
+
+            SkipUseBiosSecs:
+               inc      cx
+               cmp      cl,[TotalHarddiscs]
+               jb       PRECRAP_Main_next_disk
+
+
+
+IFDEF AuxDebug
+               ; Write some debug-info to the com-port
+               call     DEBUG_Dump1
+ENDIF
+
+              ; jz       NoValidMasterLVM
+
+
+               ; A valid Master LVM has been found.
+               ; We use the values in here to determine the number of sectors per track,
+               ; since this could be OS/2 extended geometry.
+
+              ; jmp      Continue1
+
+
+               ;mov      word ptr [LOG_Secs],63
+
+               mov      al,[HugeDisk]           ;; fout, moet nog index bij
+               call     AuxIO_TeletypeHexByte
+               call     AuxIO_TeletypeNL
+
+               mov      ax,word ptr [TrueSecs]  ;; fout, moet nog index bij
+               call     AuxIO_TeletypeHexWord
+               call     AuxIO_TeletypeNL
+
+
+
+                 ; Huge Disk indicator
+                 mov     si, offset HugeBootDisk
+                 call    MBR_Teletype
+                 mov     al,[HugeDisk]
+                 mov     si, offset No
+                 test    al,al
+                 jz      MBR_HugeDriveIndicator
+                 mov     si, offset Yes
+
+               MBR_HugeDriveIndicator:
+                 call    MBR_Teletype
+                 xor     si,si
+                 call    MBR_TeletypeNL
+
+
+
+
+
+                 ;
+                 ; Phase 1 Indicator
+                 ;
+                 mov     si, offset Phase1
+                 call    MBR_Teletype
+
+                 mov     si, offset eCS_InstallVolume
+                 mov     al, [si]
+                 test    al,al                                 ; See if phase 1 is active
+                 jnz     MBR_Main_BootThrough
+                 mov     si, offset NotActive
+
+               MBR_Main_BootThrough:
+                 call    MBR_TeleType
+                 xor     si,si
+                 call    MBR_TeletypeNL                                          ; ALP barks undefined symbol; must use prototypes ?
+
 
    ; Calculate Cooper-Bar Tables
    call    FX_CalculateTables
@@ -107,10 +266,13 @@ PRECRAP_Main                    Proc Near  Uses
    endif
 
    call    PRECRAP_CheckFor13extensions
+
    IFNDEF ReleaseCode
       ret
    ENDIF
+
    call    PRECRAP_CheckConfiguration
+
    ; =======================================
    ; Checks for MBR Virii :) I love that job
    ; =======================================
@@ -122,6 +284,8 @@ PRECRAP_Main                    Proc Near  Uses
    jz      PCM_NoVirusDetection
       call    VIRUS_CheckForVirus
   PCM_NoVirusDetection:
+
+
    ; ============================================
    ;  Delay for some time and get Strg/Alt State
    ; ============================================
@@ -131,9 +295,12 @@ PRECRAP_Main                    Proc Near  Uses
    test    CFG_FloppyBootGetName, 1
    jz      PCM_LongDelay
   PCM_ShortDelay:
+
    mov     al, 13                        ; shorten delay,if floppy gets accessed
   PCM_LongDelay:
+
    call    TIMER_WaitTicCount
+
    ; First check, if any normal key got pressed...
    mov     ah, 1
    int     16h
@@ -142,7 +309,9 @@ PRECRAP_Main                    Proc Near  Uses
    mov     si, offset TXT_HowEnterSetup
    call    MBR_Teletype
    mov     al, 54                        ; about 3 seconds, delay again
+
    call    TIMER_WaitTicCount
+
   PCM_NoNormalKeyPressed:
    ; Now get keyboard Strg/Alt State
    mov     ah, 02h
@@ -155,6 +324,8 @@ PRECRAP_Main                    Proc Near  Uses
    call    PART_UpdateResumeBIOSName
    ret
 PRECRAP_Main                    EndP
+
+
 
 AFTERCRAP_Main                  Proc Near  Uses
    ; ===================================================
@@ -208,3 +379,81 @@ PRECRAP_CheckConfiguration      Proc Near  Uses ds si es di
    call    MBR_Teletype
    jmp     MBR_HaltSystem
 PRECRAP_CheckConfiguration      EndP
+
+
+; Rousseau: added
+;        In: SI - Pointer to begin of string (EOS is 0)
+; Destroyed: SI
+; Fixme: Uses double writes to use attribute with teletype-function.
+MBR_TeletypeBold                Proc Near   Uses ax bx cx
+  MBRT_LoopBold:
+   lodsb
+   or      al, al
+   jz      MBRT_EndBold
+   push    ax
+   mov     ah,09h
+   mov     bx,15
+   mov     cx,1
+   int     10h
+   pop     ax
+   mov     ah,0eh
+   mov     bx,7            ; Does not do anything in text-modus
+   mov     cx,1
+   int     10h
+   jmp     MBRT_LoopBold
+  MBRT_EndBold:
+   ret
+MBR_TeletypeBold                EndP
+
+;        In: SI - Pointer to begin of string (EOS is 0)
+; Destroyed: SI
+; Fixme: Uses double writes to use attribute with teletype-function.
+MBR_TeletypeVolName             Proc Near   Uses ax bx cx
+   mov     cx, 11
+  MBRT_LoopVolName:
+   mov     dx,cx           ; Backup counter
+   lodsb
+   or      al, al
+   jz      MBRT_EndVolName
+   push    ax
+   mov     ah,09h
+   mov     bx,15
+   mov     cx,1
+   int     10h             ; DX is preserved
+   pop     ax
+   mov     ah,0eh
+   mov     bx,7            ; Does not do anything in text-modus
+   mov     cx,1
+   int     10h             ; DX is preserved
+   mov     cx,dx           ; Restore counter
+   loop    MBRT_LoopVolName
+  MBRT_EndVolName:
+   ret
+MBR_TeletypeVolName             EndP
+
+; Rousseau: added
+; Move cursor to next line
+; Just do a new-line if SI==0
+MBR_TeletypeNL                  Proc Near   Uses ax bx cx
+   test    si,si
+   jz      MBR_TeletypeNL_NL
+   call    MBR_Teletype
+  MBR_TeletypeNL_NL:
+   push    si
+   mov     si, offset NL
+   call    MBR_Teletype
+   pop     si
+   ret
+MBR_TeletypeNL                  EndP
+
+; Sync teletype position to VideoIO
+MBR_TeletypeSyncPos     Proc Near   Uses ax bx cx dx
+   pushf
+   mov   bh, 0
+   mov   ah, 02h
+   mov   dh,[TextPosY]
+   mov   dl,[TextPosX]
+   int   10h
+   popf
+   ret
+MBR_TeletypeSyncPos     EndP

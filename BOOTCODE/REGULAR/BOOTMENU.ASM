@@ -19,6 +19,10 @@
 ;                                                      AiR-BOOT / BOOT-MENU
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'BOOTMENU',0
+ENDIF
+
 BOOTMENU_BuildBackground        Proc Near   Uses es di
    call    VideoIO_CursorOff
    ; -------------------------------------------
@@ -31,17 +35,23 @@ BOOTMENU_BuildBackground        Proc Near   Uses es di
    ret
 BOOTMENU_BuildBackground        EndP
 
+CLR_COPYRIGHT_CLASSIC   = 0f00h
+CLR_COPYRIGHT_BM  = 0700h
+
 BOOTMENU_BuildMain              Proc Near   Uses es di
    ; 1st line with Copyright information...
    mov     cx, 0101h
    call    VideoIO_Locate
-   mov     cx, 0F00h
+   mov     cx, CLR_COPYRIGHT_BM
    call    VideoIO_Color
    mov     si, offset Copyright
    call    VideoIO_Print                 ; Print Copyright Line...
 
    ; Boot-Window...
-   mov     cx, 0901h
+CLR_BOOT_WINDOW_CLASSIC    = 0901h
+CLR_BOOT_WINDOW_BM         = 0701h
+
+   mov     cx, CLR_BOOT_WINDOW_BM
    call    VideoIO_Color
    mov     bx, 0201h
    mov     dx, 0550h
@@ -52,7 +62,7 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
    call    VideoIO_Locate
    mov     al, TextChar_WinLineRight
    mov     cl, 78
-   call    VideoIO_Internal_MakeWinRight 
+   call    VideoIO_Internal_MakeWinRight
 
    mov     dl, 18h
    cmp     CFG_BootMenuActive, 2
@@ -62,7 +72,11 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
    mov     Menu_AbsoluteX, dl
 
    ; Display Top-Infos in Boot-Window
-   mov     cx, 0B01h
+
+CLR_TOP_INFOS_CLASSIC    = 0b01h
+CLR_TOP_INFOS_BM  = 0301h
+
+   mov     cx, CLR_TOP_INFOS_BM
    call    VideoIO_Color
    mov     ch, 03h
    mov     cl, dl
@@ -90,7 +104,10 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
    call    VideoIO_Print
 
    ; Now make the separating vertical lines...
-   mov     cx, 0901h
+CLR_SEP_VERT_LINES_CLASSIC    = 0901h
+CLR_SEP_VERT_LINES_BM   = 0701h
+
+   mov     cx, CLR_SEP_VERT_LINES_BM
    call    VideoIO_Color
    mov     ch, 03h
    mov     cl, Menu_AbsoluteX
@@ -156,8 +173,24 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
    call    BOOTMENU_RefreshPartitionText
    ; Boot-Window is DONE
 
-   mov     cx, 0C04h
-   call    VideoIO_Color
+; Rousseau: = Colors =
+; FG
+; BG
+; 7 = grey
+; 6 = brown
+; 5 = magenta
+; 4 = red
+; 3 = cyan
+; 2 = green
+; 1 = blue
+
+CLR_INFO_WINDOW_CLASSIC    = 0c04h
+CLR_INFO_WINDOW_BM   = 0701h
+
+   mov     cx, CLR_INFO_WINDOW_BM
+   ;mov     cx, 0C06h ; brown, main background
+   call    VideoIO_Color                                                         ; Rousseau: color info window
+
    mov     bx, 1401h
    mov     dx, 1950h
    call    VideoIO_MakeWindow            ; Information-Window
@@ -172,8 +205,13 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
 
    mov     cx, 1703h
    call    VideoIO_Locate
-   mov     cx, 0F04h
-   call    VideoIO_Color
+
+CLR_INFO_TEXT_CLASSIC   = 0f04h
+CLR_INFO_TEXT_BM   = 0701h
+
+   mov     cx, CLR_INFO_TEXT_BM                   ; Info text
+   call    VideoIO_Color                                                         ; Rousseau: color info text
+
    mov     si, offset TXT_BootMenuHelpText1
    call    VideoIO_Print
    mov     cx, 1803h
@@ -181,7 +219,11 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
    mov     si, offset TXT_BootMenuHelpText2
    call    VideoIO_Print
 
-   mov     cx, 0C04h
+
+CLR_F10_SETUP_CLASSIC   = 0c04h
+CLR_F10_SETUP_BM        = 0901h
+
+   mov     cx, CLR_F10_SETUP_BM                            ; background F10 enter Setup
    call    VideoIO_Color
 
    ; Additional message how to enter setup
@@ -197,8 +239,16 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
    mov     al, TextChar_WinRep5
    call    VideoIO_PrintSingleChar
    ; HelpWindow done...
+
+
+   ; Rousseau: Debug Stuff, put here after building Main Menu
+   ;call    VideoIO_DBG_WriteString
+   ;call    VideoIO_DBG_WriteString2
+
    ret
 BOOTMENU_BuildMain              EndP
+
+
 
 BOOTMENU_BuildGoodBye           Proc Near   Uses es di
    mov     ax, VideoIO_Segment
@@ -208,7 +258,11 @@ BOOTMENU_BuildGoodBye           Proc Near   Uses es di
    mov     ax, 0720h
    rep     stosw
    ; -------------------------------------------
-   mov     cx, 0D05h
+
+CLR_GOODBYE_WINDOW_CLASSIC = 0d05h
+CLR_GOODBYE_WINDOW_BM   = 0f01h
+
+   mov     cx, CLR_GOODBYE_WINDOW_BM
    call    VideoIO_Color
    mov     bx, 0101h
    mov     dx, 0550h
@@ -220,8 +274,13 @@ BOOTMENU_BuildGoodBye           Proc Near   Uses es di
    mov     di, 162
    mov     cx, 9
    mov     al, WinCharRight
-   mov     ah, 05Dh
+
+   ; Little part before version in goodbye-window
+   ; Does not use color-function
+   ;mov     ah, 05Dh
+   mov     ah, 01fh
    rep     stosw
+
    mov     cx, 010Bh
    call    VideoIO_Locate
    mov     al, WinCharBB
@@ -239,18 +298,28 @@ BOOTMENU_BuildGoodBye           Proc Near   Uses es di
    call    VideoIO_Locate
    mov     al, TextChar_WinRep4
    call    VideoIO_PrintSingleChar
-   mov     cx, 0E01h
+
+CLR_GOODBYE_AB_VERSION_CLASSIC   = 0e01h
+CLR_GOODBYE_AB_VERSION_BM  = 0e03h
+
+   mov     cx, CLR_GOODBYE_AB_VERSION_BM
    call    VideoIO_Color
    mov     si, offset Copyright
    mov     cl, 11+CopyrightVersionLen
    call    VideoIO_FixedPrint
-   mov     cx, 0D05h
+
+   mov     cx, CLR_GOODBYE_WINDOW_BM
+
    call    VideoIO_Color
    mov     al, TextChar_WinRep5
    call    VideoIO_PrintSingleChar
    mov     cx, 020Dh
    call    VideoIO_Locate
-   mov     cx, 0F05h
+
+   CLR_GOODBYE_WINDOW_CLASSIC_2    = 0f05h
+   CLR_GOODBYE_WINDOW_BM_2   = 0701h
+
+   mov     cx,  CLR_GOODBYE_WINDOW_BM_2
    call    VideoIO_Color
    inc     si
    call    VideoIO_Print                 ; Print Copyright to the end...
@@ -271,11 +340,17 @@ BOOTMENU_BuildGoodBye           Proc Near   Uses es di
    ret
 BOOTMENU_BuildGoodBye           EndP
 
+
+
 ; Must preserve AX!
 BOOTMENU_BuildTimedBootText     Proc Near   Uses ax cx si es di
-   mov     cx, 1503h
+   mov     cx, 1503h ;
    call    VideoIO_Locate
-   mov     cx, 0E04h
+
+CLR_NON_TIMED_BAR_CLASSIC  = 0e04h
+CLR_NON_TIMED_BAR_BM = 0701h
+
+   mov     cx, CLR_NON_TIMED_BAR_BM                      ; non-timed time bar
    call    VideoIO_Color
    call    VideoIO_Internal_SetRegs
    mov     cx, 76
@@ -293,7 +368,11 @@ BOOTMENU_BuildTimedBootText     Proc Near   Uses ax cx si es di
   BMBTBT_TimedBoot:
    mov     cx, 1503h
    call    VideoIO_Locate
-   mov     cx, 0E04h
+
+CLR_TIMED_BAR_CLASSIC   = 0e04h
+CLR_TIMED_BAR_BM  = 0e04h
+
+   mov     cx, CLR_TIMED_BAR_BM ; timed time bar, yellow on red
    call    VideoIO_Color
    mov     si, offset TXT_TimedBootLine  ; will print TimedBootEntryName too
    call    VideoIO_Print
@@ -324,6 +403,10 @@ BOOTMENU_RefreshPartitionText   Proc Near Uses cx dx
    ret
 BOOTMENU_RefreshPartitionText   EndP
 
+
+CLR_VOLUME_INDEX_CLASSIC   = 0f01h
+CLR_VOLUME_INDEX_BM  = 0f01h
+
 ; Writes Partition-Information to Screen (Boot-Menu)
 ;        In: CH - Line to print info
 ;            DL - Number of Partition (Base=0)
@@ -338,7 +421,7 @@ BOOTMENU_BuildPartitionText     Proc Near   Uses ax cx dx si
    mov     cl, Menu_AbsoluteX
    mov     dh, cl
    call    VideoIO_Locate
-   mov     cx, 0F01h                     ; Bwhite, blue
+   mov     cx, CLR_VOLUME_INDEX_BM                     ; Bwhite, blue
    call    VideoIO_Color
    mov     al, dl
    inc     al
@@ -346,9 +429,16 @@ BOOTMENU_BuildPartitionText     Proc Near   Uses ax cx dx si
 
    ; === Display Drive-Number and Size (Size only in detailed view) ===
    add     dh, 5
-   movzx   cx, dh
+   ;movzx   cx, dh
+   mov   cl,dh
+   mov   ch,0
+
    call    VideoIO_Locate
-   mov     cx, 0D01h
+
+CLR_HD_INDEX_CLASSIC    = 0d01h
+CLR_HD_INDEX_BM   = 0701h
+
+   mov     cx, CLR_HD_INDEX_BM
    call    VideoIO_Color                 ; Violet, blue
    mov     si, PartPointer
    mov     al, [si+LocIPT_Drive]
@@ -366,11 +456,15 @@ BOOTMENU_BuildPartitionText     Proc Near   Uses ax cx dx si
       jmp     BMBPT_NoDetailed
      BMBPT_IsHarddrive:
       ; Now display Size-Element...
-      mov     cx, 0501h
+
+CLR_HD_SIZE_CLASSIC  = 0501h
+CLR_HD_SIZE_BM = 0701h
+
+      mov     cx, CLR_HD_SIZE_BM
       call    VideoIO_Color              ; Dark-Violet, Blue
       mov     al, '/'
       call    VideoIO_PrintSingleChar
-      mov     cx, 0D01h
+      mov     cx, CLR_HD_SIZE_BM
       call    VideoIO_Color              ; Violet, Blue
       mov     ax, PartPointer            ; Get Size-Element from PartPtr (AX)
       call    PART_GetSizeElementPointer ; DS:SI -> Size-Element...
@@ -382,9 +476,16 @@ BOOTMENU_BuildPartitionText     Proc Near   Uses ax cx dx si
   BMBPT_NoDetailed:
 
    ; === Display Label ===
-   movzx   cx, dh
+   ;movzx   cx, dh
+   mov   cl,dh
+   mov   ch,0
+
    call    VideoIO_Locate
-   mov     cx, 0E01h
+
+CLR_LABEL_CLASSIC    = 0e01h
+CLR_LABEL_BM   = 0f01h
+
+   mov     cx, CLR_LABEL_BM
    call    VideoIO_Color                 ; Yellow, blue
    mov     si, PartPointer
    add     si, LocIPT_Name
@@ -393,12 +494,19 @@ BOOTMENU_BuildPartitionText     Proc Near   Uses ax cx dx si
 
    ; === Display Type ===
    add     dh, 14
-   movzx   cx, dh
+   ;movzx   cx, dh
+   mov   cl,dh
+   mov   ch,0
+
    call    VideoIO_Locate
    mov     si, PartPointer
    mov     al, [si+LocIPT_SystemID]
    call    PART_SearchFileSysName
-   mov     cx, 0C01h
+
+CLR_FS_NAME_CLASSIC  =  0c01h
+CLR_FS_NAME_BM =  0701h
+
+   mov     cx, CLR_FS_NAME_BM
    call    VideoIO_Color                 ; Hrot, Blau
    mov     cl, 8
    call    VideoIO_FixedPrint
@@ -409,9 +517,18 @@ BOOTMENU_BuildPartitionText     EndP
 ;            DH - New Active Partition (may not be correct number)
 ;       Out: DX - will get returned (fixed, if needed)
 BOOTMENU_BuildChoiceBar         Proc near   Uses ax es di
+
+   ;call  SOUND_Beep
+
    call    VideoIO_WaitRetrace
+
+
+   ;call  SOUND_Beep
+
    mov     cl, 10h    ; Color BLUE, Partition DL
    call    BOOTMENU_ReColorPart
+
+   ;call  SOUND_Beep
 
    ; Check, if clipping needed...
    cmp     dh, 0ffh
@@ -447,8 +564,33 @@ BOOTMENU_BuildChoiceBar         Proc near   Uses ax es di
    jae     BMBCB_ScrollingDown
    call    BOOTMENU_RefreshPartitionText
 
+
+; Keuze bar
+; 00h black
+; 10h blue
+; 20h green (also nice)
+; 30h cyan (also nice)
+; 40h red
+; 50h magenta
+; 60h brown (nice)
+; 70h white
+; 80h grey
+; 90h light blue (nice)
+; 0a0h bright green
+; 0b0h bright cyan
+; 0c0h bright red
+; 0d0h bright magenta
+; 0e0h bright yellow
+; 0f0h bright white
+
+
+CLR_SELECTION_BAR_CLASSIC  = 50h
+CLR_SELECTION_BAR_BM = 090h
+
+
+
   BMBCB_AfterScrolling:
-   mov     cl, 50h    ; Color PINK, Partition DL
+   mov     cl, CLR_SELECTION_BAR_BM    ; Color PINK, Partition DL
    call    BOOTMENU_ReColorPart
    ret
 BOOTMENU_BuildChoiceBar         EndP
@@ -456,6 +598,9 @@ BOOTMENU_BuildChoiceBar         EndP
 ;        In: CL - Color, DL - Partition
 ; Destroyed: None, but Locate-Pointer gets set
 BOOTMENU_ReColorPart            Proc Near   Uses bx cx es di
+
+  ; call  SOUND_Beep
+
    mov     bh, cl     ; Color to BH
    ; First calculate location of bar
    cmp     Menu_UpperPart, dl
@@ -474,6 +619,9 @@ BOOTMENU_ReColorPart            Proc Near   Uses bx cx es di
       mov     al, es:[di]
       and     al, 0Fh
       or      al, bh                     ; Adds background color (from BH)
+
+      ;mov      al,97h
+
       mov     es:[di], al
       add     di, 2
    dec     cl
@@ -614,10 +762,20 @@ BOOTMENU_Execute                Proc Near   Uses es di
   BME_ForgetMode:
    ; Got it, so display bar...
    mov     dh, dl
+
+   ;call  SOUND_Beep
+
    call    BOOTMENU_BuildChoiceBar       ; DH - Active, DL - Last Active
+
+   ;call  SOUND_Beep
+
    call    SOUND_PreBootMenu
 
+
   BME_MainLoop:
+
+     ;call    VideoIO_DBG_WriteString2    ; Rousseau
+
    test    TimedBootEnable, 1
    jz      BME_NoTimedBoot
       ; ------------------------------------------------ TIMED BOOT

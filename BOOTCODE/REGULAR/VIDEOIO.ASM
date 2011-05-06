@@ -19,6 +19,10 @@
 ;                                                      AiR-BOOT / VIDEO I/O
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'VIDEOIO',0
+ENDIF
+
 VideoIO_WaitRetrace             Proc Near   Uses ax dx
    mov     dx, 3DAh
  VIOWR_Jump1:
@@ -31,6 +35,8 @@ VideoIO_WaitRetrace             Proc Near   Uses ax dx
    jz      VIOWR_Jump2
    ret
 VideoIO_WaitRetrace             EndP
+
+
 
 ; Holds the current position. Yeah, I know this is in the code area, but who
 ;  cares :))
@@ -99,7 +105,10 @@ VideoIO_CursorSet               EndP
 VideoIO_Internal_SetRegs        Proc Near   Uses bx
    mov     ax, VideoIO_Segment
    mov     es, ax
-   movzx   ax, TextPosY
+   ;movzx   ax, TextPosY
+   mov   al,TextPosY
+   mov   ah,0
+
    mov     bl, 160
    mul     bl
    xor     bh, bh
@@ -168,6 +177,16 @@ VideoIO_FixedPrint              Proc Near   Uses es di
    ret
 VideoIO_FixedPrint              EndP
 
+; Rousseau:
+; Turn off blinking
+; http://www.ctyme.com/intr/rb-0088.htm does not mention this
+VideoIO_NoBlinking              Proc Near   Uses ax bx
+      mov      bx,0
+      mov      ax,1003h
+      int      10h
+   ret
+VideoIO_NoBlinking              EndP
+
 ;        In: AL - Single Char to Print
 ; Destroyed: None
 VideoIO_PrintSingleChar         Proc Near   Uses ax es di
@@ -178,6 +197,70 @@ VideoIO_PrintSingleChar         Proc Near   Uses ax es di
    inc     TextPosX
    ret
 VideoIO_PrintSingleChar         EndP
+
+
+
+; Print hex-byte to screen
+; This outputs two characters
+; In:          AL - byte to send
+; Out:         AL - byte sent
+; Destroyed:   None
+VideoIO_PrintHexByte    Proc     Near  Uses  ax
+      call     CONV_BinToAsc              ; Returns high hex-nibble in AH, low hex-nibble in AL
+      xchg     al,ah                      ; High hex-nibble first
+      call     VideoIO_PrintSingleChar    ; Output to screen
+      xchg     al,ah                      ; Low hex-nibble next
+      call     VideoIO_PrintSingleChar    ; Output to screen
+      ret
+VideoIO_PrintHexByte    EndP
+
+
+; Print hex-word to screen
+; This outputs four characters
+; In:          AX - word to send
+; Out:         AX - word sent
+; Destroyed:   None
+VideoIO_PrintHexWord    Proc     Near
+      xchg     al,ah                      ; High byte first
+      call     VideoIO_PrintHexByte       ; Output to screen
+      xchg     al,ah                      ; low byte next
+      call     VideoIO_PrintHexByte       ; Output to screen
+      ret
+VideoIO_PrintHexWord    EndP
+
+
+; Print hex-dword to screen
+; This outputs eight characters
+; In:          DX:AX - dword to send
+; Out:         DX:AX - dword sent
+; Destroyed:   None
+VideoIO_PrintHexDWord   Proc     Near
+      xchg     ax,dx
+      call     VideoIO_PrintHexWord       ; High word first
+      xchg     ax,dx
+      call     VideoIO_PrintHexWord       ; Low word next
+      ret
+VideoIO_PrintHexDWord   EndP
+
+
+; Print hex-qword to screen
+; This outputs sixteen characters
+; In:          BX:CX:DX:AX - qword to send
+; Out:         BX:CX:DX:AX - qword sent
+; Destroyed:   None
+VideoIO_PrintHexQWord   Proc     Near
+      xchg     dx,bx
+      xchg     ax,cx
+      call     VideoIO_PrintHexDWord      ; High dword first
+      xchg     dx,bx
+      xchg     ax,cx
+      call     VideoIO_PrintHexDWord      ; Low dword next
+      ret
+VideoIO_PrintHexQWord   EndP
+
+
+
+
 
 ;        In: AL - Single Char to Print
 ;            CL - Times to print it
@@ -204,12 +287,18 @@ VideoIO_PrintSingleMultiChar    EndP
 VideoIO_PrintByteNumber         Proc Near   Uses ax bx dx es di
    cmp     al, 99
    ja      VIOPBN_DoNotWriteAnything
-   movzx   bx, al
+   ;movzx   bx, al
+   mov   bl,al
+   mov   bh,0
+
    call    VideoIO_Internal_SetRegs
    cmp     bl, 10
    jb      VIOPBN_Lower10
    push    ax
-      movzx   ax, bl
+      ;movzx   ax, bl
+      mov   al,bl
+      mov   ah,0
+
       mov     dl, 10
       div     dl
       mov     bh, al                     ; BH = Upper Number
@@ -230,7 +319,7 @@ VideoIO_PrintByteNumber         EndP
 ; Will print a number to screen (dynamic bytes from 0 to 255)
 ;        In: AL - Single Byte to Print
 ; Destroyed: None
-VideoIO_PrintByteDynamicNumber  Proc Near   Uses ax bx dx es di
+VideoIO_PrintByteDynamicNumber  Proc Near   Uses ax bx cx dx es di               ; Rousseau: cx was missing from push-list
    xor     cl, cl
    mov     bh, al
    call    VideoIO_Internal_SetRegs
@@ -239,7 +328,10 @@ VideoIO_PrintByteDynamicNumber  Proc Near   Uses ax bx dx es di
    jb      VIOPBDN_Lower10
    cmp     ah, 100
    jb      VIOPBDN_Lower100
-   movzx   ax, ah
+   ;movzx   ax, ah
+   mov   al,ah
+   mov   ah,0
+
    mov     dl, 100
    div     dl
    add     al, 30h
@@ -248,7 +340,10 @@ VideoIO_PrintByteDynamicNumber  Proc Near   Uses ax bx dx es di
    inc     TextPosX
    add     di, 2
  VIOPBDN_Lower100:
-   movzx   ax, ah
+   ;movzx   ax, ah
+   mov   al,ah
+   mov   ah,0
+
    mov     dl, 10
    div     dl
    add     al, 30h
@@ -269,7 +364,10 @@ VideoIO_PrintByteDynamicNumber  EndP
 ;        In: AL - Zeichen zum Zeichnen, CL - Wie oft
 ; Destroyed: None Important
 VideoIO_Internal_MakeWinDown    Proc Near   Uses dx di
-   movzx   dx, cl
+   ;movzx   dx, cl
+   mov   dl,cl
+   mov   dh,0
+
    mov     bl, al
    call    VideoIO_Internal_SetRegs
    mov     al, bl
@@ -280,13 +378,16 @@ VideoIO_Internal_MakeWinDown    Proc Near   Uses dx di
       inc     TextPosY
    dec     dx
    jnz     VIOIMWD_Loop
-   ret      
+   ret
 VideoIO_Internal_MakeWinDown    EndP
 
 ;        In: AL - Zeichen zum Zeichnen, CL - Wie oft
 ; Destroyed: None Important
 VideoIO_Internal_MakeWinRight   Proc Near   Uses dx di
-   movzx  dx, cl
+   ;movzx  dx, cl
+   mov   dl,cl
+   mov   dh,0
+
    mov    bl, al
    call   VideoIO_Internal_SetRegs
    mov    al, bl
@@ -297,7 +398,7 @@ VideoIO_Internal_MakeWinRight   Proc Near   Uses dx di
       inc    TextPosX
       dec    dx
    jnz    VIOIMWR_Loop
-   ret      
+   ret
 VideoIO_Internal_MakeWinRight   EndP
 
 WinBeginPosY    db        0h
@@ -365,7 +466,7 @@ VideoIO_MakeWindow              Proc Near   Uses ax bx cx es di
    mov     bl, WinEndPosX
    sub     bl, WinBeginPosX
    dec     bl
- 
+
   VIOIMW_Loop:
       mov     ch, WinBeginPosY
       add     ch, bh
@@ -438,7 +539,7 @@ VideoIO_LetUserEditString       Proc Near   Uses ax bx cx dx si es di
       call    VideoIO_Locate
       call    VideoIO_CursorSet
       call    VideoIO_CursorOn           ; Set and turn cursor on
-      
+
       ; ES:DI - Screen-Position to Start of String
       ; DL    - Position in String (relative to begin, base=0)
 
@@ -459,7 +560,10 @@ VideoIO_LetUserEditString       Proc Near   Uses ax bx cx dx si es di
          ; Okay, Character to add to string
          cmp     dl, StringLen           ; String "full" ?
          jae     VIOLUES_Loop
-         movzx   bx, dl
+         ;movzx   bx, dl
+         mov   bl,dl
+         mov   bh,0
+
          shl     bx, 1
          mov     es:[di+bx], al
          inc     dl
@@ -475,7 +579,10 @@ VideoIO_LetUserEditString       Proc Near   Uses ax bx cx dx si es di
          jz      VIOLUES_Loop
          mov     al, ' '
          dec     dl
-         movzx   bx, dl
+         ;movzx   bx, dl
+         mov   bl,dl
+         mov   bh,0
+
          shl     bx, 1
          mov     es:[di+bx], al
          jmp     VIOLUES_UpdateCursor
@@ -501,3 +608,257 @@ VideoIO_LetUserEditString       Proc Near   Uses ax bx cx dx si es di
    stc
    ret
 VideoIO_LetUserEditString       EndP
+
+
+
+;
+; Rousseau Additions.
+;
+
+
+; Function Template
+;ProcName                        Proc Near   Uses ax bx cx dx si es di
+;ProcName                        EndP
+
+
+;
+; Clear the current page
+;
+VideoIO_ClearScreen             Proc Near   Uses ax bx cx dx si es di
+   mov   al, 0       ; clear entire window
+   mov   bh,07h      ; Attribute for new lines
+   xor   cx,cx       ; Row, Column ULC
+   xor   dx,dx
+   dec   dx          ; Row, Column LRC (does this corrupt other pages ?)
+   mov   ah, 06h     ; Function Code
+   int   10h         ; Do It !
+   ret
+VideoIO_ClearScreen             EndP
+
+;
+; Rousseau: added
+; Set poosition to teletype cursor
+;
+VideoIO_SyncPos                 Proc Near   Uses ax bx cx dx
+   pushf
+   mov   bh, 0
+   mov   ah, 03h
+   int   10h
+   mov   [TextPosX], dl
+   mov   [TextPosY], dh
+   popf
+   ret
+VideoIO_SyncPos                 EndP
+
+
+
+VideoIO_DBG_WriteString         Proc Near   Uses ax bx cx dx si es di
+   mov   ch, [CFG_Partitions]                                                    ; y
+   add   ch, 7
+   add   ch, [CFG_IncludeFloppy]
+   push cx
+   mov   cl, 1                                                                   ; x
+   call  VideoIO_Locate
+   mov   ch, 15                                                                  ; fgc
+   mov   cl, 0                                                                   ; bgc
+   call  VideoIO_Color
+   mov   si, offset ShowBootLog
+   call  VideoIO_Print
+   pop cx
+   inc   ch
+
+   ;mov   ch, 21                                                                 ; y
+   mov   cl, 1                                                                   ; x
+   call  VideoIO_Locate
+   mov   ch, 15                                                                  ; fgc
+   mov   cl, 0                                                                   ; bgc
+   call  VideoIO_Color
+
+
+   ; Rousseau:
+   mov al, [NewPartitions]
+   ;call  VideoIO_PrintByteDynamicNumber
+   mov al, [CFG_Partitions]
+   ;call  VideoIO_PrintByteDynamicNumber
+   ret
+VideoIO_DBG_WriteString         EndP
+
+
+; Dump the disk-info.
+; Disk number is in DL.
+VideoIO_DumpDiskInfo    Proc Near
+
+   VideoIO_DumpDiskInfo_next_disk:
+      push     dx
+      xor      ax,ax
+      mov      al,[TextPosY]
+      push     ax
+
+      mov      ax,21
+      mov      dh,dl
+      and      dh,01111111b
+      mul      dh
+      mov      dh,al
+
+      mov      [TextPosX],dh
+
+      mov   si, offset Disk
+      call  VideoIO_Print
+      mov   al,dl
+
+      ; NIET GOED, GAAT FOUT > 9, HEX PRINT GEBRUIKEN !!
+      shr      al,4
+      add      al,'0'
+      call     VideoIO_PrintSingleChar
+      mov      al,dl
+      and      al,01111111b
+      add      al,'0'
+      call     VideoIO_PrintSingleChar
+      mov      al,'h'
+      call     VideoIO_PrintSingleChar
+
+      inc      [TextPosY]
+      mov      [TextPosX],dh
+
+      mov      al,'-'
+      mov      cl,17
+      call     VideoIO_PrintSingleMultiChar
+
+      inc      [TextPosY]
+      mov      [TextPosX],dh
+      mov      si, offset BiosCyls
+      call     VideoIO_Print
+
+      push     dx
+      mov      bx,offset BIOS_Cyls
+      xor      dh,dh
+      and      dl,01111111b
+      shl      dx,1
+      shl      dx,1
+      add      bx,dx
+      mov      ax,[bx]
+      mov      dx,[bx+02]
+      call     VideoIO_PrintHexDWord
+      pop      dx
+
+      inc      [TextPosY]
+      mov      [TextPosX],dh
+      mov      si, offset BiosHeads
+      call     VideoIO_Print
+
+      push     dx
+      mov      bx,offset BIOS_Heads
+      xor      dh,dh
+      and      dl,01111111b
+      shl      dx,1
+      shl      dx,1
+      add      bx,dx
+      mov      ax,[bx]
+      mov      dx,[bx+02]
+      call     VideoIO_PrintHexDWord
+      pop      dx
+
+      inc      [TextPosY]
+      mov      [TextPosX],dh
+      mov      si, offset BiosSecs
+      call     VideoIO_Print
+
+      push     dx
+      mov      bx,offset BIOS_Secs
+      xor      dh,dh
+      and      dl,01111111b
+      shl      dx,1
+      shl      dx,1
+      add      bx,dx
+      mov      ax,[bx]
+      mov      dx,[bx+02]
+      call     VideoIO_PrintHexDWord
+      pop      dx
+
+      inc      [TextPosY]
+      mov      [TextPosX],dh
+      mov      si, offset LvmSecs
+      call     VideoIO_Print
+
+      push     dx
+      mov      bx,offset TrueSecs
+      xor      dh,dh
+      and      dl,01111111b
+      shl      dx,1
+      shl      dx,1
+      add      bx,dx
+      mov      ax,[bx]
+      mov      dx,[bx+02]
+      call     VideoIO_PrintHexDWord
+      pop      dx
+
+      inc      [TextPosY]
+      mov      [TextPosX],dh
+      mov      si, offset BiosLBA
+      call     VideoIO_Print
+
+      push     dx
+      mov      bx,offset BIOS_TotalSecs
+      xor      dh,dh
+      and      dl,01111111b
+      shl      dx,1
+      shl      dx,1
+      shl      dx,1
+      add      bx,dx
+      mov      ax,[bx]
+      mov      dx,[bx+02]
+      call     VideoIO_PrintHexDWord
+      pop      dx
+
+      inc      [TextPosY]
+      mov      [TextPosX],dh
+
+      pop      ax
+      mov      [TextPosY],al
+      pop      dx
+
+      inc      dl
+      mov      al,dl
+      and      al,01111111b
+      cmp      al,[TotalHarddiscs]
+      jae      VideoIO_DumpDiskInfo_end
+      jmp      VideoIO_DumpDiskInfo_next_disk
+
+   VideoIO_DumpDiskInfo_end:
+      mov      [TextPosX],0
+      add      [TextPosY],6
+      ret
+VideoIO_DumpDiskInfo    EndP
+
+
+
+; Disk Info to Dump to AB LogScreen
+Disk:             db "DISK ",0
+BiosCyls:         db "Cyls    :",0
+BiosHeads:        db "Heads   :",0
+BiosSecs:         db "Secs    :",0
+LvmSecs:          db "SecsLVM :",0
+BiosLBA:          db "LBA Secs:",0
+
+
+HugeBootDisk:     db "Boot Disk is Huge    : ",0
+DisksFound:       db "Disks Found          : ",0
+PartitionsFound:  db "Partitions Found     : ",0
+;AutoStartPart:    db "Auto Start Partition : ",0
+
+Phase1:           db "eCS Install Phase 1  : ",0
+
+
+ShowMenu:         db "Press TAB to return to the AiR-BOOT Menu",0
+ShowBootLog:      db "Press TAB to see the Boot Log...",0
+
+Yes:              db "YES",0
+No:               db "NO",0
+On:               db "ON",0
+Off:              db "OFF",0
+None:             db "NONE",0
+Active:           db "ACTIVE",0
+NotActive:        db "NOT ACTIVE",0
+
+; New Line for use by MBR_Teletype
+NL:         db 0dh, 0ah, 0

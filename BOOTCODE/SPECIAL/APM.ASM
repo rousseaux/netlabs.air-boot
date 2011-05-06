@@ -19,6 +19,10 @@
 ;                                                    AiR-BOOT / APM SUPPORT
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'APM',0
+ENDIF
+
 ; Here is APM Code to turn off the computer
 
 APM_TurnOffComputer            Proc Near  Uses ax bx cx

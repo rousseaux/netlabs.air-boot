@@ -51,6 +51,7 @@ TXT_BootMenuHelpText2:         db 'Select another with the arrow keys, or press 
 ; Maximum 30 chars
 ;----------------------------------|----------------------------|
 TXT_BootMenuEnterSetup         db 'F10 to enter Setup', 0
+;TXT_BootMenuEnterBootLog       db 'TAB to enter Boot Log', 0
 
 ; Dynamic Length (till 80 chars)
 TXT_BrokenPartitionTable:      db 13, 10, ' - Your system has at least one broken partition table entry or your harddrive'
@@ -60,7 +61,7 @@ TXT_NoBootAble:                db 13, 10, ' - No bootable partition defined. Sys
 TXT_BIOSchanged:               db 13, 10, ' - BIOS CHANGED, please check your system for any virus, just to be sure.'
                                db 13, 10, '   Press any key to continue...', 0
 
-TXT_VirusFoundMain:            db 13, 10, ' - !ATTENTION! -> A VIRUS WAS FOUND <- !ATTENTION!', 13, 10, 0
+TXT_VirusFoundMain:            db 13, 10, ' - !ATTENTION! -> A V1RU5 WAS FOUND <- !ATTENTION!', 13, 10, 0
 TXT_VirusFound1ok:             db '    It got squashed, but the system may not reboot correctly. If this happens,', 13, 10
                                db '    use your AiR-BOOT system disc.', 13, 10, 0
 TXT_VirusFound1damn:           db '    Unfortunately it destroyed AiR-BOOTs backup. You have to reboot using your', 13, 10

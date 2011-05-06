@@ -90,14 +90,14 @@ COM_Init:       mov     ax, cs
 DoneOpenCode:   mov     bx, ax           ; BX = Filehandle
 
                 mov     ah, 3Fh
-                mov     cx, 30720        ; Image size
+                mov     cx, image_size   ; Image size
                 mov     dx, offset BootCode
                 int     21h              ; DOS: READ FILE
                 jnc     DoneReadCode
                 mov     dx, offset COM_FailedReadCode
                 call    ShowError
 
-DoneReadCode:   cmp     ax, 30720
+DoneReadCode:   cmp     ax, image_size
                 je      DoneReadCode2
 InvalidCode:    mov     dx, offset COM_FailedInvalidCode
                 call    ShowError
@@ -231,14 +231,14 @@ COM_FoundCodeEnd:
 DoneOpenCode2:  mov     bx, ax           ; BX = Filehandle
 
                 mov     ah, 40h
-                mov     cx, 30720        ; Image size
+                mov     cx, image_size   ; Image size
                 mov     dx, offset BootCode
                 int     21h              ; DOS: WRITE FILE
                 jnc     DoneWriteCode
 FailedWriteCode:mov     dx, offset COM_FailedWriteCode
                 call    ShowError
 
-DoneWriteCode:  cmp     ax, 30720
+DoneWriteCode:  cmp     ax, image_size
                 jne     FailedWriteCode
 
                 mov     ah, 3Eh
@@ -249,7 +249,7 @@ DoneWriteCode:  cmp     ax, 30720
                 jmp     EndProgram
 
 ; Buffers for files
-BootCode        db 30720 dup (?)
+BootCode        db  image_size dup (?)
 MBRProtection   db  1024 dup (?)
 
 COM_EndOfSegment:

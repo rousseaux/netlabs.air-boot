@@ -1,0 +1,19 @@
+=====================================================
+ BUILD.NFO -- Information on building AiR-BOOT v1.07
+=====================================================
+
+Building AiR-BOOT v1.07 requires the following tools:
+- Borland Turbo Assembler v4.1 for DOS
+  (TASM.EXE 136.018 bytes)
+- Borland Turbo Linker v4.0 for DOS
+  (TLINK.EXE 72.585 bytes)
+- Caldera Exe2Bin R1.01 for DOS
+  (EXE2BIN.EXE 9.845 bytes)
+- Open Watcom C/C++ v1.9
+  (Used to build the installer and setaboot etc.)
+
+Putting these executables in ?:\OS2\MDOS will enable them to be found
+when running the build scripts.
+
+Note that only the loader, installer and setaboot targets are built.
+No floppy, cd-rom, etc. images.

@@ -157,7 +157,7 @@ VirusKeyLoop:      call    APIReadKeyboard
                    cmp     al, 'n'
                    je      VirusRestoreNo
                    jmp     VirusKeyLoop
-             
+
 VirusRestoreYes:call    Init_CopyBackupMBR
 VirusRestoreNo: jmp     VirusSkip
 
@@ -190,7 +190,7 @@ MenuShowMessage:call    APIShowMessage
                 call    Init_ShowLanguage
                 mov     si, offset TXT_MENU_OnCurSystem
                 call    APIShowMessage
-             
+
                 mov     si, offset TXT_MENU_Delete
                 call    APIShowMessage
                 mov     si, offset TXT_MENU_Quit
@@ -346,11 +346,14 @@ InstallConfig                  Proc Near  Uses
    call    SaveImageSector           ; Hide-Partition Table 1
    call    SaveImageSector           ; Hide-Partition Table 2
    call    SaveImageSector           ; MBR BackUp (just to be sure, no valid is there)
+
+   ;call     SaveImageSector
+   ;call     SaveImageSector
    ret
 InstallConfig                  EndP
 
 
-             
+
 ;       Out: Carry Flag SET if Harddisc failed 62-sectors test
 Init_CheckHarddisc             Proc Near  Uses
    mov     ah, 08h

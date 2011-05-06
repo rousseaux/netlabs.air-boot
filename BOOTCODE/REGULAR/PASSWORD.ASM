@@ -19,6 +19,11 @@
 ;                                                       AiR-BOOT / PASSWORD
 ;---------------------------------------------------------------------------
 
+IFDEF ModuleNames
+DB 'PASSWORD',0
+ENDIF
+
+
 ; Don't ask me, what I'm doing in here to encode the passwords. I don't even
 ;  know by myself anymore. It's some kind of hash and I hope that it isn't weak
 ;  and some mad uber-hacker-god will laugh about it - but i bet so ;-)
@@ -163,7 +168,10 @@ PASSWORD_Encode                 Proc Near   Uses ax cx ds si es di
    mov     cx, 8
   PE_ContinueLoop:
       mov     al, ds:[si]
-      movzx   bx, ds:[si+8]
+      ;movzx   bx, ds:[si+8]
+      mov   bl,ds:[si+8]
+      mov   bh,0
+
       add     bl, 16
       mov     ah, ds:[si+bx]
 
