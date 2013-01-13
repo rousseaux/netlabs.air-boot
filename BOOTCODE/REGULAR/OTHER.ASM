@@ -362,7 +362,16 @@ PRECRAP_CheckFor13extensions    EndP
 PRECRAP_CheckConfiguration      Proc Near  Uses ds si es di
    mov     si, offset Configuration
    xor     bx, bx
-   mov     cx, 5                   ; Total of 5 Sectors
+
+   ; Changed from 5 to calculated
+   ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
+   mov     cx, (MBR_BackUpMBR - Configuration) / 2   ; Size of the ab-configuration
+   ; TASM does not evaluate expression above corrrectly.
+   ; Listing shows correct opcode but generated opcode has imm. word byteswapped.
+   ; Casting to byte also does not work (overflow).
+   ; So we swap back here -- must be removed in JWasm version !!
+      xchg  ch,cl
+
    mov     dx, CFG_CheckConfig
    mov     CFG_CheckConfig, bx
   PCCC_Loop:

@@ -6,7 +6,7 @@
 @CD MBR-PROT
 @CALL MAKE.BAT
 @CD ..
-@pause
+rem @pause
 
 @cls
 @echo:
@@ -16,7 +16,7 @@
 @CD ..\INSTALL\DOS
 @CALL MAKE.BAT
 @CD ..\..\BOOTCODE
-@pause
+rem @pause
 
 @cls
 @echo:
@@ -26,7 +26,7 @@
 @CD ..\TOOLS\DOS\INITHDD
 @CALL MAKE.BAT
 @CD ..\..\..\BOOTCODE
-@pause
+rem @pause
 
 @cls
 @echo:
@@ -36,7 +36,7 @@
 @CD ..\TOOLS\INTERNAL
 @CALL MAKE.BAT
 @CD ..\..\BOOTCODE
-@pause
+rem @pause
 
 @cls
 @echo:

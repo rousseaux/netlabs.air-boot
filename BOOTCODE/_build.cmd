@@ -20,4 +20,4 @@ Say '# If ALL languages are built the English version is copied to RELEASE\<PLAT
 Say '# If ONE language  is built this Language version is copied to RELEASE\<PLATFORM> as AIRBOOT.BIN';
 Say '#';
 Say '';
-'@pause';
+'rem @pause';

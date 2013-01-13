@@ -1252,6 +1252,8 @@ PARTSETUP_DriveLetterSetup      Proc Near  Uses dx si es di
      PSDLS_MainLoop:
          mov     ah, 0
          int     16h
+         cmp     ah, Keys_Backspace
+         je      PSDLS_BackSpace
          cmp     ah, Keys_Up
          je      PSDLS_KeyUp
          cmp     ah, Keys_Down
@@ -1270,6 +1272,13 @@ PARTSETUP_DriveLetterSetup      Proc Near  Uses dx si es di
          add     dl, 1Dh                 ; -> Convert to used logic
          call    PARTSETUPDL_DrawDriveLetter
          jmp     PSDLS_MainLoop
+
+
+   ; Clear drive-letter with backspace
+   PSDLS_BackSpace:
+      xor   dl,dl
+      call  PARTSETUPDL_DrawDriveLetter
+      jmp   PSDLS_MainLoop
 
      PSDLS_KeyUp:
       dec     dl
@@ -1296,6 +1305,7 @@ PARTSETUP_DriveLetterSetup      Proc Near  Uses dx si es di
      PSDLS_KeyDownFix2:
       call    PARTSETUPDL_DrawDriveLetter
       jmp     PSDLS_MainLoop
+
 
   PSDLS_KeyDONE:
    ; Write Drive-Letter into DriveLetter-Table

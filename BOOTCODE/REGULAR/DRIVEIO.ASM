@@ -60,7 +60,16 @@ DriveIO_SaveConfiguration       Proc Near   Uses ax bx cx dx ds es si
    rep     movsb
    mov     si, offset Configuration      ; Calculate new checksum
    xor     bx, bx
-   mov     cx, 5                         ; Total of 5 Config-Sectors
+
+   ; Changed from 5 to calculated
+   ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
+   mov     cx, (MBR_BackUpMBR - Configuration) / 2   ; Size of the ab-configuration
+   ; TASM does not evaluate expression above corrrectly.
+   ; Listing shows correct opcode but generated opcode has imm. word byteswapped.
+   ; Casting to byte also does not work (overflow).
+   ; So we swap back here -- must be removed in JWasm version !!
+      xchg  ch,cl
+
    mov     dx, [CFG_CheckConfig]
    mov     [CFG_CheckConfig], bx
   DIOSC_Loop:
@@ -72,7 +81,17 @@ DriveIO_SaveConfiguration       Proc Near   Uses ax bx cx dx ds es si
    mov     bx, offset Configuration
    mov     dx, 0080h                     ; First harddrive, Sector 55...
    mov     cx, 0037h
-   mov     ax, 0305h                     ; Function 03, 5 sectors to write
+
+   ; Changed from 5 to calculated
+   ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
+   mov     ax, (MBR_BackUpMBR - Configuration) / 2  ; sizeof(ab-configuration) to write
+   ; TASM does not evaluate expression above corrrectly.
+   ; Listing shows correct opcode but generated opcode has imm. word byteswapped.
+   ; Casting to byte also does not work (overflow).
+   ; So we swap back here -- must be removed in JWasm version !!
+      xchg  ah,al
+   mov     ah,03h
+
    int     13h
    jnc     DIOSC_NoError
    call    MBR_SaveError                 ; Will Abort BootUp
@@ -146,7 +165,7 @@ DriveIO_GetHardDriveCount       EndP
 ;  stopped and BIOS/LBA access is started.
 ;  This is calculated by Sector*Heads. Comparing will get done with Bit 25-10
 ;  on LBA sectors, so we actually divide sector number by 1024.
-DriveIO_InitLBASwitchTable      Proc Near   Uses es di                           ; Rousseau: LBA !
+DriveIO_InitLBASwitchTable      Proc Near   Uses es di
    mov     di, offset LBASwitchTable
    mov     dh, TotalHarddiscs
    mov     dl, 80h
@@ -165,7 +184,7 @@ DriveIO_InitLBASwitchTable      Proc Near   Uses es di                          
          mov   al,cl
          mov   ah,0
 
-         mov     bl, dh         ; DH -> head count                               ; Rousseau: nope, it's max head number !
+         mov     bl, dh         ; DH -> max head number
          mul     bl             ; AX = Sectors*Heads
          shl     ah, 1
          shl     ah, 1          ; Shift 2 bits, so we are able to compare to
@@ -187,7 +206,7 @@ DriveIO_InitLBASwitchTable      EndP
 ;  Destroys SI
 ; Rousseau: Enhanced to handle sector-numbers 127 and 255 besides 63 for LVM-info sectors.
 ;           Ugly, need to cleanup.
-DriveIO_LVMAdjustToInfoSector   Proc Near   Uses                                 ; Rousseau: LVM stuff !
+DriveIO_LVMAdjustToInfoSector   Proc Near   Uses
 
 
 
@@ -554,7 +573,7 @@ DriveIO_LoadLVMSector           Proc Near  Uses ax bx cx dx
    mov     dx, wptr cs:[CurPartition_Location+4]
    mov     cx, wptr cs:[CurPartition_Location+6] ; Gets cur. partition location
 
-   call    DriveIO_LVMAdjustToInfoSector                                         ; Rousseau: LVM stuff !
+   call    DriveIO_LVMAdjustToInfoSector
 
    mov     si, offset LVMSector
    call    DriveIO_LoadSector
@@ -592,9 +611,9 @@ ENDIF
    ;popa
    ;popf
 
-   call    LVM_CheckSectorSignature                                              ; Rousseau: LVM stuff !
+   call    LVM_CheckSectorSignature
    jnc     DIOLLVMS_NoLVMSector
-   call    LVM_CheckSectorCRC                                                    ; Rousseau: LVM stuff !
+   call    LVM_CheckSectorCRC
    jnc     DIOLLVMS_NoLVMSector
    ret
    ; This here is called, if an invalid (or no) LVM information sector is found
@@ -661,11 +680,10 @@ DriveIO_GotLoadError            EndP
 ; Returns : none
 ; Preserve: all registers
 ; #########################################################################
-DriveIO_LoadSector              Proc Near  Uses ax bx ds si es di                ; Rousseau: Disk IO
+DriveIO_LoadSector              Proc Near  Uses ax bx ds si es di
    test     cs:[CurIO_UseExtension], 1
    jz       DIOLS_UseNormal
-   ; Are we forced do use LBA via Setting?
-   test     cs:[CFG_ForceLBAUsage], 1                                            ; Rousseau: LBA
+   ; Are we forced do use LBA via Setting? ; Rousseau: LBA
    jnz      DIOLS_UseExtension
    ; Is the drive not a harddrive?
    cmp      dl, 80h
@@ -684,7 +702,7 @@ DriveIO_LoadSector              Proc Near  Uses ax bx ds si es di               
          push     ds
          pop      es
          mov      bx, si                     ; ES:BX - Destination
-         mov      ax, 0201h                  ; Function 2 - Load Sector          ; Rousseau: Disk IO -- legacy BIOS call
+         mov      ax, 0201h                  ; Function 2 - Load Sector
          int      13h
          jnc      DIOLS_Success
       dec      di
@@ -703,7 +721,7 @@ DriveIO_LoadSector              Proc Near  Uses ax bx ds si es di               
       push    cs
       pop     ds
       mov     si, offset DriveIO_DAP
-      mov     ah, 42h                        ; Extended Read                     ; Rousseau: Disk IO -- extended BIOS call
+      mov     ah, 42h                        ; Extended Read
       int     13h
    pop     cx
    jnc     DIOLS_Success
@@ -727,7 +745,7 @@ DriveIO_SaveSector              Proc Near  Uses ax bx cx ds si es di
    test     cs:[CurIO_UseExtension], 1
    jz       DIOSS_UseNormal
    ; Are we forced do use LBA via Setting?
-   test     cs:[CFG_ForceLBAUsage], 1                                            ; Rousseau: LBA
+   test     cs:[CFG_ForceLBAUsage], 1
    jnz      DIOSS_UseExtension
    ; Is the drive not a harddrive?
    cmp      dl, 80h

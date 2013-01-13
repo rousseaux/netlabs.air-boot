@@ -166,7 +166,7 @@ DoneReadMBR3:   mov     ah, 3Eh
                 mov     si, offset BootCode
                 mov     di, offset MBRProtectionSignature
                 mov     cx, MBRProtectionSignatureLen
-                mov     dx, 54 ; 54 sectors where signature may be
+                mov     dx, 54 ; 54 sectors where signature may be (all sectors preceding config sector)
 COM_SignatureLoop:
                 push    cx si di
                    repe    cmpsb

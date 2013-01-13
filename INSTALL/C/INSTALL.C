@@ -412,7 +412,9 @@ void Status_CheckConfig (void) {
       // 55,56,57,58,59 (60 is MBR backup in normal version)
       // SHOULD ADJUST THIS FOR EXTENDED VERSION !                               // !!!!!!!!!!!
       */
-      SectorCount = 5;
+
+      SectorCount = 7;
+
       while (SectorCount>0) {
          Checksum = GetChecksumOfSector(Checksum, SectorPtr);
          SectorPtr += BYTES_PER_SECTOR;
@@ -686,7 +688,9 @@ void Install_WriteConfig (void) {
    *(PUSHORT)&Bootcode[54 * BYTES_PER_SECTOR + 20] = 0;
 
    SectorPtr = &Bootcode[54 * BYTES_PER_SECTOR];                                 // Start at sector 55
-   SectorCount = 5;
+
+   SectorCount = 7;
+
    while (SectorCount>0) {
       Checksum = GetChecksumOfSector(Checksum, SectorPtr);
       SectorPtr += BYTES_PER_SECTOR;
@@ -987,7 +991,7 @@ int main (int argc, char **argv) {
                if (!Option_CID) {
                   printf("Now rebooting system...\n");
                }
-               //RebootSystem();
+               RebootSystem();
             }
             ExitOnly = TRUE;
           }

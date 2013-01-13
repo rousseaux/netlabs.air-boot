@@ -24,7 +24,7 @@
 ; Rousseau: # AUXIO.ASM #
 ; -----------------------
 ; Output some stuff to the serial port.
-; Word at 1B0h in MBR must be initialized for this.
+; The aux parameters in the MBR must be initialized for this.
 ; Lower byte is com-port, 0=disabled, 1=com1, etc.
 ; High byte is initialization; see below. (0e3h)
 

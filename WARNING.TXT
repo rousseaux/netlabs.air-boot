@@ -1,0 +1,6 @@
+WARNING!!
+  All commits upto and including the commit of [2012-05-13] contain
+  a severe bug!! Building from these sources and then disabling
+  the 'force LBA' feature while also using the drive-letter feature or
+  editing the label can **destroy the MBR** on **all attached disks**!!
+  DO NOT DISABLE 'FORCE LBA USAGE' WHEN BUILT FROM THE ABOVE COMMITS!!

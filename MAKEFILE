@@ -29,7 +29,7 @@ all: .SYMBOLIC
 	@echo.
 	@echo Gonna build the installer and setaboot now...
 	@echo.
-	@pause
+	rem @pause
 
 # OS2 and WIN32 installer
 	cd INSTALL\C

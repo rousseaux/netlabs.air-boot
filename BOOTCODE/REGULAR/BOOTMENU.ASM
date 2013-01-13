@@ -189,7 +189,7 @@ CLR_INFO_WINDOW_BM   = 0701h
 
    mov     cx, CLR_INFO_WINDOW_BM
    ;mov     cx, 0C06h ; brown, main background
-   call    VideoIO_Color                                                         ; Rousseau: color info window
+   call    VideoIO_Color                                                         ; Ccolor info window
 
    mov     bx, 1401h
    mov     dx, 1950h
@@ -210,7 +210,7 @@ CLR_INFO_TEXT_CLASSIC   = 0f04h
 CLR_INFO_TEXT_BM   = 0701h
 
    mov     cx, CLR_INFO_TEXT_BM                   ; Info text
-   call    VideoIO_Color                                                         ; Rousseau: color info text
+   call    VideoIO_Color                                                         ; Color info text
 
    mov     si, offset TXT_BootMenuHelpText1
    call    VideoIO_Print

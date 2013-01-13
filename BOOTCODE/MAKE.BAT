@@ -37,7 +37,9 @@ if errorlevel 1 goto Failed
 if errorlevel 1 goto Failed
 %exe2bin% air-boot.exe air-boot.com >nul
 if errorlevel 1 goto Failed
+
 ..\tools\internal\fixcode.com
+
 copy AIR-BOOT.com ..\RELEASE\BOOTCODE\AIRBT-%1.bin
 
 copy AIR-BOOT.COM AIRBOOT.BIN

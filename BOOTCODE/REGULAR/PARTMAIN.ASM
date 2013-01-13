@@ -438,513 +438,6 @@ PART_FillOutSizeElement         EndP
 
 
 
-; ###################
-; # START PARTITION #
-; ###################
-
-; Starts Partition DL from Internal Partition Table.
-;        In: DL - Number of partition (filtered view)
-;       Out: No Return...
-; Destroyed: None, due no return ;-)
-;     Logic: - Harddrive: loads partition Table
-;                         sets partition active
-;                         saves partition table
-;                         hides partitions, if needed
-;                         Linux-Support, if needed
-;              load boot sector
-;              VIBR checking, if wanted
-;              install MBR Protection, if wanted
-;              Special Boot Support, if needed (OS/2 Extended partitions)
-;              Copy boot-sector to StartBase
-;              run boot sector...
-PART_StartPartition             Proc Near   Uses ax dx es di
-   local BootPartNo:byte
-   ; Get Partition-Pointer (SI) to Partition-To-Boot (DL)
-   call    PART_GetPartitionPointer
-
-   call    PART_ConvertToStraight        ; ...we save straight view for later...
-   mov     BootPartNo, dl
-   ; Straight - FFh -> Floppy boot
-   ;            FEh -> BIOS continue (CD-ROM, ZIP, etc.)
-
-   ; We need straight pointers from now on, so calculate the table...
-   call    PART_CalculateStraightPartPointers
-
-   ; SI contains the pointer to the IPT to what partition to boot
-   ;  in this whole routine...it may never get messed up.
-
-   push    si
-      mov     dl, [si+LocIPT_Drive]
-      mov     dh, [si+LocIPT_SystemID]
-      ; Copy Partition-Name to BootingNow area for display purposes
-         add     si, LocIPT_Name
-         mov     cx, 11
-         call    GetLenOfName
-         mov     di, offset TXT_BootingNowPartName
-         jz      PSP_NoName
-         rep     movsb                                                           ; Copy label-name to boot
-        PSP_NoName:
-         xor     al, al
-         stosb              ; Ending Zero
-      mov     si, offset TXT_BootingNow1                                         ; "Booting the system using "
-      call    MBR_Teletype
-; [Linux support removed since v1.02]
-;      cmp     dh, 0FDh
-;      je      PSP_IsKernel
-      or      dl, dl
-      jnz     PSP_IsHarddisc
-      ; When booting floppy/CD-ROM/etc., we got other text to be displayed...
-      mov     si, offset TXT_BootingNowPartName
-      call    MBR_Teletype
-      jmp     PSP_IsFloppyCDROMetc
-
-; [Linux support removed since v1.02]
-;    PSP_IsKernel:
-;      IFDEF ReleaseCode
-;         ; Save configuration on HDD boots (save CFG_LinuxLastKernel)
-;         call    DriveIO_SaveConfiguration
-;      ENDIF
-;      call    MBR_Teletype       ; Prints out BootingNow2 including KernelName
-;      mov     si, offset TXT_BootingNowKernel
-;      call    MBR_Teletype
-;      jmp     PSP_IsFloppyCDROMetc
-
-     PSP_IsHarddisc:
-      IFDEF ReleaseCode
-         ; Save configuration on HDD boots (save CFG_PartLast)
-         call    DriveIO_SaveConfiguration                                       ; Rouaaseu: SAVE CONFIGURATION !
-      ENDIF
-      call    MBR_Teletype     ; Prints out BootingNow2 including PartitionName
-      mov     si, offset TXT_BootingNowPartition
-      call    MBR_Teletype
-   pop     si                            ; restores SI (IPT-pointer)
-
-   mov     ax, wptr [si+LocIPT_AbsolutePartTable+0]
-   mov     bx, wptr [si+LocIPT_AbsolutePartTable+2]
-   mov     cx, wptr [si+LocIPT_LocationPartTable+1]
-   mov     dh, bptr [si+LocIPT_LocationPartTable+0]
-   mov     dl, [si+LocIPT_Drive]
-   call    DriveIO_LoadPartition         ; Load Table...                         ; Rousseau: LOAD PARTITION !
-   ; --------------------------------------------------- MODIFY PARTITION TABLE
-   push    cs
-   pop     es
-   mov     di, offset PartitionSector+446 ; ES:DI - First Partitionentry
-
-   ; Remove all active-flags for safety reasons, primary partition table will
-   ;  have one partition set active by ScanPartition-routine.
-   push    di
-      mov      cl, 4
-     PSP_RemoveActiveFlagLoop:
-         and      bptr es:[di+LocBRPT_Flags], 7Fh
-         add      di, LocBRPT_LenOfEntry
-      dec      cl
-      jnz      PSP_RemoveActiveFlagLoop
-   pop     di
-
-   ; Put the partition-to-be-booted location into registers...
-   mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
-   mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
-   sub     ax, wptr [si+LocIPT_AbsolutePartTable+0]
-   sbb     bx, wptr [si+LocIPT_AbsolutePartTable+2]
-   ; BX:AX - absolute position of partition relative to partition table
-   ; ...and search for it...
-  PSP_SearchLoop:
-      cmp     ax, wptr es:[di+LocBRPT_RelativeBegin]
-      jne     PSP_SearchMismatch
-      cmp     bx, wptr es:[di+LocBRPT_RelativeBegin+2]
-      jne     PSP_SearchMismatch
-      jmp     PSP_SearchMatch
-     PSP_SearchMismatch:
-      add     di, LocBRPT_LenOfEntry     ; 16 Bytes per Partition-Entry
-   cmp     di, 500+offset PartitionSector
-   jb      PSP_SearchLoop
-   jmp     MBR_HaltSystem
-
-   ; -------------------------------------------------------------- ENTRY FOUND
-  PSP_SearchMatch:
-   or      byte ptr es:[di+LocBRPT_Flags], 80h ; set ACTIVE partition
-   IFDEF ReleaseCode
-      call    DriveIO_SavePartition      ; Saves the Partition-Table             ; Rousseau: SAVE PARTITION !
-   ENDIF
-
-   ; ---------------------------------------------------------- OS/2 / eCS I13X
-   ; Now check if the partition to get booted is above 8 GB.
-   ;  If yes, set magic bytes 'I13X' at 3000:0 for boot-loader to recognize.
-   ;  This method is (c) by IBM <g>
-   mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
-   mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
-   add     ax, wptr es:[di+LocBRPT_AbsoluteLength+0] ; Add length to absolute
-   adc     bx, wptr es:[di+LocBRPT_AbsoluteLength+2] ;  begin location
-   ; BX:AX -> Absolute End-Position of Partition
-
-   test    CFG_ForceLBAUsage, 1                                                  ; Rousseau: LBA
-   jnz     PSP_ForceI13X
-   ; LBA-boundary at 16450560 (FB0400h) (16320x16x63)
-   cmp     bx, 00FBh
-   jb      PSP_NoI13X
-  PSP_ForceI13X:
-   push    es di si
-      mov     ax, 3000h
-      mov     es, ax
-      xor     di, di
-      ; Blokkeert starten van IBM BM !!
-      mov     wptr es:[di], '1I'
-      mov     wptr es:[di+2], 'X3'
-
-      ;mov      si,3000h
-      ;call     AuxIO_DumpSector
-
-   pop     si di es
-  PSP_NoI13X:
-
-   ; now check, if we need to hide any partition
-   test    byte ptr [si+LocIPT_Flags], Flags_HideFeature
-   jz      PSP_NoHideFeature
-   ; --------------------------------------------------------- PARTITION HIDING
-      push    si
-         mov     si, offset TXT_BootingHide
-         call    MBR_Teletype            ; display "hide active"
-      pop     si
-      ; First, find Hide-Config
-      mov     dl, BootPartNo             ; EntryNumber is straight view
-      mov     ax, LocIPT_MaxPartitions
-      mul     dl
-      mov     di, offset HidePartitionTable
-      add     di, ax                        ; We got the pointer
-      ; So process Hide-Config. Read out Byte-Entries, each points to a partition
-      ;  0FFh is end-marker / maximum entries = CFG_Partitions
-      mov     cl, CFG_Partitions
-     PSP_PartitionsHideLoop:
-         mov     dl, es:[di]
-         inc     di
-         cmp     dl, 0FFh
-         je      PSP_EndOfHideProcess    ; -> End of Hiding
-         call    PART_HidePartition      ; Now hide that partition
-      dec     cl
-      jnz     PSP_PartitionsHideLoop
-     PSP_EndOfHideProcess:
-      ; --- HIDE COMPLETED ---
-      ; So something got hidden and we have to remark a primary partition,
-      ;  if we are booting something non-primary from 1st hdd.
-      cmp     bptr [si+LocIPT_Drive], 80h
-      ja      PSP_HideAdjustPrimaryMark  ; When booting any hdd, but 1st
-      mov     ax, wptr [si+LocIPT_AbsolutePartTable]
-      mov     bx, wptr [si+LocIPT_AbsolutePartTable+2]
-      or      ax, ax
-      jnz     PSP_HideAdjustPrimaryMark  ; or booting non-primary partition
-      or      bx, bx                     ;  on 1st harddrive.
-      jz      PSP_NoHideAdjustPrimaryMark
-     PSP_HideAdjustPrimaryMark:
-      ; Load Primary Partition Table...
-      xor     ax, ax
-      xor     bx, bx
-      mov     cx, 0001h                  ; Cylinder 0, Sector 1
-      mov     dx, 0080h                  ; First HD, Head 0
-      call    DriveIO_LoadPartition      ; Load Primary Partition Table          ; Rousseau: LOAD MBR !
-      call    PART_MarkFirstGoodPrimary
-      IFDEF ReleaseCode
-         call    DriveIO_SavePartition   ; Saves the Partition-Table             ; Rousseau: SAVE MBR !
-      ENDIF
-     PSP_NoHideAdjustPrimaryMark:
-
-  PSP_NoHideFeature:
-   ; Check, if we are supposed to ignore LVM altogether...
-   test    [CFG_IgnoreLVM], 1
-   jnz     PSP_NoLVMReassignment
-   ; --------------------------------------------------------- LVM REASSIGNMENT
-      ; Driveletter must be set for this partition
-      test    byte ptr [si+LocIPT_Flags], Flags_DriveLetter
-      jz      PSP_NoLVMReassignment
-      ;movzx   bx, BootPartNo             ; EntryNumber is straight view
-      mov   bl,BootPartNo             ; EntryNumber is straight view
-      mov   bh,0
-
-      mov     al, bptr [DriveLetters+bx]
-      sub     al, 3Dh                    ; Convert e.g. 80h -> 'C'
-      cmp     al, bptr [PartitionVolumeLetters+bx]
-      je      PSP_NoLVMReassignment      ; If driveletters match -> no change
-      call    LVM_DoLetterReassignment   ; Give partition SI letter AL
-  PSP_NoLVMReassignment:
-   push    si
-   ; ------------------------------------------------------- -"PLEASE WAIT..."-
-  PSP_IsFloppyCDROMetc:
-      mov     si, offset TXT_BootingWait
-      call    MBR_Teletype               ; display "please wait"
-   pop     si
-
-   ; Process Partition Tables, if M$-Hack required (changes Ext Part Type)
-   call    MSHACK_ProcessPartTables
-
-   test    CFG_BootMenuActive, 0FFh
-   jz      PSP_NoMenuNoSound
-
-   ; --------------------------------------------------------------- BOOT-SOUND
-      call    SOUND_ExecuteBoot
-  PSP_NoMenuNoSound:
-
-   ; -------------------------------------------------- SPECIAL BOOT PROCESSING
-   ; Check here, if the Boot shall be done via resume to BIOS...
-   mov     al, bptr [si+LocIPT_SystemID]
-   cmp     al, 0FEh                      ; Via BIOS ? (aka resume BIOS boot sequence)
-   je      PSP_ResumeBIOSbootSeq
-; [Linux support removed since v1.02]
-;   cmp     al, 0FDh                      ; Kernel-Booting ?
-;   je      PSP_KernelBooting
-   jmp     PSP_StartNormal
-
-  PSP_ResumeBIOSbootSeq:
-   int     18h                           ; Give control back to BIOS
-   db      0EAh                          ; if return to here -> Reboot
-   dw      0FFF0h
-   dw      0F000h
-
-; [Linux support removed since v1.02]
-;  PSP_KernelBooting:
-;   call    LINUX_LoadKernel              ; DS:SI - Entry Pointer to Kernel
-;   db      0EAh                          ; if return to here -> Reboot
-;   dw      0FFF0h
-;   dw      0F000h
-
-   ; =======================================================================
-   ;  FROM THIS POINT ON, ONLY DS and SI REGISTER IS NEEDED TO BE PRESERVED
-   ; =======================================================================
-
-  PSP_StartNormal:
-   mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
-   mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
-   mov     cx, [si+LocIPT_LocationBegin+1]
-   mov     dh, [si+LocIPT_LocationBegin+0]
-   mov     dl, [si+LocIPT_Drive]
-   call    DriveIO_LoadPartition         ; Loads boot-sector...                  ; Rousseau: LOAD PART BOOT-SECTOR !!
-
-   test    CFG_DetectVIBR, 1
-   jz      PSP_NoVIBR
-   test    byte ptr [si+LocIPT_Flags], Flags_VIBR_Detection
-   jz      PSP_NoVIBR
-   ; ---------------------------------------------------------- CHECKS FOR VIBR
-      push    si
-         mov     si, offset PartitionSector
-         mov     bx, 4B4Dh               ; Magic: 'MK'
-         call    MBR_GetCheckOfSector
-      pop     si
-      cmp     [si+LocIPT_BootRecordCRC], bx
-      je      PSP_NoVIBR
-      mov     bx, [si+LocIPT_BootRecordCRC]
-      or      bx, bx
-      jz      PSP_NoVIBR
-      ; Oh Oh, got a virus :(
-      mov     si, offset TXT_VirusFoundMain
-      call    MBR_Teletype
-      mov     si, offset TXT_VirusFound2 ; VIBR-Virus
-      call    MBR_Teletype
-      mov     si, offset TXT_VirusFoundEnd
-      call    MBR_Teletype
-      jmp     MBR_HaltSystem
-
- PSP_NoVIBR:
-   test    CFG_ProtectMBR, 1
-   jz      PSP_NoMBRprotect
-   ; -------------------------------------------------- INSTALLS MBR-PROTECTION
-   push    ds si                         ; We need DS:SI later...
-      ; First subtract 1024 bytes from Base-Memory...
-      push    ds
-         mov     ax, 40h
-         mov     ds, ax
-         mov     dx, word ptr ds:[13h]
-         dec     dx                      ; 1 == 1kbyte
-         mov     word ptr ds:[13h], dx
-      pop     ds
-      shl     dx, 6                      ; trick, now DX is a segment
-
-      ; Now copy in our code (to DX:0)...
-
-      mov     si, offset MBR_Protection  ; DS:SI - Source Image
-      mov     es, dx
-      xor     di, di                     ; ES:DI - Destination
-      mov     cx, 512
-      rep     movsw                      ; Move 1024 bytes...
-
-      ; Now fill in variables...
-
-      xor     ax, ax
-      mov     ds, ax
-      mov     si, 10h*4
-      xor     di, di                     ; INT 10h Vector to MBR Protection
-      ;movsd
-      movsw
-      movsw
-
-      mov     si, 13h*4                  ; INT 13h Vector to MBR Protection
-      ;movsd
-      movsw
-      movsw
-
-      mov     al, CFG_IgnoreWriteToMBR   ; Option to MBR Protection
-      stosb
-
-      ; Now switch INT 13h vector to MBR Protection
-
-      sub     si, 4
-      mov     ax, 9
-      mov     ds:[si], ax
-      mov     ds:[si+2], dx              ; Vector hardcoded at DS:0009
-      ; MBR-Protection now active :)
-   pop     si ds                         ; Restore DS:SI
-
-   ; ------------------------------------------------ SPECIAL PARTITION SUPPORT
-   ; needed by OS/2 Warp / eComStation
-  PSP_NoMBRprotect:
-   cmp     bptr [si+LocIPT_SystemID], 08 ; I hate Microsuck NTFS check
-
-   ;je      PSP_NoSpecialSupport
-
-      mov     di, offset PartitionSector ; ES:DI - Actual Boot-Record
-      ; Special Support Detection
-      mov     ax, wptr es:[di+24]
-      cmp     ax, 003Fh                  ; Physical Layout-Sectors... Safety check
-
-
-      ; Rousseau: # Boot Logical Partitions)
-      ; FreeDOS and eCS on extpart on non-huge needs special support. (old ja jump)
-      ; PC-DOS7 on huge pri fat16 2G works with both (XP too) when at start of disk. (also when offset at 20MiB)
-      ; PCD7 bonkt vast als in 2GiB log at start of space. "Starting PC DOS..." verschijnt. PCD Loader probleem.
-      ; Offset van start-of-disk bij PCD7 niet meer dan 2GiB maken.
-      ; Special is needed to boot ECS-CXXVAC (log-part) on Douwskie Box with 40G disk.
-      ; FreeDOS 20G PRI SOD op 400G start niet met special.
-      ; Heeft drive-id op 26h (36d) van 0dh !
-      ; WinXP werkt met special en not-special op 400G normal geo.
-      ; eCS op PRI op 2G met os2 ext geo werkt ook met beide.
-      ; eCS LOG werkt niet zonder special op 400G.
-      ; (hidden secs op 3F en moet 3F00 zijn; BM staat ervoor, 3F00=255*63+63)
-      ; Laatste 63 is MBR.
-      ;
-      ; It seems PRI's already get special treatment in that they get their hidden secs updated.
-      ; (100MB HD, moved 50MB PRI-DOS part UP, DFSee complains about wrong hidden, but AiR-BOOT corrects it before booting)
-
-      ; FreeDOS zet 63 in SPT in BPB op 255/255 geo !!!!
-
-      ; PC-DOS7 wil vaak niet starten als er meerdere pri's actief zijn.
-      ; Logo verschijnt wel maar start niet door.
-
-
-      ; Display volume-name
-      pushf
-      push     si
-      add      si, LocIPT_Name
-      call     MBR_TeletypeVolName
-      xor      si,si
-      call     MBR_TeletypeNL                                                    ; Rousseau: Just before booting the selected partition
-      pop      si
-      popf
-
-
-
-      jmp     special                                                            ; Rousseau: GOT IT !!! (LOG-BOOT) (alleen op huge disks !)
-      ;jmp      PSP_NoSpecialSupport
-      ;ja      PSP_NoSpecialSupport                                              ; Rousseau: original M. Kiewitz...
-      ;jbe     PSP_NoSpecialSupport                                               ;   had to change to opposite !
-
-
-      mov     ax, wptr es:[di+26]
-      cmp     ax, 00FFh                  ; Physical Layout-Heads... Safety check
-      ja      PSP_NoSpecialSupport
-      mov     al, bptr es:[di+36]
-      cmp     al, 80h                    ; Drive Letter (ID)
-      jne     PSP_NoSpecialSupport
-
-      ; Special Support needed
-special:
-      ; Write actual drive-letter to partition boot-record.
-      ; This is according to BPB.
-      mov     al, bptr [si+LocIPT_Drive]
-      ; Also an influence with FreeDOS !
-      ; Generates JFS ERROR when not set correctly !!!
-      mov     bptr es:[di+36], al               ; Write Actual Drive-Letter (80h id first drive)        !!!!!!!!!!!!!!!!!!!!!!!
-
-      ; This could be incorrect when a partition is moved,
-      ; or the system installer puts the wrong value here.
-      ; FreeDOS (log-part) i.e. puts 03fH (63d) here, eventhough it is not a the start of the disk.
-      ; This fixing is done by OS/2 BM as well, according to Martin.
-      mov     ax, [si+LocIPT_AbsoluteBegin]
-      mov     wptr es:[di+28], ax               ; low word of hidden sectors
-      mov     ax, [si+LocIPT_AbsoluteBegin+2]
-      mov     wptr es:[di+30], ax               ; high word of hidden sectors
-
-   ; ------------------------------------------------ LOGICAL PARTITION SUPPORT
-  PSP_NoSpecialSupport:
-
-;jmp   PSP_NoLogicalSupport
-
-   test    byte ptr [si+LocIPT_Flags], Flags_DriveLetter
-   jz      PSP_NoLogicalSupport
-
-      ;movzx   bx, BootPartNo             ; EntryNumber is straight view
-      mov   bl,BootPartNo             ; EntryNumber is straight view
-      mov   bh,0
-
-      mov     al, bptr [DriveLetters+bx]
-      mov     bptr es:[di+37], al        ; Write Drive Letter (OS/2 only)
-
-   ; -------------------------------------------- COPY BOOT-RECORD TO STARTBASE
-  PSP_NoLogicalSupport:
-   push    si
-      mov     ax, StartBaseSeg
-      mov     es, ax
-      mov     cx, 256
-      mov     si, offset PartitionSector
-      mov     di, StartBasePtr
-      rep     movsw
-   pop     si
-   ; ---------------------------------------------------- NOW START BOOT-RECORD  ; Rousseau: START PARTITION BOOT-RECORD !!
-
-
-IFDEF AuxDebug
-;   call     DEBUG_Dump2
-ENDIF
-
-               ;
-               ; ########################### WAIT FOR KEY ################################
-               ;
-
-   ; Rousseau:
-   ; Wait for key so we can see which volume is going to be started.
-   ;xor     ax, ax
-   ;int     16h
-   ;cmp     al, 1bh                        ; is escape-key ?
-   ;jne   skip_reenter
-
-   ;jmp      MBR_Main_ReEnterBootMenuPre   ; yep, re-enter boot-menu
-
-skip_reenter:
-
-
-
-
-
-
-
-
-   ;
-   ; BYE BYE
-   ;
-   xor     ax, ax
-   xor     bx, bx
-   xor     cx, cx
-   mov     ds, ax
-   mov     es, ax                        ; DS == ES == 0
-   xor     dh, dh                        ; Drive supported by BIOS
-   mov     dl, cs:[si+LocIPT_Drive]      ; Drive Physical No
-
-   IFDEF ReleaseCode
-      db      0EAh                       ; JUMP TO Entry Point...Bye Bye
-      dw      StartBasePtr
-      dw      StartBaseSeg
-   ENDIF
-PART_StartPartition             EndP
-
-
-
-
 
 
 
@@ -1246,3 +739,601 @@ PART_IsInstallVolume            Proc Near   Uses ax cx dx si di
       rcr      dl,1                          ; Put found-flag in CY
       ret
 PART_IsInstallVolume            EndP
+
+
+
+
+; ###################
+; # START PARTITION #
+; ###################
+
+; Starts Partition DL from Internal Partition Table.
+;        In: DL - Number of partition (filtered view)
+;       Out: No Return...
+; Destroyed: None, due no return ;-)
+;     Logic: - Harddrive: loads partition Table
+;                         sets partition active
+;                         saves partition table
+;                         hides partitions, if needed
+;                         Linux-Support, if needed
+;              load boot sector
+;              VIBR checking, if wanted
+;              install MBR Protection, if wanted
+;              Special Boot Support, if needed (OS/2 Extended partitions)
+;              Copy boot-sector to StartBase
+;              run boot sector...
+PART_StartPartition             Proc Near   Uses ax dx es di
+   local BootPartNo:byte
+   ; Get Partition-Pointer (SI) to Partition-To-Boot (DL)
+   call    PART_GetPartitionPointer
+
+   call    PART_ConvertToStraight        ; ...we save straight view for later...
+   mov     BootPartNo, dl
+   ; Straight - FFh -> Floppy boot
+   ;            FEh -> BIOS continue (CD-ROM, ZIP, etc.)
+
+   ; We need straight pointers from now on, so calculate the table...
+   call    PART_CalculateStraightPartPointers
+
+   ; SI contains the pointer to the IPT to what partition to boot
+   ;  in this whole routine...it may never get messed up.
+
+   push    si
+      mov     dl, [si+LocIPT_Drive]
+      mov     dh, [si+LocIPT_SystemID]
+      ; Copy Partition-Name to BootingNow area for display purposes
+         add     si, LocIPT_Name
+         mov     cx, 11
+         call    GetLenOfName
+         mov     di, offset TXT_BootingNowPartName
+         jz      PSP_NoName
+         rep     movsb                                                           ; Copy label-name to boot
+        PSP_NoName:
+         xor     al, al
+         stosb              ; Ending Zero
+      mov     si, offset TXT_BootingNow1                                         ; "Booting the system using "
+      call    MBR_Teletype
+; [Linux support removed since v1.02]
+;      cmp     dh, 0FDh
+;      je      PSP_IsKernel
+      or      dl, dl
+      jnz     PSP_IsHarddisc
+      ; When booting floppy/CD-ROM/etc., we got other text to be displayed...
+      mov     si, offset TXT_BootingNowPartName
+      call    MBR_Teletype
+      jmp     PSP_IsFloppyCDROMetc
+
+; [Linux support removed since v1.02]
+;    PSP_IsKernel:
+;      IFDEF ReleaseCode
+;         ; Save configuration on HDD boots (save CFG_LinuxLastKernel)
+;         call    DriveIO_SaveConfiguration
+;      ENDIF
+;      call    MBR_Teletype       ; Prints out BootingNow2 including KernelName
+;      mov     si, offset TXT_BootingNowKernel
+;      call    MBR_Teletype
+;      jmp     PSP_IsFloppyCDROMetc
+
+     PSP_IsHarddisc:
+      IFDEF ReleaseCode
+         ; Save configuration on HDD boots (save CFG_PartLast)
+         call    DriveIO_SaveConfiguration                                       ; Rouaaseu: SAVE CONFIGURATION !
+      ENDIF
+      call    MBR_Teletype     ; Prints out BootingNow2 including PartitionName
+      mov     si, offset TXT_BootingNowPartition
+      call    MBR_Teletype
+   pop     si                            ; restores SI (IPT-pointer)
+
+   mov     ax, wptr [si+LocIPT_AbsolutePartTable+0]
+   mov     bx, wptr [si+LocIPT_AbsolutePartTable+2]
+   mov     cx, wptr [si+LocIPT_LocationPartTable+1]
+   mov     dh, bptr [si+LocIPT_LocationPartTable+0]
+   mov     dl, [si+LocIPT_Drive]
+
+   call    DriveIO_LoadPartition         ; Load Table...                [LOAD]
+
+   ; --------------------------------------------------- MODIFY PARTITION TABLE
+   push    cs
+   pop     es
+   mov     di, offset PartitionSector+446 ; ES:DI - First Partitionentry
+
+   ; Remove all active-flags for safety reasons, primary partition table will
+   ;  have one partition set active by ScanPartition-routine.
+   push    di
+      mov      cl, 4
+     PSP_RemoveActiveFlagLoop:
+         and      bptr es:[di+LocBRPT_Flags], 7Fh
+         add      di, LocBRPT_LenOfEntry
+      dec      cl
+      jnz      PSP_RemoveActiveFlagLoop
+   pop     di
+
+   ; Put the partition-to-be-booted location into registers...
+   mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
+   mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
+   sub     ax, wptr [si+LocIPT_AbsolutePartTable+0]
+   sbb     bx, wptr [si+LocIPT_AbsolutePartTable+2]
+   ; BX:AX - absolute position of partition relative to partition table
+   ; ...and search for it...
+  PSP_SearchLoop:
+      cmp     ax, wptr es:[di+LocBRPT_RelativeBegin]
+      jne     PSP_SearchMismatch
+      cmp     bx, wptr es:[di+LocBRPT_RelativeBegin+2]
+      jne     PSP_SearchMismatch
+      jmp     PSP_SearchMatch
+     PSP_SearchMismatch:
+      add     di, LocBRPT_LenOfEntry     ; 16 Bytes per Partition-Entry
+   cmp     di, 500+offset PartitionSector
+   jb      PSP_SearchLoop
+   jmp     MBR_HaltSystem
+
+   ; -------------------------------------------------------------- ENTRY FOUND
+  PSP_SearchMatch:
+   or      byte ptr es:[di+LocBRPT_Flags], 80h ; set ACTIVE partition
+   IFDEF ReleaseCode
+      call    DriveIO_SavePartition      ; Saves the Partition-Table    [SAVE]
+   ENDIF
+
+   ; ---------------------------------------------------------- OS/2 / eCS I13X
+   ; Now check if the partition to get booted is above 8 GB.
+   ;  If yes, set magic bytes 'I13X' at 3000:0 for boot-loader to recognize.
+   ;  This method is (c) by IBM <g>
+   mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
+   mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
+   add     ax, wptr es:[di+LocBRPT_AbsoluteLength+0] ; Add length to absolute
+   adc     bx, wptr es:[di+LocBRPT_AbsoluteLength+2] ;  begin location
+   ; BX:AX -> Absolute End-Position of Partition
+
+   test    CFG_ForceLBAUsage, 1
+   jnz     PSP_ForceI13X
+   ; LBA-boundary at 16450560 (FB0400h) (16320x16x63)
+   cmp     bx, 00FBh
+   jb      PSP_NoI13X
+  PSP_ForceI13X:
+   push    es di si
+      mov     ax, 3000h
+      mov     es, ax
+      xor     di, di
+      ; Blokkeert starten van IBM BM !!
+      mov     wptr es:[di], '1I'
+      mov     wptr es:[di+2], 'X3'
+
+      ;mov      si,3000h
+      ;call     AuxIO_DumpSector
+
+   pop     si di es
+  PSP_NoI13X:
+
+   ; now check, if we need to hide any partition
+   test    byte ptr [si+LocIPT_Flags], Flags_HideFeature
+   jz      PSP_NoHideFeature
+   ; --------------------------------------------------------- PARTITION HIDING
+      push    si
+         mov     si, offset TXT_BootingHide
+         call    MBR_Teletype            ; display "hide active"
+      pop     si
+      ; First, find Hide-Config
+      mov     dl, BootPartNo             ; EntryNumber is straight view
+      mov     ax, LocIPT_MaxPartitions
+      mul     dl
+      mov     di, offset HidePartitionTable
+      add     di, ax                        ; We got the pointer
+      ; So process Hide-Config. Read out Byte-Entries, each points to a partition
+      ;  0FFh is end-marker / maximum entries = CFG_Partitions
+      mov     cl, CFG_Partitions
+     PSP_PartitionsHideLoop:
+         mov     dl, es:[di]
+         inc     di
+         cmp     dl, 0FFh
+         je      PSP_EndOfHideProcess    ; -> End of Hiding
+         call    PART_HidePartition      ; Now hide that partition
+      dec     cl
+      jnz     PSP_PartitionsHideLoop
+     PSP_EndOfHideProcess:
+      ; --- HIDE COMPLETED ---
+      ; So something got hidden and we have to remark a primary partition,
+      ;  if we are booting something non-primary from 1st hdd.
+      cmp     bptr [si+LocIPT_Drive], 80h
+      ja      PSP_HideAdjustPrimaryMark  ; When booting any hdd, but 1st
+      mov     ax, wptr [si+LocIPT_AbsolutePartTable]
+      mov     bx, wptr [si+LocIPT_AbsolutePartTable+2]
+      or      ax, ax
+      jnz     PSP_HideAdjustPrimaryMark  ; or booting non-primary partition
+      or      bx, bx                     ;  on 1st harddrive.
+      jz      PSP_NoHideAdjustPrimaryMark
+     PSP_HideAdjustPrimaryMark:
+      ; Load Primary Partition Table...
+      xor     ax, ax
+      xor     bx, bx
+      mov     cx, 0001h                  ; Cylinder 0, Sector 1
+      mov     dx, 0080h                  ; First HD, Head 0
+                                                                     ; Load MBR
+      call    DriveIO_LoadPartition      ; Load Primary Partition Table
+      call    PART_MarkFirstGoodPrimary
+      IFDEF ReleaseCode
+                                                                     ; Save MBR
+         call    DriveIO_SavePartition   ; Saves the Partition-Table
+      ENDIF
+     PSP_NoHideAdjustPrimaryMark:
+
+  PSP_NoHideFeature:
+   ; Check, if we are supposed to ignore LVM altogether...
+   test    [CFG_IgnoreLVM], 1
+   jnz     PSP_NoLVMReassignment
+   ; --------------------------------------------------------- LVM REASSIGNMENT
+      ; Driveletter must be set for this partition
+      test    byte ptr [si+LocIPT_Flags], Flags_DriveLetter
+      jz      PSP_NoLVMReassignment
+      ;movzx   bx, BootPartNo             ; EntryNumber is straight view
+      mov   bl,BootPartNo             ; EntryNumber is straight view
+      mov   bh,0
+
+      mov     al, bptr [DriveLetters+bx]
+      sub     al, 3Dh                    ; Convert e.g. 80h -> 'C'
+      cmp     al, bptr [PartitionVolumeLetters+bx]
+      je      PSP_NoLVMReassignment      ; If driveletters match -> no change
+      call    LVM_DoLetterReassignment   ; Give partition SI letter AL
+  PSP_NoLVMReassignment:
+   push    si
+   ; ------------------------------------------------------- -"PLEASE WAIT..."-
+  PSP_IsFloppyCDROMetc:
+      mov     si, offset TXT_BootingWait
+      call    MBR_Teletype               ; display "please wait"
+   pop     si
+
+   ; Process Partition Tables, if M$-Hack required (changes Ext Part Type)
+   call    MSHACK_ProcessPartTables
+
+   test    CFG_BootMenuActive, 0FFh
+   jz      PSP_NoMenuNoSound
+
+   ; --------------------------------------------------------------- BOOT-SOUND
+      call    SOUND_ExecuteBoot
+  PSP_NoMenuNoSound:
+
+   ; -------------------------------------------------- SPECIAL BOOT PROCESSING
+   ; Check here, if the Boot shall be done via resume to BIOS...
+   mov     al, bptr [si+LocIPT_SystemID]
+   cmp     al, 0FEh                      ; Via BIOS ? (aka resume BIOS boot sequence)
+   je      PSP_ResumeBIOSbootSeq
+; [Linux support removed since v1.02]
+;   cmp     al, 0FDh                      ; Kernel-Booting ?
+;   je      PSP_KernelBooting
+   jmp     PSP_StartNormal
+
+  PSP_ResumeBIOSbootSeq:
+   int     18h                           ; Give control back to BIOS
+   db      0EAh                          ; if return to here -> Reboot
+   dw      0FFF0h
+   dw      0F000h
+
+; [Linux support removed since v1.02]
+;  PSP_KernelBooting:
+;   call    LINUX_LoadKernel              ; DS:SI - Entry Pointer to Kernel
+;   db      0EAh                          ; if return to here -> Reboot
+;   dw      0FFF0h
+;   dw      0F000h
+
+   ; =======================================================================
+   ;  FROM THIS POINT ON, ONLY DS and SI REGISTER IS NEEDED TO BE PRESERVED
+   ; =======================================================================
+
+  PSP_StartNormal:
+   mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
+   mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
+   mov     cx, [si+LocIPT_LocationBegin+1]
+   mov     dh, [si+LocIPT_LocationBegin+0]
+   mov     dl, [si+LocIPT_Drive]
+   call    DriveIO_LoadPartition         ; Loads boot-sector...   [PARTBOOTSEC]
+
+   test    CFG_DetectVIBR, 1
+   jz      PSP_NoVIBR
+   test    byte ptr [si+LocIPT_Flags], Flags_VIBR_Detection
+   jz      PSP_NoVIBR
+   ; ---------------------------------------------------------- CHECKS FOR VIBR
+      push    si
+         mov     si, offset PartitionSector
+         mov     bx, 4B4Dh               ; Magic: 'MK'
+         call    MBR_GetCheckOfSector
+      pop     si
+      cmp     [si+LocIPT_BootRecordCRC], bx
+      je      PSP_NoVIBR
+      mov     bx, [si+LocIPT_BootRecordCRC]
+      or      bx, bx
+      jz      PSP_NoVIBR
+      ; Oh Oh, got a virus :(
+      mov     si, offset TXT_VirusFoundMain
+      call    MBR_Teletype
+      mov     si, offset TXT_VirusFound2 ; VIBR-Virus
+      call    MBR_Teletype
+      mov     si, offset TXT_VirusFoundEnd
+      call    MBR_Teletype
+      jmp     MBR_HaltSystem
+
+ PSP_NoVIBR:
+   test    CFG_ProtectMBR, 1
+   jz      PSP_NoMBRprotect
+   ; -------------------------------------------------- INSTALLS MBR-PROTECTION
+   push    ds si                         ; We need DS:SI later...
+      ; First subtract 1024 bytes from Base-Memory...
+      push    ds
+         mov     ax, 40h
+         mov     ds, ax
+         mov     dx, word ptr ds:[13h]
+         dec     dx                      ; 1 == 1kbyte
+         mov     word ptr ds:[13h], dx
+      pop     ds
+      shl     dx, 6                      ; trick, now DX is a segment
+
+      ; Now copy in our code (to DX:0)...
+
+      mov     si, offset MBR_Protection  ; DS:SI - Source Image
+      mov     es, dx
+      xor     di, di                     ; ES:DI - Destination
+      mov     cx, 512
+      rep     movsw                      ; Move 1024 bytes...
+
+      ; Now fill in variables...
+
+      xor     ax, ax
+      mov     ds, ax
+      mov     si, 10h*4
+      xor     di, di                     ; INT 10h Vector to MBR Protection
+      ;movsd
+      movsw
+      movsw
+
+      mov     si, 13h*4                  ; INT 13h Vector to MBR Protection
+      ;movsd
+      movsw
+      movsw
+
+      mov     al, CFG_IgnoreWriteToMBR   ; Option to MBR Protection
+      stosb
+
+      ; Now switch INT 13h vector to MBR Protection
+
+      sub     si, 4
+      mov     ax, 9
+      mov     ds:[si], ax
+      mov     ds:[si+2], dx              ; Vector hardcoded at DS:0009
+      ; MBR-Protection now active :)
+   pop     si ds                         ; Restore DS:SI
+
+   ; ------------------------------------------------ SPECIAL PARTITION SUPPORT
+   ; needed by OS/2 Warp / eComStation
+  PSP_NoMBRprotect:
+   cmp     bptr [si+LocIPT_SystemID], 08 ; I hate Microsuck NTFS check
+
+   ;je      PSP_NoSpecialSupport
+
+      mov     di, offset PartitionSector ; ES:DI - Actual Boot-Record
+      ; Special Support Detection
+      mov     ax, wptr es:[di+24]
+      cmp     ax, 003Fh                  ; Physical Layout-Sectors... Safety check
+
+
+      ; Rousseau: # Boot Logical Partitions)
+      ; FreeDOS and eCS on extpart on non-huge needs special support.
+      ; (old ja jump)
+      ; PC-DOS7 on huge pri fat16 2G works with both (XP too) when at start of disk.
+      ; (also when offset at 20MiB)
+      ; PCD7 bonkt vast als in 2GiB log at start of space.
+      ; "Starting PC DOS..." verschijnt. PCD Loader probleem.
+      ; Offset van start-of-disk bij PCD7 niet meer dan 2GiB maken.
+      ; Special is needed to boot ECS-CXXVAC (log-part) on Douwskie Box with 40G disk.
+      ; FreeDOS 20G PRI SOD op 400G start niet met special.
+      ; Heeft drive-id op 26h (36d) van 0dh !
+      ; WinXP werkt met special en not-special op 400G normal geo.
+      ; eCS op PRI op 2G met os2 ext geo werkt ook met beide.
+      ; eCS LOG werkt niet zonder special op 400G.
+      ; (hidden secs op 3F en moet 3F00 zijn; BM staat ervoor, 3F00=255*63+63)
+      ; Laatste 63 is MBR.
+      ;
+      ; It seems PRI's already get special treatment in that they get their
+      ; hidden secs updated.
+      ; (100MB HD, moved 50MB PRI-DOS part UP, DFSee complains about wrong hidden,
+      ; but AiR-BOOT corrects it before booting)
+
+      ; FreeDOS zet 63 in SPT in BPB op 255/255 geo !!!!
+
+      ; PC-DOS7 wil vaak niet starten als er meerdere pri's actief zijn.
+      ; Logo verschijnt wel maar start niet door.
+
+
+      ; Display volume-name
+      ; Just before booting the selected partition
+      pushf
+      pusha
+      push     si
+      add      si, LocIPT_Name
+      call     MBR_TeletypeVolName
+      xor      si,si
+      call     MBR_TeletypeNL
+      pop      si
+      popa
+      popf
+
+
+
+
+
+
+      ;
+      ; This section will be sanitized in the JWasm version.
+      ;
+
+      jmp     special
+      ;jmp     PSP_NoSpecialSupport
+
+      ;ja      PSP_NoSpecialSupport
+      ;jbe     PSP_NoSpecialSupport
+
+
+      mov     ax, wptr es:[di+26]
+      cmp     ax, 00FFh                  ; Physical Layout-Heads... Safety check
+      ja      PSP_NoSpecialSupport
+      mov     al, bptr es:[di+36]
+      cmp     al, 80h                    ; Drive Letter (ID)
+      jne     PSP_NoSpecialSupport
+
+      ; Special Support needed
+special:
+      ; Write actual drive-letter to partition boot-record in memory.
+      mov     al, bptr [si+LocIPT_Drive]
+
+      ; Also an influence with FreeDOS !
+      ; Generates JFS ERROR when not set correctly !!!
+      mov     bptr es:[di+36], al              ; Write Actual Drive-Letter to
+                                                ; PBR in RAM. (BIOS notation)
+
+      ;
+      ; Display drive info (debug)
+      ;
+      push     ax
+      mov      al,' '
+      call     VideoIO_PrintSingleChar
+      pop      ax
+      call     VideoIO_PrintHexByte
+      mov      al,'-'
+      call     VideoIO_PrintSingleChar
+
+      ;
+      ; Absolute offset of volume
+      ;
+      mov      ax, [si+LocIPT_AbsoluteBegin+2]
+      call     VideoIO_PrintHexWord
+      mov      ax, [si+LocIPT_AbsoluteBegin]
+      call     VideoIO_PrintHexWord
+      mov      al,'-'
+      call     VideoIO_PrintSingleChar
+
+      ;
+      ; Relative offset (3fh/63 with logicals)
+      ;
+      mov      ax,es:[di+30]
+      call     VideoIO_PrintHexWord
+      mov      ax,es:[di+28]
+      call     VideoIO_PrintHexWord
+
+      ; This could be incorrect when a partition is moved,
+      ; or the system installer puts the wrong value here.
+      ; FreeDOS (log-part) i.e. puts 03fH (63d) here, eventhough it is not
+      ; at the start of the disk.
+      ; This fixing is done by OS/2 BM as well, according to Martin.
+      mov     ax, [si+LocIPT_AbsoluteBegin]
+      mov     wptr es:[di+28], ax               ; low word of hidden sectors
+      mov     ax, [si+LocIPT_AbsoluteBegin+2]
+      mov     wptr es:[di+30], ax               ; high word of hidden sectors
+
+   ; ------------------------------------------------ LOGICAL PARTITION SUPPORT
+  PSP_NoSpecialSupport:
+
+;jmp   PSP_NoLogicalSupport
+
+
+   ;
+   ; Test if the drive-letter feature is active for this partition.
+   ; If so, then the drive that the user defined will be placed at
+   ; byte 25h (37d) of the in-ram PartitionSector (BPB).
+   ; (BIOS 80h notation: 80h=C, 81h=D, etc.)
+   ; This is a remedy for when the corresponding field (25h) in the BPB on
+   ; disk is zero.
+   ;
+   test    byte ptr [si+LocIPT_Flags], Flags_DriveLetter
+   jz      PSP_NoLogicalSupport
+
+      ;movzx   bx, BootPartNo             ; EntryNumber is straight view
+      mov   bl,BootPartNo             ; EntryNumber is straight view
+      mov   bh,0
+
+      mov     al, bptr [DriveLetters+bx]
+      mov     bptr es:[di+37], al        ; Write Drive Letter (OS/2 only)
+
+      ; Display dl-feature drive if active
+      push     ax
+      mov      al,'-'
+      call     VideoIO_PrintSingleChar
+      pop      ax
+      call     VideoIO_PrintHexByte
+
+   ; -------------------------------------------- COPY BOOT-RECORD TO STARTBASE
+  PSP_NoLogicalSupport:
+
+
+      mov      al,'-'
+      call     VideoIO_PrintSingleChar
+      mov      al,[ExtendedAbsPosSet]
+      call     VideoIO_PrintHexByte
+
+
+   push    si
+      mov     ax, StartBaseSeg
+      mov     es, ax
+      mov     cx, 256
+      mov     si, offset PartitionSector
+      mov     di, StartBasePtr
+      rep     movsw
+   pop     si
+   ; ---------------------------------------------------- NOW START BOOT-RECORD
+
+
+
+
+IFDEF AuxDebug
+;   call     DEBUG_Dump2
+ENDIF
+
+
+
+
+;
+; ################################## BYE BYE ##################################
+;
+
+   ;
+   ; Wait for keypress
+   ;
+   xor     ax, ax
+   int     16h
+
+   ; Is escape-key ?
+   cmp     al, 1bh
+
+   ; Nope, Go activate PBR loader
+   jne      start_pbr
+
+   ; Yep, Reenter bootmenu
+   jmp      MBR_Main_ReEnterBootMenuPre
+
+
+
+;
+; Transfer control to the PBR
+;
+start_pbr:
+
+   ;
+   ; BYE BYE
+   ;
+   xor     ax, ax
+   xor     bx, bx
+   xor     cx, cx
+   mov     ds, ax
+   mov     es, ax                        ; DS == ES == 0
+   xor     dh, dh                        ; Drive supported by BIOS
+   mov     dl, cs:[si+LocIPT_Drive]      ; Drive Physical No
+
+   ;
+   ; JUMP TO PBR loader
+   ;
+   IFDEF ReleaseCode
+      db      0EAh
+      dw      StartBasePtr
+      dw      StartBaseSeg
+   ENDIF
+
+
+PART_StartPartition             EndP
+
+
