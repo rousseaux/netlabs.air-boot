@@ -20,32 +20,34 @@
 ; Rousseau: # Fixes #
 ; -------------------
 ;
-; v1.08
-; -----
+; v1.0.8
+; ------
+; - Changed version format to be more WarpIN compatible.
+;   This is a cosmetic change only.
 ; - Fixed driveletter feature which was broken in v1.07.
 ; - Reworked MBR-code to provide two I13X signatures.
-; - Fixes booting older eCS installations on HPFS
-; - Fixes booting Windows when installed in logical partition
+; - Fixed booting older eCS installations on HPFS
+; - Fixed booting Windows when installed in logical partition
 ;   with loader on FAT32.
 ; - Corrected contact links.
 ; - Location of AUX parameters has changed.
+; - Fixed DOS installer (AIRBOOT.COM)
+;
 ; NOTE:
 ;   AB v1.07 had a bug with saving and loading the correct size of the
 ;   configuration. Therefore the CRC over the config was also calculated
 ;   wrongly.
 ;   While AB v1.0.8 fixes this, it has to use the v1.07 way of CRC calculation.
-;   Otherwise SET(A)BOOT from the eCS v2.1 would break and reboot after phase1
-;   would show the boot-menu instead of automatically booting the system
-;   being installed. (SET(A)BOOT would see a corrupted AB config)
+;   Otherwise SET(A)BOOT from the eCS v2.1 would break because it sees
+;   a corrupt AiR-BOOT configuration.
 ;   This means that the CRC over the AB config is calculated over 5 sectors
 ;   instead of 7, just like in v1.07.
-;   This will be corrected with a future release of eComStation.
-;   Note that after such a correction, an installation from a v2.1 eCS CD
-;   with a version of AiR-BOOT >v1.07 active will not automatically
-;   boot-through after phase1.
-;   Since there will be more changes in AB in the future, the method of
-;   passing the install-volume needs to be refined and made more
-;   independent of a possible AB version installed.
+;
+; NOTE:
+;   Because of space constraints most of the debug code has been commented
+;   out in this version.
+;   Possibly it will be re-enabled after code cleanup and changing to JWasm.
+;
 ;
 ; v1.07
 ; -----
@@ -74,7 +76,16 @@
 ; These are used for 32-bit arithmatic on 16-bit code,
 ; debug the booting process, converting between data-types
 ; and outputting log-data to the com-port.
-
+;
+;
+; v1.06
+; -----
+; This is the last version developed by Martin Kiewitz.
+; It serves as the base for the versions above.
+; Please do not post your feedback on sourceforge or bother Martin with
+; regard to the above versions.
+; Use the eCS bug-tracker or the Trac project-page at netlabs.
+; See the documentation for the correct contact information.
 
 
 ;------------------------------------------------------------------------------
@@ -375,9 +386,9 @@ AiR_BOOT:     cli                         ; Some M$ operating systems need a CLI
                                           ;  boot phase, it's laughable!
               db      0EBh                ; JMP-Short -> MBR_Start
               ; Uses the 'A' as the displacement !
-              db      'AiRBOOT', 23h, 11h, 20h, 11h, 01h, 08h, TXT_LanguageID
+              db      'AiRBOOT', 20h, 01h, 20h, 12h, 01h, 08h, TXT_LanguageID
 
-              ; ID String, Date and Version Number, U for US version
+              ; ID String, Date (DD,MM,CC,YY), Version Number, Language ID
               db      1                   ; Total Sectors Count,
                                           ; Will get overwritten by FIXBSET.exe
 MBR_CheckCode dw      0                   ; Check-Sum for Code
@@ -664,9 +675,21 @@ MBR_LoadConfig                Proc Near
 MBR_LoadConfig                EndP
 
                            org   001B8h
+
+                           ; Disk Signature
                            db    'DSIG'
 
+                           ; Unused word
                            dw    '$$'
+
+                           ; Partition Table
+                           db    16    dup('0')
+                           db    16    dup('1')
+                           db    16    dup('2')
+                           db    16    dup('3')
+
+                           ; Boot Sigbature
+                           dw    0aa55h
 
                            org   00200h
 ; End of sector 1

@@ -311,11 +311,7 @@ USHORT GetChecksumOfSector (USHORT BaseCheck, USHORT SectorNo) {
 // If AiR-BOOT is not installed, the user probably meant to control OS/2 BM with this utility.
 // Since the functionality of this utility is for AiR-BOOT only, we will pass the request to
 // the OS/2 BM SETBOOT utility which is called SETBM.EXE as of eCS 2.1.
-// Since the objective here is to supply OS/2 BM SETBOOT compatibility, if SETBM.EXE is not found,
-// some other system locations are searched for the OS/2 version of SETBOOT.EXE.
-// Any SETBOOT.EXE that is found and that does not have a module-name of "setaboot" is invoked,
-// and passed along the command-line the user issued.
-// In this case also the return-value of the OS/2 version of SETBOOT.EXE is returned.
+// In this case also the return-value of SETBM.EXE is returned.
 */
 int   DoClassicActions(int argc, char **argv) {
    APIRET      rc             = -1;
@@ -346,7 +342,8 @@ int   DoClassicActions(int argc, char **argv) {
    if (rc) {
       printf("\n");
       printf("ERROR: SETBOOT (AiR-BOOT version)\n");
-      printf("Since the AiR-BOOT Boot Manager is not installed, this program (SETBOOT.EXE), funcions as a wrapper\n");
+      printf("Since the AiR-BOOT Boot Manager is not installed,\n");
+      printf("this program (SETBOOT.EXE), funcions as a wrapper\n");
       printf("to %s that should be used to control IBM Boot Manager.\n", classic_setboots[0]);
       printf("However, %s could not be found in the PATH, the error-code is: %d\n", classic_setboots[0], rc);
       printf("You can resolve this situation by renaming a valid SETBOOT.EXE to %s\n", classic_setboots[0]);
@@ -395,7 +392,8 @@ int   DoClassicActions(int argc, char **argv) {
    if (rc) {
       printf("\n");
       printf("ERROR: SETBOOT (AiR-BOOT version)\n");
-      printf("Since the AiR-BOOT Boot Manager is not installed, this program (SETBOOT.EXE), funcions as a wrapper\n");
+      printf("Since the AiR-BOOT Boot Manager is not installed,\n");
+      printf("this program (SETBOOT.EXE), funcions as a wrapper\n");
       printf("to %s that should be used to control IBM Boot Manager.\n", classic_setboots[0]);
       printf("However, something went wrong when executing %s.\n", classic_setboots[0]);
       printf("The error-code is: %d and the termination-code is: %d\n", rc, crc.codeTerminate);
@@ -417,7 +415,11 @@ int   DoClassicActions(int argc, char **argv) {
    return crc.codeResult;
 }
 
-
+/*
+// This funtion is invoked when AiR-BOOT is installed.
+// It mimics the behavior of the original SETBOOT.EXE utility,
+// but operates on AiR-BOOT.
+*/
 int   DoAirBootActions(int argc, char **argv, BOOL ab_detected, BOOL ab_bad) {
    ULONG           CurArgument      = 0;
    ULONG           ArgumentLen      = 0;
@@ -471,7 +473,8 @@ int   DoAirBootActions(int argc, char **argv, BOOL ab_detected, BOOL ab_bad) {
    // Rousseau: changed version to be the same as the AiR-BOOT is accompanies.
    */
    //puts ("SETABOOT - AiR-BOOT Configuration Utility (OS/2) - (c) 2004-2009 by M. Kiewitz");
-   puts ("SETABOOT v1.07a - AiR-BOOT Configuration Utility - (c) 2004-2011 by M. Kiewitz");
+   //puts ("SETABOOT v1.07a - AiR-BOOT Configuration Utility - (c) 2004-2011 by M. Kiewitz");
+   puts ("SETABOOT v1.0.8 - AiR-BOOT Configuration Utility - (c) 2004-2012 by M. Kiewitz");
 
 
    //return 0;
@@ -940,8 +943,9 @@ BOOL Track0DetectAirBoot (BOOL* ab_bad) {
    AiRBOOT_Config->CheckSumOfConfig = 0;
 
    // Calculate CheckSum...
+   // Rousseau: Only check 5 sectors for v1.07 compatibility.
    ResultCheck = 0; CurSectorNo = 55;
-   while (CurSectorNo<62) {
+   while (CurSectorNo<60) {
       ResultCheck = GetChecksumOfSector(ResultCheck, CurSectorNo);
       CurSectorNo++;
     }

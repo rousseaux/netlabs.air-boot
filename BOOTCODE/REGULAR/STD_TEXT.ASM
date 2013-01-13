@@ -36,7 +36,9 @@ CopyrightVersionLen   equ   6
 ;Copyright             db ' AiR-BOOT v1.07 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz (rc5-b35)', 0
 ;Copyright             db ' AiR-BOOT v1.07 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
 ;Copyright             db ' AiR-BOOT v1.0.8 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
-Copyright             db ' AiR-BOOT v1.0.8-internal-beta - ** !! NOT FOR DISTRIBUTION !! **', 0
+;Copyright             db ' AiR-BOOT v1.0.8-internal-beta - ** !! NOT FOR DISTRIBUTION !! **', 0
+Copyright             db ' AiR-BOOT v1.0.8 - (c) 1998-2012 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
+
 ; Rousseau: switch around
 BootEndMsg           db 'This is GPLv3+ software. Please visit: http://www.gnu.org/licenses/gpl.txt', 0
 BootEndMsg2          db 'http://svn.netlabs.org/air-boot', 0

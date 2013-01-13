@@ -332,7 +332,11 @@ InstallConfig                  Proc Near  Uses
    mov     wptr ds:[si+20], 0            ; delete current CheckSum
    xor     bx, bx
 
-   mov     cx, 7     ; Rousseau: changed to 7 for v1.0.7+
+   ;mov     cx, 7     ; Rousseau: changed to 7 for v1.0.7+
+
+   ; Rousseau: Changed back to 5 to be compatible with the v1.07 OS/2 and WIN
+   ; installers AIRBOOT2.EXE and AIRBOOTW.EXE dat do a CRC over 5 sectors.
+   mov     cx, 5
 
   IC_CalcConfigLoop:
       call    GetCheckOfImageSector
@@ -342,15 +346,22 @@ InstallConfig                  Proc Near  Uses
    mov     cx, 0037h                 ; Cylinder 0, Sektor 55
    mov     dx, 0080h                 ; Head 0, Drive 80 (CONFIG Write)
    mov     si, offset BootImage+6C00h ; Config-Location
-   call    SaveImageSector           ; Configuration
-   call    SaveImageSector           ; Partition Table 1
-   call    SaveImageSector           ; Partition Table 2
-   call    SaveImageSector           ; Hide-Partition Table 1
-   call    SaveImageSector           ; Hide-Partition Table 2
-   call    SaveImageSector           ; MBR BackUp (just to be sure, no valid is there)
 
-   ;call     SaveImageSector
-   ;call     SaveImageSector
+   call    SaveImageSector           ; Configuration                (sec 55)
+
+   ; Rousseau: Added 2 extra SaveImageSector calls for the v1.07+
+   ; 45-partition version.
+   ; Note the MBR backup at sector 62 (LBA 61).
+   call    SaveImageSector           ; Partition Table part 1       (sec 56)
+   call    SaveImageSector           ; Partition Table part 2       (sec 57)
+   call    SaveImageSector           ; Partition Table part 3       (sec 58)
+
+   call    SaveImageSector           ; Hide-Partition Table part 1  (sec 59)
+   call    SaveImageSector           ; Hide-Partition Table part 2  (sec 60)
+   call    SaveImageSector           ; Hide-Partition Table part 3  (sec 61)
+
+   call    SaveImageSector           ; MBR BackUp                   (sec 62)
+
    ret
 InstallConfig                  EndP
 
@@ -551,6 +562,14 @@ ShowNumber2                    Proc Near   Uses ax bx
    add     ax, 3030h
    call    APIShowChar
    mov     al, ah
+;   cmp     al,'8'
+;   jb      ShowNumber2_skip_dot
+   ; Display separation dot
+   push    ax
+   mov     al,'.'
+   call    APIShowChar
+   pop     ax
+;  ShowNumber2_skip_dot:
    call    APIShowChar
    ret
 ShowNumber2                    EndP
@@ -649,8 +668,11 @@ Init_VerifyConfig              Proc Near  Uses ds si es di
    mov     wptr es:[si+20], 0            ; Kills current Checksum
    xor     bx, bx
 
-   mov     cx, 7                         ; Total of 7 Sectors
+   ;mov     cx, 7                         ; Total of 7 Sectors
                                          ; Rousseau: changed above to 7
+   ; Rousseau: Changed back to 5 to be compatible with the v1.07 OS/2 and WIN
+   ; installers AIRBOOT2.EXE and AIRBOOTW.EXE dat do a CRC over 5 sectors.
+   mov     cx, 5
 
   IVC_CheckSumLoop2:
       call    GetCheckOfHDDSector

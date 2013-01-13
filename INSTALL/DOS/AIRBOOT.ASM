@@ -28,8 +28,8 @@ code_seg        segment public use16
                 org     100h
 COM_StartUp:    jmp     COM_Init
 
-COM_Copyright   db 'AiR-BOOT Installer for DOS v1.07', 13, 10
-                db ' - (c) Copyright 2008-2009 by M. Kiewitz.', 13, 10
+COM_Copyright   db 'AiR-BOOT Installer for DOS v1.0.8', 13, 10
+                db ' - (c) Copyright 2008-2012 by M. Kiewitz.', 13, 10
                 db 13, 10
                 db '-> ...Please wait... <-', 13, 10, 0
 
