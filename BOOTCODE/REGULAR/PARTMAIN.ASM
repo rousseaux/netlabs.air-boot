@@ -1347,7 +1347,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         rcl     al,1        ; CY if primary
         mov     dh,al       ; Save PRI or LOG
 
-        ; Save for later use
+        ; Save PRI/LOG indicator for later use
         push    dx
 
         ; Load *possible* LVM sector
@@ -1374,10 +1374,6 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         pop     di
         pop     si
 
-        ; Point BX to LVM 1st drive-letter
-        mov     bx,offset [LVMSector]
-        add     bx,LocLVM_VolumeLetter2
-
 
         ; Restore PRI/LOG partition indicator and index
         pop     dx
@@ -1394,19 +1390,40 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         call    DriveIO_LoadMasterLVMSector
         popa
 
-        ; Calculate index for driveletter of PRI partition
-        mov     ax,03ch     ; Length of LVM record ?
-        mul     dl          ; Multiply by index
-        add     bx,ax       ; Point to LVM-driveletter
-
 
     is_not_pri:
 
+
         ;
-        ; At this point BX points to the drive-letter related to the
+        ; At this stage the LVM-info sector has been loaded at [LVMSector].
+        ; From here we look for an LVM entry for the partition.
+        ; If one is found, based on it's LBA-start, it's driveletter is used
+        ; in case byte 25h is zero.
+        ;
+
+
+        ; Search for the partition in the LVM info.
+        ; If found, CY is set and SI points to LVM entry.
+        push    si
+        mov     dl,bptr [si+LocIPT_Drive]
+        mov     ax,[si+LocIPT_AbsoluteBegin+00h]
+        mov     dx,[si+LocIPT_AbsoluteBegin+02h]
+        mov     si,offset [LVMSector]
+        call    LVM_SearchForPartition
+        mov     bx,si   ; BX now points to LVM entry
+        mov     dx,0    ; Setup null driveletter
+        pop     si
+
+        ; Oops, no valid LVM record was used so we have a null driveletter.
+        jnc     null_lvm_dl
+
+        ;
+        ; At this point BX points to the LVM-entry related to the
         ; partition, whether it was a logical or a primary one.
-        ; We convert it ('C'=80h etc) and put it in DH for later use.
-        mov     dh,[bx]
+        ; We get the drive-letter and convert it ('C'=80h etc)
+        ; and put it in DH for later use.
+        ;
+        mov     dh,[bx+LocLVM_VolumeLetter]
         ; Don't convert if zero
         test    dh,dh
         jz      null_lvm_dl
