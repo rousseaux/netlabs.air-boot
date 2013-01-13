@@ -55,7 +55,7 @@ TXT_BootMenuEnterSetup         db 'F10 для смены настроек.', 0
 ; Dynamic Length (till 80 chars)
 TXT_BrokenPartitionTable:      db 13, 10, ' - Обнаружен минимум один испорченный раздел, либо таблица разделов содержит'
                                db 13, 10, '   сбойные блоки. Система остановлена.', 0
-TXT_TooManyPartitions:         db 13, 10, ' - Слишком много разделов найдено. AiR-BOOT поддерживает до 30.', 0
+TXT_TooManyPartitions:         db 13, 10, ' - Слишком много разделов найдено. AiR-BOOT поддерживает до 45.', 0
 TXT_NoBootAble:                db 13, 10, ' - Не найдено загружаемых разделов. Система остановлена.', 0
 TXT_BIOSchanged:               db 13, 10, ' - BIOS ИЗМЕНИЛСЯ, проверьте свою систему на предмет вирусов.'
                                db 13, 10, '   Нажмите любую клавишу для продолжения...', 0
@@ -77,11 +77,11 @@ TXT_HowEnterSetup:             db 13, 10, ' - Нажмите и держите Ctrl или Alt для
 
 TXT_BootingNow1:               db 'Загрузка системы, используя ', 0
 ; DO NOT MODIFY HERE
-TXT_BootingNow2:               db ''''
+TXT_BootingNow2:               db '''', 0
 TXT_BootingNowPartName:        db 12 dup (0) ; Space for BootThisPart-Name
 ; DO NOT MODIFY TILL HERE
-TXT_BootingNowPartition:       db ''' раздел', 0
-TXT_BootingNowKernel:          db ''' ядро', 0
+TXT_BootingNowPartition:       db ' раздел', 0
+TXT_BootingNowKernel:          db ' ядро', 0
 TXT_BootingHide:               db '; сокрытие активно', 0
 TXT_BootingWait:               db '; пожалуйста, подождите...', 13, 10, 13, 10, 0
 

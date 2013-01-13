@@ -599,12 +599,23 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
       call    LVM_SearchForPartition
    pop     dx
    jnc     PSCPN_LVMGotError             ; Not Found? -> display error and halt
+
+    ;
+    ; While AiR-BOOT v1.0.8+ displays the LVM VolumeName, the LVM PartitionName
+    ; is used here to compare to the IPT.
+    ; The IPT has the LVM VolumeName, so if they differ the compare will fail
+    ; and the user-entry will noy be written to the LVM-info sector.
+    ;
    add     si, LocLVM_PartitionName
+
+
    xchg    si, di                        ; SI-IPTEntry, DI-LVM PartName
    jmp     PSCPN_CheckPartName           ; Check, if match...
 
   PSCPN_LVMGotError:
    jmp     MBR_LoadError
+
+
 
 ;   mov     si, di                        ; Restore SI and bootrecord fall-back
   PSCPN_NotLVMSupported:
@@ -618,29 +629,52 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
       mov     dl, [si+LocIPT_Drive]
       call    DriveIO_LoadPartition
    pop     dx
+
    ; We seek to Partition Label within boot-record here
    mov     di, offset PartitionSector
+
    push    si
       mov     al, [si+LocIPT_SystemID]
       call    PART_SearchFileSysName
       ; Replies AH - FileSysFlags, AL - UnhiddenID, SI - FileSysNamePtr
    pop     si
+
    test    ah, FileSysFlags_NoName       ; If NoName by FileSysFlag
    jnz     PSCPN_LetUserEditPartName     ;  -> don't put it into BR at anytime
    test    ah, FileSysFlags_FAT32        ; FAT32 specific name getting
    jz      PSCPN_ResumeNormal
-   add     di, 1Ch                       ; Fix fr FAT 32, shit
+   add     di, 1Ch                       ; Fix for FAT 32, shit
   PSCPN_ResumeNormal:
-   add     di, 2Bh                       ; ES:DI - Name der Partition
+   add     di, 2Bh                       ; ES:DI - Name of Partition
+
+
+
+
 
    ; This code is used for BR and LVM checking
+   ; Rousseau: Because AiR-BOOT v1.0.8 uses the LVM_VolumeName, which is copied
+   ; to the IPT, this compare fails when the LVM_PartitionName is not
+   ; the same as the LVM_VolumeName.
+   ; This is a protection against editing the Label when these names differ.
+   ; MiniLVM assigns the same value to both, so partitions created with MiniLVM
+   ; can be edited.
   PSCPN_CheckPartName:
+
+  ; SI = IPT_Enty
+
+        ; If the partition is an LVM partition then disable editing completely.
+        cmp     byte ptr [si+LocIPT_SystemID], 035h
+        jnz     no_type_35h
+        jmp     PSCPN_AllDone
+    no_type_35h:
+
    mov     cx, 11                        ; Partition-Name-Length = 11 Bytes
    push    si di
       add     si, LocIPT_Name            ; DS:SI -> Partition-Name
       repz    cmpsb
    pop     di si
    jne     PSCPN_LetUserEditPartName     ; -> No BR/LVM Changing/Saving
+
    mov     ChangePartNameSave, 1         ; Remember, so we will save to BR
 
   PSCPN_LetUserEditPartName:
@@ -661,8 +695,13 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
 
    cmp     [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
    je      PSCPN_SaveBootRecord
-   ; -------------------------------------------------------------[LVM SAVE]---
-   ; Copy 11 bytes from IPT into LVM-Sector also fill 9 bytes with NUL
+
+
+   ; Make DI point to LVM VolumeName in LVM-entry
+   sub     di,20
+
+   ; -------------------------------------------------[LVM SAVE VOLUME NAME]---
+   ; Copy 11 bytes from IPT into LVM VolumeName, back-padd with zero's
    mov     cx, 11
    push    si
       rep     movsb
@@ -670,6 +709,73 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    xor     al, al
    mov     cx, 9
    rep     stosb
+
+
+        ;
+        ; The AiR-BOOT Label Editor inserts spaces when a label is edited
+        ; and characters are backspaced.
+        ; This is fine for filesystem labels, which are space padded,
+        ; but the LVM VolumeName and PartitionName need to be zero padded.
+        ; So, below we replace all trailing spaces with zero's.
+        ;
+        ; Correct LVM VolumeName
+        ;
+        push    di
+        mov     cx,20
+    vn_padd_next:
+        jcxz    vn_padded
+        dec     di
+        dec     cx
+        mov     al,[di]
+        test    al,al
+        jz      vn_padd_next
+        cmp     al,' '
+        jnz     vn_padded
+        mov     byte ptr [di],0
+        jmp     vn_padd_next
+    vn_padded:
+        pop     di
+
+
+
+
+   ; ----------------------------------------------[LVM SAVE PARTITION NAME]---
+   ; Copy 11 bytes from IPT into LVM PartitonName, back-padd with zero's
+   mov     cx, 11
+   push    si
+      rep     movsb
+   pop     si
+   xor     al, al
+   mov     cx, 9
+   rep     stosb
+
+
+        ;
+        ; The AiR-BOOT Label Editor inserts spaces when a label is edited
+        ; and characters are backspaced.
+        ; This is fine for filesystem labels, which are space padded,
+        ; but the LVM VolumeName and PartitionName need to be zero padded.
+        ; So, below we replace all trailing spaces with zero's.
+        ;
+        ; Correct LVM PartitionName
+        ;
+        push    di
+        mov     cx,20
+    pn_padd_next:
+        jcxz    pn_padded
+        dec     di
+        dec     cx
+        mov     al,[di]
+        test    al,al
+        jz      pn_padd_next
+        cmp     al,' '
+        jnz     pn_padded
+        mov     byte ptr [di],0
+        jmp     pn_padd_next
+    pn_padded:
+        pop     di
+
+
    ; Update LVM-CRC now...
    mov     si, offset LVMSector
    call    LVM_UpdateSectorCRC

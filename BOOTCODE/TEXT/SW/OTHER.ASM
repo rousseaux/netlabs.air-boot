@@ -55,7 +55,7 @@ TXT_BootMenuEnterSetup         db 'F10 f”r att kommma till Setup', 0
 ; Dynamic Length (till 80 chars)
 TXT_BrokenPartitionTable:      db 13, 10, ' - Ditt system har minst en bruten partitionstabellspost eller har din h†rddisk'
                                db 13, 10, '   trasiga sektorer. Systemet haltat.', 0
-TXT_TooManyPartitions:         db 13, 10, ' - F”r m†nga partitioner hittades. AiR-BOOT st”der endast upp till 30.', 0
+TXT_TooManyPartitions:         db 13, 10, ' - F”r m†nga partitioner hittades. AiR-BOOT st”der endast upp till 45.', 0
 TXT_NoBootAble:                db 13, 10, ' - Ingen bootningsbar partition definierad. Systemet haltat.', 0
 TXT_BIOSchanged:               db 13, 10, ' - BIOS ŽNDRAT, var v„nlig kontrollera ditt system efter virus, f”r att vara s„ker.'
                                db 13, 10, '   Tryck n†gon tangent f”r att forts„tta...', 0
@@ -76,11 +76,11 @@ TXT_HowEnterSetup:             db 13, 10, ' - Tryck och h†ll Ctrl eller Alt f”r 
 
 TXT_BootingNow1:               db 'Bootar systemet anv„ndande ', 0
 ; DO NOT MODIFY HERE
-TXT_BootingNow2:               db ''''
+TXT_BootingNow2:               db '''', 0
 TXT_BootingNowPartName:        db 12 dup (0) ; Space for BootThisPart-Name
 ; DO NOT MODIFY TILL HERE
-TXT_BootingNowPartition:       db ''' partition', 0
-TXT_BootingNowKernel:          db ''' k„rna', 0
+TXT_BootingNowPartition:       db ' partition', 0
+TXT_BootingNowKernel:          db ' k„rna', 0
 TXT_BootingHide:               db '; d”lj aktiv', 0
 TXT_BootingWait:               db '; var v„nlig v„nta...', 13, 10, 13, 10, 0
 

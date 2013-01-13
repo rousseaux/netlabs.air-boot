@@ -9,6 +9,9 @@ if errorlevel 1 goto Failed
 if errorlevel 1 goto Failed
 copy airboot.com ..\..\RELEASE\DOS\airboot.com
 
+@ren airboot.LST airboot.TSL
+@ren airboot.TSL AIRBOOT.LST
+
 rem Cleanup
 del airboot.com
 del airboot.exe

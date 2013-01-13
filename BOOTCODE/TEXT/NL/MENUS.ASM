@@ -342,7 +342,7 @@ TXT_SETUP_PasswordDefine       db 'Wachtwoord instellen:', 0
 TXT_SETUP_PasswordVerify       db 'Wachtwoord controleren:', 0
 TXT_SETUP_PasswordIncorrect    db 'Vorig wachtwoord niet juist. Jammer!', 0
 TXT_SETUP_PasswordMismatch     db 'Klopt niet! Het vorig wachtwoord wordt opnieuw ingesteld', 0
-TXT_SETUP_PasswordDisabled     db 'Er werd geen wachtwoord ingesteld.', 0
+TXT_SETUP_PasswordDisabled     db 'Er werd geen wachtwoord ingesteld -> Beveiliging uitgeschakeld', 0
 TXT_SETUP_PasswordMatched      db '** Klopt! Het nieuwe wachtwoord werd ingesteld **', 0
 
 ; Maximum 60 chars (should not be reached anyway)

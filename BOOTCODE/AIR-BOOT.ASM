@@ -16,30 +16,130 @@
 ;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
 ;
 
-; -------------------
-; Rousseau: # Fixes #
-; -------------------
+
+
+; ---------------------------------
+; Rousseau: Fixes and Enhancements
+; ---------------------------------
 ;
 ; v1.0.8
 ; ------
-; - Changed version format to be more WarpIN compatible.
-;   This is a cosmetic change only.
-; - Fixed driveletter feature which was broken in v1.07.
-; - Reworked MBR-code to provide two I13X signatures.
-; - Fixed booting older eCS installations on HPFS
-; - Fixed booting Windows when installed in logical partition
-;   with loader on FAT32.
-; - Corrected contact links.
-; - Location of AUX parameters has changed.
-; - Fixed DOS installer (AIRBOOT.COM)
+; # Changed version format to be more WarpIN compatible #
+;   This is a cosmetic change only, the internal format has not changed.
+;
+; # Show LVM VolumeName instead of LVM PartitionName #
+;   Previous versions of AiR-BOOT used the LVM PartitionName as the Label
+;   if LVM-info was present for the partition.
+;   This is inconsistent with MiniLVM which shows the LVM VolumeName.
+;   Starting with v1.0.8 the LVM VolumeName is displayed.
+;
+; # LVM Partition and Volume name Synchronization #
+;   Changing the Label of a partition with LVM-info now synchronizes
+;   the LVM Partition Name with the LVM Volume Name.
+;   This is the same behavior as MiniLVM.
+;   Note however that the Label can only be changed when both the
+;   LVM PartitionName and LVM VolumeName are the same.
+;   See protected editing below.
+;
+; # Protected editing of the Label when LVM-info is present #
+;   When the LVM VolumeName differs from the LVM PartitionName, the user can
+;   edit the label but it will not be saved to the LVM record on disk.
+;   This is to protect configurations created with the classic LVM tool.
+;   Since MiniLVM assigns the same name to both the Partition and the Volume,
+;   the Label can be edited and will be saved for such partitions.
+;   To further protect a given configuration, LVM volumes with type 0x35
+;   cannot be edited at all. This is to ensure that the LVM PartitionNames
+;   remain unique when Spanning Volumes are used.
+;
+; # Editing the Label appended spaces #
+;   When editing and changing the Label of a System using SETUP,
+;   trailing spaces were stored in the LVM Volume and Partition names.
+;   These labels need to be padded with zero's.
+;   This has been fixed.
+;   This bug is also present in v1.06.
+;
+; # Reworked Primary Partition <-> LVM-info association #
+;   The previous way was to use a 1:1 correspondence between the PT-index
+;   and the LVM-index. However, when the PT is cross-linked, lower entries
+;   pointing to higher locations on the disk, or vice-versa, incorrect
+;   LVM-info was associated. Such a cross-linked PT is sometimes generated
+;   by the LVM engine when creating or deleting multiple partitions at once.
+;   Best is to intermediately save after creating or deleting a partition
+;   with (Mini)LVM.
+;   The new way is to search the LVM-entries for the partition requested.
+;
+; # Reworked MBR-code to provide two I13X signatures #
+;   The normal LVM MBR-code uses a special setup to indicate Int13X capability.
+;   It contains the instruction, MOV EAX,'X31I', and some software checks
+;   for the presence of the 'I13X' string in the MBR.
+;   However, the location of this instruction differs between eCS 1.x and
+;   eCS 2.x LVM MBR-code.
+;   For compatibility, the v1.0.8 MBR has the 'I13X' string at both locations.
+;
+; # Fixed booting older eCS installations on HPFS #
+;   When restoring systems from archive or otherwise generated systems,
+;   the HPFS BPB sometimes lacked information that AiR-BOOT did not fill in.
+;   The result was that a wrong partition was booted or that booting
+;   stalled with the "unable to operate harddisk" message.
+;   This has been fixed.
+;
+; # Fixed booting Windows from a logical partition with loader on FAT32 #
+;   Depending on the configuration, sometimes the NTLDR could not be found.
+;   This has been fixed.
+;
+; # Fixed drive-letter feature which was broken in v1.07 #
+;   a)  v1.07 did remember the drive-letter feature was active for a partition,
+;       but it failed to store the drive-letter because too few configuration
+;       sectors were saved. This resulted in arbitrary values to be assigned
+;       to the drive-letter for the partition.
+;   b)  The JFS PBR-code does not use the in-memory BPB but uses the one
+;       that is on disk. This prevented AiR-BOOT from passing the user assigned
+;       drive-letter. AiR-BOOT now inserts the drive-letter in the BPB on disk,
+;       but only if the partition is JFS.
+;       AB v1.06 is also unable to use the drive-letter feature on JFS.
+;   As a convenience, a drive-letter in the dl-feature pop-up can now be set
+;   to "Disabled" by pressing backspace.
+;   (As opposed to arrowing up/down to get to the "Disabled" entry)
+;
+; # Fixed stuck phase1 indicator when wrong name entered #
+;   When using SET(A)BOOT /4:NAME with the MEMDRIVE env-var set,
+;   and NAME being a non-existing partition, the phase1 indicator
+;   would stay stuck between reboots.
+;   This has been fixed.
+;
+; # Fixed DOS installer (AIRBOOT.COM) #
+;   Behavior should now be the same as the eCS and WIN installers.
+;   This re-enables the use of a bootable floppy or usb-stick
+;   to install AiR-BOOT.
+;
+; # Fixed booting from FloppyDrive #
+;   This is actually also broken in v1.06 when Int13X is forced on.
+;   Now regular BIOS calls are used when booting from floppydrive.
+;   A fresh AiR-BOOT installation now includes the floppydrive menu entry.
+;
+; # Fixed chainloading IBM Boot Manager #
+;   AiR-BOOT v1.06 could chainload IBM-BM but only when it resided on
+;   the first disk and was located below the 1024 cylinder and forced Int13X
+;   extensions were disabled.
+;   AiR-BOOT v1.0.8 can now chainload IBM-BM with forced Int13X extensions
+;   enabled (the default) and if IBM-BM resides above the 1024 cylinder limit.
+;   Also, chainloading IBM-BM from the second disk is supported.
+;   Do not use chainloading IBM-BM unless you really have a need to.
+;   See the AiR-BOOT Manual for "gotcha's" when using both AiR-BOOT and IBM-BM.
+;
+; # Corrected contact links #
+;   Version 1.07 still presented the old contact links to the sourceforge
+;   repository and the original author.
+;   This caused confusion with regard to issues with v1.07.
+;   This has been corrected.
 ;
 ; NOTE:
 ;   AB v1.07 had a bug with saving and loading the correct size of the
-;   configuration. Therefore the CRC over the config was also calculated
-;   wrongly.
+;   configuration. This broke the drive-letter feature.
+;   As a result, the CRC over the config was also calculated wrongly.
 ;   While AB v1.0.8 fixes this, it has to use the v1.07 way of CRC calculation.
-;   Otherwise SET(A)BOOT from the eCS v2.1 would break because it sees
-;   a corrupt AiR-BOOT configuration.
+;   Otherwise SET(A)BOOT from the eCS v2.1 would break on AB v1.0.8 because it
+;   sees a corrupt AiR-BOOT configuration.
 ;   This means that the CRC over the AB config is calculated over 5 sectors
 ;   instead of 7, just like in v1.07.
 ;
@@ -52,30 +152,29 @@
 ; v1.07
 ; -----
 ; # Huge Drives and LVM #
-; When using disks >512GB under eComStation, the drive geometry changes to
-; 127 or 255 sectors per track. Since LVM-info is written at the last sector
-; of a track, and AiR-BOOT uses the geometry of the MBR, it cannot find the
-; LVM-info and the eCS partition / volume bootsector.
-; This has been fixed.
-; Now, when an eCS-partition is discovered and the drive is >512GB, AiR-BOOT
-; will use the eCS geometry to locate the LVM-info and the bootsector.
+;   When using disks >512GB under eComStation, the drive geometry changes to
+;   127 or 255 sectors per track. Since LVM-info is written at the last sector
+;   of a track, and AiR-BOOT uses the geometry of the MBR, it cannot find the
+;   LVM-info and the eCS partition / volume bootsector.
+;   This has been fixed.
+;   Now, when an eCS-partition is discovered and the drive is >512GB, AiR-BOOT
+;   will use the eCS geometry to locate the LVM-info and the bootsector.
 ;
 ; # Special loader handling #
-; The special handling of partition boot-loaders has been enhanced to
-; enable booting of legacy sysems on huge drives with or without OS/2
-; extended geometry.
+;   The special handling of partition boot-loaders has been enhanced to
+;   enable booting of legacy systems on huge drives with or without OS/2
+;   extended geometry.
 ;
 ; # eComStation boot-through after phase 1 #
-; A special functionality is implemented to directly boot the newly
-; installed system ; when installing eCS without showing the Boot Menu,
-; independant of user settings.
-; This works in conjuntion with the OS/2 specific SETABOOT.EXE program,
-; also part of this AiR-BOOT package.
+;   Special functionality is implemented to directly boot a newly
+;   installed eCS system after completing phase 1 of the installation.
+;   This works in conjuntion with the OS/2 specific SET(A)BOOT.EXE program,
+;   also part of the AiR-BOOT package.
 ;
 ; # Math, Debug, Conv and Aux modules #
-; These are used for 32-bit arithmatic on 16-bit code,
-; debug the booting process, converting between data-types
-; and outputting log-data to the com-port.
+;   These are used for 32-bit arithmatic on 16-bit code,
+;   debug the booting process, converting between data-types
+;   and outputting log-data to the com-port.
 ;
 ;
 ; v1.06
@@ -83,9 +182,9 @@
 ; This is the last version developed by Martin Kiewitz.
 ; It serves as the base for the versions above.
 ; Please do not post your feedback on sourceforge or bother Martin with
-; regard to the above versions.
-; Use the eCS bug-tracker or the Trac project-page at netlabs.
-; See the documentation for the correct contact information.
+; regard to issues with the above versions.
+; Use the eCS bug-tracker or the Trac project-page at netlabs and see the
+; documentation of this newer versions for the relevant contact information.
 
 
 ;------------------------------------------------------------------------------
@@ -94,9 +193,9 @@
 ;
 
 
-; ----------------------------
-; Rousseau: # JUMPS disabled #
-; ----------------------------
+; -------------------------
+; Rousseau: JUMPS disabled
+; -------------------------
 ; We actually don't want to use this directive because it generates extra
 ; NOP instructions that we can do without.
 ; Relative conditional jumps that are out-of-range are manually reworked by
@@ -203,14 +302,14 @@ Include ..\INCLUDE\asm.inc
 ;Include ..\INCLUDE\DOS\airboot.inc    ; does not exist anymore
 
 ; Special line-drawing characters
-TextChar_WinLineRight       equ       0C4h ; 'Ä'
-TextChar_WinLineDown        equ       0B3h ; '³'
-TextChar_WinRep1            equ       0D1h ; 'Ñ'
-TextChar_WinRep2            equ       0C5h ; 'Å'
-TextChar_WinRep3            equ       0CFh ; 'Ï'
-TextChar_WinRep4            equ       0B5h ; 'µ'
-TextChar_WinRep5            equ       0C6h ; 'Æ'
-TextChar_WinRep6            equ       0D8h ; 'Ø'
+TextChar_WinLineRight       equ       0C4h ; 'Ã„'
+TextChar_WinLineDown        equ       0B3h ; 'Â³'
+TextChar_WinRep1            equ       0D1h ; 'Ã‘'
+TextChar_WinRep2            equ       0C5h ; 'Ã…'
+TextChar_WinRep3            equ       0CFh ; 'Ã'
+TextChar_WinRep4            equ       0B5h ; 'Âµ'
+TextChar_WinRep5            equ       0C6h ; 'Ã†'
+TextChar_WinRep6            equ       0D8h ; 'Ã˜'
 
 ; Offsets for Partition-Entries in MBR/EPRs
 LocBRPT_LenOfEntry          equ         16   ; Length of a standard MBR or EPR entry
@@ -386,7 +485,7 @@ AiR_BOOT:     cli                         ; Some M$ operating systems need a CLI
                                           ;  boot phase, it's laughable!
               db      0EBh                ; JMP-Short -> MBR_Start
               ; Uses the 'A' as the displacement !
-              db      'AiRBOOT', 20h, 01h, 20h, 12h, 01h, 08h, TXT_LanguageID
+              db      'AiRBOOT', 24h, 01h, 20h, 12h, 01h, 08h, TXT_LanguageID
 
               ; ID String, Date (DD,MM,CC,YY), Version Number, Language ID
               db      1                   ; Total Sectors Count,
@@ -603,7 +702,7 @@ MBR_RealStart:
 
               ; [v1.05+]
               ; Signature for IBM's LVM to detect our "powerful" features ;)
-              ; [v1.08+]
+              ; [v1.0.8+]
               ; Reworked MBR code to be able to create a double 'I13X' signature.
               ; MBR's created with LVM eCS v1.x have the signature at 0d5h
               ; MBR's created with LVM eCS v2.x have the signature at 0d0h
@@ -677,9 +776,13 @@ MBR_LoadConfig                EndP
                            org   001B8h
 
                            ; Disk Signature
+                           ; Note that in an LVM 2.x MBR this collides
+                           ; with the dummy PTE that it used to look for IBM-BM
+                           ; on the second harddisk.
                            db    'DSIG'
 
-                           ; Unused word
+                           ; Unused word at 01BCh
+                           ; An LVM 2.x MBR puts 'CC33' here.
                            dw    '$$'
 
                            ; Partition Table
@@ -726,7 +829,7 @@ FurtherMoreLoad:
                         ;  and Default-Partition-Flags.
                         ; 01h -> Boot-Able
                         ; 10h -> FAT32 - Name Getting Scheme
-                        ; 20h -> No Name To Get (use Partition Name)
+                        ; 20h -> No Name To Get (use Partition Name from IPT)
                         ; 40h -> 'L' flag possible
                 db      'AiRSYS-TABLE'
 FileSysIDs:     db      01h, 11h,01h, 04h,014h,01h, 06h,016h,41h, 0Eh,00Eh,01h
@@ -752,7 +855,8 @@ FileSysNames:   db      'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
                 db      '        ', '        ', '        ', '        '
                 db      '        ', '        ', '        ', '        '
                 db      '        ', 'Kernel  ', '        ', '0V-Award'
-                db      'OS/2 Man', 'via BIOS', 'Floppy  ', 'Unknown '
+;                db      'OS/2 Man', 'via BIOS', 'Floppy  ', 'Unknown '
+                db      'OS2-BMGR', 'via BIOS', 'Floppy  ', 'Unknown '
                          ; -> 44 Partition-Types
 
 ; End of sector 2.
@@ -796,7 +900,37 @@ sos3:
 
 
 
-AiR_BOOT_Start:  nop
+AiR_BOOT_Start:
+
+
+
+        ;
+        ; Since v1.0.8, AiR-BOOT is able to chainload IBM-BM.
+        ; When IBM-BM resides above the 1024-cylinder limit, the 'I13X'
+        ; signature is required at 3000:0000, FS needs to contain 3000h
+        ; and the 32-bit LBA address needs to follow the 'I13X' signature.
+        ; For booting IBM-BM from the second disk, a copy of the MBR of the
+        ; first disk is also required at 0000:7E00.
+        ; This information is derived from the eCS 2.x LVM MBR.
+        ;
+        ; So, now is a good time to copy the MBR of the first disk to
+        ; 0000:7E00 in case the partition that will be started is IBM-BM.
+        ; This copy is located at 8000:0000 and DS already points to this
+        ; segment.
+        ;
+        pusha
+        push    es
+        xor     ax,ax
+        mov     es,ax
+        mov     si,offset BootBasePtr
+        mov     di,7e00h
+        mov     cx,100h
+        cld
+        rep     movsw
+        pop     es
+        popa
+
+
 
                ;jmp skip
 
@@ -839,8 +973,12 @@ AiR_BOOT_Start:  nop
                   call  VideoIO_DumpDiskInfo
 
                  ;
-                 ; Enumberate Bootable Systemen by name
-                 ; And prepare Phase 1 if active
+                 ; Enumberate Bootable Systems by name
+                 ; and prepare Phase 1 if active.
+                 ;
+                 ; This can also be implemented using the
+                 ; Installable LVM-flag I think.
+                 ; But at the time I had lesser knowledge about LVM...
                  ;
                  mov     si, offset PartitionTable
                  xor     cx,cx
@@ -854,7 +992,7 @@ AiR_BOOT_Start:  nop
                  call    PART_IsInstallVolume
                  jnc     MBR_Parts_NI
 
-                 ; install volume
+                 ; Install Volume
                  mov     al,' '
                  mov     bl,7
                  mov     ah, 0eh
@@ -878,7 +1016,7 @@ AiR_BOOT_Start:  nop
                  and     ah, 40h                      ; mask ZF
                  shr     ah, 6                        ; move ZF to LSB
                  mov     [CFG_AutomaticBoot], ah      ; automatic boot if phase 1 is active
-                 mov     [eCS_InstallVolume], 0       ; disable phase 1 for next boot
+
 
                  add     al,'1'
                  mov     bl,7
@@ -906,18 +1044,18 @@ AiR_BOOT_Start:  nop
 ;                 mov     si, offset AutoStartPart
                  ;call    MBR_Teletype
 
-                 mov     al, [CFG_PartAutomatic]
-                 add     al, 31h
-                 mov     ah, 09h
-                 mov     bx, 15
-                 mov     cx, 1
+                 ;mov     al, [CFG_PartAutomatic]
+                 ;add     al, 31h
+                 ;mov     ah, 09h
+                 ;mov     bx, 15
+                 ;mov     cx, 1
                  ;int     10h
 
-                 mov     al, [CFG_PartAutomatic]
-                 add     al, 31h
-                 mov     ah, 0eh
-                 mov     bx, 15
-                 mov     cx, 1
+                 ;mov     al, [CFG_PartAutomatic]
+                 ;add     al, 31h
+                 ;mov     ah, 0eh
+                 ;mov     bx, 15
+                 ;mov     cx, 1
                  ;int     10h
 
                  xor     si,si
@@ -925,18 +1063,18 @@ AiR_BOOT_Start:  nop
                  xor     si,si
                  call    MBR_TeletypeNL
 
-                 mov    ax,[BIOS_AuxParms]
+                 ;mov    ax,[BIOS_AuxParms]
                  ;call   VideoIO_SyncPos
-                 push   ax
-                 add    al,'0'
-                 mov     bl,7
-                 mov     ah, 0eh
+                 ;push   ax
+                 ;add    al,'0'
+                 ;mov     bl,7
+                 ;mov     ah, 0eh
                  ;int     10h
-                 pop    ax
-                 xchg   al,ah
-                 sub    al,0a2h
-                 mov     bl,7
-                 mov     ah, 0eh
+                 ;pop    ax
+                 ;xchg   al,ah
+                 ;sub    al,0a2h
+                 ;mov     bl,7
+                 ;mov     ah, 0eh
                  ;int     10h
 
 
@@ -989,6 +1127,7 @@ skip:
                  ; on next boot.
                  ; Moved here to fix that Esc out of SETUP would also save.
                  ; So moved above the MBR_Main_ReEnterSetup label.
+                 mov     [eCS_InstallVolume], 0       ; disable phase 1 for next boot
                  call    DriveIO_SaveConfiguration
 
 
@@ -1169,9 +1308,7 @@ b_math:
 Include REGULAR\MATH.ASM         ; Math functions (like 32-bit multiply)
 size_math = $-b_math
 
-b_conv:
-Include REGULAR\CONV.ASM         ; Various conversion routines
-size_conv = $-b_conv
+
 
 IFDEF AuxDebug
 b_debug:
@@ -1259,12 +1396,10 @@ b_charset:
 Include TEXT\CHARSET.asm                 ; Special Video Charsets (if needed)
 size_charset = $-b_charset
 
+b_conv:
+Include REGULAR\CONV.ASM                 ; Various conversion routines
+size_conv = $-b_conv
 
-;
-; Here is room for more code.
-; Let's move the special modules here...
-; The come from the previous section.
-;
 b_virus:
 Include SPECiAL\ViRUS.asm                ; Virus Detection / Anti-Virus
 size_virus = $-b_virus
@@ -1286,13 +1421,6 @@ size_apm = $-b_apm
 b_fx:
 Include SPECiAL\FX.asm                   ; l33t Cooper-Bars/Scrolling <bg>
 size_fx = $-b_fx
-
-;b_lvm:
-;Include SPECiAL\LVM.asm                  ; LVM-specific code
-;size_lvm = $-b_lvm
-
-
-
 
 
 ;
@@ -1331,7 +1459,14 @@ ENDIF
 sos55:
 
 
+
 Configuration:               ; THERE IS AN INVISIBLE CHAR HERE !!
+                             ; Your editor may not display the invisible
+                             ; character at the end if the 'AiRCFG-TABLE'
+                             ; string. When this character get's deleted,
+                             ; AiR-BOOT will not function because it cannot
+                             ; find the config-signature which includes this
+                             ; invisible character. The code is: 0x0ad.
                              db 'AiRCFG-TABLE­'
                              db 01h, 07h, 'U' ; "Compressed" ID String
                              ; This is now version 1.07 to have it in sync with
@@ -1353,13 +1488,13 @@ CFG_Partitions               db     0    ; Count of partitions in IPT
 CFG_PartDefault              db     0    ; Default-Partition (Base=0)
 
 CFG_PartLast                 db     0    ; Which Partition was booted last time ? (Base=0)
-CFG_TimedBoot                db     0    ; Timed Boot Enable (for REAL Enable look TimedBootEnable)
+CFG_TimedBoot                db     1    ; Timed Boot Enable (for REAL Enable look TimedBootEnable)
 CFG_TimedSecs                db    15    ; Timed Boot - How Many Seconds Till Boot
 CFG_TimedDelay               dw   123    ; Timed Boot - Delay
 CFG_TimedBootLast            db     1    ; Timed Boot - Boot From Last Drive Booted From
 CFG_RememberBoot             db     1    ; Remember Manual Boot Choice
 CFG_RememberTimed            db     0    ; Remember if Timed Boot (if both disabled: Boot Default)
-CFG_IncludeFloppy            db     0    ; Include Floppy Drives in Boot-Menu
+CFG_IncludeFloppy            db     1    ; Include Floppy Drives in Boot-Menu
 CFG_BootMenuActive           db     1    ; Display Boot-Menu (if Disabled: Boot Default)
                                          ; v0.29+ -> 2 - Detailed Bootmenu
 CFG_PartitionsDetect         db     1    ; Autodetect New Partitions (Auto-Add!)
@@ -1540,7 +1675,7 @@ PartitionTable: ; no-partitions detected... :]
                 ; AbsolutePartTab * 4 (where the partition table is, in absolute sectors)
                 ; --------------------> 34 Bytes (total maximum partition-entries = 30)
 
-   db (partition_count * 34) dup ('P')
+   db (partition_count * 34) dup ('0')
 
 eos56:
 
@@ -1583,6 +1718,12 @@ DriveLetters:                db    partition_count dup (0)
                                          ;============
                                          ; Drive-Letter : BYTE (80h-C:, 81h-D:)
                                          ; --------------------> 1 Byte * 30
+
+        ;
+        ; There is some room here, but this is the configuration section.
+        ; So not available for code.
+        ;
+
 eos58:
 eoipt:
 
@@ -1620,11 +1761,13 @@ sos60:
 MBR_BackUpMBR                db 'AiR-BOOT MBR-BackUp - Just to fill this sector with something',0
 AirBootRocks                 db     'AiR-BOOT Rocks!',0
 
+                             db 512-($-sohid)-2  dup(0)
+
 eos60:
 eohid:
 
 ; Check for overlap
-slack12 = eoab - eohid
+slack12 = eoab - eohid -2
 IF slack12 LT 0
    .ERR2 "Location Overlap slack12 !"
 ENDIF
@@ -1650,6 +1793,7 @@ sobss:
 ; This space actually gets initialized in PreCrap to NUL (till EndOfVariables)
 BeginOfVariables:
 PartitionSector              db   512 dup (?) ; Temporary Sector for Partition
+JfsPBR                       db   512 dup (?) ; Temporary Sector for JFS PBR writeback
 LVMSector:                   db   512 dup (?) ; Temporary Sector for LVM
 TmpSector:                   db   512 dup (?) ; Temporary Sector
 
@@ -1677,7 +1821,7 @@ VideoIO_Segment              dw     ?           ; Segment for Video I/O
 ExtendedAbsPos               dd     ?           ; Extended Partition Absolute Position
 ExtendedAbsPosSet            db     ?           ; If Absolute Position set
 
-CurPartition_Location        dw     4 dup (?)   ; Where did current partition came from?
+CurPartition_Location        dw     4 dup (?)   ; Where did current partition come from?
 CurIO_UseExtension           db     ?           ; 1-Use INT 13h EXTENSIONS
                                                 ; (filled out by PreCrap)
 CurIO_Scanning               db     ?           ; 1-AiR-BOOT is scanning partitions

@@ -513,7 +513,7 @@ Init_ShowLanguage              Proc Near  Uses si
    cmp     al, 'E'
    mov     si, offset TXT_Language_EN
    je      ISL_Done
-   cmp     al, 'D'
+   cmp     al, 'N'
    mov     si, offset TXT_Language_NL
    je      ISL_Done
    cmp     al, 'G'
@@ -988,7 +988,7 @@ MBR_AiRBOOTCodeSig              db 'AiRBOOT'
 MBR_AiRBOOTCodeSigLen          equ  7
 MBR_EZSETUPCodeSig              db '528+Mbyte(C)1993,94 Micro House Int',39,'l',0
 MBR_EZSETUPCodeSigLen          equ 38
-MBR_AiRBOOTConfigSig            db 'AiRCFG-TABLE­'
+MBR_AiRBOOTConfigSig            db 'AiRCFG-TABLE­'  ; Contains invisible 0adh character !
 MBR_AiRBOOTConfigSigLen        equ 13
 
 ; ===============================================================> Variables...

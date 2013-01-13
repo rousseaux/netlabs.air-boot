@@ -55,7 +55,7 @@ TXT_BootMenuEnterSetup         db 'F10 um ins Setup zu gelangen', 0
 ; Dynamic Length (till 80 chars)
 TXT_BrokenPartitionTable:      db 13, 10, ' - Mindestens einer Ihrer PartitionseintrÑge ist ungÅltig oder Ihre Festplatte'
                                db 13, 10, '   beinhaltet defekte Sektoren. System angehalten.', 0
-TXT_TooManyPartitions:         db 13, 10, ' - Zuviele Partitionen gefunden. AiR-BOOT unterstÅtzt maximal 30.', 0
+TXT_TooManyPartitions:         db 13, 10, ' - Zuviele Partitionen gefunden. AiR-BOOT unterstÅtzt maximal 45.', 0
 TXT_NoBootAble:                db 13, 10, ' - Keine bootbare Partition definiert. System angehalten.', 0
 TXT_BIOSchanged:               db 13, 10, ' - BIOS HAT SICH VERéNDERT. öberprÅfen Sie ihr System auf Viren.'
                                db 13, 10, '   DrÅcken Sie eine Taste um fortzufahren...', 0
@@ -77,11 +77,11 @@ TXT_HowEnterSetup:             db 13, 10, ' - DrÅcken und halten Sie Strg/Ctrl o
 
 TXT_BootingNow1:               db 'Booten des Systems durch ', 0
 ; DO NOT MODIFY HERE
-TXT_BootingNow2:               db ''''
+TXT_BootingNow2:               db '''', 0
 TXT_BootingNowPartName:        db 12 dup (0) ; Space for BootThisPart-Name
 ; DO NOT MODIFY TILL HERE
-TXT_BootingNowPartition:       db ''' Partition', 0
-TXT_BootingNowKernel:          db ''' Kernel', 0
+TXT_BootingNowPartition:       db ' Partition', 0
+TXT_BootingNowKernel:          db ' Kernel', 0
 TXT_BootingNow3:               db '''', 0
 TXT_BootingHide:               db '; Hide aktiv', 0
 TXT_BootingWait:               db '; Bitte warten...', 13, 10, 13, 10, 0

@@ -36,12 +36,15 @@ CopyrightVersionLen   equ   6
 ;Copyright             db ' AiR-BOOT v1.07 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz (rc5-b35)', 0
 ;Copyright             db ' AiR-BOOT v1.07 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
 ;Copyright             db ' AiR-BOOT v1.0.8 - (c) 1998-2011 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
+
 ;Copyright             db ' AiR-BOOT v1.0.8-internal-beta - ** !! NOT FOR DISTRIBUTION !! **', 0
-Copyright             db ' AiR-BOOT v1.0.8 - (c) 1998-2012 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
+;Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz    <<Release Candidate>>    (build: #18)', 0
+Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz  <<Release Candidate 1>> (bld: 20120124)', 0
+;Copyright             db ' AiR-BOOT v1.0.8 - (c) 1998-2012 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
 
 ; Rousseau: switch around
-BootEndMsg           db 'This is GPLv3+ software. Please visit: http://www.gnu.org/licenses/gpl.txt', 0
-BootEndMsg2          db 'http://svn.netlabs.org/air-boot', 0
+BootEndMsg           db 'This is GPLv3+ software, please visit: http://www.gnu.org/licenses/gpl.txt', 0
+BootEndMsg2          db 'To obtain the sources,   please visit: http://svn.netlabs.org/air-boot', 0
 
 AuxInitMsg           db 'Initializing Serial Communications on COM',0
 
@@ -49,9 +52,9 @@ CheckID_MBR          db 'AiRBOOT'
 BrokenHDD            db ' (HDDx)', 0
 
 ; Colors for special words hard-coded. Keep all 0s.
-TXT_SETUP_LowerMessage      db 'This software is released under ', 0, 'GPLv3+.', 0
+TXT_SETUP_LowerMessage      db 'This software is released under ', 0, 'GPLv3+', 0
                             db 'http://www.gnu.org/licenses/gpl.txt', 0
-                            db 'For more information and source, please visit', 0
+                            db 'For more information and source, please visit:', 0
                             db 'http://svn.netlabs.org/air-boot', 0
                             db 'Contact via e-mail: ', 0, 'airboot@ecomstation.com', 0
 

@@ -348,7 +348,7 @@ TXT_SETUP_PasswordDefine       db 'Definiera L”senord:', 0
 TXT_SETUP_PasswordVerify       db 'Verifiera L”senord:', 0
 TXT_SETUP_PasswordIncorrect    db 'Gammalt L”senord Inte Korrekt, Ledsen', 0
 TXT_SETUP_PasswordMismatch     db 'Matchar Inte, Gammalt L”senord Beh†lls', 0
-TXT_SETUP_PasswordDisabled     db 'Inget L”senord/Skydd Avaktiverat', 0
+TXT_SETUP_PasswordDisabled     db 'Inget L”senord -> Skydd Avaktiverat', 0
 TXT_SETUP_PasswordMatched      db '** Matchar, Nytt L”senord Satt **', 0
 
 ; Maximum 60 chars (should not be reached anyway)

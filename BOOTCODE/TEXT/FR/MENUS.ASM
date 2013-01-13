@@ -330,7 +330,7 @@ TXT_SETUP_PasswordDefine       db 'D‚finir Mot de Passe:', 0
 TXT_SETUP_PasswordVerify       db 'V‚rifier Mot de Passe:', 0
 TXT_SETUP_PasswordIncorrect    db 'Ancien Mot de Passe Incorrect, D‚sol‚', 0
 TXT_SETUP_PasswordMismatch     db 'Diff‚rents!!! Ancient Mot de passe Conserv‚', 0
-TXT_SETUP_PasswordDisabled     db 'Pas de Mot de Passe/Protection D‚sactiv‚', 0
+TXT_SETUP_PasswordDisabled     db 'Pas de Mot de Passe -> Protection D‚sactiv‚', 0
 TXT_SETUP_PasswordMatched      db '** Identiques, Nouveau Mot de Passe Activ‚ **', 0
 
 ; Maximum 60 chars (should not be reached anyway)

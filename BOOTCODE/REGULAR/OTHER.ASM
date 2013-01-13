@@ -288,13 +288,19 @@ ENDIF
       call    CHARSET_IncludeCyrillic
    endif
 
-   call    PRECRAP_CheckFor13extensions
+
+    ; This sets [CurIO_UseExtension] flag.
+    call    PRECRAP_CheckFor13extensions
+
+
 
    IFNDEF ReleaseCode
       ret
    ENDIF
 
+
    call    PRECRAP_CheckConfiguration
+
 
    ; =======================================
    ; Checks for MBR Virii :) I love that job

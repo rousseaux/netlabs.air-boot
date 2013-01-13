@@ -322,7 +322,7 @@ TXT_SETUP_PasswordDefine       db 'Укажите пароль:', 0
 TXT_SETUP_PasswordVerify       db 'Повторите пароль:', 0
 TXT_SETUP_PasswordIncorrect    db 'Старый пароль неверен', 0
 TXT_SETUP_PasswordMismatch     db 'Несовпадение! Восстановлен старый пароль', 0
-TXT_SETUP_PasswordDisabled     db 'Нет пароля/защита отключена', 0
+TXT_SETUP_PasswordDisabled     db 'Нет пароля -> защита отключена', 0
 TXT_SETUP_PasswordMatched      db '** Подтверждено! Задан новый пароль **', 0
 
 ; Maximum 60 chars (should not be reached anyway)

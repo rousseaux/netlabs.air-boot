@@ -179,9 +179,6 @@ DriveIO_InitLBASwitchTable      Proc Near   Uses es di
          jc      DIOILUT_Error
          and     cl, 111111b    ; Isolate lower 6 bits of CL -> sector count
 
-         ; huge disk 127 sec/track on <1TB using DANI
-;         mov     cl, 07Fh
-
          ;movzx   ax, cl
          mov   al,cl
          mov   ah,0
@@ -667,13 +664,15 @@ DriveIO_GotLoadError            EndP
 ; Preserve: all registers
 ; #########################################################################
 DriveIO_LoadSector              Proc Near  Uses ax bx ds si es di
-   test     cs:[CurIO_UseExtension], 1
-   jz       DIOLS_UseNormal
-   ; Are we forced do use LBA via Setting? ; Rousseau: LBA
-   jnz      DIOLS_UseExtension
    ; Is the drive not a harddrive?
    cmp      dl, 80h
    jb       DIOLS_UseNormal
+
+   test     cs:[CurIO_UseExtension], 1
+   jz       DIOLS_UseNormal
+   ; Are we forced do use LBA via Setting?
+   jnz      DIOLS_UseExtension
+
    ; Upper 8 bits of LBA-address set? -> Use LBA (maximum boundary is FB0400h)
    or       bh, bh
    jnz      DIOLS_UseExtension
@@ -756,7 +755,7 @@ DriveIO_LoadSectorLBA           Proc Near  Uses bx cx dx si di ds es
       mov     ah, 42h
       int     13h
 
-      ; Looking goot so far
+      ; Looking good so far
       jnc     DriveIO_LoadSectorLBA_succes1
 
       ; AH should not be zero, if it is then set to undefined and set carry
@@ -863,7 +862,7 @@ DriveIO_LVMSectorValid           Proc  Near
 DriveIO_LVMSectorValid           EndP
 
 ; ------------------------------------------------------
-; Rousseau: # Load the master LVM-sector is one exists #
+; Rousseau: # Load the master LVM-sector if one exists #
 ; ------------------------------------------------------
 ; Load the master LVM-sector to get the number of sectors per track as eCS views the drive.
 ; If no master LVM-sector is found it is assumed eCS is not installed.
@@ -883,7 +882,7 @@ DriveIO_LVMSectorValid           EndP
 DriveIO_LoadMasterLVMSector      Proc  Near
         pusha
 
-        mov      si,offset db_lmlvm
+        ;mov      si,offset db_lmlvm
         ;call     AuxIO_Print
 
         ; Physical disk
@@ -1239,4 +1238,4 @@ DriveIO_GatherDiskInfo  EndP
 ; Values for sectors per track table corresponding to DriveIO_IsHugeDrive return value.
 secs_per_track_table:   db    63,127,255,255,255,255
 
-db_lmlvm:   db 'Load Master LVM -- disk: ',0
+;db_lmlvm:   db 'Load Master LVM -- disk: ',0

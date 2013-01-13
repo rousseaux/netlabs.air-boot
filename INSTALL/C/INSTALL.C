@@ -399,6 +399,9 @@ void Status_CheckConfig (void) {
    USHORT ConfigChecksum = 0;
    USHORT SectorCount = 0;
 
+   /*
+   // Note that the 'AiRCFG-TABLE' string includes the invisible 0xAD char.
+   */
    if (strncmp(ConfigSectorPtr, "AiRCFG-TABLE­", 13)==0) {
       // AiR-BOOT signature found...
       SectorPtr = &Track0[54 * BYTES_PER_SECTOR];                                // Start at sector 55
@@ -797,7 +800,7 @@ int main (int argc, char **argv) {
     } else {
       StatusCode = STATUS_IMPOSSIBLE;
       if (!Option_CID) {
-         ImpossibleCause = "unable to install\n   Your harddisc does not have at least 62 sectors per track.";
+         ImpossibleCause = "unable to install\n   Your harddisc does not have at least 63 sectors per track.";
       }
     }
    if (!Option_CID) {
@@ -980,11 +983,16 @@ int main (int argc, char **argv) {
          if (!Option_CID) {
             printf("\n");
             printf("Your copy of AiR-BOOT is now fully functional.\n");
-            printf("Please hit ESC to exit AiR-BOOT installer or ENTER to reboot your system...\n");
+            if (!Option_Silent) {
+                printf("Please hit ESC to exit AiR-BOOT installer or ENTER to reboot your system...\n");
+            }
          }
          if (Option_Silent || Option_CID) {
             // Silent operation? Always reboot system (shall we do this really?)
-            UserKey = 0x0D;
+            // No, otherwise installing from MiniLVM will reboot the system
+            // which is not what the user would expect.
+            //UserKey = 0x0D;
+            UserKey = 0x1B;
           } else {
             do {
                UserKey = getch();             // React on ENTER or ESC
@@ -1035,14 +1043,12 @@ int main (int argc, char **argv) {
      break;
     }
 
-   if (ExitOnly) {
-      if (!Option_CID) {
-         printf("\n");
-         printf("Please hit ENTER to exit AiR-BOOT installer...\n");
-      }
-      if (!Option_Silent || !Option_CID) {
-         while (getch()!=0x0D);
-       }
+    if (ExitOnly) {
+        if (!(Option_CID || Option_Silent)) {
+            printf("\n");
+            printf("Please hit ENTER to exit AiR-BOOT installer...\n");
+            while (getch()!=0x0D);
+        }
     }
    return 0;
  }

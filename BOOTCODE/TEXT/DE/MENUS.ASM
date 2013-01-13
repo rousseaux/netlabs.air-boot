@@ -322,7 +322,7 @@ TXT_SETUP_PasswordDefine       db 'Definiere Passwort:', 0
 TXT_SETUP_PasswordVerify       db 'šberprfe Passwort:', 0
 TXT_SETUP_PasswordIncorrect    db 'Altes Passwort inkorrekt, Sorry', 0
 TXT_SETUP_PasswordMismatch     db 'Nicht gleich, altes Passwort beibehalten', 0
-TXT_SETUP_PasswordDisabled     db 'Kein Passwort/Schutz Deaktiviert', 0
+TXT_SETUP_PasswordDisabled     db 'Kein Passwort -> Schutz Deaktiviert', 0
 TXT_SETUP_PasswordMatched      db '** Neues Passwort Gesetzt **', 0
 
 ; Maximum 60 chars (should not be reached anyway)

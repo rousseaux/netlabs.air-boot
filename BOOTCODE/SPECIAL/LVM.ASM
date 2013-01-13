@@ -248,7 +248,7 @@ LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
         ; At this stage the LVM-info sector has been loaded at [LVMSector].
         ; From here we look for an LVM entry for the partition.
         ; If one is found, based on it's LBA-start, it's driveletter is used
-        ; in case byte 25h is zero.
+        ; in case byte 25h in the BPB is zero.
         ;
 
 

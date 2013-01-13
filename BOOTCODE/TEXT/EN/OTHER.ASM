@@ -56,7 +56,7 @@ TXT_BootMenuEnterSetup         db 'F10 to enter Setup', 0
 ; Dynamic Length (till 80 chars)
 TXT_BrokenPartitionTable:      db 13, 10, ' - Your system has at least one broken partition table entry or your harddrive'
                                db 13, 10, '   contains bad sectors. System halted.', 0
-TXT_TooManyPartitions:         db 13, 10, ' - Too many partitions found. AiR-BOOT is supporting up to 30.', 0
+TXT_TooManyPartitions:         db 13, 10, ' - Too many partitions found. AiR-BOOT is supporting up to 45.', 0
 TXT_NoBootAble:                db 13, 10, ' - No bootable partition defined. System halted.', 0
 TXT_BIOSchanged:               db 13, 10, ' - BIOS CHANGED, please check your system for any virus, just to be sure.'
                                db 13, 10, '   Press any key to continue...', 0
@@ -77,11 +77,11 @@ TXT_HowEnterSetup:             db 13, 10, ' - Press and hold Strg/Ctrl or Alt to
 
 TXT_BootingNow1:               db 'Booting the system using ', 0
 ; DO NOT MODIFY HERE
-TXT_BootingNow2:               db ''''
+TXT_BootingNow2:               db '''', 0
 TXT_BootingNowPartName:        db 12 dup (0) ; Space for BootThisPart-Name
 ; DO NOT MODIFY TILL HERE
-TXT_BootingNowPartition:       db ''' partition', 0
-TXT_BootingNowKernel:          db ''' kernel', 0
+TXT_BootingNowPartition:       db ' partition', 0
+TXT_BootingNowKernel:          db ' kernel', 0
 TXT_BootingHide:               db '; hide active', 0
 TXT_BootingWait:               db '; please wait...', 13, 10, 13, 10, 0
 

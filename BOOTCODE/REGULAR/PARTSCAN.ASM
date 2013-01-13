@@ -310,17 +310,22 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
       mov     ax, [si+LocLVM_PartitionID+2]
       stosw
                               ; Set Serial-Field to LVM-VolumeID
-      push     di
-      add     si, LocLVM_PartitionName
 
+      push     di
+      add     si, LocLVM_VolumeName     ; Use LVM VolumeName
+      ;add     si, LocLVM_PartitionName  ; Use LVM PartitionName
       mov     cx, 5
       rep     movsw                      ; Copy LVM-PartitionName to Temp Space
       movsb                               ;  (11 bytes in total)
-
       pop   di
-      cmp   PartSystemID, 0ah
 
+
+      ; Check if this is an IBM-BM partition
+      cmp   PartSystemID, 0ah
       jne   PCCTP_NoIbmBm
+
+      ; It is, so override the name given by IBM-BM by one that
+      ; fits in 11 chars.
       mov   si, offset ibm_bm_name
       mov   cx,5
       rep   movsw
@@ -329,8 +334,6 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
 
 
    PCCTP_NoIbmBm:
-
-
    pop     di si dx ax
    mov     si, offset MBR_NoName_Patched
    xor     ah, ah                        ; no Flags_NoPartName
@@ -659,9 +662,11 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
 
    cmp     NewPartitions, LocIPT_MaxPartitions
    jbe     PCCTP_NotTooManyPartitions
+
    mov     si, offset TXT_TooManyPartitions
    call    MBR_Teletype
    jmp     MBR_HaltSystem
+
 
   PCCTP_NotTooManyPartitions:
    ; UNHIDE PARTITION, if it was hidden previously
@@ -692,6 +697,8 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
    call    PART_FillOutSizeElement
    ret
 PARTSCAN_CheckThisPartition     EndP
+
+stop_scanning   db  0
 
 ; ===================
 ;  X-REFERENCE STUFF -> PartitionXref
@@ -804,5 +811,5 @@ PARTSCAN_SyncHideConfigWithXref Proc Near Uses ax bx cx dx si di
    ret
 PARTSCAN_SyncHideConfigWithXref EndP
 
-ibm_bm_name:   db 'IBM BootMan',0
+ibm_bm_name:   db 'OS2 BootMgr',0
 ;win_bm_name:   db 'BOOTMGR',0

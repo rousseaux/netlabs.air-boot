@@ -852,7 +852,7 @@ Phase1:           db "eCS Install Phase 1  : ",0
 
 
 ShowMenu:         db "Press TAB to return to the AiR-BOOT Menu",0
-ShowBootLog:      db "Press TAB to see the Boot Log...",0
+;ShowBootLog:      db "Press TAB to see the Boot Log...",0
 
 Yes:              db "YES",0
 No:               db "NO",0

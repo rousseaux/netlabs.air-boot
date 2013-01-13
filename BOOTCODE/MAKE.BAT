@@ -41,16 +41,19 @@ if errorlevel 1 goto Failed
 %exe2bin% air-boot.exe air-boot.com >nul
 if errorlevel 1 goto Failed
 
+@ren air-boot.LST air-boot.tsl
+@ren air-boot.tsl AIR-BOOT.LST
+
 ..\tools\internal\fixcode.com
 
-copy AIR-BOOT.com ..\RELEASE\BOOTCODE\AIRBT-%1.bin
+copy AIR-BOOT.COM ..\RELEASE\BOOTCODE\AIRBT-%1.BIN
 
 copy AIR-BOOT.COM AIRBOOT.BIN
 
 rem Cleanup
-del AiR-BOOT.com
-del AiR-BOOT.exe
-del AiR-BOOT.obj
+del AiR-BOOT.COM
+del AiR-BOOT.EXE
+del AiR-BOOT.OBJ
 goto ExitMe
 
 :Failed

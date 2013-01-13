@@ -55,7 +55,7 @@ TXT_BootMenuEnterSetup         db 'F10 pour Configurer', 0
 ; Dynamic Length (till 80 chars)
 TXT_BrokenPartitionTable:      db 13, 10, ' - Votre systäme a au moins d''une entrÇe mauvaise de table de partition, ou'
                                db 13, 10, '   la disque dñr a des cassÇe secteurs. Systäme arràtÇ.', 0
-TXT_TooManyPartitions:         db 13, 10, ' - Trop de partitions trouvÇes. AiR-BOOT supporte un maximum de 30.', 0
+TXT_TooManyPartitions:         db 13, 10, ' - Trop de partitions trouvÇes. AiR-BOOT supporte un maximum de 45.', 0
 TXT_NoBootAble:                db 13, 10, ' - Aucune partition amoráable dÇfinie. Systäme arràtÇ.', 0
 TXT_BIOSchanged:               db 13, 10, ' - BIOS CHANGê! Veuillez vÇrifier votre systäme contre un virus.'
                                db 13, 10, '   Appuyez sur une touche pour continuer...', 0
@@ -76,11 +76,11 @@ TXT_HowEnterSetup:             db 13, 10, ' - Appuyez et tenez Strg/Ctrl ou Alt 
 
 TXT_BootingNow1:               db 'Amoráage du systäme avec ', 0
 ; DO NOT MODIFY HERE
-TXT_BootingNow2:               db ''''
+TXT_BootingNow2:               db '''', 0
 TXT_BootingNowPartName:        db 12 dup (0) ; Space for BootThisPart-Name
 ; DO NOT MODIFY TILL HERE
-TXT_BootingNowPartition:       db '''', 0
-TXT_BootingNowKernel:          db '''', 0
+TXT_BootingNowPartition:       db '', 0
+TXT_BootingNowKernel:          db '', 0
 TXT_BootingHide:               db '; cachÇ actif', 0
 TXT_BootingWait:               db '; veuillez patienter...', 13, 10, 13, 10, 0
 

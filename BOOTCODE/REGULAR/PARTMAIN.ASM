@@ -752,7 +752,7 @@ PART_IsInstallVolume            EndP
 ; Starts Partition DL from Internal Partition Table.
 ;        In: DL - Number of partition (filtered view)
 ;       Out: No Return...
-; Destroyed: None, due no return ;-)
+; Destroyed: None, due to no return ;-)
 ;     Logic: - Harddrive: loads partition Table
 ;                         sets partition active
 ;                         saves partition table
@@ -767,6 +767,9 @@ PART_IsInstallVolume            EndP
 PART_StartPartition             Proc Near   Uses ax dx es di
    local BootPartNo:byte
    local PhysDiskBpbIndex:word    ; Index into BPB to field of phys-disk
+   local FSType:byte                ; The FS used on the loaded BPB
+                                    ; Only used for FAT/HPFS/JFS
+
    ; Get Partition-Pointer (SI) to Partition-To-Boot (DL)
    call    PART_GetPartitionPointer
 
@@ -786,6 +789,14 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       mov     dh, [si+LocIPT_SystemID]
       ; Copy Partition-Name to BootingNow area for display purposes
          add     si, LocIPT_Name
+
+
+;pusha
+;call    MBR_Teletype
+;mov     si,offset TXT_BootingNowPartName
+;call    MBR_Teletype
+;popa
+
          mov     cx, 11
          call    GetLenOfName
          mov     di, offset TXT_BootingNowPartName
@@ -799,11 +810,19 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 ; [Linux support removed since v1.02]
 ;      cmp     dh, 0FDh
 ;      je      PSP_IsKernel
+
+;pusha
+;call    MBR_Teletype
+;mov     si,offset TXT_BootingNowPartName
+;call    MBR_Teletype
+;popa
+
+
       or      dl, dl
       jnz     PSP_IsHarddisc
       ; When booting floppy/CD-ROM/etc., we got other text to be displayed...
       mov     si, offset TXT_BootingNowPartName
-      call    MBR_Teletype
+      call    MBR_TeletypeVolName
       jmp     PSP_IsFloppyCDROMetc
 
 ; [Linux support removed since v1.02]
@@ -820,9 +839,11 @@ PART_StartPartition             Proc Near   Uses ax dx es di
      PSP_IsHarddisc:
       IFDEF ReleaseCode
          ; Save configuration on HDD boots (save CFG_PartLast)
-         call    DriveIO_SaveConfiguration                                       ; Rouaaseu: SAVE CONFIGURATION !
+         call    DriveIO_SaveConfiguration                                       ; Rousseau: SAVE CONFIGURATION !
       ENDIF
-      call    MBR_Teletype     ; Prints out BootingNow2 including PartitionName
+      ;call    MBR_Teletype     ; Prints out BootingNow2 including PartitionName
+      mov     si, offset TXT_BootingNowPartName
+      call    MBR_TeletypeVolName
       mov     si, offset TXT_BootingNowPartition
       call    MBR_Teletype
    pop     si                            ; restores SI (IPT-pointer)
@@ -833,7 +854,12 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    mov     dh, bptr [si+LocIPT_LocationPartTable+0]
    mov     dl, [si+LocIPT_Drive]
 
+
+
+   ; This loads the MBR in case of PRI or the EBR in case of LOG partitions.
    call    DriveIO_LoadPartition         ; Load Table...                [LOAD]
+
+
 
    ; --------------------------------------------------- MODIFY PARTITION TABLE
    push    cs
@@ -877,10 +903,16 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       call    DriveIO_SavePartition      ; Saves the Partition-Table    [SAVE]
    ENDIF
 
+
+
    ; ---------------------------------------------------------- OS/2 / eCS I13X
    ; Now check if the partition to get booted is above 8 GB.
    ;  If yes, set magic bytes 'I13X' at 3000:0 for boot-loader to recognize.
    ;  This method is (c) by IBM <g>
+   ; Rousseau: Booting IBM-BM also requires the LBA address of the IBM-BM
+   ; partitionafter the 'I13X' signature.
+   ; Also, FS needs to be set to 3000H.
+   ; This info was obtained by examining the LVM 2,x MBR-code.
    mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
    mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
    add     ax, wptr es:[di+LocBRPT_AbsoluteLength+0] ; Add length to absolute
@@ -892,19 +924,37 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    ; LBA-boundary at 16450560 (FB0400h) (16320x16x63)
    cmp     bx, 00FBh
    jb      PSP_NoI13X
+
+
   PSP_ForceI13X:
-   push    es di si
-      mov     ax, 3000h
-      mov     es, ax
-      xor     di, di
-      ; Blokkeert starten van IBM BM !!
-      mov     wptr es:[di], '1I'
-      mov     wptr es:[di+2], 'X3'
+        push    es di si
 
-      ;mov      si,3000h
-      ;call     AuxIO_DumpSector
+        ; Setup ES and FS.
+        ; FS needs to keep this address.
+        mov     ax, 3000h
+        mov     es, ax
+        ; mov fs,ax
+        db  08eh
+        db  0e0h
 
-   pop     si di es
+        ; Insert signature
+        xor     di, di
+        mov     wptr es:[di+00], '1I'
+        mov     wptr es:[di+02], 'X3'
+
+        ;mov     wptr es:[di], 0
+        ;mov     wptr es:[di+2], 0
+
+        ; Insert LBA address.
+        mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
+        mov     wptr es:[di+04], ax
+        mov     ax, wptr [si+LocIPT_AbsoluteBegin+2]
+        mov     wptr es:[di+06], ax
+
+        pop     si di es
+
+
+
   PSP_NoI13X:
 
    ; now check, if we need to hide any partition
@@ -1027,7 +1077,50 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    mov     cx, [si+LocIPT_LocationBegin+1]
    mov     dh, [si+LocIPT_LocationBegin+0]
    mov     dl, [si+LocIPT_Drive]
+
+   ; This loads the PBR of the partition.
    call    DriveIO_LoadPartition         ; Loads boot-sector...   [PARTBOOTSEC]
+
+    ;
+    ; The JFS PBR-code does not use the passed BPB in memory but uses the BPB
+    ; on disk. This breaks the drive-letter feature on JFS.
+    ; So we make a copy of the PBR in memory, and if the partition is JFS
+    ; we later adjust the physical-disk and boot-drive-letter in this
+    ; copy and write it back to disk.
+    ; Then the JFS PBR-code will see the correct boot-drive-letter.
+    ;
+    pusha
+    mov     si,offset PartitionSector
+    mov     di,offset JfsPBR
+    mov     cx,100h
+    cld
+    rep     movsw
+    popa
+
+
+
+   ; Check if the disk is a harddisk or a floppy.
+   mov     dl,[si+LocIPT_Drive]
+   cmp      dl, 80h
+   jae      is_harddisk
+
+   ;
+   ; This is a dirty hack to fix booting from a floppy.
+   ; With all the modifications made since v1.06 this feature was broken
+   ; because Int13X is used implicitly now, and that does not work
+   ; for diskette access.
+   ; This jumps to the code that loads and starts the pbr-code.
+   ; Note that it also skips virus checking !
+   ; This will be fixed at a later date.
+   jmp     boot_from_floppy
+
+
+
+
+  ;
+  ; The disk is a harddisk so we need to do various checks and fixes.
+  ;
+  is_harddisk:
 
    test    CFG_DetectVIBR, 1
    jz      PSP_NoVIBR
@@ -1113,27 +1206,19 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
         ; Display volume-name in bold
         ; Just before booting the selected partition
-        pushf
-        pusha
-        push    si
-        add     si, LocIPT_Name
-        call    MBR_TeletypeVolName
-        xor     si,si
-        call    MBR_TeletypeNL
-        pop     si
-        popa
-        popf
+        ;pushf
+        ;pusha
+        ;push    si
+        ;add     si, LocIPT_Name
+        ;call    MBR_TeletypeVolName
+        ;xor     si,si
+        ;call    MBR_TeletypeNL
+        ;pop     si
+        ;popa
+        ;popf
 
 
-        ; Locate cursor for output of debug-info
-        pusha
-        mov     ch,7
-        mov     cl,0
-        call    VideoIO_Color
-        mov     ch,6
-        mov     cl,1
-        call    VideoIO_Locate
-        popa
+
 
 
    ; ------------------------------------------------ SPECIAL PARTITION SUPPORT
@@ -1150,7 +1235,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
 
         ;
-        ; At this point, SI points to IPT and SI points to the PBR from disk.
+        ; At this point, SI points to IPT and DI points to the PBR from disk.
         ; Depending on the type of BPB used, the physical disk field is at
         ; different locations: 24h for old-style (OS/2) BPB's and 40h for
         ; FAT32 BPB's.
@@ -1176,18 +1261,52 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         mov     PhysDiskBpbIndex,ax
         mov     bx,ax
 
+        ; Locate cursor for output of debug-info
         pusha
+        mov     ch,7
+        mov     cl,0
+        call    VideoIO_Color
+        mov     ch,6
+        mov     cl,1
+        call    VideoIO_Locate
+        popa
+
+        ; Debug display physdisk, ptype and physdisk offset in BPB
+        pusha
+        mov     ah,[si+LocIPT_Drive]
+        mov     al,[si+LocIPT_SystemID]
+        call    VideoIO_PrintHexWord
+        mov     ax,bx
         call    VideoIO_PrintHexWord
         popa
 
+
+        ;
+        ; If the partition is IBM-BM we skip all the BPB adjustments.
+        ; IBM-BM does no need them.
+        ;
+        cmp     byte ptr [si+LocIPT_SystemID], 0ah
+        jnz     no_os2_bm
+        jmp     chainload_ibm_bm
+
+
+    no_os2_bm:
+
+        ;
         ; Update the phys-drive field
+        ;
         mov     al,byte ptr [si+LocIPT_Drive]
         mov     es:[di+bx],al
-        mov     al,al
 
-        pusha
-        call    VideoIO_PrintHexByte
-        popa
+
+        ;
+        ; Legacy systems do not put the correct values in the "hidden sectors"
+        ; field. Also, this field will be incorrect if a partition is moved on
+        ; disk by a disktool not accounting for this field.
+        ; Linux does not have a BPB at all, and does not use this field.
+        ; So we set the correct value here obtained by the partition scanner.
+        ; This fixing is done by OS/2 BM as well, according to Martin.
+        ;
 
         ;
         ; Fix hidden sectors field
@@ -1199,6 +1318,9 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         ; High word of 32-bits "hidden sectors"
         mov     ax,[si+LocIPT_AbsoluteBegin+2]
         mov     es:[di+1eh], ax
+
+
+
 
 
         ;
@@ -1218,6 +1340,14 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         ; AL will be <> 0 and the boot-drive-letter can be tested / fixed.
         mov     al,0
 
+
+        ; FIXME:
+        ; The PBR is already loaded, no need to load it again in the
+        ; calls below.
+        ;
+        ; Better use the already done discovery to determine the system.
+        ;
+
         ; When FAT12/FAT16/HPFS/JFS then boot-drive-letter can be tested
         ; or adjusted.
         call    PART_IsJFS
@@ -1228,19 +1358,28 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         rcl     al,1
         mov     ah,al
 
-        pusha
-        mov     al,'='
-        call    VideoIO_PrintSingleChar
-        mov     al,ah
-        call    VideoIO_PrintHexByte
-        mov     al,'='
-        call    VideoIO_PrintSingleChar
-        popa
+        ; Store for later reference.
+        mov     [FSType],al
 
-        ; See if boot-drive-letter fix is needed depending on FS used.
+
+        ;
+        ; When the phys-disk byte (80h) is put in this BPB in RAM,
+        ; Windows will not find it's loader if Windows itself
+        ; is installed in a logical partition but the loader is on FAT
+        ; in a primary.
+        ; This goes for all NT-based versions ?
+        ;
+
+
+        ;
+        ; See if phys-disk / boot-drive-letter fix is needed
+        ; depending on FS used.
         ; AL will be 0 for any file-system other than FAT12/FAT16/HPFS/JFS.
+        ;
         test    al,al
         jz      bdl_ok
+
+
 
         ; Check if the boot-drive-letter is non-zero.
         mov     bx,PhysDiskBpbIndex
@@ -1260,14 +1399,14 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         mov     cx,[si+LocIPT_AbsoluteBegin+00h]
         mov     bx,[si+LocIPT_AbsoluteBegin+02h]
         call    LVM_GetDriveLetter
+
         ; Save the status for later use
         pushf
-        ; Save drive-letter in AH
-        mov     ah,al
 
         ; See if the drive-letter feature is active.
         ; If active, we force the drive-letter from the user.
         test    byte ptr [si+LocIPT_Flags], Flags_DriveLetter
+
         ; Nope, it's not so we don't force the boot-drive-letter
         ; using field 25h.
         jz      PSP_NoLogicalSupport
@@ -1280,29 +1419,23 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         ; Get it and convert to ASCII letter
         mov     al, bptr [DriveLetters+bx]
         sub     al,3dh      ; Convert BIOS notation to ASCII drive-letter
-        pusha
-        mov     al,'!'
-        call    VideoIO_PrintSingleChar
-        popa
+
+
+
     PSP_NoLogicalSupport:
 
         ; Drive letter is LVM obtained or user-forced.
         ; Save it in AH.
         mov     ah,al
-        pusha
-        mov     al,'+'
-        call    VideoIO_PrintSingleChar
-        mov     al,ah
-        call    VideoIO_PrintHexByte
-        mov     al,'+'
-        call    VideoIO_PrintSingleChar
-        popa
+
 
         ; Restore the status whether an LVM drive-letter could be obtained
         popf
 
 
+        ;
         ; No valid LVM-info if no info found or drive-letter is zero.
+        ;
         jnc     no_valid_lvm_info
         test    al,al
         jz      no_valid_lvm_info
@@ -1315,32 +1448,86 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         ; Convert to BIOS notation ('C'+3dh=80h, 'D'->81h, etc.)
         add     al,3dh
 
+
+        ;
+        ; OS/2 uses this field to indicate the boot-drive-letter for the system.
+        ; It is in BIOS notation where 80h='C', 81h='D' ... 97h='Z'.
+        ; This is the field that get's forced to a specific value when the
+        ; drive-letter feature of AiR-BOOT is used.
+        ; Also, this field is the culprit of AiR-BOOT v1.07 not handling it
+        ; correctly when the system uses HPFS and this byte is zero.
+        ; This mostly involved booting older eCS versions on HPFS.
+        ; See issues #3067 and #3119 on http://bugs.ecomstation.nl
+        ;
+
+
         ; Fix the boot-drive-letter field in the BPB
         mov     bx,PhysDiskBpbIndex
+        ; Advance to field for drive-letter in BIOS notation (OS/2 - eCS)
         inc     bx
         mov     es:[di+bx],al
 
-        pusha
-        call    VideoIO_PrintHexByte
-        popa
 
         jmp     bdl_ok
 
 
     no_valid_lvm_info:
-        ; HERE SHOULD COME AN ERROR POP-UP ABOUT NO BOOT-DRIVE.
-        ; WE CONTINUE BOOTING BUT OS/2 - eCS WILL MOST PROBABLY FAIIL TO BOOT.
+        ; HERE SHOULD COME AN ERROR POP-UP ABOUT NO BOOT-DRIVE OR NO LVM-INFO.
+        ; WE CONTINUE BOOTING BUT OS/2 - eCS WILL MOST PROBABLY FAIL TO BOOT.
 
-        mov     ah,07h
-        mov     si,offset CheckID_MBR
-        call    VideoIO_Print
+        ;mov     ah,07h
+        ;mov     si,offset CheckID_MBR
+        ;call    VideoIO_Print
 
     hang:
-        jmp     hang
+        ;jmp     hang
 
 
+    ;
+    ; Boot DriveLetter OK.
+    ;
     bdl_ok:
 
+
+        ;
+        ; If the partition getting booted is a JFS partition then write-back
+        ; the modified PBR to the disk.
+        ; Note that it's not the in-memory PBR that get's written back, but
+        ; a copy of the original where only the phys-disk and boot-drive-letter
+        ; are adjusted.
+        ;
+        pusha
+        mov     al,[FSType]
+        cmp     al,04h      ; JFS
+        jnz     no_jfs_pbr
+
+        ; Save IPT pointer
+        push    si
+
+        ; Copy the boot-drive and boot-drive-letter fields.
+        mov     si,offset PartitionSector
+        mov     di,offset JfsPBR
+        mov     al,[si+24h]
+        mov     [di+24h],al
+        mov     al,[si+25h]
+        mov     [di+25h],al
+
+        ; Restore IPT pointer
+        pop     si
+
+        ; Setup the registers for the partition location.
+        mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
+        mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
+        mov     cx, [si+LocIPT_LocationBegin+1]
+        mov     dh, [si+LocIPT_LocationBegin+0]
+        mov     dl, [si+LocIPT_Drive]
+
+        ; Write the adjusted JFS PBR to disk.
+        mov     si, offset JfsPBR
+        call    DriveIO_SaveSector
+
+    no_jfs_pbr:
+        popa
 
 
         ;xor     ax,ax
@@ -1350,46 +1537,6 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
 
 
-        ; Check FS-types
-        ; Adjust fields
-
-
-
-
-
-        ; Rousseau: # Boot Logical Partitions)
-        ; FreeDOS and eCS on extpart on non-huge needs special support.
-        ; (old ja jump)
-        ; PC-DOS7 on huge pri fat16 2G works with both (XP too) when at start of disk.
-        ; (also when offset at 20MiB)
-        ; PCD7 bonkt vast als in 2GiB log at start of space.
-        ; "Starting PC DOS..." verschijnt. PCD Loader probleem.
-        ; Offset van start-of-disk bij PCD7 niet meer dan 2GiB maken.
-        ; Special is needed to boot ECS-CXXVAC (log-part) on Douwskie Box with 40G disk.
-        ; FreeDOS 20G PRI SOD op 400G start niet met special.
-        ; Heeft drive-id op 26h (36d) van 0dh !
-        ; WinXP werkt met special en not-special op 400G normal geo.
-        ; eCS op PRI op 2G met os2 ext geo werkt ook met beide.
-        ; eCS LOG werkt niet zonder special op 400G.
-        ; (hidden secs op 3F en moet 3F00 zijn; BM staat ervoor, 3F00=255*63+63)
-        ; Laatste 63 is MBR.
-        ;
-
-
-
-
-        ;
-        ; When the phys-disk byte (80h) is put in this BPB in RAM,
-        ; Windows will not find it's loader if Windows itself
-        ; is installed in a logical partition but the loader is on FAT
-        ; in a primary.
-        ; This goes for all NT-based versions ?
-        ;
-        ; Get saved value of phys drive from BPB on disk.
-        ; See if it's high nibble is above 9, which would indicate
-        ; FreeDOS or WinBMGR/Loader on FAT32. (0FBh)
-        ; In that case we don't write the phys-disk number to the BPB.
-        ;
 
 
 
@@ -1398,14 +1545,6 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
 
 
-        ;
-        ; Legacy systems do not put the correct values in the "hidden sectors"
-        ; field. Also, this field will be incorrect if a partition is moved on
-        ; disk by a disktool not accounting for this field.
-        ; Linux does not have a BPB at all, and does not use this field.
-        ; So we set the correct value here obtained by the partition scanner.
-        ; This fixing is done by OS/2 BM as well, according to Martin.
-        ;
 
 
 
@@ -1413,16 +1552,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
     ; ----------------------------------------------- LOGICAL PARTITION SUPPORT
 
 
-        ;
-        ; OS/2 uses this field to indicate the boot-drive for the system.
-        ; It is in BIOS notation where 80h='C', 81h='D' ... 97h='Z'.
-        ; This is the field that get's forced to a specific value when the
-        ; drive-letter feature of AiR-BOOT is used.
-        ; Also, this field is the culprit of AiR-BOOT v1.07 not handling it
-        ; correctly when the system uses HPFS and this byte is zero.
-        ; This mostly involved booting older eCS versions on HPFS.
-        ; See issues #3067 and #3119 on http://bugs.ecomstation.nl
-        ;
+
         ; AiR-BOOT now works around it by using the LVM-info (DLAT) of
         ; the partiton if present.
         ; Note however that if the drive-letter feature is active,
@@ -1438,39 +1568,35 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
 
 
+    ;
+    ; Control is transferred to this point if we are booting IBM-BM.
+    ; IBM-BM does not need the BPB fixes.
+    ; It does require a other special stuff, which is already taken care of.
+    ;
+    chainload_ibm_bm:
 
-
-        ;
-        ; At this point it's possible that a system is being booted from
-        ; HPFS with the boot-drive field (25h) set to zero.
-        ; This will result in OS/2 - eCS being unable to boot the system.
-        ; So we're gonna check this byte here and if it's zero we will
-        ; replace it with information found in LVM DLAT info.
-        ;
-
-
-
-
-
-    ; <<<< KNIP >>>> LVM STUFF
-
-
-
-
-
+    ;
+    ; Control is transferred to this point if we are booting a floppy.
+    ; Booting from floppy skips all the harddisk related stuff.
+    ; This is a dirty hack to fix the boot from floppy feature.
+    ;
+    boot_from_floppy:
 
         ;
-        ; Here we copy the prepared partition boot-record to 7C00h
+        ; Here we copy the prepared partition boot-record to 0000:7C00h
         ; to give it control later on.
         ;
+        push    es
         push    si
         mov     ax, StartBaseSeg
         mov     es, ax
         mov     cx, 256
         mov     si, offset PartitionSector
         mov     di, StartBasePtr
+        cld
         rep     movsw
         pop     si
+        pop     es
 
     ; --------------------------------------------------- NOW START BOOT-RECORD
 
@@ -1487,6 +1613,9 @@ ENDIF
 ; ################################## BYE BYE ##################################
 ;
 
+    ; Skip wait-for-key
+    jmp start_pbr
+
         ;
         ; Wait for keypress
         ;
@@ -1499,6 +1628,25 @@ ENDIF
         ; Nope, Go activate PBR loader
         jne      start_pbr
 
+        ;xor     ax,ax
+        ;mov     [CurPartition_Location+00],ax
+        ;mov     [CurPartition_Location+02],ax
+        ;mov     [CurPartition_Location+04],ax
+        ;mov     [CurPartition_Location+06],ax
+
+        ;pusha
+        ;xor     al,al
+        ;mov     di,si
+        ;add     di,LocIPT_Name
+        ;mov     cx,12
+        ;cld
+        ;rep     stosb
+        ;popa
+
+
+        ;push    ds
+        ;pop     es
+
         ; Yep, Reenter bootmenu
         jmp      MBR_Main_ReEnterBootMenuPre
 
@@ -1509,6 +1657,20 @@ ENDIF
 ;
 start_pbr:
 
+        ; Debug display index
+        ;pusha
+        ;mov     al, cs:[si+LocIPT_Drive]        ; Drive Physical No
+        ;mov     ah, cs:[si+LocIPT_SystemID]     ; SystemID
+        ;call    VideoIO_PrintHexWord
+        ;xor     ax, ax
+        ;int     16h
+        ;popa
+
+
+        ; About 1.5 seconds
+        mov     al,30
+        call    TIMER_WaitTicCount
+
         ;
         ; BYE BYE
         ;
@@ -1516,9 +1678,11 @@ start_pbr:
         xor     bx, bx
         xor     cx, cx
         mov     ds, ax
-        mov     es, ax                        ; DS == ES == 0
-        xor     dh, dh                        ; Drive supported by BIOS
+        mov     es, ax
+        xor     dh, dh
         mov     dl, cs:[si+LocIPT_Drive]      ; Drive Physical No
+
+
 
         ;
         ; JUMP TO PBR loader
