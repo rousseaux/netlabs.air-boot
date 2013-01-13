@@ -125,7 +125,7 @@ PRECRAP_Main                    Proc Near  Uses
                call    MBR_TeletypeNL
 
                ; Initialize the com-port for debugging
-               call     AuxIO_Init
+;               call     AuxIO_Init
 
                xor     si,si
                call    MBR_TeletypeNL
@@ -142,9 +142,20 @@ PRECRAP_Main                    Proc Near  Uses
                add      bx,cx
                mov      [bx], al
 
-               call     DriveIO_LoadMasterLVMSector         ; returns ZF=1 if no valid LVM record found
+               call     DriveIO_LoadMasterLVMSector         ; returns NC if no valid LVM record found
 
                pushf
+
+;                mov     al,'#'
+;                pushf
+;                call    VideoIO_PrintSingleChar
+;                popf
+;                mov     al,0
+;                rcl     al,1
+;                call    VideoIO_PrintHexByte
+;                mov     al,'#'
+;                call    VideoIO_PrintSingleChar
+
                mov      bx, offset TrueSecs
                add      bx,cx
                add      bx,cx
@@ -154,10 +165,22 @@ PRECRAP_Main                    Proc Near  Uses
 
                ; bx now contains pointer to truesecs for this drive
 
-               jz       NoValidMasterLVM
+               jnc      NoValidMasterLVM
 
+                ; ?? 3f bij disk 80h maar 0 bij disk 81h
                mov      si,offset LVMSector
                mov      ax,[si+LocLVM_Secs]
+
+;                pusha
+;                mov     dx,ax
+;                mov     al,'%'
+;                call    VideoIO_PrintSingleChar
+;                mov     ax,dx
+;                call    VideoIO_PrintHexWord
+;                mov     al,'%'
+;                call    VideoIO_PrintSingleChar
+;                popa
+
                mov      word ptr [bx],ax
                jmp      SkipUseBiosSecs
 
@@ -199,13 +222,13 @@ ENDIF
 
                ;mov      word ptr [LOG_Secs],63
 
-               mov      al,[HugeDisk]           ;; fout, moet nog index bij
-               call     AuxIO_TeletypeHexByte
-               call     AuxIO_TeletypeNL
+;               mov      al,[HugeDisk]           ;; fout, moet nog index bij
+;               call     AuxIO_TeletypeHexByte
+;               call     AuxIO_TeletypeNL
 
-               mov      ax,word ptr [TrueSecs]  ;; fout, moet nog index bij
-               call     AuxIO_TeletypeHexWord
-               call     AuxIO_TeletypeNL
+;               mov      ax,word ptr [TrueSecs]  ;; fout, moet nog index bij
+;               call     AuxIO_TeletypeHexWord
+;               call     AuxIO_TeletypeNL
 
 
 
@@ -242,7 +265,7 @@ ENDIF
                MBR_Main_BootThrough:
                  call    MBR_TeleType
                  xor     si,si
-                 call    MBR_TeletypeNL                                          ; ALP barks undefined symbol; must use prototypes ?
+                 call    MBR_TeletypeNL
 
 
    ; Calculate Cooper-Bar Tables
@@ -363,14 +386,20 @@ PRECRAP_CheckConfiguration      Proc Near  Uses ds si es di
    mov     si, offset Configuration
    xor     bx, bx
 
-   ; Changed from 5 to calculated
+   ; Changed from 5 to calculated value (not here, see compat. issue below)
    ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
-   mov     cx, (MBR_BackUpMBR - Configuration) / 2   ; Size of the ab-configuration
-   ; TASM does not evaluate expression above corrrectly.
-   ; Listing shows correct opcode but generated opcode has imm. word byteswapped.
-   ; Casting to byte also does not work (overflow).
-   ; So we swap back here -- must be removed in JWasm version !!
-      xchg  ch,cl
+   ; Size of the ab-configuration in 512 byte sectors
+   ;mov     cx, (MBR_BackUpMBR - Configuration) / 200h
+
+   ; AB v1.07 stores a 5 sector configuration with a 5 sector checksum.
+   ; AB v1.0.8 *should* stores a 7 sector configuration with a
+   ; 7 sector checksum.
+   ; Because 5 was hardcoded here, SET(A)BOOT v1.07 will see see an AB v1.0.8
+   ; config as corrupted, while this is not the case.
+   ; So, for compatibility reasons, in v1.0.8, the checksum stored is over
+   ; 5 sectors, to be compatible with v1.07.
+   ; This may change (be corrected) in future versions !
+   mov      cx,5
 
    mov     dx, CFG_CheckConfig
    mov     CFG_CheckConfig, bx

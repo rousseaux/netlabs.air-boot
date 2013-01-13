@@ -407,13 +407,14 @@ void Status_CheckConfig (void) {
       *(PUSHORT)&Track0[54 * BYTES_PER_SECTOR + 20] = 0;                         // Config sector secnum hard-coded !
 
       /*
-      // Rousseau:
-      // Calculate chechsum over 5 sectors starting at the config-sector at 55.
-      // 55,56,57,58,59 (60 is MBR backup in normal version)
-      // SHOULD ADJUST THIS FOR EXTENDED VERSION !                               // !!!!!!!!!!!
+      // Rousseau: # Keep compatible with v1.07 CRC #
+      // AB v1.07 had bugs in writing the wrong number of AB config sectors.
+      // This is fixed in v1.0.8 but the CRC has to be calculated the "v1.07 way"
+      // otherwise v1.07 SET(A)BOOT and INSTALL2.EXE will think the AB config
+      // is corrupted.
+      // So the CRC is calculated over 5 sectors instead of 7.
       */
-
-      SectorCount = 7;
+      SectorCount = 5;
 
       while (SectorCount>0) {
          Checksum = GetChecksumOfSector(Checksum, SectorPtr);
@@ -498,7 +499,7 @@ void Status_CheckConfig (void) {
 // Checks partition table for valid data
 BOOL Virus_CheckThisMBR (PCHAR MBRptr) {                                         // Rousseau: adjusted this function
    USHORT PartitionNo;
-   ULONG  CHSStart, CHSEnd;
+   ////ULONG  CHSStart, CHSEnd;
 
    //printf("DEBUG: Virus_CheckThisMBR\n");
 
@@ -531,12 +532,12 @@ BOOL Virus_CheckThisMBR (PCHAR MBRptr) {                                        
 
          //printf("DEBUG: Virus_CheckThisMBR - Partition: %d\n", PartitionNo);
          // Partition-type defined, analyse partition data
-         CHSStart = (*(MBRptr+3) | ((*(MBRptr+2) >> 6) << 8)) << 16;             // Cylinder
-         CHSStart |= (*(MBRptr+2) & 0x3F) | ((*(MBRptr+1) << 8));                // Sector / Head
+         ////CHSStart = (*(MBRptr+3) | ((*(MBRptr+2) >> 6) << 8)) << 16;             // Cylinder
+         ////CHSStart |= (*(MBRptr+2) & 0x3F) | ((*(MBRptr+1) << 8));                // Sector / Head
          //printf("DEBUG: Virus_CheckThisMBR - CHSStart: %d\n", CHSStart);                               // 3F MASK CHECKEN !!
 
-         CHSEnd = (*(MBRptr+7) | ((*(MBRptr+6) >> 6) << 8)) << 16;               // Cylinder
-         CHSEnd |= (*(MBRptr+6) & 0x3F) | ((*(MBRptr+5) << 8));                  // Sector / Head
+         ////CHSEnd = (*(MBRptr+7) | ((*(MBRptr+6) >> 6) << 8)) << 16;               // Cylinder
+         ////CHSEnd |= (*(MBRptr+6) & 0x3F) | ((*(MBRptr+5) << 8));                  // Sector / Head
          //printf("DEBUG: Virus_CheckThisMBR - CHSEnd: %d\n", CHSEnd);
 
 
@@ -549,10 +550,10 @@ BOOL Virus_CheckThisMBR (PCHAR MBRptr) {                                        
          //        to exclude truly faulty partition-entries.
          */
          /*if (CHSStart<CHSEnd) {*/
-         if (CHSStart<=CHSEnd) {
-            if (*(PULONG)(MBRptr+12)!=0) // Absolute length > 0?
-               return TRUE;
-          }
+         ////if (CHSStart<=CHSEnd) {
+         ////   if (*(PULONG)(MBRptr+12)!=0) // Absolute length > 0?
+         ////      return TRUE;
+          ////}
        }
       // Go to next partition
       MBRptr += 16;
@@ -615,7 +616,8 @@ void Status_PrintF (ULONG Status, USHORT Version) {
     case STATUS_INSTALLED:
     case STATUS_INSTALLEDMGU:
        if (!Option_CID) {
-         printf("intact (v%x.%02x)", Version>>8, Version & 0x0FF);
+         printf("intact (v%x.%1d.%1d)", Version>>8, (Version & 0x0F0)>>4, Version & 0x0F);
+
        }
        if (Status==STATUS_INSTALLEDMGU)
          if (!Option_CID) {
@@ -636,7 +638,7 @@ void Language_PrintF(UCHAR LanguageID) {
       return;
    switch (LanguageID) {
      case 'E': printf("english"); break;
-     case 'D': printf("dutch"); break;
+     case 'N': printf("dutch"); break;       // Changed from 'D' to 'N'
      case 'G': printf("german"); break;
      case 'F': printf("french"); break;
      case 'I': printf("italian"); break;
@@ -689,7 +691,15 @@ void Install_WriteConfig (void) {
 
    SectorPtr = &Bootcode[54 * BYTES_PER_SECTOR];                                 // Start at sector 55
 
-   SectorCount = 7;
+   /*
+   // Rousseau: # Keep compatible with v1.07 CRC #
+   // AB v1.07 had bugs in writing the wrong number of AB config sectors.
+   // This is fixed in v1.0.8 but the CRC has to be calculated the "v1.07 way"
+   // otherwise v1.07 SET(A)BOOT and INSTALL2.EXE will think the AB config
+   // is corrupted.
+   // So the CRC is calculated over 5 sectors instead of 7.
+   */
+   SectorCount = 5;
 
    while (SectorCount>0) {
       Checksum = GetChecksumOfSector(Checksum, SectorPtr);
@@ -911,7 +921,7 @@ int main (int argc, char **argv) {
       if (Install_IsCorrupt) printf(" <R> - Repair AiR-BOOT ");
        else if (Status_Code==STATUS_NOTINSTALLED) printf(" <A> - Add AiR-BOOT ");
        else printf(" <U> - Update/Change AiR-BOOT to ");
-      printf("'v%x.%02x/", Bootcode_Version>>8, Bootcode_Version & 0x0FF);
+      printf("'v%x.%1d.%1d/", Bootcode_Version>>8, (Bootcode_Version & 0x0F0)>>4, Bootcode_Version & 0x0F);
       Language_PrintF(Bootcode_LanguageID);
       printf("' on current system\n");
 

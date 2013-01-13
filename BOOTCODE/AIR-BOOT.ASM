@@ -24,11 +24,24 @@
 ; -----
 ; - Fixed driveletter feature which was broken in v1.07.
 ; - Reworked MBR-code to provide two I13X signatures.
-; - Esc from SETUP would save to disk.
-;   It now retains the changes only for this boot and
-;   does not write them to disk.
+; - Fixes booting older eCS installations on HPFS
+; - Fixes booting Windows when installed in logical partition
+;   with loader on FAT32.
 ; - Corrected contact links.
-; -
+; NOTE:
+;   AB v1.07 had a bug with saving and loading the correct size of the
+;   configuration. Therefore the CRC over the config was also calculated
+;   wrongly.
+;   While AB v1.0.8 fixes this, it has to use the v1.07 way of CRC calculation.
+;   Otherwise SET(A)BOOT from the eCS v2.1 would break and reboot after phase1
+;   would show the boot-menu instead of automatically booting the system
+;   being installed. (SET(A)BOOT would see a corrupted AB config)
+;   This means that the CRC over the AB config is calculated over 5 sectors
+;   instead of 7, just like in v1.07.
+;   This will be corrected with a future release of eComStation.
+;   Note that after such a correction, an installation from a v2.1 eCS CD
+;   with a version of AiR-BOOT >v1.07 active will not automatically
+;   boot-through after phase1.
 ;
 ; v1.07
 ; -----
@@ -105,7 +118,7 @@ MaxDisks                   equ      64
 ;
 ; If defined then include DEBUG.ASM and output debug-info to serial-port.
 ;
-AuxDebug                   equ      1
+;AuxDebug                   equ      1
 
 ; Com-port for debugging, 0 is disabled
 BiosComPort                equ      0
@@ -215,12 +228,12 @@ LocLVM_PartitionStart       equ         12   ; is DWORD
 LocLVM_VolumeLetter         equ         18   ; is BYTE (Letter C-Z or 0)
                                              ; (relative to entry)
 
-; Rousseau: added (index in LVM-sector)
+; Rousseau: added (index in extpart LVM-sector)
 LocLVM_Secs                 equ         20h  ; Sectors per Track (OS/2 ext-geo)
 LocLVM_Heads                equ         1ch  ; Number of heads
-LocLVM_VolumeLetter2        equ         78   ; is BYTE (Letter C-Z or 0)             ; FOUT !! niet entry relative !
-LocLVM_Startable            equ         77   ; is startable (newly installed system) ; FOUT !! niet entry relative !
-LocLVM_OnBootMenu           equ         76   ; is on bootmenu                        ; FOUT !! niet entry relative !
+LocLVM_VolumeLetter2        equ         78   ; is BYTE (Letter C-Z or 0)
+LocLVM_Startable            equ         77   ; is startable (newly installed system)
+LocLVM_OnBootMenu           equ         76   ; is on bootmenu
 
 ; Truncated to 11 chars when  displayed in menu
 LocLVM_VolumeName           equ         20   ; 20 bytes
@@ -624,18 +637,12 @@ eos1:
 ; It loads the configuration sectors, but bx,cx and dx are not initialized
 ; in this function. That's done around line 500.
 ; Putting this few bytes here creates just enough room.
-; The size of this function should grow.
 MBR_LoadConfig                Proc Near
-              ; Changed from conditional assembler to calculated
+              ; Changed from conditional assembler to calculated value
               ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
-              mov     ax, (MBR_BackUpMBR - Configuration) / 2  ; sizeof(ab-configuration) to write
-            ; TASM does not evaluate expression above corrrectly.
-            ; Listing shows correct opcode but generated opcode has imm. word byteswapped.
-            ; Casting to byte also does not work (overflow).
-            ; So we swap back here -- must be removed in JWasm version !!
-               xchg    ah,al
+              ; Size of the ab-configuration in 512 byte sectors
+              mov     al, (MBR_BackUpMBR - Configuration) / 200h
               mov     ah,02h
-
               int     13h
       ret
 MBR_LoadConfig                EndP
@@ -933,10 +940,10 @@ skip:
                ;
                ; COM-PORT DEBUG
                ;
-               call     AuxIO_TeletypeNL
+;               call     AuxIO_TeletypeNL
                mov      si, offset PartitionTable
-               call     AuxIO_DumpSector
-               call     AuxIO_TeletypeNL
+;               call     AuxIO_DumpSector
+;               call     AuxIO_TeletypeNL
 
 
                  ; Save configuration so phase1 boot-through is disabled
@@ -1129,13 +1136,13 @@ size_conv = $-b_conv
 
 IFDEF AuxDebug
 b_debug:
-   Include REGULAR\DEBUG.ASM     ; Various debugging routines,
+;   Include REGULAR\DEBUG.ASM     ; Various debugging routines,
                                  ; uses AUXIO and CONV
 size_debug = $-b_debug
 ENDIF
 
 b_auxio:
-Include REGULAR\AUXIO.ASM        ; Com-port support for debugging
+;Include REGULAR\AUXIO.ASM        ; Com-port support for debugging
 size_auxio = $-b_auxio
 
 ; Rousseau: moved upwards

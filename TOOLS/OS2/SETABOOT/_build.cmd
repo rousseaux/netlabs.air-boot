@@ -4,4 +4,4 @@
 debug='-d';
 
 'ide2make '||debug||' -p SETABOOT.WPJ';
-'wmake -f SETABOOT.MK';
+'wmake -h -f SETABOOT.MK';

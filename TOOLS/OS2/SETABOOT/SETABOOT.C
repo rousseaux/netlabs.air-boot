@@ -142,7 +142,7 @@ typedef AiRBOOTIPENTRY *PAiRBOOTIPENTRY;
 
 #define AiRBOOTIPENTRY_Flags_BootAble       0x01
 
-CHAR            Track0[60*512];      // Space for Track-0
+CHAR            Track0[62*512];      // Space for Track-0
 PAiRBOOTCODESIG AiRBOOT_CodeSig = 0;
 PAiRBOOTCONFIG  AiRBOOT_Config = 0;
 PAiRBOOTIPENTRY AiRBOOT_IPT = 0;
@@ -188,7 +188,7 @@ BOOL Track0WriteAiRBOOTConfig (void);
 
    BOOL Track0Load (void) {
       USHORT      IOCTLHandle;
-      ULONG       TrackLayoutLen  = sizeof(TRACKLAYOUT)+sizeof(ULONG)*(60-1);
+      ULONG       TrackLayoutLen  = sizeof(TRACKLAYOUT)+sizeof(ULONG)*(62-1);
       TRACKLAYOUT *TrackLayoutPtr = malloc(TrackLayoutLen);
       ULONG       cbParms = sizeof(TrackLayoutPtr);
       ULONG       cbData  = 512;
@@ -201,9 +201,9 @@ BOOL Track0WriteAiRBOOTConfig (void);
       TrackLayoutPtr->usHead        = 0;
       TrackLayoutPtr->usCylinder    = 0;
       TrackLayoutPtr->usFirstSector = 0;
-      TrackLayoutPtr->cSectors      = 60;
+      TrackLayoutPtr->cSectors      = 62;
 
-      for (i=0; i<60; i++) {
+      for (i=0; i<62; i++) {
          TrackLayoutPtr->TrackTable[i].usSectorNumber = i+1;
          TrackLayoutPtr->TrackTable[i].usSectorSize   = 512;
        }
@@ -218,7 +218,7 @@ BOOL Track0WriteAiRBOOTConfig (void);
 
    BOOL Track0Write (void) {
       USHORT      IOCTLHandle;
-      ULONG       TrackLayoutLen  = sizeof(TRACKLAYOUT)+sizeof(ULONG)*(60-1);
+      ULONG       TrackLayoutLen  = sizeof(TRACKLAYOUT)+sizeof(ULONG)*(62-1);
       TRACKLAYOUT *TrackLayoutPtr = malloc(TrackLayoutLen);
       ULONG       cbParms = sizeof(TrackLayoutPtr);
       ULONG       cbData  = 512;
@@ -232,9 +232,9 @@ BOOL Track0WriteAiRBOOTConfig (void);
       TrackLayoutPtr->usHead        = 0;
       TrackLayoutPtr->usCylinder    = 0;
       TrackLayoutPtr->usFirstSector = 0;
-      TrackLayoutPtr->cSectors      = 60;
+      TrackLayoutPtr->cSectors      = 62;
 
-      for (i=0; i<60; i++) {
+      for (i=0; i<62; i++) {
          TrackLayoutPtr->TrackTable[i].usSectorNumber = i+1;
          TrackLayoutPtr->TrackTable[i].usSectorSize   = 512;
        }
@@ -310,7 +310,7 @@ USHORT GetChecksumOfSector (USHORT BaseCheck, USHORT SectorNo) {
 /*
 // If AiR-BOOT is not installed, the user probably meant to control OS/2 BM with this utility.
 // Since the functionality of this utility is for AiR-BOOT only, we will pass the request to
-// the OS/2 BM SETBOOT utility which is called SETBM.EXE as of eCS 2.01.
+// the OS/2 BM SETBOOT utility which is called SETBM.EXE as of eCS 2.1.
 // Since the objective here is to supply OS/2 BM SETBOOT compatibility, if SETBM.EXE is not found,
 // some other system locations are searched for the OS/2 version of SETBOOT.EXE.
 // Any SETBOOT.EXE that is found and that does not have a module-name of "setaboot" is invoked,
@@ -320,8 +320,8 @@ USHORT GetChecksumOfSector (USHORT BaseCheck, USHORT SectorNo) {
 int   DoClassicActions(int argc, char **argv) {
    APIRET      rc             = -1;
    RESULTCODES	crc			   = {-1,-1};
-   PTIB        ptib           = NULL;
-   PPIB        ppib           = NULL;
+//   PTIB        ptib           = NULL;
+//   PPIB        ppib           = NULL;
    char        buffer[256]    = "\0";
    char        cmdline[256]   = "\0";
    PSZ         path           = NULL;
@@ -452,7 +452,7 @@ int   DoAirBootActions(int argc, char **argv, BOOL ab_detected, BOOL ab_bad) {
    CHAR            XWPBootCommand[30][28];                                       // 'setaboot /IBA:""' (16 chars)
    BOOL            XWPEntryFound    = FALSE;
    BOOL            CDBoot           = FALSE;                                     // TRUE if booted from CD; New System will be added when using /4:"LABEL"
-   BOOL            Track0Loaded     = FALSE;                                     // Assume track0 did not load correctly.
+//   BOOL            Track0Loaded     = FALSE;                                     // Assume track0 did not load correctly.
    BOOL            AiRBOOTBad       = FALSE;
 
    //printf("\nAiR-BOOT ACTIONS !!\n");
@@ -471,7 +471,7 @@ int   DoAirBootActions(int argc, char **argv, BOOL ab_detected, BOOL ab_bad) {
    // Rousseau: changed version to be the same as the AiR-BOOT is accompanies.
    */
    //puts ("SETABOOT - AiR-BOOT Configuration Utility (OS/2) - (c) 2004-2009 by M. Kiewitz");
-   puts ("SETABOOT v1.07 - AiR-BOOT Configuration Utility - (c) 2004-2011 by M. Kiewitz");
+   puts ("SETABOOT v1.07a - AiR-BOOT Configuration Utility - (c) 2004-2011 by M. Kiewitz");
 
 
    //return 0;
@@ -941,7 +941,7 @@ BOOL Track0DetectAirBoot (BOOL* ab_bad) {
 
    // Calculate CheckSum...
    ResultCheck = 0; CurSectorNo = 55;
-   while (CurSectorNo<60) {
+   while (CurSectorNo<62) {
       ResultCheck = GetChecksumOfSector(ResultCheck, CurSectorNo);
       CurSectorNo++;
     }
@@ -964,6 +964,15 @@ BOOL Track0WriteAiRBOOTConfig (void) {
 
    // Calculate CheckSum...
    ResultCheck = 0; CurSectorNo = 55;
+
+   /*
+   // Rousseau: # Keep compatible with v1.07 CRC #
+   // AB v1.07 had bugs in writing the wrong number of AB config sectors.
+   // This is fixed in v1.0.8 but the CRC has to be calculated the "v1.07 way"
+   // otherwise v1.07 SET(A)BOOT and INSTALL2.EXE will think the AB config
+   // is corrupted.
+   // So the CRC is calculated over 5 sectors instead of 7.
+   */
    while (CurSectorNo<60) {
       ResultCheck = GetChecksumOfSector(ResultCheck, CurSectorNo);
       CurSectorNo++;

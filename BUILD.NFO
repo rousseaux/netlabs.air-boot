@@ -1,8 +1,8 @@
-=====================================================
- BUILD.NFO -- Information on building AiR-BOOT v1.07
-=====================================================
+======================================================
+ BUILD.NFO -- Information on building AiR-BOOT v1.0.8
+======================================================
 
-Building AiR-BOOT v1.07 requires the following tools:
+Building AiR-BOOT v1.0.8 requires the following tools:
 - Borland Turbo Assembler v4.1 for DOS
   (TASM.EXE 136.018 bytes)
 - Borland Turbo Linker v4.0 for DOS
@@ -12,8 +12,10 @@ Building AiR-BOOT v1.07 requires the following tools:
 - Open Watcom C/C++ v1.9
   (Used to build the installer and setaboot etc.)
 
-Putting these executables in ?:\OS2\MDOS will enable them to be found
-when running the build scripts.
+Put these DOS executables (not Open Watcom) in a directory 
+and append that directory to the PATH as defined in ?:\AUTOEXEC.BAT. 
+This will enable DOS sessions to find them when called 
+by the Rexx build scripts from an OS2 CMD session.
 
 Note that only the loader, installer and setaboot targets are built.
 No floppy, cd-rom, etc. images.

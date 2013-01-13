@@ -61,14 +61,20 @@ DriveIO_SaveConfiguration       Proc Near   Uses ax bx cx dx ds es si
    mov     si, offset Configuration      ; Calculate new checksum
    xor     bx, bx
 
-   ; Changed from 5 to calculated
+   ; Changed from 5 to calculated value (not here, see compat. issue below)
    ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
-   mov     cx, (MBR_BackUpMBR - Configuration) / 2   ; Size of the ab-configuration
-   ; TASM does not evaluate expression above corrrectly.
-   ; Listing shows correct opcode but generated opcode has imm. word byteswapped.
-   ; Casting to byte also does not work (overflow).
-   ; So we swap back here -- must be removed in JWasm version !!
-      xchg  ch,cl
+   ; Size of the ab-configuration in 512 byte sectors
+   ;mov     cx, (MBR_BackUpMBR - Configuration) / 200h
+
+   ; AB v1.07 stores a 5 sector configuration with a 5 sector checksum.
+   ; AB v1.0.8 *should* stores a 7 sector configuration with a
+   ; 7 sector checksum.
+   ; Because 5 was hardcoded here, SET(A)BOOT v1.07 will see see an AB v1.0.8
+   ; config as corrupted, while this is not the case.
+   ; So, for compatibility reasons, in v1.0.8, the checksum stored is over
+   ; 5 sectors, to be compatible with v1.07.
+   ; This may change (be corrected) in future versions !
+   mov     cx,5
 
    mov     dx, [CFG_CheckConfig]
    mov     [CFG_CheckConfig], bx
@@ -82,14 +88,10 @@ DriveIO_SaveConfiguration       Proc Near   Uses ax bx cx dx ds es si
    mov     dx, 0080h                     ; First harddrive, Sector 55...
    mov     cx, 0037h
 
-   ; Changed from 5 to calculated
+   ; Changed from 5 to calculated value
    ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
-   mov     ax, (MBR_BackUpMBR - Configuration) / 2  ; sizeof(ab-configuration) to write
-   ; TASM does not evaluate expression above corrrectly.
-   ; Listing shows correct opcode but generated opcode has imm. word byteswapped.
-   ; Casting to byte also does not work (overflow).
-   ; So we swap back here -- must be removed in JWasm version !!
-      xchg  ah,al
+   ; Size of the ab-configuration in 512 byte sectors
+   mov     al, (MBR_BackUpMBR - Configuration) / 200h
    mov     ah,03h
 
    int     13h
@@ -249,15 +251,15 @@ DriveIO_LVMAdjustToInfoSector   Proc Near   Uses
 
          ; Dump drive
          mov      si,offset drive
-         call     AuxIO_Print
+;         call     AuxIO_Print
          xchg     al,dl
-         call     AuxIO_TeletypeHexByte
-         call     AuxIO_TeletypeNL
+;         call     AuxIO_TeletypeHexByte
+;         call     AuxIO_TeletypeNL
          xchg     dl,al
 
          ; Dump SPT
          mov      si,offset spt_used
-         call     AuxIO_Print
+;         call     AuxIO_Print
          push     dx
          push     bx
             xor      dh,dh
@@ -270,8 +272,8 @@ DriveIO_LVMAdjustToInfoSector   Proc Near   Uses
 
             ;mov      [ts],ax
 
-            call     AuxIO_TeletypeHexWord
-            call     AuxIO_TeletypeNL
+;            call     AuxIO_TeletypeHexWord
+;            call     AuxIO_TeletypeNL
          pop      bx
          pop      dx
 
@@ -280,8 +282,8 @@ DriveIO_LVMAdjustToInfoSector   Proc Near   Uses
                ; Location of extended position
                mov      dx,word ptr [ExtendedAbsPos+02]
                mov      ax,word ptr [ExtendedAbsPos+00]
-               call     AuxIO_TeletypeHexDWord
-               call     AuxIO_TeletypeNL
+;               call     AuxIO_TeletypeHexDWord
+;               call     AuxIO_TeletypeNL
             pop      dx
 
             xor      dh,dh
@@ -292,22 +294,22 @@ DriveIO_LVMAdjustToInfoSector   Proc Near   Uses
             add      bx,dx
 
             mov      ax, word ptr[bx]
-            call     AuxIO_TeletypeHexWord
-            call     AuxIO_TeletypeNL
+;            call     AuxIO_TeletypeHexWord
+;            call     AuxIO_TeletypeNL
             mov      al,[ExtendedAbsPosSet]           ; if true -> 1st sector of extpart (EBR), not logpart(BPB)
-            call     AuxIO_TeletypeHexByte
-            call     AuxIO_TeletypeNL
+;            call     AuxIO_TeletypeHexByte
+;            call     AuxIO_TeletypeNL
       ;      mov      si,offset PartitionSector
       ;      call     AuxIO_DumpSector
          popa
 
          ; LBA
          mov      si,offset before_lvm_adjust
-         call     AuxIO_Print
+;         call     AuxIO_Print
 
          xchg     dx,bx
-         call     AuxIO_TeletypeHexDWord
-         call     AuxIO_TeletypeNL
+;         call     AuxIO_TeletypeHexDWord
+;         call     AuxIO_TeletypeNL
          xchg     bx,dx
       popa
 
@@ -321,11 +323,11 @@ DriveIO_LVMAdjustToInfoSector   Proc Near   Uses
 
       pusha
          mov      si,offset before_lvm_adjust_log
-         call     AuxIO_Print
+;         call     AuxIO_Print
          ; LBA
          xchg     dx,bx
-         call     AuxIO_TeletypeHexDWord
-         call     AuxIO_TeletypeNL
+;         call     AuxIO_TeletypeHexDWord
+;         call     AuxIO_TeletypeNL
          xchg     bx,dx
       popa
 
@@ -348,11 +350,11 @@ DriveIO_LVMAdjustToInfoSector   Proc Near   Uses
 
       pusha
          mov      si,offset after_lvm_adjust_log
-         call     AuxIO_Print
+;         call     AuxIO_Print
          ; LBA
          xchg     dx,bx
-         call     AuxIO_TeletypeHexDWord
-         call     AuxIO_TeletypeNL
+;         call     AuxIO_TeletypeHexDWord
+;         call     AuxIO_TeletypeNL
          xchg     bx,dx
       popa
 
@@ -431,11 +433,11 @@ done:
 
       pusha
          mov      si,offset after_lvm_adjust
-         call     AuxIO_Print
+;         call     AuxIO_Print
          ; LBA
          xchg     dx,bx
-         call     AuxIO_TeletypeHexDWord
-         call     AuxIO_TeletypeNL
+;         call     AuxIO_TeletypeHexDWord
+;         call     AuxIO_TeletypeNL
          xchg     bx,dx
       popa
 
@@ -582,15 +584,15 @@ IFDEF AuxDebug
    ; show current partition location
    pushf
    pusha
-      call     AuxIO_TeletypeNL
+;      call     AuxIO_TeletypeNL
       mov      si,offset db_curlvmsec
-      call     AuxIO_Print
+;      call     AuxIO_Print
       mov      dx,bx
-      call     AuxIO_TeletypeHexDWord
-      call     AuxIO_TeletypeNL
+;      call     AuxIO_TeletypeHexDWord
+;      call     AuxIO_TeletypeNL
       mov      si,offset LVMSector
-      call     AuxIO_DumpSector
-      call     AuxIO_TeletypeNL
+;      call     AuxIO_DumpSector
+;      call     AuxIO_TeletypeNL
    popa
    popf
 ENDIF
@@ -732,6 +734,70 @@ DriveIO_LoadSector              Proc Near  Uses ax bx ds si es di
    ret
 DriveIO_LoadSector              EndP
 
+
+
+;
+; ############################################################
+; # Load a specified sector from a disk using LBA addressing #
+; ############################################################
+;
+; In
+; --
+; DL     = Physical Disk
+; BX:CX  = LBA sector
+; DI:SI  = Target buffer
+;
+; Out
+; ---
+; AX     = Error code
+;
+DriveIO_LoadSectorLBA           Proc Near  Uses bx cx dx si di ds es
+      ; Get one sector
+      mov     cs:[DriveIO_DAP_NumBlocks], 1
+
+      ; Setup buffer address
+      mov     wptr cs:[DriveIO_DAP_Transfer+0], si
+      mov     wptr cs:[DriveIO_DAP_Transfer+2], di
+
+      ; Setup LBA address of requested sector
+      mov     wptr cs:[DriveIO_DAP_Absolute+0], cx
+      mov     wptr cs:[DriveIO_DAP_Absolute+2], bx
+      mov     wptr cs:[DriveIO_DAP_Absolute+4], 0
+      mov     wptr cs:[DriveIO_DAP_Absolute+6], 0
+
+      ; Address of packet
+      mov     si, offset DriveIO_DAP
+
+      ; Do the extended read
+      mov     ah, 42h
+      int     13h
+
+      ; Looking goot so far
+      jnc     DriveIO_LoadSectorLBA_succes1
+
+      ; AH should not be zero, if it is then set to undefined and set carry
+      test    ah,ah
+      jnz     DriveIO_LoadSectorLBA_error1
+      mov     ah, 0bbh        ; Undefined error
+   DriveIO_LoadSectorLBA_error1:
+      stc
+      jmp     DriveIO_LoadSectorLBA_exit
+
+      ; AL should be zero, if not then set to undefined and set carry
+   DriveIO_LoadSectorLBA_succes1:
+      test    ah,ah
+      jz      DriveIO_LoadSectorLBA_exit
+      stc
+      jmp     DriveIO_LoadSectorLBA_exit
+
+      ; Return to caller
+   DriveIO_LoadSectorLBA_exit:
+      ret
+DriveIO_LoadSectorLBA           EndP
+
+
+
+
 ; #########################################################################
 ; Routine: Writes DS:SI to a specified sector
 ; #########################################################################
@@ -795,30 +861,21 @@ DriveIO_SaveSector              EndP
 
 ; See if a LVM-sector is valid.
 ; In  : si, pointer to sector
-; Out : ZF=true, not valid; ZF=false, valid
+; Out : CY if valid LVM sector, NC if not
 DriveIO_LVMSectorValid           Proc  Near
-      pusha
+        pusha
 
-      call     LVM_CheckSectorSignature
-      mov      al,0
-      rcl      al,1                          ; Move CY to AL.0
-      call     AuxIO_TeletypeHexByte
-      call     AuxIO_TeletypeNL
-      or       al,al                         ; Zero if not a valid sector
-      jz       DriveIO_LVMSectorValid_End    ; Not a valid sector
+        call     LVM_CheckSectorSignature
+        ; NC if no signature found
+        jnc       DriveIO_LVMSectorValid_End
 
-      call     LVM_CheckSectorCRC
-      stc
-      mov      al,0
-      rcl      al,1                          ; Move CY to AL.0
-      call     AuxIO_TeletypeHexByte
-      call     AuxIO_TeletypeNL
-      or       al,al                         ; Zero if not a valid sector
+        call     LVM_CheckSectorCRC
+        ; Force valid !!!
+        stc
 
-   DriveIO_LVMSectorValid_End:
-
-      popa
-      ret
+    DriveIO_LVMSectorValid_End:
+        popa
+        ret
 DriveIO_LVMSectorValid           EndP
 
 ; ------------------------------------------------------
@@ -837,32 +894,62 @@ DriveIO_LVMSectorValid           EndP
 ; lower 502GiB of the drive. In this case the normal geometry from Int13X will be used.
 ; This is also the case when no valid master LVM-sector can be found.
 ;
-; Return ZF=true if not found, ZF=false when valid master LVM-sector found.
+; Return CF when valid master LVM sector found, NC if not.
+; Loads sector at [LVMSector] !
 DriveIO_LoadMasterLVMSector      Proc  Near
-      pusha
+        pusha
 
-      mov      si,offset db_lmlvm
-      ;call     AuxIO_Print
+        mov      si,offset db_lmlvm
+        ;call     AuxIO_Print
 
-      mov      al,dl
-      ;call     AuxIO_TeletypeHexByte
-      ;call     AuxIO_TeletypeNL
+        ; Physical disk
+;        mov     al,'<'
+;        call    VideoIO_PrintSingleChar
+;        mov     al,dl
+;        call    VideoIO_PrintHexByte
+;        mov     al,'>'
+;        call    VideoIO_PrintSingleChar
+
+        ;call     AuxIO_TeletypeHexByte
+        ;call     AuxIO_TeletypeNL
 
 
-      ; Loop over the sector-translation table,
-      ; process the first three values from high (255) to low (bios spt, most likely 63)
-      mov      cx,3
-DriveIO_LoadMasterLVMSector_NextTry:
-      mov      bx,offset secs_per_track_table         ; sector translation table that corresponds with IsHugeDrive
-      mov      si, offset LVMSector                   ; space to load the master LVM-sector
-      mov      [DriveIO_DAP_NumBlocks],1              ; number of sectors to read
-      mov      wptr [DriveIO_DAP_Transfer+0],si       ; low part of transfer address
-      mov      ax, ds
-      mov      wptr [DriveIO_DAP_Transfer+2],ax       ; high part of transfer address
-      mov      ax,cx                                  ; use the counter...
-      dec      ax                                     ; as an index into the table
-      xlatb                                           ; translate to number of sectors
-      dec      al                                     ; LBA is zero-based, so adjust
+        ; Loop over the sector-translation table,
+        ; process the first three values from high (255) to low (bios spt, most likely 63)
+        mov      cx,3
+    DriveIO_LoadMasterLVMSector_NextTry:
+        ; Number of sectors to read
+        mov     [DriveIO_DAP_NumBlocks],1
+
+        ; Setup destination address
+        mov     si, offset LVMSector
+        mov     wptr [DriveIO_DAP_Transfer+0],si
+        mov     ax, ds
+        mov     wptr [DriveIO_DAP_Transfer+2],ax
+
+        ; Get the sector-number of the next possible LVM sector (255,127,63)
+        ; using the translation table and the counter as the index
+        mov     bx,offset secs_per_track_table
+        mov     ax,cx
+        dec     ax
+        xlatb
+        dec     al
+
+        ;
+        ; AX now contains the LBA address of the sector
+        ; that could be an LVM sector.
+        ; This is all in track0 so the address will not exceed 64kiB sectors.
+        ;
+
+;        push    ax
+;        push    ax
+;        mov     al,'$'
+;        call    VideoIO_PrintSingleChar
+;        pop     ax
+;        call    VideoIO_PrintHexByte
+;        mov     al,'$'
+;        call    VideoIO_PrintSingleChar
+;        pop     ax
 
 IFDEF AuxDebug
       ; Dump the value
@@ -870,45 +957,45 @@ IFDEF AuxDebug
       ;call     AuxIO_TeletypeNL
 ENDIF
 
-      mov      wptr [DriveIO_DAP_Absolute+0],ax       ; LBA low      ;
-      mov      wptr [DriveIO_DAP_Absolute+2],00h      ; LBA high
-      mov      si, offset DriveIO_DAP                 ; address request packet
-      mov      ah, 42h
-      int      13h                                    ; do the i/o
-      jc       DriveIO_LoadMasterLVMSector_NotFound   ; oops, there was an error
+        ; Setup the requested LBA sector number
+        mov     wptr [DriveIO_DAP_Absolute+0],ax       ; LBA low
+        mov     wptr [DriveIO_DAP_Absolute+2],00h      ; LBA high
+        mov     si, offset DriveIO_DAP                 ; address request packet
+        mov     ah, 42h
+        int     13h                                    ; do the i/o
+        cmc     ; Complement carry so we can exit imm. on error
+        jnc     DriveIO_LoadMasterLVMSector_End  ; oops, return with NC
 
-IFDEF AuxDebug
-      ; Dump title
-      mov      si,offset db_masterlvm
-      ;call     AuxIO_Print
 
-      ; Dum sector
-      mov      si, offset LVMSector
-      ;call     AuxIO_DumpSector
-      ;call     AuxIO_TeletypeNL
-ENDIF
-      ; See is this is a valid LVM-sector
-      call     DriveIO_LVMSectorValid
+        mov     si,offset LVMSector
 
-IFDEF AuxDebug
-      pushf
-      ;call     AuxIO_TeletypeNL
-      popf
-ENDIF
-      ; Yep, we found the master LVM-sector
-      jnz      DriveIO_LoadMasterLVMSector_Found
-      ; Try next location
-      loop     DriveIO_LoadMasterLVMSector_NextTry
+        ; See if this is a valid LVM-sector
+        call     DriveIO_LVMSectorValid
 
-   ; No master LVM-sector found, set ZF=true
-   DriveIO_LoadMasterLVMSector_NotFound:
-      xor      ax,ax
+;        pushf
+;        mov     ah,0
+;        rcl     ah,1
+;        mov     al,'|'
+;        call    VideoIO_PrintSingleChar
+;        mov     al,ah
+;        call    VideoIO_PrintHexByte
+;        mov     al,'|'
+;        call    VideoIO_PrintSingleChar
+;        popf
 
-   ; Jump here with ZF=false if found
-   DriveIO_LoadMasterLVMSector_Found:
 
-      popa
-      ret
+        ; Yep, we found the master LVM-sector
+        jc      DriveIO_LoadMasterLVMSector_Found
+        ; Try next location
+        loop     DriveIO_LoadMasterLVMSector_NextTry
+
+        ; No master LVM-sector found, set CF=false
+        clc
+
+    DriveIO_LoadMasterLVMSector_Found:
+    DriveIO_LoadMasterLVMSector_End:
+        popa
+        ret
 DriveIO_LoadMasterLVMSector     Endp
 
 

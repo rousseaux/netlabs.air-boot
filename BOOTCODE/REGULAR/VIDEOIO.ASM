@@ -142,7 +142,7 @@ VideoIO_Print                   EndP
 
 ;        In: SI - String to Print (EOS is 0)
 ; Destroyed: SI
-VideoIO_PrintLikeLenOfName      Proc Near   Uses es di
+VideoIO_PrintLikeLenOfName      Proc Near   Uses cx es di
    push    si
       xor     cx, cx
      VIOPLLON_Loop:
@@ -189,13 +189,13 @@ VideoIO_NoBlinking              EndP
 
 ;        In: AL - Single Char to Print
 ; Destroyed: None
-VideoIO_PrintSingleChar         Proc Near   Uses ax es di
-   mov     bl, al
-   call    VideoIO_Internal_SetRegs
-   mov     es:[di], bl
-   mov     es:[di+1], ah
-   inc     TextPosX
-   ret
+VideoIO_PrintSingleChar         Proc Near   Uses ax bx es di
+    mov     bl, al
+    call    VideoIO_Internal_SetRegs
+    mov     es:[di], bl
+    mov     es:[di+1], ah
+    inc     TextPosX
+    ret
 VideoIO_PrintSingleChar         EndP
 
 
@@ -265,7 +265,7 @@ VideoIO_PrintHexQWord   EndP
 ;        In: AL - Single Char to Print
 ;            CL - Times to print it
 ; Destroyed: None
-VideoIO_PrintSingleMultiChar    Proc Near   Uses ax cx es di
+VideoIO_PrintSingleMultiChar    Proc Near   Uses ax bx cx es di
    or      cl, cl
    jz      VIOPSMC_NoChars
    mov     bl, al
@@ -636,8 +636,7 @@ VideoIO_ClearScreen             Proc Near   Uses ax bx cx dx si es di
 VideoIO_ClearScreen             EndP
 
 ;
-; Rousseau: added
-; Set poosition to teletype cursor
+; Set position to teletype cursor
 ;
 VideoIO_SyncPos                 Proc Near   Uses ax bx cx dx
    pushf
@@ -686,7 +685,7 @@ VideoIO_DBG_WriteString         EndP
 
 ; Dump the disk-info.
 ; Disk number is in DL.
-VideoIO_DumpDiskInfo    Proc Near
+VideoIO_DumpDiskInfo    Proc Near uses ax bx cx dx
 
    VideoIO_DumpDiskInfo_next_disk:
       push     dx
@@ -724,22 +723,22 @@ VideoIO_DumpDiskInfo    Proc Near
       mov      cl,17
       call     VideoIO_PrintSingleMultiChar
 
-      inc      [TextPosY]
-      mov      [TextPosX],dh
-      mov      si, offset BiosCyls
-      call     VideoIO_Print
+;      inc      [TextPosY]
+;      mov      [TextPosX],dh
+;      mov      si, offset BiosCyls
+;      call     VideoIO_Print
 
-      push     dx
-      mov      bx,offset BIOS_Cyls
-      xor      dh,dh
-      and      dl,01111111b
-      shl      dx,1
-      shl      dx,1
-      add      bx,dx
-      mov      ax,[bx]
-      mov      dx,[bx+02]
-      call     VideoIO_PrintHexDWord
-      pop      dx
+;      push     dx
+;      mov      bx,offset BIOS_Cyls
+;      xor      dh,dh
+;      and      dl,01111111b
+;      shl      dx,1
+;      shl      dx,1
+;      add      bx,dx
+;      mov      ax,[bx]
+;      mov      dx,[bx+02]
+;      call     VideoIO_PrintHexDWord
+;      pop      dx
 
       inc      [TextPosY]
       mov      [TextPosX],dh
@@ -781,12 +780,15 @@ VideoIO_DumpDiskInfo    Proc Near
       call     VideoIO_Print
 
       push     dx
+      ; Offset of array containing LVM SPT values for each disk found
       mov      bx,offset TrueSecs
+      ; DX to index
       xor      dh,dh
       and      dl,01111111b
       shl      dx,1
       shl      dx,1
       add      bx,dx
+      ; Get LVM SPT
       mov      ax,[bx]
       mov      dx,[bx+02]
       call     VideoIO_PrintHexDWord

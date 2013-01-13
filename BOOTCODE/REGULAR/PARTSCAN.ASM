@@ -129,12 +129,12 @@ PARTSCAN_ScanDriveForPartitions Proc Near  Uses
    mov     wptr [ExtendedAbsPos+2], ax
   PSSDFP_LoadThisPartition:
 
-   call    DriveIO_LoadPartition                                                 ; Rousseau: load a partition record
+   call    DriveIO_LoadPartition                ; Load a partition record
 
    jc      PSSDFP_InvalidPartition
 
    ; LVM Support - Reads LVM Information Sector
-   call    DriveIO_LoadLVMSector                                                 ; Rousseau: load LVM sector
+   call    DriveIO_LoadLVMSector                ; Load LVM sector
 
    call    PARTSCAN_ScanPartition
    IFDEF ReleaseCode
@@ -805,3 +805,4 @@ PARTSCAN_SyncHideConfigWithXref Proc Near Uses ax bx cx dx si di
 PARTSCAN_SyncHideConfigWithXref EndP
 
 ibm_bm_name:   db 'IBM BootMan',0
+;win_bm_name:   db 'BOOTMGR',0

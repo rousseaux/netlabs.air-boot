@@ -11,6 +11,9 @@ if "%1"=="ALL" goto BuildAll
 echo Invalid language ID
 goto ExitMe
 
+rem -- We do English last so an English version can be copied
+rem -- to this directory, using it's normal basename instead
+rem -- of the language suffixed one.
 :BuildAll
 call make.bat DE
 call make.bat NL
@@ -53,4 +56,9 @@ goto ExitMe
 :Failed
 echo Errorlevel not 0, make failed
 :ExitMe
+
+echo.
+echo Gonna build the installer and setaboot now...
+echo.
+
 rem @pause

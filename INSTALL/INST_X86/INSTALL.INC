@@ -331,7 +331,9 @@ InstallConfig                  Proc Near  Uses
    mov     si, offset BootImage+6C00h    ; Configuration location
    mov     wptr ds:[si+20], 0            ; delete current CheckSum
    xor     bx, bx
-   mov     cx, 5
+
+   mov     cx, 7     ; Rousseau: changed to 7 for v1.0.7+
+
   IC_CalcConfigLoop:
       call    GetCheckOfImageSector
    loop    IC_CalcConfigLoop
@@ -501,7 +503,7 @@ Init_ShowLanguage              Proc Near  Uses si
    mov     si, offset TXT_Language_EN
    je      ISL_Done
    cmp     al, 'D'
-   mov     si, offset TXT_Language_DT
+   mov     si, offset TXT_Language_NL
    je      ISL_Done
    cmp     al, 'G'
    mov     si, offset TXT_Language_DE
@@ -646,7 +648,10 @@ Init_VerifyConfig              Proc Near  Uses ds si es di
    mov     dx, wptr es:[si+20]           ; DX - Current Checksum
    mov     wptr es:[si+20], 0            ; Kills current Checksum
    xor     bx, bx
-   mov     cx, 5                         ; Total of 5 Sectors
+
+   mov     cx, 7                         ; Total of 7 Sectors
+                                         ; Rousseau: changed above to 7
+
   IVC_CheckSumLoop2:
       call    GetCheckOfHDDSector
    loop    IVC_CheckSumLoop2
@@ -906,7 +911,7 @@ IFDEF Flat
 ENDIF
 
 TXT_Language_EN                db 'english', 0
-TXT_Language_DT                db 'dutch', 0
+TXT_Language_NL                db 'dutch', 0
 TXT_Language_DE                db 'german', 0
 TXT_Language_FR                db 'french', 0
 TXT_Language_IT                db 'italian', 0
@@ -1007,4 +1012,4 @@ Status_Impossible             equ  4     ; Unable/Not willing to install
 ; ---------------------------
 
 ; Space for bootcode-image
-BootImage       db 30720 dup (?)
+BootImage       db 31744 dup (?)
