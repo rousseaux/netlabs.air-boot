@@ -597,22 +597,6 @@ IFDEF AuxDebug
    popf
 ENDIF
 
-   ; Rousseau
-   ;pushf
-   ;pusha
-   ;mov   si, offset MyText4
-   ;call  VideoIO_Print
-   ;mov   si, offset LVMSector
-   ;mov   al, [si+LocLVM_VolumeLetter2]
-   ;call  VideoIO_PrintByteDynamicNumber
-   ;mov   al, [si+LocLVM_Startable]
-   ;call  VideoIO_PrintByteDynamicNumber
-   ;mov   al, [si+LocLVM_OnBootMenu]
-   ;call  VideoIO_PrintByteDynamicNumber
-   ;;self: jmp self
-   ;popa
-   ;popf
-
    call    LVM_CheckSectorSignature
    jnc     DIOLLVMS_NoLVMSector
    call    LVM_CheckSectorCRC

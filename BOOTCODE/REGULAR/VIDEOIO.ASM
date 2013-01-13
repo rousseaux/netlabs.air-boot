@@ -651,36 +651,36 @@ VideoIO_SyncPos                 EndP
 
 
 
-VideoIO_DBG_WriteString         Proc Near   Uses ax bx cx dx si es di
-   mov   ch, [CFG_Partitions]                                                    ; y
-   add   ch, 7
-   add   ch, [CFG_IncludeFloppy]
-   push cx
-   mov   cl, 1                                                                   ; x
-   call  VideoIO_Locate
-   mov   ch, 15                                                                  ; fgc
-   mov   cl, 0                                                                   ; bgc
-   call  VideoIO_Color
-   mov   si, offset ShowBootLog
-   call  VideoIO_Print
-   pop cx
-   inc   ch
+;VideoIO_DBG_WriteString         Proc Near   Uses ax bx cx dx si es di
+;   mov   ch, [CFG_Partitions]                                                    ; y
+;   add   ch, 7
+;   add   ch, [CFG_IncludeFloppy]
+;   push cx
+;   mov   cl, 1                                                                   ; x
+;   call  VideoIO_Locate
+;   mov   ch, 15                                                                  ; fgc
+;   mov   cl, 0                                                                   ; bgc
+;   call  VideoIO_Color
+;   mov   si, offset ShowBootLog
+;   call  VideoIO_Print
+;   pop cx
+;   inc   ch
 
-   ;mov   ch, 21                                                                 ; y
-   mov   cl, 1                                                                   ; x
-   call  VideoIO_Locate
-   mov   ch, 15                                                                  ; fgc
-   mov   cl, 0                                                                   ; bgc
-   call  VideoIO_Color
+;   ;mov   ch, 21                                                                 ; y
+;   mov   cl, 1                                                                   ; x
+;   call  VideoIO_Locate
+;   mov   ch, 15                                                                  ; fgc
+;   mov   cl, 0                                                                   ; bgc
+;   call  VideoIO_Color
 
 
    ; Rousseau:
-   mov al, [NewPartitions]
+;   mov al, [NewPartitions]
    ;call  VideoIO_PrintByteDynamicNumber
-   mov al, [CFG_Partitions]
+;   mov al, [CFG_Partitions]
    ;call  VideoIO_PrintByteDynamicNumber
-   ret
-VideoIO_DBG_WriteString         EndP
+;   ret
+;VideoIO_DBG_WriteString         EndP
 
 
 ; Dump the disk-info.
@@ -836,7 +836,7 @@ VideoIO_DumpDiskInfo    EndP
 
 ; Disk Info to Dump to AB LogScreen
 Disk:             db "DISK ",0
-BiosCyls:         db "Cyls    :",0
+;BiosCyls:         db "Cyls    :",0
 BiosHeads:        db "Heads   :",0
 BiosSecs:         db "Secs    :",0
 LvmSecs:          db "SecsLVM :",0

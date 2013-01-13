@@ -28,6 +28,7 @@
 ; - Fixes booting Windows when installed in logical partition
 ;   with loader on FAT32.
 ; - Corrected contact links.
+; - Location of AUX parameters has changed.
 ; NOTE:
 ;   AB v1.07 had a bug with saving and loading the correct size of the
 ;   configuration. Therefore the CRC over the config was also calculated
@@ -42,6 +43,9 @@
 ;   Note that after such a correction, an installation from a v2.1 eCS CD
 ;   with a version of AiR-BOOT >v1.07 active will not automatically
 ;   boot-through after phase1.
+;   Since there will be more changes in AB in the future, the method of
+;   passing the install-volume needs to be refined and made more
+;   independent of a possible AB version installed.
 ;
 ; v1.07
 ; -----
@@ -214,31 +218,43 @@ LocBRPT_AbsoluteLength      equ         12
 
 LocBR_Magic                 equ        510
 
-; Offsets for LVM Information Sector
-LocLVM_SignatureStart       equ          0   ;
-LocLVM_SignatureByte0       equ          2   ;
-LocLVM_CRC                  equ          8   ; CRC is a DWORD
-LocLVM_MaxEntries           equ          4   ; Max entries in the track0 LVM-sector
-LocLVM_StartOfEntries       equ         60   ; (contains maximum of 4 entries)
-LocLVM_LenOfEntry           equ         60   ; ?
-LocLVM_VolumeID             equ          0   ; is DWORD
-LocLVM_PartitionID          equ          4   ; is DWORD
-LocLVM_PartitionSize        equ          8   ; is DWORD
-LocLVM_PartitionStart       equ         12   ; is DWORD
-LocLVM_VolumeLetter         equ         18   ; is BYTE (Letter C-Z or 0)
-                                             ; (relative to entry)
 
-; Rousseau: added (index in extpart LVM-sector)
-LocLVM_Secs                 equ         20h  ; Sectors per Track (OS/2 ext-geo)
-LocLVM_Heads                equ         1ch  ; Number of heads
-LocLVM_VolumeLetter2        equ         78   ; is BYTE (Letter C-Z or 0)
-LocLVM_Startable            equ         77   ; is startable (newly installed system)
-LocLVM_OnBootMenu           equ         76   ; is on bootmenu
+; Used as a quick compare in LVM.ASM
+LocLVM_SignatureByte0       equ         02h
 
-; Truncated to 11 chars when  displayed in menu
-LocLVM_VolumeName           equ         20   ; 20 bytes
-LocLVM_PartitionName        equ         40   ; 20 bytes (Used in menu)
+; Offsets for LVM Information Sector.
+; These are relative to the start of the LVM sector.
+LocLVM_SignatureStart       equ         00h ; 02h,'RMBPMFD' (8 bytes)
+LocLVM_CRC                  equ         08h ; CRC is a DWORD
+LocLVM_Heads                equ         1ch ; Number of heads
+LocLVM_Secs                 equ         20h ; Sectors per Track
+LocLVM_DiskName             equ         24h ; Name of the disk
+LocLVM_StartOfEntries       equ         3ch ; (contains maximum of 4 entries)
+LocLVM_LenOfEntry           equ         3ch ; Length of an LVM-entry
 
+; An LVM info-sector can contain information on max. 4 partitions.
+; All 4 entries will be used when there 4 primary partitions defined.
+; For logical partitions, the LVM info-sector is located below the start
+; of the logical partition and only one LVM entry is used in that logical
+; LVM info-sector.
+LocLVM_MaxEntries           equ          4  ; Max entries in an LVM-sector
+
+; Offsets for LVM entry.
+; These are relative to the start of the entry.
+LocLVM_VolumeID             equ         00h ; is DWORD
+LocLVM_PartitionID          equ         04h ; is DWORD
+LocLVM_PartitionSize        equ         08h ; is DWORD
+LocLVM_PartitionStart       equ         0ch ; is DWORD
+LocLVM_OnBootMenu           equ         10h ; is on IBM BM Bootmenu
+LocLVM_Startable            equ         11h ; is Startable (newly installed system)
+LocLVM_VolumeLetter         equ         12h ; is Drive Letter for partition (C-Z or 0)
+LocLVM_Unknown              equ         13h ; unknown BYTE
+; Truncated to 11 chars when  displayed in menu.
+; MiniLVM sets both to the same value.
+; Also, MiniLVM uses a 0-byte terminator, so the maximum length is 19d.
+; Same goes for LocLVM_DiskName.
+LocLVM_VolumeName           equ         14h ; 20 bytes
+LocLVM_PartitionName        equ         28h ; 20 bytes (Used in menu)
 
 
 
@@ -359,7 +375,7 @@ AiR_BOOT:     cli                         ; Some M$ operating systems need a CLI
                                           ;  boot phase, it's laughable!
               db      0EBh                ; JMP-Short -> MBR_Start
               ; Uses the 'A' as the displacement !
-              db      'AiRBOOT', 07h, 11h, 20h, 11h, 01h, 08h, TXT_LanguageID
+              db      'AiRBOOT', 23h, 11h, 20h, 11h, 01h, 08h, TXT_LanguageID
 
               ; ID String, Date and Version Number, U for US version
               db      1                   ; Total Sectors Count,
@@ -1150,6 +1166,11 @@ size_auxio = $-b_auxio
 ;   Include SPECiAL\CHARSET.asm           ; Charset Support (e.g. Cyrillic)
 ;ENDIF
 
+b_lvm:
+Include SPECiAL\LVM.asm                  ; LVM-specific code
+size_lvm = $-b_lvm
+
+
 ; End of sector 3.
 eos3:
 
@@ -1243,9 +1264,9 @@ b_fx:
 Include SPECiAL\FX.asm                   ; l33t Cooper-Bars/Scrolling <bg>
 size_fx = $-b_fx
 
-b_lvm:
-Include SPECiAL\LVM.asm                  ; LVM-specific code
-size_lvm = $-b_lvm
+;b_lvm:
+;Include SPECiAL\LVM.asm                  ; LVM-specific code
+;size_lvm = $-b_lvm
 
 
 

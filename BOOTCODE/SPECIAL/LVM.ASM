@@ -166,6 +166,123 @@ LVM_SearchForPartition          Proc Near   Uses cx
    ret
 LVM_SearchForPartition          EndP
 
+
+; Gets a drive-letter from the LVM-info of a partition. (if it exists)
+;        In: BX:CX - LBA starting sector of partition to be searched
+;            DL = Physical Disk in BIOS notation. (80h+)
+;       Out: Carry set, if LVM-info found
+;            AL - drive-letter from LVM-info
+
+LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
+        ; For primary partitions this information is stored in the last
+        ; sector of track0; for all four partition entries should they
+        ; all be primary ones.
+        ;
+        ; LVM DLAT info for logical partitions is stored in the sector
+        ; preceding the start of the partition.
+        ;
+        ; Because the LVM info of a logical partition is the easiest to find,
+        ; we do that first. The LVM info for primary partitions is located
+        ; dependent on the geometry in use, so we use a special locater
+        ; call for that. Also, since the LVM info for primaries contains
+        ; info on all 4 entries, we need the partition index to obtain the
+        ; correct drive-letter.
+        ;
+
+        ; See if this is a primary partition
+        ; CY will be set if it is and AL will contain the 0-based
+        ; index in the P-table.
+        ; If it's a logical partition, CY will be clear and AL
+        ; will be set to 0ffh indicating an invalid index.
+        call    PART_IsPrimaryPartition
+        mov     al,0
+        rcl     al,1        ; CY if primary
+        mov     dh,al       ; Save PRI or LOG
+
+        ; Save PRI/LOG indicator for later use
+        push    dx
+
+        ; Load *possible* LVM sector
+        ; This load is only valid if the partition is logical, in which case
+        ; the LVM sector is below the start of the partition.
+        ; If primary, the LVM sector is at a location that
+        ; DriveIO_LoadMasterLVMSector will find out.
+
+        ; Push LBA address
+        push    bx
+        push    cx
+
+        ; Adjust for logical LVM-sector
+        sub     cx,1
+        sbb     bx,0
+
+        ; Load the LVM sector
+        push    si
+        push    di
+        mov     si,offset [LVMSector]
+        mov     di,ds
+        call    DriveIO_LoadSectorLBA
+        pop     di
+        pop     si
+
+        ; Restore LBA address
+        pop     cx
+        pop     bx
+
+        ; Restore PRI/LOG partition indicator in DH
+        pop     dx
+
+        ; Test PRI or not
+        test    dh,dh
+        ; It's not a PRI so we can use the previously loaded LVM sector
+        jz      LVM_GetDriveLetter_is_not_pri
+
+        ; It's a PRI so we use the special locator function.
+        ; This locator takes care of extended eCS geometry should that be used
+        call    DriveIO_LoadMasterLVMSector
+
+    LVM_GetDriveLetter_is_not_pri:
+
+
+        ;
+        ; At this stage the LVM-info sector has been loaded at [LVMSector].
+        ; From here we look for an LVM entry for the partition.
+        ; If one is found, based on it's LBA-start, it's driveletter is used
+        ; in case byte 25h is zero.
+        ;
+
+
+        ; Search for the partition in the LVM info.
+        ; If found, CY is set and SI points to LVM entry.
+        push    si
+        mov     ax,cx
+        mov     dx,bx
+        mov     si,offset [LVMSector]
+        call    LVM_SearchForPartition
+        mov     bx,si   ; BX now points to LVM entry
+        mov     dx,0    ; Setup null driveletter
+        pop     si
+
+        mov     al,0
+        ; Oops, no valid LVM record was used so we have a null driveletter.
+        jnc     LVM_GetDriveLetter_null_lvm_dl
+
+        ;
+        ; At this point BX points to the LVM-entry related to the
+        ; partition, whether it was a logical or a primary one.
+        ;
+        mov     al,[bx+LocLVM_VolumeLetter]
+        ; Clear CY if 0
+        test    al,al
+        clc
+        jz      LVM_GetDriveLetter_null_lvm_dl
+        stc
+
+    LVM_GetDriveLetter_null_lvm_dl:
+        ret
+LVM_GetDriveLetter      EndP
+
+
 ; Removes a given drive-letter from the whole LVM information sector
 ;        In: CH    - drive-letter (ascii)
 ;            DS:SI - LVM-Information-Sector
