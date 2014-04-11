@@ -71,7 +71,7 @@ CLR_BOOT_WINDOW_BM         = 0701h
   BMBM_NoDetailed1:
    mov     Menu_AbsoluteX, dl
 
-   ; Display Top-Infos in Boot-Window
+   ; Display Top-Infos (labels) in Boot-Window
 
 CLR_TOP_INFOS_CLASSIC    = 0b01h
 CLR_TOP_INFOS_BM  = 0301h
@@ -189,11 +189,11 @@ CLR_INFO_WINDOW_BM   = 0701h
 
    mov     cx, CLR_INFO_WINDOW_BM
    ;mov     cx, 0C06h ; brown, main background
-   call    VideoIO_Color                                                         ; Ccolor info window
+   call    VideoIO_Color                    ; Color info window
 
    mov     bx, 1401h
    mov     dx, 1950h
-   call    VideoIO_MakeWindow            ; Information-Window
+   call    VideoIO_MakeWindow               ; Information-Window
    ; den kleinen Strich...
    mov     cx, 1602h
    call    VideoIO_Locate
@@ -209,8 +209,8 @@ CLR_INFO_WINDOW_BM   = 0701h
 CLR_INFO_TEXT_CLASSIC   = 0f04h
 CLR_INFO_TEXT_BM   = 0701h
 
-   mov     cx, CLR_INFO_TEXT_BM                   ; Info text
-   call    VideoIO_Color                                                         ; Color info text
+   mov     cx, CLR_INFO_TEXT_BM             ; Info text
+   call    VideoIO_Color                    ; Color info text
 
    mov     si, offset TXT_BootMenuHelpText1
    call    VideoIO_Print
@@ -586,11 +586,16 @@ BOOTMENU_BuildChoiceBar         Proc near   Uses ax es di
 
 CLR_SELECTION_BAR_CLASSIC  = 50h
 CLR_SELECTION_BAR_BM = 090h
+CLR_SELECTION_BAR_WARNING = 040h
 
 
 
   BMBCB_AfterScrolling:
-   mov     cl, CLR_SELECTION_BAR_BM    ; Color PINK, Partition DL
+   mov     cl, CLR_SELECTION_BAR_BM
+   test     byte ptr [TooManyPartitions],0ffh ; Check for too many partitions.
+   jz       BOOTMENU_BuildChoiceBar_normal
+   mov     cl, CLR_SELECTION_BAR_WARNING    ; Set red bar if so.
+   BOOTMENU_BuildChoiceBar_normal:
    call    BOOTMENU_ReColorPart
    ret
 BOOTMENU_BuildChoiceBar         EndP

@@ -636,17 +636,15 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    pop     dx
    jnc     PSCPN_LVMGotError             ; Not Found? -> display error and halt
 
-    ;
-    ; While AiR-BOOT v1.0.8+ displays the LVM VolumeName, the LVM PartitionName
-    ; is used here to compare to the IPT.
-    ; The IPT has the LVM VolumeName, so if they differ the compare will fail
-    ; and the user-entry will noy be written to the LVM-info sector.
-    ;
-   add     si, LocLVM_PartitionName
+
+    ; Point to LVM VolumeName
+   add     si, LocLVM_VolumeName
 
 
    xchg    si, di                        ; SI-IPTEntry, DI-LVM PartName
    jmp     PSCPN_CheckPartName           ; Check, if match...
+
+
 
   PSCPN_LVMGotError:
    jmp     MBR_LoadError
@@ -690,13 +688,16 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    ; This code is used for BR and LVM checking
    ; Rousseau: Because AiR-BOOT v1.0.8 uses the LVM_VolumeName, which is copied
    ; to the IPT, this compare fails when the LVM_PartitionName is not
-   ; the same as the LVM_VolumeName.
-   ; This is a protection against editing the Label when these names differ.
-   ; MiniLVM assigns the same value to both, so partitions created with MiniLVM
-   ; can be edited.
+   ; the same as the LVM_VolumeName. In that case, only the LVM_VolumeName
+   ; is updated. If they are the same, both are upated so they are the same
+   ; again after the edit.
+
   PSCPN_CheckPartName:
 
-  ; SI = IPT_Enty
+    ; Do no synchronization initially.
+    mov     [SyncLvmLabels],0
+
+  ; SI = IPT_Enty, DI points to LVM VolumeName.
 
         ; If the partition is an LVM partition then disable editing completely.
         cmp     byte ptr [si+LocIPT_SystemID], 035h
@@ -711,7 +712,27 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
 
 
         jmp     PSCPN_AllDone
+
+    ; SI = IPT_Enty, DI points to LVM VolumeName.
     no_type_35h:
+
+        ;
+        ; Compare LVM VolumeName and PartitionName and
+        ; set flag if they are the same and need to be synced after user edit.
+        ;
+        push    si
+        push    di
+        mov     si,di               ; Pointer to LVM V-name in SI
+        add     di,LocLVM_LabelLen  ; Pointer to LVM P-name in DI
+        mov     cx,LocLVM_LabelLen  ; Length of LVM label
+        cld
+        repe    cmpsb               ; Compare V and P labels
+        jnz     LVM_Labels_not_equal
+        mov     [SyncLvmLabels],1   ; Same so set flag for later
+    LVM_Labels_not_equal:
+        pop     di
+        pop     si
+
 
    mov     cx, 11                        ; Partition-Name-Length = 11 Bytes
    push    si
@@ -724,6 +745,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
 
    mov     ChangePartNameSave, 1         ; Remember, so we will save to BR
 
+  ; SI = IPT_Enty, DI points to LVM PartitionName.
   PSCPN_LetUserEditPartName:
    ; User will now edit the volume label...
    mov     cx, 11
@@ -745,17 +767,23 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
 
 
    ; Make DI point to LVM VolumeName in LVM-entry
-   sub     di,20
+   ;~ sub     di,20
 
-   ; -------------------------------------------------[LVM SAVE VOLUME NAME]---
-   ; Copy 11 bytes from IPT into LVM VolumeName, back-padd with zero's
-   mov     cx, 11
-   push    si
-      rep     movsb
-   pop     si
-   xor     al, al
-   mov     cx, 9
-   rep     stosb
+        ; Points to LVM VolumeName.
+        push    di
+
+        ; -------------------------------------------------[LVM SAVE VOLUME NAME]---
+        ; Copy 11 bytes from IPT into LVM VolumeName, back-padd with zero's
+        mov     cx, 11
+        push    si
+        rep     movsb
+        pop     si
+
+        ; Padd with zero's, but the editor still might have left spaces
+        ; at the end of the 11-byte part. We correct that below.
+        xor     al, al
+        mov     cx, 9
+        rep     stosb
 
 
         ;
@@ -767,7 +795,6 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
         ;
         ; Correct LVM VolumeName
         ;
-        push    di
         mov     cx,20
     vn_padd_next:
         jcxz    vn_padded
@@ -781,47 +808,23 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
         mov     byte ptr [di],0
         jmp     vn_padd_next
     vn_padded:
+
+        ; Points to LVM VolumeName
         pop     di
 
+        ; See if LVM-labels need to be synced.
+        test    [SyncLvmLabels],1
+        jz      LVM_no_sync_labels
+
+        ; Sync LVM-labels.
+        mov     si,di
+        add     di,LocLVM_LabelLen
+        mov     cx,LocLVM_LabelLen
+        cld
+        rep     movsb
 
 
-
-   ; ----------------------------------------------[LVM SAVE PARTITION NAME]---
-   ; Copy 11 bytes from IPT into LVM PartitionName, back-padd with zero's
-   mov     cx, 11
-   push    si
-      rep     movsb
-   pop     si
-   xor     al, al
-   mov     cx, 9
-   rep     stosb
-
-
-        ;
-        ; The AiR-BOOT Label Editor inserts spaces when a label is edited
-        ; and characters are backspaced.
-        ; This is fine for filesystem labels, which are space padded,
-        ; but the LVM VolumeName and PartitionName need to be zero padded.
-        ; So, below we replace all trailing spaces with zero's.
-        ;
-        ; Correct LVM PartitionName
-        ;
-        push    di
-        mov     cx,20
-    pn_padd_next:
-        jcxz    pn_padded
-        dec     di
-        dec     cx
-        mov     al,[di]
-        test    al,al
-        jz      pn_padd_next
-        cmp     al,' '
-        jnz     pn_padded
-        mov     byte ptr [di],0
-        jmp     pn_padd_next
-    pn_padded:
-        pop     di
-
+    LVM_no_sync_labels:
 
    ; Update LVM-CRC now...
    mov     si, offset LVMSector
@@ -916,6 +919,15 @@ PARTHIDESETUP_Main              Proc Near   Uses dx
   PHSM_KeyESC:
    ; Collect Hide-Partition-Config and put it into Hide-Table
    mov     dl, PartSetup_ActivePart
+
+IFDEF   AUX_DEBUG
+        pusha
+        mov     al,dl   ; Partition the hiding is set for.
+        call    AuxIO_TeletypeHexByte
+        call    AuxIO_TeletypeNL
+        popa
+ENDIF
+
    call    PARTHIDESETUP_CollectHideConfigAndPutToTable
    ; Simply return to Partition Setup
    ret
@@ -931,6 +943,15 @@ PARTHIDESETUP_Main              Proc Near   Uses dx
    jmp     PHSM_MainLoop
 
   PHSM_KeyToogle:
+
+IFDEF   AUX_DEBUG
+        pusha
+        mov     al,dl   ; Index of partition to set Special Marker on.
+        call    AuxIO_TeletypeHexByte
+        call    AuxIO_TeletypeNL
+        popa
+ENDIF
+
    call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
    mov     al, [si+LocIPT_Flags]
    xor     al, Flags_SpecialMarker
@@ -1268,104 +1289,207 @@ PARTHIDESETUP_ReColorPart       EndP
 
 ; =============================================================================
 
+
+;
+; Rousseau: Adjusted for packed hidden-part-table !
+;           Needs to be re-written.
+;
 ; This is called by MBRS_PS_HiddenSetup
 ;        In: DL - Partition, where to save Hide-Config
 ; Destroyed: None, but Locate-Pointer
-PARTHIDESETUP_GetHideConfigAndSpread Proc Near Uses ax dx si di
-   ; First check HideFeature-Flag on selected partition.
-   ;  if it's not set, don't do anything...
-   call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
-   mov     al, [si+LocIPT_Flags]
-   test    al, Flags_HideFeature
-   jz      PHSGHCAS_EndOfEntries
-  PHSGHCAS_SomethingHidden:
-   ; Calculate, where to get Hide-Config
-   mov     ax, LocIPT_MaxPartitions
-   mul     dl
-   mov     di, offset HidePartitionTable
-   add     di, ax                        ; We got the pointer
-   ; So process Hide-Config. Read out Byte-Entries, each points to a partition
-   ;  0FFh is end-marker / maximum entries = CFG_Partitions
-   mov     cl, CFG_Partitions
-  PHSGHCAS_SpreadLoop:
-      mov     dl, [di]
-      inc     di
-      cmp     dl, 0FFh
-      je      PHSGHCAS_EndOfEntries
-      call    PART_GetPartitionPointer   ; Pointer for partition DL to SI
-      mov     al, [si+LocIPT_Flags]
-      or      al, Flags_SpecialMarker    ; Set marker
-      mov     [si+LocIPT_Flags], al
-   dec     cl
-   jnz     PHSGHCAS_SpreadLoop
-  PHSGHCAS_EndOfEntries:
-   ret
+PARTHIDESETUP_GetHideConfigAndSpread Proc Near Uses ax bx dx si di
+        ; First check HideFeature-Flag on selected partition.
+        ;  if it's not set, don't do anything...
+        call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
+        mov     al, [si+LocIPT_Flags]
+        test    al, Flags_HideFeature
+        jz      PHSGHCAS_EndOfEntries
+    PHSGHCAS_SomethingHidden:
+        ; Calculate, where to get Hide-Config
+        mov     ax, LocHPT_LenOfHPT     ; Size of a hidden-part-table entry.
+        mul     dl      ; Multiply by partition-index.
+        mov     di, offset HidePartitionTable
+        add     di, ax                        ; We got the pointer
+
+        ; So process Hide-Config. Read out Bitfield-Entries,
+        ; each points to a partition.
+        ; 3Fh is end-marker / maximum entries = CFG_Partitions
+        mov     cl, CFG_Partitions
+        mov     bx,di   ; Pointer to hidden-parts entry for this partition.
+        mov     ch,0    ; Start index in hidden-parts entry for this partition.
+        mov     dh,6    ; Bitfields are 6 bits wide.
+    PHSGHCAS_SpreadLoop:
+        mov     dl,ch   ; Load bitfield index from CH.
+        call    CONV_GetBitfieldValue   ; Get value of bitfield.
+        mov     dl,al   ; Partition index in DL.
+        ;~ mov     dl, [di]
+        ;~ inc     di
+        ;~ cmp     dl, 0FFh
+        cmp     dl,3fh  ; Max value for 6-bits field.
+        je      PHSGHCAS_EndOfEntries
+        call    PART_GetPartitionPointer   ; Pointer for partition DL to SI
+        mov     al, [si+LocIPT_Flags]
+        or      al, Flags_SpecialMarker    ; Set marker
+        mov     [si+LocIPT_Flags], al
+        inc     ch      ; Next bitfield.
+        dec     cl
+        jnz     PHSGHCAS_SpreadLoop
+    PHSGHCAS_EndOfEntries:
+        ret
 PARTHIDESETUP_GetHideConfigAndSpread EndP
 
+
+;
+; Rousseau: Adjusted for packed hidden-part-table !
+;           Needs to be re-written.
+;
 ; This is called by MBRS_PS_HiddenSetup
 ;        In: DL - Partition, where to save Hide-Config
 ; Destroyed: None, but Locate-Pointer
-PARTHIDESETUP_CollectHideConfigAndPutToTable Proc Near Uses ax si es di         ; checken !
-   ; First calculate, where to put Hide-Config
-   mov     ax, LocIPT_MaxPartitions
-   mul     dl
-   push    cs
-   pop     es
-   mov     di, offset HidePartitionTable
-   add     di, ax                        ; We got the pointer
-   push    di
-   push    di
-      mov     cx, LocIPT_MaxPartitions
-      mov     al, 0FFh
-      rep     stosb                      ; Fill up with FFh
-   pop     di
-      ; Now walk through the IPT collecting all SpecialMarkers
-      ;  For each do a byte-entry containing the number of the partition
-      mov     si, offset PartitionTable
-      xor     ch, ch
-      mov     cl, CFG_Partitions
-     PHSCHCAPTT_CollectLoop:
-         mov     bl, [si+LocIPT_Flags]
-         test    bl, Flags_SpecialMarker
-         jz      PHSCHCAPTT_NoMarker
-         mov     ds:[di], ch             ; Write byte-Entry
-         inc     di
-         xor     bl, Flags_SpecialMarker ; Reset Flag
-         mov     [si+LocIPT_Flags], bl
-        PHSCHCAPTT_NoMarker:
-         add     si, LocIPT_LenOfIPT
-      inc     ch
-      dec     cl
-      jnz     PHSCHCAPTT_CollectLoop
-   pop     si                            ; Original Hide-Config Pointer -> SI
-   ; Now check, if we have written anything
-   cmp     si, di
-   jne     PHSCHCAPTT_SomethingToHide
-   ; Nothing to hide...so UNSET the Hidden-Feature Flag
-   call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
-   mov     al, [si+LocIPT_Flags]
-   mov     ah, Flags_HideFeature
-   not     ah
-   and     al, ah
-   mov     [si+LocIPT_Flags], al
-   ret
+PARTHIDESETUP_CollectHideConfigAndPutToTable Proc Near Uses ax si es di
+        ; First calculate, where to put Hide-Config
+        ;~ mov     ax, LocIPT_MaxPartitions
+        mov     ax, LocHPT_LenOfHPT             ; Length of an HPT-entry.
+        mul     dl                              ; Partition to store info for.
+        push    cs
+        pop     es
+        mov     di, offset HidePartitionTable   ; Packed hideparttable.
+        add     di, ax                          ; We got the pointer in DI.
 
-  PHSCHCAPTT_SomethingToHide:
-   mov     ax, si
-   add     ax, LocIPT_MaxPartitions
-   cmp     di, ax
-   jae     PHSCHCAPTT_AllUsed
-   ; Set END-marker
-   mov     al, 0FFh
-   stosb                                 ; Write byte-Entry
-  PHSCHCAPTT_AllUsed:
+        ;~ push    di
 
-   ; Something to hide...so SET the Hidden-Feature Flag
-   call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
-   mov     al, [si+LocIPT_Flags]
-   or      al, Flags_HideFeature
-   mov     [si+LocIPT_Flags], al
-   ret
+        ; Fill hide-part-table entry with 'unused' marker.
+        ; Note that the entry is actually an array of 45 6-bit bitfields.
+        ; Below fills 34 bytes = 45 6-bit bitfields.
+        push    di
+        mov     cx, LocHPT_LenOfHPT
+        mov     al, 0FFh
+        rep     stosb                           ; Fill up with FFh
+        pop     di
+
+        ;~ mov     bp,di
+
+        ; Now walk through the IPT collecting all SpecialMarkers.
+        ; For each do a bitfield-entry containing the number of the partition.
+        mov     si, offset PartitionTable
+        xor     ch, ch                          ; Partition index
+        mov     cl, CFG_Partitions              ; Nr. of partitions in IPT
+        mov     ah,0                            ; Next hide-index to write.
+
+    ;
+    ; Collect all partitions that have the special marker set.
+    ; This marker was set by toggling the hide/unhide option in the setup menu.
+    ;
+    PHSCHCAPTT_CollectLoop:
+
+        ; Get marker and test it.
+        mov     bl, [si+LocIPT_Flags]
+        test    bl, Flags_SpecialMarker
+
+        ; No marker.
+        jz      PHSCHCAPTT_NoMarker
+
+        ; Setup stuff for bitfield operation.
+        push    dx          ; Save partition pointer.
+        push    bx          ; Save marker.
+        mov     bx,di       ; Get pointer to HPT-entry.
+        mov     dl,ah       ; Index in entry.
+        mov     dh,6        ; Bitfield width.
+        push    ax          ; Save index.
+        mov     al,ch       ; Partition index to store.
+
+
+    IFDEF   AUX_DEBUG
+        pushf
+        pusha
+        push    ax
+        mov     al,dl
+        call    AuxIO_TeletypeHexByte
+        mov     al,':'
+        call    AuxIO_Teletype
+        mov     ax,bx
+        call    AuxIO_TeletypeHexWord
+        mov     al,':'
+        call    AuxIO_Teletype
+        mov     ax,bp
+        call    AuxIO_TeletypeHexWord
+        mov     al,':'
+        call    AuxIO_Teletype
+        mov     ax,sp
+        call    AuxIO_TeletypeHexWord
+        mov     al,':'
+        call    AuxIO_Teletype
+        pop     ax
+        call    AuxIO_TeletypeHexByte
+        call    AuxIO_TeletypeNL
+        popa
+        popf
+    ENDIF
+
+        call    CONV_SetBitfieldValue   ; Store bitfield.
+        pop     ax          ; Restore index.
+        pop     bx          ; Restore marker.
+        pop     dx          ; Restore partition pointer.
+
+        inc     ah          ; Advance to next index.
+
+        ;~ mov     ds:[di], ch             ; Write byte-Entry
+        ;~ inc     di
+        xor     bl, Flags_SpecialMarker     ; Reset Flag
+        mov     [si+LocIPT_Flags], bl       ; Store it in IPT
+
+
+    PHSCHCAPTT_NoMarker:
+        add     si, LocIPT_LenOfIPT         ; Advance to next partition in IPT.
+        inc     ch                          ; Next partition-index.
+        dec     cl                          ; Decrement partitions to process.
+        jnz     PHSCHCAPTT_CollectLoop      ; Are we done yet ?
+
+        ;~ pop     si                        ; Original Hide-Config Pointer -> SI
+        ; Now check, if we have written anything
+        ;~ cmp     si, di
+        test    ah,ah                       ; See if we had to store anything.
+        jne     PHSCHCAPTT_SomethingToHide  ; Yep, go to write end-marker.
+
+        ; Nothing to hide...so UNSET the Hidden-Feature Flag
+        call    PART_GetPartitionPointer    ; Use DL to get part-pointer in SI.
+        mov     al, [si+LocIPT_Flags]       ; Get flags.
+        mov     ah, Flags_HideFeature       ; Hide mask.
+        not     ah                          ; Complement.
+        and     al, ah                      ; Clear hide-flag.
+        mov     [si+LocIPT_Flags], al       ; Store it.
+        ;~ pop     bp
+        ret                                 ; Return to caller.
+
+    PHSCHCAPTT_SomethingToHide:
+        cmp     ah, LocIPT_MaxPartitions    ; See if index is at end.
+        jae     PHSCHCAPTT_AllUsed          ; Yep, no need to store end-marker.
+
+        ; Write end-marker.
+        push    dx                          ; Save partition pointer.
+        mov     al,3fh                      ; End marker (6-bit)
+        mov     dl,ah                       ; Index in HPT-entry.
+        mov     dh,6                        ; Bitfield width.
+        mov     bx,di                       ; Get pointer to HPT-entry.
+        call    CONV_SetBitfieldValue       ; Store end-marker.
+        pop     dx                          ; Restore partition pointer.
+
+        ;~ mov     ax, si
+        ;~ add     ax, LocIPT_MaxPartitions
+        ;~ cmp     di, ax
+        ;~ jae     PHSCHCAPTT_AllUsed
+        ; Set END-marker
+        ;~ mov     al, 0FFh
+        ;~ stosb                                 ; Write byte-Entry
+    PHSCHCAPTT_AllUsed:
+
+        ; Something to hide...so SET the Hidden-Feature Flag
+        call    PART_GetPartitionPointer    ; Use DL to get part-pointer in SI.
+        mov     al, [si+LocIPT_Flags]       ; Get flags.
+        or      al, Flags_HideFeature       ; Set hide-flag.
+        mov     [si+LocIPT_Flags], al       ; Store it.
+        ;~ pop     bp
+        ret                                 ; Return to caller.
 PARTHIDESETUP_CollectHideConfigAndPutToTable EndP
 
 ; =============================================================================

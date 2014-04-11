@@ -36,132 +36,129 @@ DB 'DEBUG',0
 ENDIF
 
 DEBUG_CheckMath Proc    Near
-        pushf
-        pusha
-
-        ; Msg check math-module
-        mov     si,offset db_checkmath
-        call    AuxIO_Print
-
-        ; Output hex-word
-        mov     ax,0BABEh
-        call    AuxIO_TeletypeHexWord
-
-        mov     al,' '
-        call    AuxIO_Teletype
-        mov     al,'*'
-        call    AuxIO_Teletype
-        mov     al,' '
-        call    AuxIO_Teletype
-
-        ; Output hex-word
-        mov     ax,0BABEh
-        call    AuxIO_TeletypeHexWord
-
-        mov     al,' '
-        call    AuxIO_Teletype
-        mov     al,'='
-        call    AuxIO_Teletype
-        mov     al,' '
-        call    AuxIO_Teletype
-
-        mov     ax,0BABEh
-        mul     ax
-        call    AuxIO_TeletypeHexDWord
-
-        ; Start new line
-        call    AuxIO_TeletypeNL
-
-        ; Output hex-dword
-        mov     dx,0DEADh
-        mov     ax,0FACEh
-        call    AuxIO_TeletypeHexDWord
-
-        mov     al,' '
-        call    AuxIO_Teletype
-        mov     al,'*'
-        call    AuxIO_Teletype
-        mov     al,' '
-        call     AuxIO_Teletype
-
-        ; Output hex-dword
-        mov     dx,0DEADh
-        mov     ax,0FACEh
-        call    AuxIO_TeletypeHexDWord
-
-        mov     al,' '
-        call    AuxIO_Teletype
-        mov     al,'='
-        call    AuxIO_Teletype
-        mov     al,' '
-        call    AuxIO_Teletype
-
-        mov     bx,0DEADh
-        mov     cx,0FACEh
-        mov     dx,0DEADh
-        mov     ax,0FACEh
-        call    MATH_Mul32
-        call    AuxIO_TeletypeHexQWord
-
-        ; Start new line
-        call    AuxIO_TeletypeNL
-
+        ;~ pushf
+        ;~ pusha
+;~
+        ;~ ; Msg check math-module
+        ;~ mov     si,offset db_checkmath
+        ;~ call    AuxIO_Print
+;~
+        ;~ ; Output hex-word
+        ;~ mov     ax,0BABEh
+        ;~ call    AuxIO_TeletypeHexWord
+;~
+        ;~ mov     al,' '
+        ;~ call    AuxIO_Teletype
+        ;~ mov     al,'*'
+        ;~ call    AuxIO_Teletype
+        ;~ mov     al,' '
+        ;~ call    AuxIO_Teletype
+;~
+        ;~ ; Output hex-word
+        ;~ mov     ax,0BABEh
+        ;~ call    AuxIO_TeletypeHexWord
+;~
+        ;~ mov     al,' '
+        ;~ call    AuxIO_Teletype
+        ;~ mov     al,'='
+        ;~ call    AuxIO_Teletype
+        ;~ mov     al,' '
+        ;~ call    AuxIO_Teletype
+;~
+        ;~ mov     ax,0BABEh
+        ;~ mul     ax
+        ;~ call    AuxIO_TeletypeHexDWord
+;~
         ;~ ; Start new line
-        call    AuxIO_TeletypeNL
-
-        popa
-        popf
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; Output hex-dword
+        ;~ mov     dx,0DEADh
+        ;~ mov     ax,0FACEh
+        ;~ call    AuxIO_TeletypeHexDWord
+;~
+        ;~ mov     al,' '
+        ;~ call    AuxIO_Teletype
+        ;~ mov     al,'*'
+        ;~ call    AuxIO_Teletype
+        ;~ mov     al,' '
+        ;~ call     AuxIO_Teletype
+;~
+        ;~ ; Output hex-dword
+        ;~ mov     dx,0DEADh
+        ;~ mov     ax,0FACEh
+        ;~ call    AuxIO_TeletypeHexDWord
+;~
+        ;~ mov     al,' '
+        ;~ call    AuxIO_Teletype
+        ;~ mov     al,'='
+        ;~ call    AuxIO_Teletype
+        ;~ mov     al,' '
+        ;~ call    AuxIO_Teletype
+;~
+        ;~ mov     bx,0DEADh
+        ;~ mov     cx,0FACEh
+        ;~ mov     dx,0DEADh
+        ;~ mov     ax,0FACEh
+        ;~ call    MATH_Mul32
+        ;~ call    AuxIO_TeletypeHexQWord
+;~
+        ;~ call    AuxIO_TeletypeNL
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ popa
+        ;~ popf
 
         ret
 DEBUG_CheckMath EndP
 
 
 DEBUG_DumpGeo   Proc
-        pushf
-        pusha
-
-        ; BIOS cyls
-        mov     dx,word ptr [BIOS_Cyls+02]
-        mov     ax,word ptr [BIOS_Cyls+00]
-        call    AuxIO_TeletypeHexDWord
-        call    AuxIO_TeletypeNL
-
-        ; BIOS heads
-        mov     dx,word ptr [BIOS_Heads+02]
-        mov     ax,word ptr [BIOS_Heads+00]
-        call    AuxIO_TeletypeHexDWord
-        call    AuxIO_TeletypeNL
-
-        ; BIOS secs
-        mov     dx,word ptr [BIOS_Secs+02]
-        mov     ax,word ptr [BIOS_Secs+00]
-        call    AuxIO_TeletypeHexDWord
-        call    AuxIO_TeletypeNL
-
-        ; Bytes per sector
-        mov     ax,[BIOS_Bytes]
-        call    AuxIO_TeletypeHexWord
-        call    AuxIO_TeletypeNL
-
-        ; Total secs
-        mov     bx, word ptr [BIOS_TotalSecs+06]
-        mov     cx, word ptr [BIOS_TotalSecs+04]
-        mov     dx, word ptr [BIOS_TotalSecs+02]
-        mov     ax, word ptr [BIOS_TotalSecs+00]
-        call    AuxIO_TeletypeHexDWord
-        call    AuxIO_TeletypeNL
-
-        ; CHS to LBA
-        mov     dx,1
-        mov     ax,29e5h
-        mov     bx,23h
-        mov     cx,9h
-        call    CONV_CHS2LBA
-        call     AuxIO_TeletypeHexDWord
-        call     AuxIO_TeletypeNL
-
-        popa
-        popf
+        ;~ pushf
+        ;~ pusha
+;~
+        ;~ ; BIOS cyls
+        ;~ mov     dx,word ptr [BIOS_Cyls+02]
+        ;~ mov     ax,word ptr [BIOS_Cyls+00]
+        ;~ call    AuxIO_TeletypeHexDWord
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; BIOS heads
+        ;~ mov     dx,word ptr [BIOS_Heads+02]
+        ;~ mov     ax,word ptr [BIOS_Heads+00]
+        ;~ call    AuxIO_TeletypeHexDWord
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; BIOS secs
+        ;~ mov     dx,word ptr [BIOS_Secs+02]
+        ;~ mov     ax,word ptr [BIOS_Secs+00]
+        ;~ call    AuxIO_TeletypeHexDWord
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; Bytes per sector
+        ;~ mov     ax,[BIOS_Bytes]
+        ;~ call    AuxIO_TeletypeHexWord
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; Total secs
+        ;~ mov     bx, word ptr [BIOS_TotalSecs+06]
+        ;~ mov     cx, word ptr [BIOS_TotalSecs+04]
+        ;~ mov     dx, word ptr [BIOS_TotalSecs+02]
+        ;~ mov     ax, word ptr [BIOS_TotalSecs+00]
+        ;~ call    AuxIO_TeletypeHexDWord
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; CHS to LBA
+        ;~ mov     dx,1
+        ;~ mov     ax,29e5h
+        ;~ mov     bx,23h
+        ;~ mov     cx,9h
+        ;~ call    CONV_CHS2LBA
+        ;~ call     AuxIO_TeletypeHexDWord
+        ;~ call     AuxIO_TeletypeNL
+;~
+        ;~ popa
+        ;~ popf
 
         ret
 DEBUG_DumpGeo   Endp
@@ -185,11 +182,13 @@ DEBUG_Dump1     Proc  Near
         call    AuxIO_TeletypeNL
         call    AuxIO_TeletypeNL
 
+        ;~ call    DEBUG_DumpHidePartTables
+
         ;~ call    DEBUG_CheckMath
 
         ;~ call    DEBUG_DumpGeo
 
-        call    DEBUG_CheckBitFields
+        ;~ call    DEBUG_CheckBitFields
 
         popa
         popf
@@ -198,68 +197,101 @@ DEBUG_Dump1     EndP
 
 
 DEBUG_DumpBSSSectors    Proc    Near
+        ;~ pushf
+        ;~ pusha
+;~
+        ;~ mov     si, offset [PartitionSector]
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     si, offset [JfsPBR]
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     si, offset [LVMSector]
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     si, offset [TmpSector]
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     si, offset [NewPartTable]
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ popa
+        ;~ popf
+        ret
+DEBUG_DumpBSSSectors    EndP
+
+
+DEBUG_DumpHidePartTables    Proc    Near
         pushf
         pusha
 
-        mov     si, offset [PartitionSector]
+        mov     cx,3
+        mov     si, offset [HidePartitionTable]
+    again1:
         call    AuxIO_DumpSector
+        add     si,512
+        loop    again1
         call    AuxIO_TeletypeNL
 
-        mov     si, offset [JfsPBR]
-        call    AuxIO_DumpSector
+        mov     cx,3
+        mov     si, offset [PartitionXref]
+    again2:
+        call    AuxIO_DumpParagraph
+        call    AuxIO_TeletypeNL
+        add     si,16
+        loop    again2
         call    AuxIO_TeletypeNL
 
-        mov     si, offset [LVMSector]
+        mov     cx,3
+        mov     si, offset [NewHidePartTable]
+    again3:
         call    AuxIO_DumpSector
-        call    AuxIO_TeletypeNL
-
-        mov     si, offset [TmpSector]
-        call    AuxIO_DumpSector
-        call    AuxIO_TeletypeNL
-
-        mov     si, offset [NewPartTable]
-        call    AuxIO_DumpSector
-        call    AuxIO_TeletypeNL
+        add     si,512
+        loop    again3
         call    AuxIO_TeletypeNL
 
         popa
         popf
         ret
-DEBUG_DumpBSSSectors    EndP
+DEBUG_DumpHidePartTables    EndP
 
 
 DEBUG_CheckBitFields    Proc
-        pushf
-        pusha
-
-        mov     bx,offset [ott]
-
-        mov     al,0
-        mov     dl,0
-        mov     dh,6
-    DEBUG_CheckBitFields_next_write:
-        call    CONV_SetBitfieldValue
-        inc     al
-        inc     dl
-        ;~ cmp     dl,70
-        jnz     DEBUG_CheckBitFields_next_write
-
-        mov     dl,0
-        mov     dh,6
-    DEBUG_CheckBitFields_next_read:
-        mov     al,dl
-        call    AuxIO_TeletypeHexByte
-        mov     al,':'
-        call    AuxIO_Teletype
-        call    CONV_GetBitfieldValue
-        call    AuxIO_TeletypeHexWord
-        call    AuxIO_TeletypeNL
-        inc     dl
-        ;~ cmp     dl,70
-        jnz     DEBUG_CheckBitFields_next_read
-
-        popa
-        popf
+        ;~ pushf
+        ;~ pusha
+;~
+        ;~ mov     bx,offset [ott]
+;~
+        ;~ mov     al,0
+        ;~ mov     dl,0
+        ;~ mov     dh,6
+    ;~ DEBUG_CheckBitFields_next_write:
+        ;~ call    CONV_SetBitfieldValue
+        ;~ inc     al
+        ;~ inc     dl
+        ;~ jnz     DEBUG_CheckBitFields_next_write
+;~
+        ;~ mov     dl,0
+        ;~ mov     dh,6
+    ;~ DEBUG_CheckBitFields_next_read:
+        ;~ mov     al,dl
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ mov     al,':'
+        ;~ call    AuxIO_Teletype
+        ;~ call    CONV_GetBitfieldValue
+        ;~ call    AuxIO_TeletypeHexWord
+        ;~ call    AuxIO_TeletypeNL
+        ;~ inc     dl
+        ;~ jnz     DEBUG_CheckBitFields_next_read
+;~
+        ;~ popa
+        ;~ popf
         ret
 DEBUG_CheckBitFields    EndP
 

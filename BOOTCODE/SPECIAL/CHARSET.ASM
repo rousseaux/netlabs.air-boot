@@ -38,7 +38,7 @@ CHARSET_IncludeCyrillic        Proc Near  Uses si di bp
    rep    movsw                          ; Copy ROM-charset to Temp-Buffer
    mov    ds, bx                         ; DS==CS
    mov    si, offset CHARSET_Cyrillic
-   mov    di, offset CharSetTempBuffer+2048
+   mov    di, offset CharsetTempBuffer+2048
 
    mov    dl, 64                         ; Decode 64 character bitmaps
    xor    al, al
@@ -56,7 +56,7 @@ CHARSET_IncludeCyrillic        Proc Near  Uses si di bp
       rep    movsb
       jmp    DecodeLoop
      EndOfStream:
-      cmp    di, offset CharSetTempBuffer+3840
+      cmp    di, offset CharsetTempBuffer+3840
       jae    DecodeDone
       add    di, 768                     ; Skip 3x16 char blocks
       jmp    DecodeLoop
@@ -67,7 +67,7 @@ CHARSET_IncludeCyrillic        Proc Near  Uses si di bp
    xor    bl, bl
    mov    cx, 0FFh
    xor    dx, dx
-   mov    bp, offset CharSetTempBuffer ; ES:BP - New charset
+   mov    bp, offset CharsetTempBuffer ; ES:BP - New charset
    int    10h                            ; VIDEO BIOS: Set new charset table
    mov    ah, 12h
    mov    bl, 30h

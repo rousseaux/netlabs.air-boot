@@ -971,22 +971,36 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       pop     si
       ; First, find Hide-Config
       mov     dl, BootPartNo             ; EntryNumber is straight view
-      mov     ax, LocIPT_MaxPartitions
+      ;~ mov     ax, LocIPT_MaxPartitions
+      mov     ax, LocHPT_LenOfHPT
       mul     dl
       mov     di, offset HidePartitionTable
       add     di, ax                        ; We got the pointer
-      ; So process Hide-Config. Read out Byte-Entries, each points to a partition
-      ;  0FFh is end-marker / maximum entries = CFG_Partitions
-      mov     cl, CFG_Partitions
-     PSP_PartitionsHideLoop:
-         mov     dl, es:[di]
-         inc     di
-         cmp     dl, 0FFh
-         je      PSP_EndOfHideProcess    ; -> End of Hiding
-         call    PART_HidePartition      ; Now hide that partition
-      dec     cl
-      jnz     PSP_PartitionsHideLoop
-     PSP_EndOfHideProcess:
+
+
+        ; So process Hide-Config. Read out Bitfield-Entries,
+        ; each points to a partition.
+        ; 3Fh is end-marker / maximum entries = CFG_Partitions
+        mov     cl, CFG_Partitions
+        mov     ch,0    ; Index in bitfield array.
+        mov     dh,6    ; Bitfield width.
+        mov     bx,di   ; Pointer to entry.
+    PSP_PartitionsHideLoop:
+        mov     dl,ch
+        call    CONV_GetBitfieldValue
+        mov     dl,al
+
+        ;~ mov     dl, es:[di]
+        ;~ inc     di
+        ;~ cmp     dl, 0FFh
+        cmp     dl,3fh  ; Max value for 6-bits field.
+        je      PSP_EndOfHideProcess    ; -> End of Hiding
+        call    PART_HidePartition      ; Now hide that partition
+        inc     ch      ; Next bitfield.
+        dec     cl
+        jnz     PSP_PartitionsHideLoop
+    PSP_EndOfHideProcess:
+
       ; --- HIDE COMPLETED ---
       ; So something got hidden and we have to remark a primary partition,
       ;  if we are booting something non-primary from 1st hdd.
@@ -1645,22 +1659,6 @@ ENDIF
         ; Nope, Go activate PBR loader
         jne      start_pbr
 
-        ;xor     ax,ax
-        ;mov     [CurPartition_Location+00],ax
-        ;mov     [CurPartition_Location+02],ax
-        ;mov     [CurPartition_Location+04],ax
-        ;mov     [CurPartition_Location+06],ax
-
-        ;pusha
-        ;xor     al,al
-        ;mov     di,si
-        ;add     di,LocIPT_Name
-        ;mov     cx,12
-        ;cld
-        ;rep     stosb
-        ;popa
-
-
         ;push    ds
         ;pop     es
 
@@ -1741,6 +1739,19 @@ start_pbr:
 
 
 PART_StartPartition             EndP
+
+
+
+;
+; THE FUNCTIONS HERE BELOW WERE INTRODUCED TO ENHANCE THE PBR PROCESSING,
+; BUT THEY ARE ACTUALLY OBSOLETE BECAUSE THE INFORMATION THEY PROVIDE CAN
+; ALSO BE OBTAINED FROM THE IPT. HOWEVER, THE IPT USES DIFFERENT IDENTIFIERS
+; FOR PARTICULAR FILE-SYSTEMS / PBR TYPES, LIKE JFS BEING REPRESENTED AS 0FCh.
+; POSSIBLY THE INFO IN THE IPT NEEDS TO BE EXPANDED TO DISTINGUISH BETWEEN
+; OTHER BOOT-RECORDS AND FILE-SYSTEMS TOO, LIKE VISTA/WIN7 BMGR AND GRUB, ETC.
+; THIS WOULD NEED TO BE DONE IN THE PARTSCAN ROUTINES.
+; SO, FOR NOW WE KEEP USING THE STUFF BELOW.
+;
 
 
 ;

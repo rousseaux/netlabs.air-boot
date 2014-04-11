@@ -29,20 +29,19 @@ MPop Macro reglist
    EndM
 EndM
 
-callfar Macro destination
-   push    cs
-   call    &destination
-EndM
+
+; Rousseau:
+; My editor (Geany) keeps auto-completing 'call' to 'callfar' because
+; of this definition. Since it's not used anywhere I disabled it.
+;~ callfar Macro destination
+   ;~ push    cs
+   ;~ call    &destination
+;~ EndM
 
 
 ;
-; An ORG directive resets the location counter where code and data is
-; generated. If the location counter is reset back to a point where
-; code or data already has been generated, this will be overwritten
-; without warning.
-; This macro can be used with every ORG directive to check for this condition,
-; and when it occurs further assembly is terminated.
-
+; OLD OVERLAP CHECKER, DOES NOT WORK WELL WITH JWASM.
+;
 ; NOTE:  Overlapchecking in JWasm is not as reliable as in Tasm.
 ;        Because it's a single pass assembler, the current location can be
 ;        incorrect. Tasm with multiple passes works correct.
@@ -90,8 +89,67 @@ check_overlap   MACRO   loc
 
     ; Terminate assembly by forcing an error.
     .ERR
-
 ENDM
+
+
+;
+; A normal ORG directive resets the location counter where code and data is
+; going to be emitted. If the location counter is reset back to a point
+; where code or data already has been emitted, this will be overwritten
+; without warning.
+; This macro does a check for this condition and aborts if it exists.
+; If there is space between the new location and the last emitted code or data
+; will be filled.
+;
+; There are differences between assemblers on when and how labels and values
+; are evaluated. Since JWasm is a single-pass assembler, some expressions
+; do not work that do work in multi-pass Tasm.
+; That's why the actual check for overlap is done by db getting a negative
+; value if an overlap occured.
+; So don't change the (after - before) calculations by assigning it to a
+; variable; that will break this macro.
+;
+ORIGIN  MACRO   loc
+    ;~ IFDEF   JWASM
+        ;~ db  (@F - $)   dup('X')
+        ;~ ORG     loc
+        ;~ @@:
+    ;~ ENDIF
+
+    ; Use this value to fill the gap between the new origin and the last
+    ; emitted code or data.
+    fillchar = 'X'
+
+    ; Mark the location of the last emitted code or data.
+    z_&loc&_1before:
+
+    ; JWasm can do db 0 dup (0).
+    IFDEF   JWASM
+        db  (z_&loc&_2after - z_&loc&_1before)   dup(fillchar)
+    ENDIF
+
+    ; Tasm cannot.
+    IFDEF   TASM
+        IF (z_&loc&_2after - z_&loc&_1before) NE 0
+            db  (z_&loc&_2after - z_&loc&_1before)   dup(fillchar)
+        ENDIF
+    ENDIF
+
+    ; Set the new origin.
+    ORG     loc
+
+    ; Mark the new location.
+    z_&loc&_2after:
+
+    ; Calculate the gap.
+    z_&loc&_3gap = z_&loc&_2after - z_&loc&_1before
+
+    ;
+    ; Note that the variables are prefixed with z_ so they appear
+    ; at the end of the list-file.
+    ;
+ENDM
+
 
 
 ; Shortcuts for pointer-types

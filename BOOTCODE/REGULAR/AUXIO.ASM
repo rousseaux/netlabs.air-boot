@@ -83,7 +83,7 @@ AuxIO_Teletype  Proc     Near  Uses  ax dx
         int     14h                           ; send char to com-port
     AuxIO_Teletype_NoLogging:
         ret
-AuxIO_TeleType  EndP
+AuxIO_Teletype  EndP
 
 
 ; Print newline char (unix) to com-port (teletype style)
@@ -91,7 +91,7 @@ AuxIO_TeletypeNL    Proc     Near  Uses  ax
         mov     al,10
         call    AuxIO_Teletype
         ret
-AuxIO_TeleTypeNL    EndP
+AuxIO_TeletypeNL    EndP
 
 
 ; Print hex-byte to com-port (teletype style)
@@ -106,7 +106,7 @@ AuxIO_TeletypeHexByte   Proc     Near  Uses  ax
         xchg    al,ah                      ; Low hex-nibble next
         call    AuxIO_Teletype             ; Output to com-port
         ret
-AuxIO_TeleTypeHexByte   EndP
+AuxIO_TeletypeHexByte   EndP
 
 ; Print hex-word to com-port (teletype style)
 ; This outputs four characters
@@ -119,7 +119,7 @@ AuxIO_TeletypeHexWord   Proc     Near
         xchg    al,ah                      ; low byte next
         call    AuxIO_TeletypeHexByte      ; Output to com-port
         ret
-AuxIO_TeleTypeHexWord   EndP
+AuxIO_TeletypeHexWord   EndP
 
 
 ; Print hex-dword to com-port (teletype style)
@@ -133,7 +133,7 @@ AuxIO_TeletypeHexDWord  Proc     Near
         xchg    ax,dx
         call    AuxIO_TeletypeHexWord      ; Low word next
         ret
-AuxIO_TeleTypeHexDWord  EndP
+AuxIO_TeletypeHexDWord  EndP
 
 
 ; Print hex-qword to com-port (teletype style)
@@ -149,7 +149,7 @@ AuxIO_TeletypeHexQWord  Proc     Near
         xchg    ax,cx
         call    AuxIO_TeletypeHexDWord     ; Low dword next
         ret
-AuxIO_TeleTypeHexQWord  EndP
+AuxIO_TeletypeHexQWord  EndP
 
 
 

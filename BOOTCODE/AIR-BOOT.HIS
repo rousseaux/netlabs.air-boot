@@ -23,8 +23,32 @@
 ; Rousseau: Fixes and Enhancements
 ; ---------------------------------
 ;
-; v1.0.8-rc2-bld20120213
+; v1.0.8-rc2-bld20120224
 ;-----------------------
+; # Implemented stop scanning when max. partitions limit exceeded #
+;   Previous versions halted the system when the maximum number of partitions
+;   that can be handled (45) was exceeded.
+;   This required the user to boot from alternate media to correct the problem.
+;   Now, when the partition limit is exceeded, AiR-BOOT displays a pop-up
+;   and waits for a key-press. When the user presses a key, AiR-BOOT continues
+;   and the boot-menu is shown, enabling the user to boot a system to correct
+;   the problem. To indicate this situation, the color of the selection-bar
+;   is displayed in red.
+;
+; # Fixed hiding partitions above old max 30-partitions limit #
+;   Hiding partitions is a per partition setting and it is kept in a table
+;   in the AiR-BOOT image on disk. In previous versions, including v1.0.8-rc1,
+;   this table still held the old number of maximum partitions (30).
+;   So configuring a hide-setting for partitions >30 or hiding more than
+;   30 partitions per partition would not work properly.
+;   Unfortunately, there was no room to expand this table, since it resides
+;   just below the MBR backup, at the end of the AiR-BOOT image.
+;   To work around this, the table now uses a 6-bits packed format and the
+;   drive-letter array, which followed this table has been moved elsewhere.
+;   This is a change in the configuration layout since the previous version,
+;   so the config-version has been bumped to v1.0.8.
+;   TODO: Add upgrade-code to the installer to cope with this.
+;
 ; # Removed requirement for LVM P and V name to be the same to edit #
 ;   However, when both are the same before the edit, the V name will be
 ;   synved to the P name to have them both the same again after the edit.
@@ -37,8 +61,8 @@
 ;   They are not bootable anyway. The user is informed by a popup.
 ;
 ; # De-tasemized the Assembler sources for JWasm compatibility #
-;   AiR-BOOT can now be built using JWasm, which is now the preferred
-;   assembler.
+;   AiR-BOOT can now be built using JWasm, which is the preferred
+;   assembler as of this release. Tasm support will be dropped in the future.
 ;
 ; # Completely reworked the build-system #
 ;   Everything is now done with Makefiles using WMake, Wlink and the
@@ -203,7 +227,7 @@
 ;
 ; # Math, Debug, Conv and Aux modules #
 ;   These are used for 32-bit arithmatic on 16-bit code,
-;   debug the booting process, converting between data-types
+;   debug the boot process, converting between data-types
 ;   and outputting log-data to the com-port.
 ;
 ;

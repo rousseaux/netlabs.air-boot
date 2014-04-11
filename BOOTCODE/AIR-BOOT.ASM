@@ -59,13 +59,16 @@ ENDIF
 ;
 MaxDisks                equ     64
 
-; Only when assembled with JWasm because Tasm generates too large code.
-IFDEF   JWASM
-    ; If defined then include DEBUG.ASM and output debug-info to serial-port.
-    AUX_DEBUG       EQU
-ELSE
-    ;~ AUX_DEBUG       EQU
-ENDIF
+
+
+
+;
+; Include Debug Modules and enable COM-port debugging.
+;
+AUX_DEBUG       EQU
+
+
+
 
 
 ;
@@ -194,8 +197,15 @@ LocLVM_Unknown              equ     13h ; unknown BYTE
 ; MiniLVM sets both to the same value.
 ; Also, MiniLVM uses a 0-byte terminator, so the maximum length is 19d.
 ; Same goes for LocLVM_DiskName.
+; These offsets are relative to an LVM entry.
 LocLVM_VolumeName           equ     14h ; 20 bytes
 LocLVM_PartitionName        equ     28h ; 20 bytes (Used in menu)
+
+; LVM constants.
+LocLVM_LabelLen             equ     14h ; Length of an LVM Label (Disk/Part/Vol)
+LocLVM_DiskNameLen          equ     14h ; Length of an LVM DiskName
+LocLVM_VolumeNameLen        equ     14h ; Length of an LVM VolumeName
+LocLVM_PartitionNameLen     equ     14h ; Length of an LVM PartitionName
 
 
 
@@ -215,7 +225,10 @@ LocIPT_AbsoluteBegin        equ     26  ; Absolute Sector of Begin
 LocIPT_AbsolutePartTable    equ     30  ; Absolute Sector of PartTable
 
 ; Hidden Partition Table
-LocHPT_LenOfHPT             equ     30  ; Length of an HPT-entry
+;~ LocHPT_LenOfHPT             equ     30  ; Length of an HPT-entry
+; Length of an HPT-entry ((45 * 6 bits-per-part) / 8) * 45
+; Packed table !
+LocHPT_LenOfHPT             equ     34
 
 ; AiR-BOOT IPT-Flags
 LocIPT_DefaultFlags         equ     00000011b   ; Don't know if boot-able :)
@@ -329,7 +342,6 @@ ENDIF
 ; Version 1.07 was intruduced in 2011.
 ; It fixes issues with huge drives and lvm and more.
 
-sos1:
 
 ; ---------------------------------------------
 ; Rousseau: # Combined letter and jump offset #
@@ -357,7 +369,7 @@ AiR_BOOT:
                 db      0EBh
 
                 ; ID String, Date (DD,MM,CC,YY), Version Number, Language ID
-                db      'AiRBOOT', 21h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
+                db      'AiRBOOT', 24h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
 
                 ; Total Sectors Count.
                 ; Will get overwritten by FIXCODE.
@@ -365,7 +377,7 @@ AiR_BOOT:
 
                 ; Total Sectors Count,
                 ; Dynamic calculation.
-                ;~ db      (CODE_END-$)/512
+                ;~ db      (code_end-$)/512
 
 
 MBR_CheckCode   dw      0               ; Check-Sum for Code
@@ -426,19 +438,24 @@ MBR_HaltSystem:
                 int     15h                 ; Wait to display the whole screen :]
 MBR_HaltSys:    cli
                 jmp     MBR_HaltSys
+;db 100 dup (0)
 
+
+
+                ;
+                ; Some small space for variables.
+                ;
+                ORIGIN  0003Ch
 
 ; Comport settings
 ; It had to be moved to create room for the double I13X
 ; signature.
 ; It cannot be in the config-area (sector 55)
 ; because that area is crc-protected and would not allow 'poking'.
-here = $
-                org     0003Ch
-                check_overlap   here
 BIOS_AuxParms   dw      BIOS_AUXPARMS_DEFAULT
 
 reserved        db      6   dup('X')
+
 
                 ;
                 ; We arrive here after the first jump using the 'A' of the
@@ -448,11 +465,8 @@ reserved        db      6   dup('X')
                 ; insert a CLI on start and did not
                 ; want to change the AiR-BOOT signature
                 ; because of Microsoft inventions...
-here = $
-                org     044h
-                check_overlap   here
-
-
+                ;
+                ORIGIN  00044h
 
                 ; Jump again...
                 ; This time to the setup-code.
@@ -589,24 +603,21 @@ MBR_RealStart:
                 jmp     MBR_ConfigCopy_LoadError
 
 
-
                 ; [v1.05+]
                 ; Signature for IBM's LVM to detect our "powerful" features ;)
+                ;
                 ; [v1.0.8+]
                 ; Reworked MBR code to be able to create a
                 ; double 'I13X' signature.
                 ; MBR's created with LVM eCS v1.x have the signature at 0d5h
                 ; MBR's created with LVM eCS v2.x have the signature at 0d0h
                 ; See eCS bugtracker issue #3002
+                ;
                 ; Update: These are actually MOV EAX,'X31I' instructions
                 ; in the eCS LVM MBR-code. They are at different places in
                 ; the v1.x and v2.x LVM code.
-                ; Let's protect them with an org directive.
-
-here = $
-                org     00d0h
-                check_overlap   here
-                ;org     00d0h
+                ; Let's protect their location.
+                ORIGIN  000d0h
                 db      'I13X',0,'I13X',0
 
 
@@ -663,26 +674,28 @@ MBR_LoadConfig  Proc Near
 MBR_LoadConfig  EndP
 
 
-here = $
-                org     001b8h
-                check_overlap   here
-
                 ; Disk Signature
                 ; Note that in an LVM 2.x MBR this collides
                 ; with the dummy PTE that it uses to look for IBM-BM
                 ; on the second harddisk.
+                ORIGIN  001B8h
+
+                ; AiR-BOOT will merge the field from the MBR it replaces.
                 db      'DSIG'
 
-                ; Unused word at 01BCh
-                ; An LVM 2.x MBR puts 'CC33' here.
+                ; Unused word at 01BCh.
+                ; An LVM 2.x MBR puts 0CC33h here.
+                ; AiR-BOOT will merge the field from the MBR it replaces.
                 dw      '$$'
 
 
-here = $
-                org     001beh
-                check_overlap   here
+                ;
+                ; Partition Table.
+                ;
+                ORIGIN  001BEh
 
-                ; Partition Table
+                ; The 4 entries just for show.
+                ; AiR-BOOT will merge them from the MBR it replaces.
                 db      16  dup('0')
                 db      16  dup('1')
                 db      16  dup('2')
@@ -692,7 +705,7 @@ here = $
                 dw      0aa55h
 
 ; End of sector 1
-eos1a:
+
 
 
 
@@ -703,9 +716,7 @@ eos1a:
                 ;
                 ; Here starts the second sector, sector 2
                 ;
-                org     00200h
-; Start of sector 2.
-sos2:
+                ORIGIN  00200h
 
 ;
 ; Everything beyond this point is loaded on startup
@@ -751,25 +762,15 @@ FileSysNames    db      'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
                 db      'OS2-BMGR', 'via BIOS', 'Floppy  ', 'Unknown '
                          ; -> 44 Partition-Types
 
-; End of sector 2.
-eos2:
-
-
-
-
-
 
 
 
 ;==============================================================================
                                                                     ; Sector 3
-here = $
-                org     00400h
-                check_overlap   here
-
-
-; Start of sector 3.
-sos3:
+                ;
+                ; Sector 3
+                ;
+                ORIGIN  00400h
 
 
                 ; ##############################################
@@ -810,15 +811,16 @@ AiR_BOOT_Start:
         popa                            ; Restore all the general purpose regs
 
 
-                mov     ax, offset sobss
-                mov     ax,offset BeginOfVariables
-                mov     ax,offset [TrueSecs]
-                lea     ax, [TrueSecs]
-                mov     ax,word ptr [TrueSecs]
-                mov     ax,offset EndOfVariables
-                mov     ax, offset eobss
-                nop
-                ;~ mov     ax, offset qqqq
+                ;~ nop
+                ;~ mov     ax, offset sobss
+                ;~ mov     ax,offset BeginOfVariables
+                ;~ mov     ax,offset [TrueSecs]
+                ;~ lea     ax, [TrueSecs]  ; Tasm generates mov here
+                ;~ mov     ax,word ptr [TrueSecs]
+                ;~ mov     ax,offset EndOfVariables
+                ;~ mov     ax, offset eobss
+                ;~ nop
+
 
 
                 ;jmp skip
@@ -1217,11 +1219,6 @@ size_auxio = $-b_auxio
 ENDIF
 
 
-; End of sector 3.
-eos3:
-
-
-
 
 
 ;==============================================================================
@@ -1239,17 +1236,6 @@ eos3:
                 ;
                 ;org     04600h                                  ; Sector 36-37
 
-; Start of sector 36.
-sos36:
-
-
-
-; End of sector 37, yes this section is 2 sectors long.
-eos37:
-
-
-
-
 
 
 
@@ -1261,8 +1247,6 @@ eos37:
                 ;
                 ;org     04A00h
 
-; Start of sector 28.
-sos38:
 
 b_txtother:
 Include TEXT/TXTOTHER.ASM       ; All translateable Text-Strings
@@ -1290,6 +1274,20 @@ b_billsuxx:
 Include SPECIAL/F00K/BILLSUXX.ASM   ; Extended Partition - Microsoft-Hack
 size_billsuxx = $-b_billsuxx
 
+
+                ;
+                ; Critical end of code marker.
+                ;
+                db  'DEAD'
+                db  'FACE'
+
+;
+; Keep these modules here at the end of the code section.
+; When debugging, extra code space is used and code will move up towards
+; the protection image that is 'orged' and will thus overlay.
+; The effects are turned off in debug mode, so it does not matter much that
+; this code get's lost.
+;
 b_sound:
 Include SPECIAL/SOUND.ASM       ; Sound
 size_sound = $-b_sound
@@ -1308,10 +1306,6 @@ size_fx = $-b_fx
 ;
 Include BLDDATE.ASM                      ; Build Date generated by _build.cmd
 
-; End of sector x depending on size of translatable texts.
-eosx:
-
-
                 ;
                 ; End of code marker.
                 ;
@@ -1321,17 +1315,10 @@ eosx:
 code_end:
 
 
-
-here = $
-                org     06800h
-                ; For some reason, this overlap check does not work !!
-                ; I gues it's because 'here' has no definitive value yet
-                ; and since JWasm is a single pass assembler, it won't
-                ; change anymore. it is off by 1dh bytes.
-                ; (Changing the ORG to 6700h produces an overlap of 11dh.
-                ; This 1dh is by sheer coincidence the same length as the
-                ; MBR_Prot signature on my system, but it's not related.
-                check_overlap   here
+                ;
+                ; AiR-BOOT Protection Image.
+                ;
+                ORIGIN  06800h
 
                 ;
                 ; This is the AiR-BOOT MBR-Protection Image.
@@ -1365,12 +1352,7 @@ MBR_Protection  db 'AiR-BOOT MBR-Protection Image'
                 ; Also add stuff to the end so that offsets of other
                 ; variables remain vaild.
                 ;
-here = $
-                org     06C00h
-                check_overlap   here
-sos55:
-
-
+                ORIGIN  06C00h
 
 Configuration:
                 ; THERE IS AN INVISIBLE CHAR HERE !!
@@ -1459,19 +1441,27 @@ CFG_IgnoreLVM           db  0   ; Ignores any LVM-Information
 ; THERE IS ROOM RESERVED HERE FOR MORE VARIABLES
 ;
 
-; 6cae
-eoc:
+                ;
+                ; Drive Letters.
+                ;
+                ORIGIN  06CB0h
 
 
+;
+; Moved here to make room for packed hiddenparttable.
+;
+DriveLetters            db  LocIPT_MaxPartitions dup (0)
+                        ; Format is:
+                        ;============
+                        ; Drive-Letter : BYTE (80h-C:, 81h-D:)
+                        ; --------------------> 1 Byte * 45
 
+                ;
                 ; Allways have the name of the installation volume
                 ; at this offset.
                 ; So future config changes will not break auto-install.
-here = $
-                org     06D00h
-                check_overlap   here
-
-soiv:
+                ;
+                ORIGIN  06D00h
 
 ; SET(A)BOOT stores the volume name of the eCS system being installed here.
 ; It is truncated to 11 chars because AiR-BOOT currently does not support
@@ -1484,29 +1474,15 @@ eCS_InstallVolume       db  0,'NOPHASEONE' ,0
 ;eCS_InstallVolume       db  'ECS-HIGH',0,'NO',0
 
 
-; 6d0c
-; End of sector 55.
-eos55:
-
-
-
-
-
-
 ;
 ; THERE IS ROOM RESERVED HERE FOR MORE VARIABLES
 ;
-
-
 
                 ;
                 ; 06DABh - 06C00h = 01ABh = 427 bytes.
                 ; Entries allocated down from 06E00 boundary.
                 ;
-here = $
-                org     06DABh                                  ; 427 Boundry
-                check_overlap   here
-sosvs:
+                ORIGIN  % 06DABh                                  ; 427 Boundry
 
 ; (432 - 5 = 427)
 AutoDrvLetter           db  0
@@ -1550,24 +1526,21 @@ FloppyIPTentry          db  0, 0, 0, 0, 'FloppyDrive'
                         dd  0, 0
 ;------------------------------------------------------------------------------
 
-eosvs:
-
-
-
-
                 ;org 06E00h                                     ; Sector 56-57
 
-here = $
-                org     image_size - 0a00h - (image_size - image_size_60secs)
-                check_overlap   here
-
-sos56:
-
+                ;
+                ; AiR-BOOT Internal Partition Table (IPT)
+                ;
+                ORIGIN  % (image_size - 0a00h - (image_size - image_size_60secs))
 
 
+;
 ; Rousseau: This is the start of the AiR-BOOT IPT
+;
 
-PartitionTable:  ; no-partitions detected... :]
+
+PartitionTable  db  (LocIPT_MaxPartitions * LocIPT_LenOfIPT) dup (0)
+; no-partitions detected... :]
 ;                             db    1, 0, 0, 0, 'Harddisc  1'
 ;                             db    0, 0FFh, Flags_BootAble
 ;                             dw    0    ; No Checksum :)
@@ -1589,112 +1562,74 @@ PartitionTable:  ; no-partitions detected... :]
     ; AbsolutePartTab * 4 (where the partition table is, in absolute sectors)
     ; --------------------> 34 Bytes (total maximum partition-entries = 30)
 
-    db  (LocIPT_MaxPartitions * LocIPT_LenOfIPT) dup (0)
 
-
-; 73fa !!!!!!!!!!!!!!
-eos56:
-
-
-
-
-                ;org 071F6h
-; 73F6
 
                 ; No need to check overlap here because this string will
                 ; be overwritten if the maximum partition count is reached.
                 ; So this is not a critical boundary.
-                org     image_size - 600h - (image_size - image_size_60secs) / 2 - 0ah
+                ORG     (image_size - 600h - (image_size - image_size_60secs) / 2 - 10)
 
-soiptsig:
                 db 'AiRBOOTPAR' ; 1K internal partition table
 
 
-
-eoiptsig:
-
-
-
 ;------------------------------------------------------------------------------
-                            ;org 07200h                            ; Sector 58
+                            ;org 07400h                            ; Sector 58
 
-here = $
-                org image_size - 600h - (image_size - image_size_60secs) / 2
-                check_overlap   here
-soipt:
-sos58:
-; 7400h
+
+                ;
+                ; Hidden Partition Table (6-bit packed as of v1.0.8)
+                ;
+                ORIGIN  % (image_size - 600h - (image_size - image_size_60secs) / 2)
+
 HidePartitionTable      db  (LocIPT_MaxPartitions * LocHPT_LenOfHPT) dup (0FFh)
                         ; Format is:
                         ;============
                         ; PartitionPtr : BYTE * 30
                         ; --------------------> 30 Bytes * 45
 
-DriveLetters            db  LocIPT_MaxPartitions dup (0)
-                        ; Format is:
-                        ;============
-                        ; Drive-Letter : BYTE (80h-C:, 81h-D:)
-                        ; --------------------> 1 Byte * 45
-
-        ;
-        ; There is some room here, but this is the configuration section.
-        ; So not available for code.
-        ;
-
-eos58:
-eoipt:
-
-
-
-
-                ;org 075F6h
-                ; No need to check overlap here because this string will
-                ; be overwritten if the maximum partition count is reached.
-                ; So this is not a critical boundary.
-                org     image_size - 200h -0ah
-                check_overlap   here
-
-sohidsig:
 ;
-                        db  'AiRBOOTHID'    ; 1K internal Hide-partition table
+; Driveletters were here.
+; Moved down to make room for packed hideparttable.
+;
 
 
-eohidsig:
+                ;
+                ; End of hidden partition table.
+                ; Check overlap here for security reasons.
+                ;
+                ORIGIN  % (image_size - 200h - 5)
 
-
+; 79fa - end of packed hide table
+                        db  'ABHID'    ; 1K internal Hide-partition table
 
 
 
 
 ;------------------------------------------------------------------------------
-                ;org 07600h
+                ;org 07A00h
+                                                                ; Sector 60
 
-here = $
-                org     image_size - 200h                       ; Sector 60
-                check_overlap   here
+                ;
+                ; AiR-BOOT MBR Backup.
+                ;
+                ORIGIN  % (image_size - 200h)
 
-sohid:
-sos60:
 
 MBR_BackUpMBR           db  'AiR-BOOT MBR-BackUp - Just to fill this sector with something',0
 AirBootRocks            db  'AiR-BOOT Rocks!',0
 
-                        db  512-($-sohid)-2  dup(0)
+                        db  (512 - ($-MBR_BackUpMBR) - 2)  dup('M')
 
-eos60:
-eohid:
-
-
-
-
-                ;org 077FEh
-
-here = $
-                org     image_size - 2
-                check_overlap   here
+                ; End of Image signature.
+                ;
+                ORIGIN  % (image_size - 2)
                         dw      0BABEh
 
-eoab:
+
+                ;
+                ; End of Image.
+                ;
+                ORIGIN  % (image_size)
 
 
 IFDEF   SEGMENTED
@@ -1721,6 +1656,7 @@ sobss:
                             ;
                             ; What happens before this space ??
                             ; If org 0 corruption occurs.
+                            ; Filling hiddenparttable goes out-of-bounds !
                             ;
                             org 02400h                         ; Uninitialized
                             ;~ org 00200h                         ; 200h geeft 3 floppies !
@@ -1752,6 +1688,7 @@ TotalHarddiscs              db  ?           ; Total harddrives (by POST)
 LBASwitchTable              db  128 dup (?) ; Bit 25-18 for CHS/LBA Switching
 NewPartitions               db  ?           ; Freshly found partitions
                                             ; Independent of SaveConfiguration
+TooManyPartitions           db  ?           ; Non-zero if too many partitions found
 
 VideoIO_Segment             dw  ?           ; Segment for Video I/O
 
@@ -1796,7 +1733,8 @@ SETUP_OldPwd                db  17 dup (?)
 SETUP_NewPwd                db  17 dup (?)
 SETUP_VerifyPwd             db  17 dup (?)
 StartSoundPlayed            db  ?
-ChangePartNameSave          db  ?
+ChangePartNameSave          db  ?   ; Save label after user-edit ?
+SyncLvmLabels               db  ?   ; Sync LVM labels after user-edit ?
 
 FX_UseCount                 dw  ?
 FX_OverallTimer             dw  ?
@@ -1897,5 +1835,5 @@ ELSE
 LDRIMAGE    ENDS
 ENDIF
 
-            END     AIR_BOOT
+            END     AiR_BOOT
 

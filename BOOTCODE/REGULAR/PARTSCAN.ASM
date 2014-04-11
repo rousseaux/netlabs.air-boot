@@ -47,8 +47,19 @@ PARTSCAN_ScanForPartitions      Proc Near
         jnz     PSSFP_HarddiscLoop
         mov     CurIO_Scanning, 0             ; Reset flag due scanning complete
 
+IFDEF   AUX_DEBUG
+        pusha
+        call    DEBUG_DumpHidePartTables
+        popa
+ENDIF
         ; Use X-Reference to sync NewPartitionTable with Hide-Config
         call    PARTSCAN_SyncHideConfigWithXref
+
+IFDEF   AUX_DEBUG
+        pusha
+        call    DEBUG_DumpHidePartTables
+        popa
+ENDIF
 
         ; Now we copy the new IPT over the old one...
         mov     si, offset NewPartTable
@@ -196,9 +207,26 @@ PARTSCAN_ScanPartition          Proc Near  Uses ax si
         cmp     al, 0                      ; Is Partition EMPTY ?
         je      PSSP_IgnorePartition
         ; Ignore these partitions, because there are no real Partitions
-                ;~ call    DEBUG_DumpBSSSectors
+
+        ;
+        ; Stop scanning if too many partitions.
+        ;
+        cmp     word ptr [cs:NewPartitions],LocIPT_MaxPartitions
+        jae     skip_check
         call    PARTSCAN_CheckThisPartition
-                ;~ call    DEBUG_DumpBSSSectors
+        jmp     PSSP_IgnorePartition
+    skip_check:
+        ; Cannot boot LVM-Data partitions
+        pusha
+        mov     byte ptr [cs:TooManyPartitions],1
+        mov     cx, 0C04h
+        ;~ mov     si, offset TXT_ERROR_TooManyPartitions
+        mov     si, offset TXT_TooManyPartitions
+        add     si,5    ; We stole this string, so skip new-line and dash.
+        ;~ call    SETUP_Warning_AreYouSure
+        call    SETUP_ShowErrorBox
+        popa
+
     PSSP_IgnorePartition:
         ; L”scht das Boot-Able Flag...
         and     byte ptr [si+LocBRPT_Flags], 7Fh ; Reset the Active-Flag
@@ -686,6 +714,8 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
         cmp     NewPartitions, LocIPT_MaxPartitions
         jbe     PCCTP_NotTooManyPartitions
 
+        ; Should not be reached since scanning is stopped outside this
+        ; function when partition limit exceeds.
         mov     si, offset TXT_TooManyPartitions
         call    MBR_Teletype
         jmp     MBR_HaltSystem
@@ -729,18 +759,18 @@ stop_scanning   db  0
 
 ; Reset X-Reference
 PARTSCAN_ResetXref  Proc Near   Uses ax cx di
-        mov     di, offset PartitionXref      ; X-Reference for later syncing
+        mov     di, offset PartitionXref        ; X-Reference for later syncing
         mov     cx, LocIPT_MaxPartitions
-        mov     ax, 0FFFFh                                                  ; Fill up with FFh -- Influences OVERWRITE BUG !
+        mov     ax, 0FFFFh                      ; Fill up with FFh
         rep     stosb
-        mov     di, offset NewHidePartTable   ; Temporary Hide-Config Table
+        mov     di, offset NewHidePartTable     ; Temporary Hide-Config Table
         ;~ mov     cx, LocIPT_MaxPartitions * LocIPT_LenOfIPT
-        mov     cx, LocIPT_MaxPartitions * LocHPT_LenOfHPT                  ; Checken !!!
-        rep     stosb                         ; Fill up with FFFFh
+        mov     cx, LocIPT_MaxPartitions * LocHPT_LenOfHPT
+        rep     stosb                           ; Fill up with FFFFh
         mov     di, offset NewDriveLetters
-        mov     cx, LocIPT_MaxPartitions                        ; Temporary Logical-Drive Letter Table
+        mov     cx, LocIPT_MaxPartitions        ; Temporary Logical-Drive Letter Table
         xor     ax, ax
-        rep     stosb                         ; Fill up with 0000h
+        rep     stosb                           ; Fill up with 0000h
         ret
 PARTSCAN_ResetXref  EndP
 
@@ -758,14 +788,16 @@ PARTSCAN_DefXref    Proc Near   Uses ax bx cx dx si di
         ; Copy Hide-Config of IPT partition to new location in new table
         mov     si, offset HidePartitionTable
         mov     di, offset NewHidePartTable
-        mov     bl, LocIPT_MaxPartitions
+        ;~ mov     bl, LocIPT_MaxPartitions
+        mov     bl, LocHPT_LenOfHPT
         mov     al, dl
         mul     bl
         add     si, ax
         mov     al, dh
         mul     bl
         add     di, ax
-        mov     cx, LocIPT_MaxPartitions
+        ;~ mov     cx, LocIPT_MaxPartitions
+        mov     cx, LocHPT_LenOfHPT
         rep     movsb                            ; Copy Hide-Config to NewHideTable
         ; Process Logical-Drive-Letter table as well...
         ;movzx   bx, dl
@@ -796,54 +828,102 @@ PARTSCAN_GetXref    Proc Near   Uses bx
 PARTSCAN_GetXref    EndP
 
 
-
+;
+; Rousseau: Adjusted for packed hidden-part-table !
+;           Needs to be re-written.
+;
 ; This here updates the contents of the Hide-Configuration to the current IPT
 ;  table.
 PARTSCAN_SyncHideConfigWithXref Proc Near Uses ax bx cx dx si di
         mov     si, offset NewHidePartTable
         mov     di, offset HidePartitionTable
-        mov     ch, LocIPT_MaxPartitions
+        mov     dh, LocIPT_MaxPartitions    ; Max entries in hide-tables.
+
     PSSHCWX_SyncPartLoop:
-        mov     cl, LocIPT_MaxPartitions
+        mov     cl, LocIPT_MaxPartitions    ; Max entries per hide-entry.
         xor     dl, dl                        ; Partition Lost Counter
+
+        mov     ch,0    ; Index.
+
     PSSHCWX_SyncLoop:
-        lodsb                              ; Get Part-Pointer from Hide-Cfg
-        cmp     al, 0FFh
+        mov     bx,si
+
+        ;~ lodsb                              ; Get Part-Pointer from Hide-Cfg
+
+        push    dx
+        mov     dl,ch
+        mov     dh,6
+        call    CONV_GetBitfieldValue
+        pop     dx
+
+        ;~ cmp     al, 0FFh
+        cmp     al, 3Fh
         je      PSSHCWX_SyncEmpty
         ;movzx   bx, al
         mov   bl,al
         mov   bh,0
 
         mov     al, [PartitionXref+bx]     ; Translate it
-        cmp     al, 0FFh
+        ;~ cmp     al, 0FFh
+        cmp     al, 3Fh
         je      PSSHCWX_PartLost
+
     PSSHCWX_SyncEmpty:
-        stosb                              ; Put translated pointer to new table
+        mov     bx,di
+        ;~ stosb                              ; Put translated pointer to new table
+
+        push    dx
+        mov     dl,ch
+        mov     dh,6
+        call    CONV_SetBitfieldValue
+        pop     dx
+
+        inc     ch
         dec     cl
         jnz     PSSHCWX_SyncLoop
+
         jmp     PSSHCWX_SyncLoopEnd
+
     PSSHCWX_PartLost:
         inc     dl                         ; One partition got lost...
         dec     cl
         jnz     PSSHCWX_SyncLoop
 
     PSSHCWX_SyncLoopEnd:
+
+
+    IFDEF   AUX_DEBUG
+        pusha
+        mov     al,dl
+        call    AuxIO_TeletypeHexByte
+        call    AuxIO_TeletypeNL
+        popa
+    ENDIF
+
+
         or      dl, dl
         jz      PSSHCWX_NothingLost
-        mov     al, 0FFh                                                    ; Influences OVERWRITE BUG ! (OUT OF BOUNDS !!)
-    PSSHCWX_LostFillLoop:
-        stosb
+        ;~ mov     al, 0FFh                     ; Influences OVERWRITE BUG ! (OUT OF BOUNDS !!)
+        mov     al, 3Fh
+
+    PSSHCWX_LostFillLoop:                       ; CHECK !!
+        ;~ stosb
         dec     cl
         jnz     PSSHCWX_LostFillLoop
 
-                                        ; debug code
-                                        mov     ax,di
-                                        call    AuxIO_TeletypeHexWord
-                                        call    AuxIO_TeletypeNL
+    IFDEF   AUX_DEBUG
+        ; debug code
+        mov     ax,di
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+    ENDIF
 
     PSSHCWX_NothingLost:
-        dec     ch
+        add     si, LocHPT_LenOfHPT
+        add     di, LocHPT_LenOfHPT
+        dec     dh
         jnz     PSSHCWX_SyncPartLoop
+
         ret
 PARTSCAN_SyncHideConfigWithXref EndP
 

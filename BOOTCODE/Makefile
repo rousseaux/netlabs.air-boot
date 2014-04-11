@@ -154,7 +154,8 @@ ASM=jwasm
 !if "$(ASM)"=="jwasm"
 # -Cp	= case sensitive symbols
 # -zcw	= no _ prefix on symbols (C model)
-ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -zcw -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
+# -Zm	= Masm51 compat -- don't use ! (Will generate incorrect offsets)
+ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -Cp -zcw -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
 ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -zcw -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
 ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -zcw -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
 !elseif "$(ASM)"=="masm"
@@ -167,7 +168,7 @@ ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -d1 -fo=$^. -fr=$^&.ERR
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -d1 -fo=$^. -fr=$^&.ERR
 !elseif "$(ASM)"=="tasm"
 # -ml	= case sensitive symbols
-ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -m2 -l
+ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -ml -m9 -l
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -m9 -z -zi -c -la
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -m9 -z -zi -c -la
 !elseif "$(ASM)"=="alp"
@@ -372,10 +373,13 @@ fixcode:	.procedure
 ###############################################################################
 # 16-bits RAW :: Final image that can be executed when activated by the BIOS.
 ###############################################################################
-$(TARGET):	.MULTIPLE $(BASENAME).COM
+$(TARGET):	.MULTIPLE Makefile.bu $(BASENAME).COM
 #	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys dos com
 !ifdef	__OS2__
 	..$(DS)TOOLS$(DS)INTERNAL$(DS)FIXCODE.COM
+!endif
+!ifdef	__LINUX__
+	..$(DS)TOOLS$(DS)INTERNAL$(DS)FIXCODE
 !endif
 #	@echo 	FIXCODE
 	$(CP) $(BASENAME).COM $(TARGET)
@@ -391,12 +395,19 @@ $(TARGET):	.MULTIPLE $(BASENAME).COM
 ###############################################################################
 # 16-bits COM :: Intermediate image without embedded MBR-prot. and code count.
 ###############################################################################
+# While both DOS COM and RAW linkage generate a flat 16-bits image with
+# fixed-up locations, DOS COM checks that the addressibility of the image does
+# not exceed the upper 64kB limit while RAW just wraps it's fixups.
+# So we use DOS COM linkage to proteced us from overflows in the BSS segment.
 $(BASENAME).COM:	.MULTIPLE $(BASENAME).OBJ
 	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys dos com
 #	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. form raw
 #	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 #	@echo.
 
+#
+# Assembled Object File
+#
 $(BASENAME).OBJ:	.MULTIPLE $(BASENAME).ASM
 #	@echo.
 	@echo TARGET: $^.	[DOS 16-bits Raw Image]
