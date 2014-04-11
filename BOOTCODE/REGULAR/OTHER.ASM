@@ -82,7 +82,7 @@ GetLenOfStrings                Proc Near   Uses bx dx si
    ret
 GetLenOfStrings                EndP
 
-PRECRAP_Main                    Proc Near  Uses
+PRECRAP_Main                    Proc Near
    ; First initialize Variable-Area (everything with NUL)
    mov     di, offset BeginOfVariables
    mov     cx, offset EndOfVariables-offset BeginOfVariables
@@ -263,7 +263,7 @@ ENDIF
                  mov     si, offset NotActive
 
                MBR_Main_BootThrough:
-                 call    MBR_TeleType
+                 call    MBR_Teletype
                  xor     si,si
                  call    MBR_TeletypeNL
 
@@ -356,7 +356,7 @@ PRECRAP_Main                    EndP
 
 
 
-AFTERCRAP_Main                  Proc Near  Uses
+AFTERCRAP_Main                  Proc Near
    ; ===================================================
    ;  Now get volume label of FloppyDrive, if wanted...
    ; ===================================================

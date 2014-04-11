@@ -1,0 +1,231 @@
+== CONCEPT ==
+
+======================
+AiR-BOOT version 1.0.8                                                 nov 2011
+======================
+
+With this version of AiR-BOOT, the display of the version number has changed
+to be compatible with the WarpIN versioning system.
+So all digits are now separated by a dot.
+This change is only visual and tools relying on the way AiR-BOOT stores it's
+version numer internally are not affected.
+
+The following has been fixed:
+
+
+- AiR-BOOT does not remember drive-letters (issue #2987)
+  ------------------------------------------------------
+  When using the drive-letter feature, AB would not remember the drive-letter.
+  This has been fixed.
+
+  The purpose of this feature is to force a drive-letter onto the booting
+  system if it otherwise refuses to boot. ("... cannot operate harddrive ...")
+  This would occure on systems that have been formatted with HPFS and have
+  their system restored from archive. (i.e. from a zip-file)
+  In this case the HPFS partition misses the information needed by the loader
+  to indicate which drive-letter to use. (issues #3067 and #3119)
+  A SYSINSTX would solve such a problem, as did the dl-feature in AB v1.06.
+
+  With this 1.0.8 version, this feature has become almost obsolete.
+  If the information is missing from the HPFS partition, AB recreates it
+  from the LVM information related to that partition.
+  It only does that in memory, just before booting the system and thus does not
+  alter/fix the HPFS partition on disk. The user can do that by regenerating
+  the system using SYSINSTX.
+
+  One case where the drive-letter feature can still be of value is when
+  restoring a pre-LVM system from archive to an HPFS partition.
+  In this case there will be no LVM information AiR-BOOT can use, so the
+  user can use the dl-feature to force the proper boot-drive.
+  After booting the pre-LVM system, it's advised to do a SYSINSTX to
+  permanently fix the HPFS partition. After that, the dl-feature can be
+  turned off since now the proper information is present.
+
+  Another situation might occur when the ordering of primary partitions
+  is changed. There are situations when partitioning an empty harddisk,
+  the LVM subsystem creates so called cross-linked entries.
+  This means that the first pointer in the partition table does not point to
+  the first partition on disk. This can happen when creating multiple
+  partitions in MiniLVM and saving them all at once.
+  Good practice is to create-save-create-save...
+
+  Having primary partitions cross-linked is normally not a problem,
+  but if the user corrects the ordering, i.e. with Linux fdisk (not advised!),
+  the relation between those primaries and their LVM information
+  get's mixed up. (The LVM-info is still in the old order)
+  In this case the AiR-BOOT drive-letter feature could be used to force
+  the correct drive-letter. The user should recreate the LVM-info with
+  MiniLVM by unssigning and reassigning the drive-letters for the primary
+  partitions to regenerate the LVM information. After this,
+  the partition should boot and the dl-feature can be turned off.
+
+  * Please note that the dl-feature should be used with caution *
+  Supplying incorrect information can cause system boot failure !
+  The drive-letter entered in this feature should be the same as the one
+  used in the CONFIG.SYS corresponding to that system.
+
+  As a convenience, a drive-letter in the dl-feature pop-up can now be set
+  to "Disabled" by pressing backspace.
+  (As opposed to arrowing up/down to get to the "Disabled" entry)
+
+
+
+- HPFS zero-drive boot-bug (issues #3067 and #3119)
+  -------------------------------------------------
+  AiR-BOOT would sometimes refuse to boot older eCS systems on HPFS.
+  This has been fixed.
+
+  The nature of this bug is described above.
+  AiR-BOOT now checks for this condition and tries to use the drive-letter
+  from the partition's LVM info. If that's not possible, the system will refuse
+  to boot and the user can reset the system and turn on the dl-feature
+  to force a boot-drive. The system should then boot, after which the user is
+  advised to repair the HPFS volume by regenerating the system with SYSINSTX.
+
+
+
+- Double 'I13X' signature (issue #3002)
+  -------------------------------------
+  The LVM-engine from eComStation v1.x puts the 'I13X' signature in a
+  different location in the MBR (Master Boot Record) than the
+  LVM-engine from eComStation v2.x does.
+  The true impact of this is unknown at the time but could involve scenario's
+  where a v1.x IBM-BM is used with a v2.x generated MBR, or vice-versa.
+  (Not advised or supported anyway)
+  Previous versions of AiR-BOOT used the v1.x location of the signature.
+  Starting with v1.0.8 the 'I13X' signature is at both places in the AB MBR.
+
+
+
+- Windows cannot find NTLDR/BOOTMGR (issue #3064)
+  ---------------------------------------
+  AiR-BOOT v1.07 could not boot Windows XP/Vista/7 if it was installed in a
+  logical partition.
+  This has been fixed.
+
+  Unlike OS/2 and eComStation, Windows cannot truly boot from a logical
+  partition. It always needs a primary partition where it can store it's
+  loader. When the partition used for the loader is FAT32, the loader code
+  cannot find the NT kernel-loader (a file on disk) if the field that
+  otherwise belongs to the physical disk identifier is overwritten.
+  This field has a different meaning in FAT32 and AiR-BOOT now treats it
+  as such.
+
+
+
+- Contact information corrected
+  -----------------------------
+  An unfortunate mistake was made with v1.07 in that it contained the *wrong*
+  contact information in it's SETUP display.
+  This still pointed to the sourceforge site, causing lot of confusion.
+  Version 1.07 and up reside on Netlabs, see the end of this document for
+  links.
+
+
+
+- Release date corrected
+  ----------------------
+  AB v1.07 internally had the release date of v1.06.
+  AB v1.0.8 has a correct internal release date.
+  This is a non-impact fix.
+
+
+
+
+Note:
+-----
+The fixes above also involved the installer, AIRBOOT2.EXE and SET(A)BOOT.EXE
+of which new versions are provided.
+Therefore, you should not try to install v1.0.8 by using the v1.07 installer.
+It will report a broken configuration while this is not the case.
+
+
+
+
+
+
+-------------------------------------------------------------------------------
+=====================
+AiR-BOOT version 1.07                                                  may 2011
+=====================
+
+With eComStation v2.1, as released in may 2011, AiR-BOOT replaces the familiar
+but aging IBM Boot Manager. While it is still possible to use IBM-BM,
+it will not function correctly on huge disks (>502GiB) or play well in
+conjunction with Windows 7 OEM installations.
+
+While AiR-BOOT v1.06, the latest version by it's original developer
+Martin Kiewitz, could almost be used as-is, a couple of things needed to be
+fixed.
+
+These include the following:
+
+
+- Support for eComStation phase1
+  ------------------------------
+  When eComStation is being installed, it needs to reboot the system without
+  displaying any boot-manager menu after completing phase1.
+  With IBM-BM installed, it "programs" it using the SETBOOT utility.
+  While AiR-BOOT v1.06 already contained SET(A)BOOT, this functionality
+  was lacking. It has been implemented starting with the v1.07 version.
+
+
+
+- Support for huge disks (>502MiB)
+  --------------------------------
+  When using eComStation on huge disks, it uses a special geometry that
+  has a different number of sectors per track. (127 or 255 instead of 63).
+  This impacts the location of the LVM information which is usually stored in
+  the last sector of track0 or just below the logical partition. Also,
+  partitions do not start at a multiple of 63 sectors anymore, but on a
+  multiple of 127 or 255 sectors, depending on the size of the disk.
+  Support for huge disks has been implemented starting with v1.07.
+
+
+
+- Support for legacy systems on huge disks
+  ----------------------------------------
+  Since it's always best to use the eCS Volume Manager (MiniLVM) to partition
+  disks that also contain eCS volumes, on huge disks this implies that such
+  volumes have a different alignment due to the special geometry in use.
+  With v1.07 support has been added for booting legacy systems like PC-DOS
+  and FreeDOS and the DOS based 32-bit versions of Windows (95/98/ME) on
+  such huge disks.
+
+
+
+- Adjusted color-theme
+  ---------------------
+  While the bright and shiny colors of v1.06 are arguably nice, they do not
+  fit a distinguished product like eComStation.
+  To prevent "culture shock", the color-theme has been adjusted to more
+  resemble the IBM Boot Manager.
+
+
+
+
+Note:
+-----
+I't important to know that AiR-BOOT versions 1.07 and up are *not* developed
+by the original autor, Martin Kiewitz.
+Technically, version 1.07 and up are forks of the 1.06 version and maintained
+by a different developer. As such, addressing the original author with regard
+to v1.07 and up is not the correct path.
+
+The eComStation version of AiR-BOOT resides on Netlabs and not on Sourceforge.
+
+
+
+Resources:
+----------
+eWiki site           : http://ewiki.ecomstation.nl/AiRBOOT
+General project site : http://air-boot.netlabs.org
+Trac project site    : http://svn.netlabs.org/air-boot
+Bug tracking:        : http://bugs.ecomstation.nl
+Contact e-mail       : airboot@ecomstation.com
+
+
+
+
+
+                                    - x -

@@ -1,7 +1,14 @@
-#
-# MAKEFILE -- Wrapper around the DOS .BAT files.
-#
+###############################################################################
+# Makefile :: Builds AiR-BOOT for all supported Languages.                    #
+###############################################################################
 
+#
+# The default language for the loader code is EN.
+# Supported languages are: EN,DE,FR,SW,IT,NL,RU.
+# The 1.06 version used 'DT' for the Dutch language,
+# this has been changed to 'NL'.
+# To build all languages, set the LANGUAGE macro below to ALL.
+#
 LANGUAGE=EN
 
 #
@@ -15,12 +22,6 @@ LANGUAGE=EN
 
 #
 # Build the loader code, the installers and SETABOOT.
-#
-# The default language for the loader code is EN.
-# To build another language, edit BOOTCODE\_build.cmd and change the lang variable.
-# Supported languages are: EN,DE,FR,SW,IT,NL,RU.
-# To build all languages, edit BOOTCODE\_build.cmd and set the lang variable to 'ALL'.
-# The 1.06 version used 'DT' for the Dutch language, this has been changed to 'NL'.
 #
 all: .SYMBOLIC
 # AiR-BOOT loader code
@@ -47,6 +48,9 @@ all: .SYMBOLIC
 clean: .SYMBOLIC
 	cd BOOTCODE
 	call _clean.cmd
+	cd MBR-PROT
+	call _clean.cmd
+	cd ..
 	cd ..
 
 	cd INSTALL\C
@@ -56,3 +60,7 @@ clean: .SYMBOLIC
 	cd TOOLS\OS2\SETABOOT
 	call _clean.cmd
 	cd ..\..\..
+
+	cd TOOLS\INTERNAL
+	call _clean.cmd
+	cd ..\..

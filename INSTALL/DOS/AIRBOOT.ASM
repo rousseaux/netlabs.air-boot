@@ -16,15 +16,19 @@
 ;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
 ;
 
-JUMPS
+;JUMPS
 
-Include ..\..\include\asm.inc
+Include ../../INCLUDE/ASM.INC
 
 		.386p
-                model large, basic
+                .model small, basic
+
+airboot         group code_seg,bss_data
 
 code_seg        segment public use16
-                assume  cs:code_seg, ds:code_seg, es:nothing, ss:nothing
+                ;assume  cs:code_seg, ds:code_seg, es:nothing, ss:nothing
+                assume  cs:airboot, ds:airboot, es:nothing, ss:nothing
+
                 org     100h
 COM_StartUp:    jmp     COM_Init
 
@@ -71,7 +75,8 @@ COM_Init:       mov     ax, cs
                 int     21h              ; GET CURRENT PSP (into BX)
                 push    es
                 mov     es, bx           ; ES points now to PSP-Segment
-                movzx   dx, es:[80h]     ; CX - Length of Command-Line
+                xor     dh,dh
+                mov     byte ptr dl, es:[80h]     ; CX - Length of Command-Line
                 or      dx, dx
                 jz      COM_CmdLineDone
                 mov     cx, dx
@@ -114,9 +119,13 @@ COM_CmdLineLowcaseLoop:
                 jmp     COM_CmdLineDone
 
 COM_CheckCmdParm:
-                push    cx si di
+                push    cx
+                push    si
+                push    di
                    repe    cmpsb
-                pop     di si cx
+                pop     di
+                pop     si
+                pop     cx
                 retn
 
 COM_CmdLineDone:; Now read airboot.bin into memory at DS:
@@ -196,7 +205,9 @@ APIAfterQuit:   jmp     APIExitProgram
 
 ; =============================================================================
 ; DS:SI - NUL-terminated message to display to console
-APIShowMessage: push    ax dx si
+APIShowMessage: push    ax
+                push    dx
+                push    si
                    mov     ah, 02h
 ASM_Loop:          lodsb
                    or      al, al
@@ -204,15 +215,19 @@ ASM_Loop:          lodsb
                    mov     dl, al
                    int     21h           ; DOS: WRITE CHARACTER TO CONSOLE
                    jmp     ASM_Loop
-ASM_Done:       pop     si dx ax
+ASM_Done:       pop     si
+                pop     dx
+                pop     ax
                 retn
 
 ; =============================================================================
-APIShowChar:    push    ax dx
+APIShowChar:    push    ax
+                push    dx
                    mov     ah, 02h
                    mov     dl, al
                    int     21h           ; DOS: WRITE CHARACTER TO CONSOLE
-                pop     dx ax
+                pop     dx
+                pop     ax
                 retn
 
 ; =============================================================================
@@ -226,7 +241,10 @@ APIReadKeyboard:mov     ah, 07h
                 ; Result in AL
                 retn
 
-APILockVolume:  push    ax bx cx dx
+APILockVolume:  push    ax
+                push    bx
+                push    cx
+                push    dx
                    mov     ax, 3000h
                    int     21h           ; DOS: GET DOS VERSION
                    cmp     ax, 0700h
@@ -237,14 +255,23 @@ APILockVolume:  push    ax bx cx dx
                    xor     dx, dx
                    int     21h           ; DOS 7.0: LOCK PHYSICAL DRIVE
 ALV_SkipLock:
-                pop     dx cx bx ax
+                pop     dx
+                pop     cx
+                pop     bx
+                pop     ax
                 jc      ALV_Error
                 retn
 ALV_Error:      mov     si, offset COM_LockFailed
                 call    APIShowError
 
-                Include ..\INST_X86\install.inc ; Execute generic code
+                Include ../INST_X86/INSTALL.INC ; Execute generic code
 COM_EndOfSegment:
 
 code_seg	ends
+
+bss_data    segment  public use16   'BSS'
+; Space for bootcode-image
+BootImage       db 31744 dup (?)
+bss_data    ends
+
 		end	COM_StartUp

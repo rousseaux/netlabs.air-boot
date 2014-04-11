@@ -2,20 +2,43 @@
  BUILD.NFO -- Information on building AiR-BOOT v1.0.8
 ======================================================
 
-Building AiR-BOOT v1.0.8 requires the following tools:
-- Borland Turbo Assembler v4.1 for DOS
-  (TASM.EXE 136.018 bytes)
-- Borland Turbo Linker v4.0 for DOS
-  (TLINK.EXE 72.585 bytes)
-- Caldera Exe2Bin R1.01 for DOS
-  (EXE2BIN.EXE 9.845 bytes)
-- Open Watcom C/C++ v1.9
-  (Used to build the installer and setaboot etc.)
+Building AiR-BOOT and the support tools has been completely revamped
+in this version. The code has been "de-tasmized" so it can now also
+be assembled with JWasm, which is the preferred assembler as of this version.
 
-Put these DOS executables (not Open Watcom) in a directory 
-and append that directory to the PATH as defined in ?:\AUTOEXEC.BAT. 
-This will enable DOS sessions to find them when called 
-by the Rexx build scripts from an OS2 CMD session.
+The DOS batch-files have been replaced by Open Watcom Makefiles that
+can be used on: DOS, Windows, OS/2 and Linux.
+This greatly enhances the build-environment, which was previously DOS-only.
+
+The Open Watcom Linker is now used, which obsoletes the use of the (DOS-only)
+exe2bin and tlink programs. WLink replaces the functionality of both while
+also adding extensive cross-platform support.
+
+The (DOS-only) FIXCODE.COM program that is used to embed the MBR-protection
+in the AiR-BOOT image has been replaced by platform specific versions.
+This does away with the need to run a DOS-only program in the tool-chain,
+and thus enables building AiR-BOOT on Linux.
+
+The preferred assembler is now JWasm.
+Note however that JWasm/DOS does not work so this environment will use
+Tasm/DOS. The DOS build-environment will probably be discontinued in
+the future due to it's many restrictions. DOS specific targets can
+be built on the other platforms.
+
+The Open Watcom tool-chain in combination with JWasm is now the
+default tool-chain. No syntax or operational compatibility with other
+assemblers or compilers is attempted.
+
+Building AiR-BOOT v1.0.8 requires the following tools:
+- Open Watcom Make Utility v1.9 or higher
+- Open Watcom 16-bits C-Compiler v1.9 or higher
+- Open Watcom 32-bits C-Compiler v1.9 or higher
+- Open Watcom Linker v1.9 or higher
+- JWasm Assembler v2.06d
+
+As a convenience a simple GNUmakefile also exists where a Makefile exists.
+The GNUmakefile forwards to the normal Makefile enabing Linux users to run the
+familiar "make" command. Target passing is supported.
 
 Note that only the loader, installer and setaboot targets are built.
 No floppy, cd-rom, etc. images.

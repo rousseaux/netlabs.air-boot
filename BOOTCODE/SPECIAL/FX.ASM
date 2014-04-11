@@ -26,12 +26,12 @@ ENDIF
 ; There you go. Some nice old-school demo coder effects :)
 ;  If you rip this code, I will ./ your ass. =]
 
-Include SPECIAL\FXTABLES.asm
+Include SPECIAL/FXTABLES.ASM
 
 FX_MaxScanLine                equ 384
 FX_TotalCooperBars            equ   7
 
-FX_CalculateTables              Proc Near   Uses
+FX_CalculateTables              Proc Near
    ; Calculate the Cooper-Bar Color-Table -> FX_CooperColors
    mov    di, offset FX_CooperColors
    mov    ax, 000Fh                      ; Red
@@ -56,7 +56,7 @@ FX_CalculateTables              EndP
 ;            DI - Pointer to Buffer for Color-Table
 ;       Out: *none*
 ; Destroyed: DI - updated, +96
-FX_MakeCooperBarColors          Proc Near   Uses
+FX_MakeCooperBarColors          Proc Near
    mov    bh, ah
    shl    bh, 4
    or     bh, ah                         ; BH - Blue-Value, now 00h or FFh
@@ -81,7 +81,8 @@ FX_MakeCooperBarColors          Proc Near   Uses
       mov    es:[di+2], bl
       add    di, 3
    loop   FX_MCBC_BuildColorLoop1
-   push   ax bx
+   push   ax
+   push   bx
       add    ax, 0101h
       add    bl, 01h
       and    ax, dx
@@ -91,7 +92,8 @@ FX_MakeCooperBarColors          Proc Near   Uses
       mov    es:[di+3], ax
       mov    es:[di+5], bl
       add    di, 6
-   pop    bx ax
+   pop    bx
+   pop    ax
    mov    cx, 15
   FX_MCBC_BuildColorLoop2:
       and    ax, dx
@@ -108,7 +110,7 @@ FX_MakeCooperBarColors          EndP
 ; This is called just before a new screen is generated
 ;  If FX is active, we will modify the base segment for videoio to page 2,
 ;  so the screen will be generated there instead of the current page.
-FX_StartScreen                  Proc Near   Uses
+FX_StartScreen                  Proc Near
    test    CFG_CooperBars, 1
    jz      FXSS_NoFX
    mov     VideoIO_Segment, VideoIO_Page2
@@ -119,7 +121,7 @@ FX_StartScreen                  EndP
 ; This is called, when a new screen was done
 ;  If FX is active, we will copy the new screen to scroll area, do the FX,
 ;  copy the new screen to Page 0 and activate it.
-FX_EndScreenLeft                Proc Near   Uses
+FX_EndScreenLeft                Proc Near
    test    CFG_CooperBars, 1
    jnz     FXESL_Go
    ret
@@ -140,7 +142,7 @@ FX_EndScreenLeft                Proc Near   Uses
    ret
 FX_EndScreenLeft                EndP
 
-FX_ScrollScreenLeft             Proc Near   Uses
+FX_ScrollScreenLeft             Proc Near
    mov     FX_WideScrollerCurPos, 640
    mov     FX_WideScrollerDirection, 0
    mov     FX_WideScrollerAbsDirection, 0
@@ -148,7 +150,7 @@ FX_ScrollScreenLeft             Proc Near   Uses
    ret
 FX_ScrollScreenLeft             EndP
 
-FX_EndScreenRight               Proc Near   Uses
+FX_EndScreenRight               Proc Near
    test    CFG_CooperBars, 1
    jnz     FXESR_Go
    ret
@@ -169,7 +171,7 @@ FX_EndScreenRight               Proc Near   Uses
    ret
 FX_EndScreenRight               EndP
 
-FX_ScrollScreenRight            Proc Near   Uses
+FX_ScrollScreenRight            Proc Near
    mov     FX_WideScrollerCurPos, 0
    mov     FX_WideScrollerDirection, 1
    mov     FX_WideScrollerAbsDirection, 1
@@ -177,7 +179,7 @@ FX_ScrollScreenRight            Proc Near   Uses
    ret
 FX_ScrollScreenRight            EndP
 
-FX_EndScreenInternalGo          Proc Near   Uses
+FX_EndScreenInternalGo          Proc Near
    mov     FX_WideScrollerSpeed, 1
    mov     FX_WideScrollerSpeedState, 1
    mov     FX_WideScrollerBounceSpeed, 25
@@ -198,7 +200,7 @@ FX_EndScreenInternalGo          Proc Near   Uses
    ret
 FX_EndScreenInternalGo          EndP
 
-FX_EndScreenInternalCleanUp     Proc Near   Uses
+FX_EndScreenInternalCleanUp     Proc Near
    mov     ax, -1
    call    FX_SetVideoStart
    call    FX_WaitRetrace
@@ -356,7 +358,7 @@ FX_ColorUpVLine                 EndP
 ;        In: *none*
 ;       Out: *none*
 ; Destroyed: all
-FX_CalculateCoopers             Proc Near   Uses
+FX_CalculateCoopers             Proc Near
    ; Logic: When Intro-State: Increase CooperPos by 1 till 256 -> then active
    ;             Active-State: Use SinusTable, till SinusPos=7Fh -> then Extro
    ;             Extro-State: Decrease CooperPos by 1 till 0
@@ -413,7 +415,7 @@ FX_CalculateCoopers             Proc Near   Uses
    ret
 FX_CalculateCoopers             EndP
 
-FX_CalculateWideScroller        Proc Near   Uses
+FX_CalculateWideScroller        Proc Near
    mov     bx, FX_WideScrollerCurPos
    ;movzx   cx, FX_WideScrollerSpeed
    mov   cl,FX_WideScrollerSpeed
@@ -514,7 +516,7 @@ FX_CalculateWideScroller        Proc Near   Uses
    ret
 FX_CalculateWideScroller        EndP
 
-FX_WaitRetrace                  Proc Near   Uses
+FX_WaitRetrace                  Proc Near
    mov    dx, 3DAh
   FX_WR1:
    in     al,dx
@@ -527,7 +529,7 @@ FX_WaitRetrace                  Proc Near   Uses
    ret
 FX_WaitRetrace                  EndP
 
-FX_WaitVRetrace                 Proc Near   Uses
+FX_WaitVRetrace                 Proc Near
    mov    dx, 3DAh
   FX_WVR1:
    in     al,dx

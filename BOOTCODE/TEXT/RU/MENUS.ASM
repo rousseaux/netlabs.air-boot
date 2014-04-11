@@ -108,17 +108,17 @@ TXT_SETUP_MAGIC_Set            db 'задать ', 0
 
 ; Setup Control Help - Max Length: 33
 ;----------------------------------|-------------------------------|--------
-TXT_SETUPHELP_Main:            db 24,32,25,32,26,32,27,' : Выбор действия', 0
+TXT_SETUPHELP_Main             db 24,32,25,32,26,32,27,' : Выбор действия', 0
                                db               'Enter   : Подтверждение', 0
                                db               'F10 : Сохранить и выйти', 0
                                db               'Esc : Выйти', 0
 
-TXT_SETUPHELP_SubMenu:         db 24,32,25,32,26,32,27,' : Выбор пункт', 0
+TXT_SETUPHELP_SubMenu          db 24,32,25,32,26,32,27,' : Выбор пункт', 0
                                db               'PgUp/Dn : Смена пункта', 0
                                db               'F1  : Показать помощь', 0
                                db               'Esc : Главное меню', 0
 
-TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Выбор раздела', 0
+TXT_SETUPHELP_PartSetup        db 24,32,25,32,26,32,27,' : Выбор раздела', 0
                                db               'Enter   : Смена метки', 0
                                db               'F1  : Флаги (ключи)', 0
                                db               'Esc : Главное меню', 0
@@ -128,36 +128,36 @@ TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Выбор раздела', 0
                                   ;1234567890123456789012
 ;----------------------------------|--------------------|-------------------
 
-TXT_SETUPHELP_PartitionSetup:  db 'Можете задать разделы', 0
+TXT_SETUPHELP_PartitionSetup   db 'Можете задать разделы', 0
                                db 'загружаемыми, сменить', 0
                                db 'их название, спрятать', 0
                                db 'и многое другое.', 0
                                db 0
-TXT_SETUPHELP_BasicOptions:    db 'Это настройки для', 0
+TXT_SETUPHELP_BasicOptions     db 'Это настройки для', 0
                                db 'начинающих пользо-.', 0
                                db 'вателей.', 0
                                db 0
-TXT_SETUPHELP_AdvOptions:      db 'Эти настройки для', 0
+TXT_SETUPHELP_AdvOptions       db 'Эти настройки для', 0
                                db 'опытных пользователей.', 0
                                db 'Если Вы не знаете, что', 0
                                db 'они значат, не', 0
                                db 'меняйте.', 0
                                db 0
-TXT_SETUPHELP_ExtOptions:      db 'Расширенные опции для', 0
+TXT_SETUPHELP_ExtOptions       db 'Расширенные опции для', 0
                                db 'разных систем.', 0
                                db 0
-TXT_SETUPHELP_DefMasterPwd:    db 'Задание пароля для', 0
+TXT_SETUPHELP_DefMasterPwd     db 'Задание пароля для', 0
                                db 'доступа к настройкам', 0
                                db 'и системе.', 0
                                db 0
-TXT_SETUPHELP_DefBootPwd:      db 'Задание пароля для', 0
+TXT_SETUPHELP_DefBootPwd       db 'Задание пароля для', 0
                                db 'доступа к системе.', 0
                                db 0
-TXT_SETUPHELP_SaveAndExit:     db 'Продолжить загрузку и', 0
+TXT_SETUPHELP_SaveAndExit      db 'Продолжить загрузку и', 0
                                db 'сохнанить текущие', 0
                                db 'настройки.', 0
                                db 0
-TXT_SETUPHELP_JustExit:        db 'Продолжить загрузку,', 0
+TXT_SETUPHELP_JustExit         db 'Продолжить загрузку,', 0
                                db 'но отменить все', 0
                                db 'изменения настроек.', 0
                                db 0
@@ -169,7 +169,7 @@ TXT_SETUPHELP_InPartitionSetup db 'B - Загружаемый', 0
                                db 'P - Расш. Разд. MS-Хак', 0
                                db 0
 
-TXT_SETUPHELP_HideSetup:       db 'Выберите состояние,', 0
+TXT_SETUPHELP_HideSetup        db 'Выберите состояние,', 0
                                db 'в котором раздел', 0
                                db 'должен быть, когда', 0
                                db 'выбранный раздел', 0

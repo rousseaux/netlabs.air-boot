@@ -27,7 +27,7 @@ ENDIF
 ; Note: This is complex code. So make sure that you know what you are doing in
 ;        here.
 
-PARTSCAN_ScanForPartitions      Proc Near  Uses
+PARTSCAN_ScanForPartitions      Proc Near
    ; Reset X-Reference
    call    PARTSCAN_ResetXref
 
@@ -119,7 +119,7 @@ PARTSCAN_ScanForPartitions      EndP
 ; Scannt die Festplatte auf jegliche Partitionstabellen...
 ; Falls eine fehlerhafte Partition gefunden wird, wird abgebrochen.
 ; falls eine Extended Partition (DOS) gefunden wird, wird erneut gescannt.
-PARTSCAN_ScanDriveForPartitions Proc Near  Uses
+PARTSCAN_ScanDriveForPartitions Proc Near
    xor     ax, ax
    xor     bx, bx     ; Location Absoluter Sektor 0
    mov     cx, 0001h
@@ -282,7 +282,10 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
 
    ; First check, if LVM Information Sector is available and this partition
    ;  is supported.
-   push    ax dx si di
+   push    ax
+   push    dx
+   push    si
+   push    di
       mov     si, wptr [PartPtr]
       mov     ax, wptr [si+LocBRPT_RelativeBegin] ; Absolute Sector
       mov     dx, wptr [si+LocBRPT_RelativeBegin+2]
@@ -334,13 +337,19 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
 
 
    PCCTP_NoIbmBm:
-   pop     di si dx ax
+   pop     di
+   pop     si
+   pop     dx
+   pop     ax
    mov     si, offset MBR_NoName_Patched
    xor     ah, ah                        ; no Flags_NoPartName
    jmp     PCCTP_NameSearchInIPT
 
      PCCTP_CheckBootRecord:
-   pop     di si dx ax
+   pop     di
+   pop     si
+   pop     dx
+   pop     ax
    test    ah, FileSysFlags_NoName       ; No-Name-Flag ? -> No Partition Name
 
    jz      PCCTP_ThereIsAName
@@ -390,9 +399,11 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
          jnz     PCCTP_SerialNameAlreadyFound
          ; Now compare IPT with current Partition
          mov     cx, 15                  ; Serial&Name (15-Bytes)
-         push    si di
+         push    si
+         push    di
             repz    cmpsb
-         pop     di si
+         pop     di
+         pop     si
 
          jne   PCCTP_NoMatchYet
 
@@ -414,11 +425,13 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
          jnz     PCCTP_NameAlreadyFound
          ; Now compare IPT with current Partition
          mov     cx, 11                  ; Name only (11-Bytes)
-         push    si di
+         push    si
+         push    di
             add     si, 4
             add     di, 4                ; Skip over Serial-Field
             repz    cmpsb
-         pop     di si
+         pop     di
+         pop     si
          jne     PCCTP_NameNoMatch
          mov     cx, [si+0]           ; Get Serial
          mov     [di+0], cx
@@ -487,7 +500,8 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
       add     bx, [CurPartition_Location+2]
       ; Build a standard-Volume Label from FileSystemNamePtr
       ;  We have to call SearchFileSysName again because of NTFS
-      push    ax cx
+      push    ax
+      push    cx
          mov     al, dh
          call    PART_SearchFileSysName   ; We want SI here <- FileSystemNamePtr
          mov     di, offset MBR_NoName_Patched
@@ -500,7 +514,8 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
          stosw
          stosb                           ; Fill last 3 bytes with "NUL"
          mov     si, offset MBR_NoName_Patched
-      pop     cx ax
+      pop     cx
+      pop     ax
       ;=======================================================
       ; LOCATION SEARCH in IPT-Table
       ;    DH - PartitionID of Current Partition
@@ -811,5 +826,5 @@ PARTSCAN_SyncHideConfigWithXref Proc Near Uses ax bx cx dx si di
    ret
 PARTSCAN_SyncHideConfigWithXref EndP
 
-ibm_bm_name:   db 'OS2 BootMgr',0
-;win_bm_name:   db 'BOOTMGR',0
+ibm_bm_name     db 'OS2 BootMgr',0
+;win_bm_name:    db 'BOOTMGR',0

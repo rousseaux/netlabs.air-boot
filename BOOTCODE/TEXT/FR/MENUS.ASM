@@ -108,17 +108,17 @@ TXT_SETUP_MAGIC_Set            db 'choisir ', 0
 
 ; Setup Control Help - Max Length: 33
 ;----------------------------------|-------------------------------|--------
-TXT_SETUPHELP_Main:            db 24,32,25,32,26,32,27,' : Choisir Action', 0
+TXT_SETUPHELP_Main             db 24,32,25,32,26,32,27,' : Choisir Action', 0
                                db 'Enter   : SÇlectionner Action', 0
                                db 'F10 : Sauver & Sortir', 0
                                db 'Esc : Quitter', 0
 
-TXT_SETUPHELP_SubMenu:         db 24,32,25,32,26,32,27,' : Choisir Item', 0
+TXT_SETUPHELP_SubMenu          db 24,32,25,32,26,32,27,' : Choisir Item', 0
                                db 'PgUp/Dn : Changer Item', 0
                                db 'F1  : Afficher Aide', 0
                                db 'Esc : Retour au menu principal', 0
 
-TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Choisir partition', 0
+TXT_SETUPHELP_PartSetup        db 24,32,25,32,26,32,27,' : Choisir partition', 0
                                db 'Enter   : Editer Çtiquette', 0
                                db 'F1  : Drapeaux (lettre=bascule)', 0
                                db 'Esc : Retour au menu principal', 0
@@ -127,35 +127,35 @@ TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Choisir partition', 0
 
                                   ;1234567890123456789012
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_PartitionSetup:  db 'Mettre vos partitions', 0
+TXT_SETUPHELP_PartitionSetup   db 'Mettre vos partitions', 0
                                db 'amoráables, changer', 0
                                db 'les noms, dÇfinir', 0
                                db 'cachÇ et plus encore.', 0
                                db 0
-TXT_SETUPHELP_BasicOptions:    db 'Ces options sont pour', 0
+TXT_SETUPHELP_BasicOptions     db 'Ces options sont pour', 0
                                db 'les usagers dÇbutants.', 0
                                db 0
-TXT_SETUPHELP_AdvOptions:      db 'Pour usagers avancÇs.', 0
+TXT_SETUPHELP_AdvOptions       db 'Pour usagers avancÇs.', 0
                                db 'Si vous ignorez leurs', 0
                                db 'fonctions, ne les', 0
                                db 'modifiez pas.', 0
                                db 0
-TXT_SETUPHELP_ExtOptions:      db 'Options Çtendues pour', 0
+TXT_SETUPHELP_ExtOptions       db 'Options Çtendues pour', 0
                                db 'S.E. spÇcifiques.', 0
                                db 0
-TXT_SETUPHELP_DefMasterPwd:    db 'DÇfinir mot de passe', 0
+TXT_SETUPHELP_DefMasterPwd     db 'DÇfinir mot de passe', 0
                                db 'pour accäs au', 0
                                db 'paramÇtrage et au', 0
                                db 'systäme.', 0
                                db 0
-TXT_SETUPHELP_DefBootPwd:      db 'DÇfinir mot de passe', 0
+TXT_SETUPHELP_DefBootPwd       db 'DÇfinir mot de passe', 0
                                db 'pour accäs au systäme.', 0
                                db 0
-TXT_SETUPHELP_SaveAndExit:     db 'Continuera amoráage-', 0
+TXT_SETUPHELP_SaveAndExit      db 'Continuera amoráage-', 0
                                db 'traite et sauve les', 0
                                db 'options courantes.', 0
                                db 0
-TXT_SETUPHELP_JustExit:        db 'Continuera, mais', 0
+TXT_SETUPHELP_JustExit         db 'Continuera, mais', 0
                                db 'annulera tout', 0
                                db 'changement aux', 0
                                db 'options.', 0
@@ -168,7 +168,7 @@ TXT_SETUPHELP_InPartitionSetup db 'A - Amoráable', 0
                                db 'P - êt-Part MS invent.', 0
                                db 0
 
-TXT_SETUPHELP_HideSetup:       db 'Choisir l''Çtat des', 0
+TXT_SETUPHELP_HideSetup        db 'Choisir l''Çtat des', 0
                                db 'partitions lorsque', 0
                                db 'la partition prÇsen-', 0
                                db 'tement sÇlectionnÇe', 0

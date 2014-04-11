@@ -18,13 +18,26 @@
 ;---------------------------------------------------------------------------
 ;                         AiR-BOOT SETUP / GENERIC & GENERAL SETUP ROUTINES
 ;---------------------------------------------------------------------------
+                ;
+                ; First define processor so when a model is specified
+                ; the correct default segments are created.
+                ;
+                .286
+                ;.model large,c
 
-                .386p
-                .model large, basic
+;_TEXT           SEGMENT     USE16   PUBLIC  'CODE'
+;_TEXT           ENDS
 
-code_seg        segment public use16
-                assume cs:code_seg, ds:nothing, es:nothing, ss:nothing
+MBRPROT         GROUP       CODE_SEG
+;DGROUP          GROUP       CODE_SEG
+
+CODE_SEG        SEGMENT     USE16   PUBLIC  'CODE'
+
+                ;assume cs:MBRPROT, ds:MBRPROT, es:nothing, ss:nothing
+                assume cs:MBRPROT, ds:MBRPROT, es:nothing, ss:nothing
+
                 org 0000h
+                .386p
 
 ; Yes you are :-)
 ;OldInterrupt10  dd      'kcuf'              ; we are nice aren't we ;-)
@@ -113,7 +126,7 @@ MBRP_Routine:
     cli
     jmp     WindowsProcessing
 
-MBRProt_WriteLine              Proc Near
+MBRProt_WriteLine              Proc Near    Uses ax bx cx dx
     add     di, 26
     mov     ah, 4Ch                      ; red/brightred
     lodsb
@@ -147,19 +160,19 @@ MBRProt_WriteBorderLine        Proc Near
    ret
 MBRProt_WriteBorderLine        EndP
 
-MBRP_Line1:     db      'ÕÍÍ´!ATTENTION! -> A V1RU5 WAS FOUND <- !ATTENTION!ÃÍÍ¸'
-MBRP_EmptyLine: db      '³                                                     ³'
+MBRP_Line1      db      'ÕÍÍ´!ATTENTION! -> A V1RU5 WAS FOUND <- !ATTENTION!ÃÍÍ¸'
+MBRP_EmptyLine  db      '³                                                     ³'
                 db      '³ A program tried to write to your Master Boot Record ³'
                 db      '³     AiR-BOOT supposes this as a viral act, so it    ³'
                 db      '³        intercepted it and crashed the system.       ³'
-MBRP_Line2:     db      '³ If you tried to install a OS or something like that ³'
+MBRP_Line2      db      '³ If you tried to install a OS or something like that ³'
                 db      '³  you have to deactivate MBR PROTECTION in AiR-BOOT  ³'
                 db      '³             or contact your supervisor.             ³'
-;MBRP_Line3:     db      'ÔÍÍÍ´AiR-BOOT (c) Copyright by M. Kiewitz 1999-2009ÃÍÍ¾'
-MBRP_Line3:     db      'ÔÍÍÍ´AiR-BOOT (c) Copyright by M. Kiewitz 1999-2011ÃÍÍ¾'
+;MBRP_Line3      db      'ÔÍÍÍ´AiR-BOOT (c) Copyright by M. Kiewitz 1999-2009ÃÍÍ¾'
+MBRP_Line3      db      'ÔÍÍÍ´AiR-BOOT (c) Copyright by M. Kiewitz 1999-2012ÃÍÍ¾'
 
 org             1023
                 db 0
 
-code_seg        EndS
+CODE_SEG        ENDS
                 end

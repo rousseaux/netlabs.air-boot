@@ -16,20 +16,19 @@
 ;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
 ;
 
-JUMPS
+;JUMPS
 
-Include ..\..\..\include\asm.inc
-;include ..\..\..\include\dos\airboot.inc
+Include ../../../INCLUDE/ASM.INC
 
 		.386p
-                model large, basic
+                .model large, basic
 
 code_seg        segment public use16
                 assume  cs:code_seg, ds:nothing, es:nothing, ss:nothing
                 org     100h
 air_boot_setup: jmp     INITHDD_Start
 
-Introduction:           db 'INITHDD - AiR-BOOT Initialize HDD Utility (DOS) - (c) 2004 by M. Kiewitz',13,10
+Introduction            db 'INITHDD - AiR-BOOT Initialize HDD Utility (DOS) - (c) 2004 by M. Kiewitz',13,10
                         db 0
 
 TXT_ERROR_IO            db 'Could not access harddrive', 13, 10, 0
@@ -68,7 +67,7 @@ StandardMBR:
    dw 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h, 00000h
    dw 00000h, 00000h, 00000h, 0AA55h
 
-;   Include ..\..\..\include\DOS\Const.asm
+;   Include ../../../INCLUDE\DOS\CONST.ASM
 
 INITHDD_Start:  mov     ax, cs
                 mov     ds, ax

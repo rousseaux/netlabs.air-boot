@@ -128,10 +128,12 @@ NoDMAboundary:  xor     ah, ah
                 mov     dx, offset TXT_ReadError
                 call    APIShowError
 
-ReadFloppyDone: push    bx dx
+ReadFloppyDone: push    bx
+                push    dx
                    mov     dx, offset TXT_Okay
                    call    APIShowMessage
-                pop     dx bx
+                pop     dx
+                pop     bx
                 ; Check, if floppy is formated using FAT
                 mov     si, bx
                 add     si, 54
@@ -142,7 +144,9 @@ ReadFloppyDone: push    bx dx
 FloppyNoFAT:    mov     dx, offset TXT_FloppyNoFAT
                 call    APIShowError
 
-FloppyIsFAT:    push    bx cx dx
+FloppyIsFAT:    push    bx
+                push    cx
+                push    dx
                    mov     dx, offset TXT_WritingFloppy
                    call    APIShowMessage
                    mov     di, bx
@@ -157,7 +161,9 @@ FloppyIsFAT:    push    bx cx dx
                    add     di, 8
                    mov     cx, 450/2     ; Copy rest of FreeDOS BR
                    rep     movsw
-                pop     dx cx bx
+                pop     dx
+                pop     cx
+                pop     bx
                 ; Now we write it back...
                 mov     ax, 0301h
                 int     13h              ; BIOS - WRITE ONE SECTOR
@@ -257,7 +263,7 @@ DoneWriteKernelSys1:
                 call    APIShowMessage
                 mov     dx, offset TXT_Done
                 call    APIShowMessage
-                
+
                 ; Terminate ourselves...
 GoByeBye:       mov     ax, 4C00h
                 int     21h              ; Terminate us...

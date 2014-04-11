@@ -7,7 +7,7 @@ if errorlevel 1 goto Failed
 if errorlevel 1 goto Failed
 %exe2bin% airboot.exe airboot.com >nul
 if errorlevel 1 goto Failed
-copy airboot.com ..\..\RELEASE\DOS\airboot.com
+copy airboot.com ..\..\RELEASE\DOS\AIRBOOT.COM
 
 @ren airboot.LST airboot.TSL
 @ren airboot.TSL AIRBOOT.LST

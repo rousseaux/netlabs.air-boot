@@ -237,7 +237,7 @@ MenuProcessQUIT:mov     si, offset TXT_AfterQuit
                 call    MenuWaitForENTER
                 call    APIAfterQuit
 
-MenuWaitForEnter               Proc Near  Uses
+MenuWaitForEnter               Proc Near
    cmp     Option_Silent, 1
    je      MWFE_Skip
   MWFE_Loop:
@@ -248,7 +248,7 @@ MenuWaitForEnter               Proc Near  Uses
    ret
 MenuWaitForEnter               EndP
 
-ProcessADD                     Proc Near  Uses
+ProcessADD                     Proc Near
    mov     si, offset TXT_PROCESS_Add
    call    APIShowMessage
    xor     di, di
@@ -285,7 +285,7 @@ ProcessADD                     Proc Near  Uses
    ret
 ProcessADD                     EndP
 
-InstallCode                    Proc Near  Uses
+InstallCode                    Proc Near
    ; Calculates new code checksum...
    mov     si, offset BootImage+512  ; Sector 2 (Start of Code-Image)
    xor     bx, bx
@@ -315,8 +315,11 @@ InstallCode                    Proc Near  Uses
 InstallCode                    EndP
 
 InstallCode_MergeMBRs          Proc Near  Uses ds si es di
-   push    ds es
-   pop     ds es                     ; Exchange DS&ES, DS==HDD, ES==New BootCode
+   ; Exchange DS&ES, DS==HDD, ES==New BootCode
+   push    ds
+   push    es
+   pop     ds
+   pop     es
    xor     si, si
    mov     di, offset BootImage
    add     si, 1B8h                      ; 1B8h - Windoze NT Mickeysoft hdd signature
@@ -326,7 +329,7 @@ InstallCode_MergeMBRs          Proc Near  Uses ds si es di
    ret
 InstallCode_MergeMBRs          EndP
 
-InstallConfig                  Proc Near  Uses
+InstallConfig                  Proc Near
    ; Calculate new Config-CheckSum
    mov     si, offset BootImage+6C00h    ; Configuration location
    mov     wptr ds:[si+20], 0            ; delete current CheckSum
@@ -368,7 +371,7 @@ InstallConfig                  EndP
 
 
 ;       Out: Carry Flag SET if Harddisc failed 62-sectors test
-Init_CheckHarddisc             Proc Near  Uses
+Init_CheckHarddisc             Proc Near
    mov     ah, 08h
    mov     dl, 80h
    int     13h
@@ -386,17 +389,23 @@ Init_CheckHarddisc             EndP
 ;            DH = Head, DL = Drive
 LoadHDDSector                  Proc Near  Uses ax es
   LHDDS_Retry:
-   push    bx cx dx
+   push    bx
+   push    cx
+   push    dx
       mov     ax, 0201h  ; load one sector
       int     13h
       jnc     LHDDS_Success
       xor     ah, ah
       xor     dl, dl
       int     13h              ; BIOS: READ SECTOR VIA CHS
-   pop     dx cx bx
+   pop     dx
+   pop     cx
+   pop     bx
    jmp     LHDDS_Retry
   LHDDS_Success:
-   pop     dx cx bx
+   pop     dx
+   pop     cx
+   pop     bx
    add     bx, 512
    inc     cl               ; sector fixing must be done manual
    ret
@@ -409,17 +418,23 @@ SaveImageSector                Proc Near  Uses ax bx dx es
    pop     es                            ; ES==DS -> bootcode image segment
    mov     bx, si                        ; ES:BX - sector buffer to write
   SIS_Retry:
-   push    bx cx dx
+   push    bx
+   push    cx
+   push    dx
       mov     ax, 0301h
       int     13h                        ; BIOS: WRITE SECTOR
       jnc     SIS_Success
       mov     ah, 00h    ; reset disc
       mov     dl, 00h
       int     13h
-   pop     dx cx bx
+   pop     dx
+   pop     cx
+   pop     bx
    jmp     SIS_Retry
   SIS_Success:
-   pop     dx cx bx
+   pop     dx
+   pop     cx
+   pop     bx
    add     si, 512                       ; go to next sector
    inc     cl                            ; add 1 to sector
    ret
@@ -575,7 +590,7 @@ ShowNumber2                    Proc Near   Uses ax bx
 ShowNumber2                    EndP
 
 ; Verifies our bootcode installation image
-Init_VerifyImage               Proc Near   Uses
+Init_VerifyImage               Proc Near
    ; First we verify the image, this is done by using the same checksum method
    ;  as on real harddrive images. This is mainly for detecting, that we are
    ;  really seeing an AiR-BOOT image and not some other data file.
@@ -640,15 +655,15 @@ Init_VerifyCode                Proc Near  Uses ds si es di
    xchg    ch, cl
    mov     InstalledVersion_Code, cx      ; remember installed code version
    cmp     cx, dx                         ; If version number in image is higher
-   jb      IVC_MGU                        ;  -> Upgradeable
+   jb      IVC_MGU_a                      ;  -> Upgradeable
    mov     iStatus_Code, Status_Installed
    ret
-  IVC_MGU:
+  IVC_MGU_a:
    mov     iStatus_Code, Status_InstalledMGU
    ret
 Init_VerifyCode                EndP
 
-Init_CheckForEZSETUP           Proc Near  Uses
+Init_CheckForEZSETUP           Proc Near
    mov     si, offset MBR_EZSETUPCodeSig
    mov     di, 8Fh
    mov     cx, MBR_EZSETUPCodeSigLen
@@ -701,8 +716,10 @@ Init_VerifyConfig              Proc Near  Uses ds si es di
    mov     iStatus_Config, Status_InstalledMGU
   IVC_NoUpgradeConfig:
    ; We exchange DS and ES, be careful from now on!
-   push    ds es
-   pop     ds es                         ; DS = HDD, ES = BootCode
+   push    ds
+   push    es
+   pop     ds
+   pop     es                         ; DS = HDD, ES = BootCode
    cmp     cx, 0027h
    jbe     IVC_Upgrade027
    cmp     cx, 0091h
@@ -797,8 +814,10 @@ Init_VerifyConfig              Proc Near  Uses ds si es di
    ; After that a normal version upgrade will be performed additionally.
    ; ==========================================================================
    ; Exchange DS and ES, so DS == HDD and ES == New BootCode
-   push    ds es
-   pop     ds es
+   push    ds
+   push    es
+   pop     ds
+   pop     es
    mov     si, 7000h                     ; Current - Sector 57 (Prior config)
    mov     di, 6C00h                     ; -> Current - Sector 55 (cur. config)
    mov     cx, 768                       ; Total of 3 sectors...
@@ -807,9 +826,32 @@ Init_VerifyConfig              Proc Near  Uses ds si es di
    mov     cx, 512                       ; Total of 2 sectors...
    rep     movsw
    ; Exchange DS and ES again, so state is normal...
-   push    ds es
-   pop     ds es
-   jmp     IVC_CheckSumOK         ; Resume to upgrade config more
+   push    ds
+   push    es
+   pop     ds
+   pop     es
+   ;jmp     IVC_CheckSumOK         ; Resume to upgrade config more
+
+   ; Duplicated from Init_VerifyCode to remove jump
+   ; to procedure-local label. JWasm doesn't like that.
+   ; FIXME: Restructure...
+   mov     al, es:[000Fh]                 ; Current Language ID
+   mov     InstalledLanguageID, al
+   mov     cx, es:[000Dh]                 ; Current Version ID
+   mov     dx, ImageVersion               ; My Image Version ID
+   xchg    ch, cl
+   mov     InstalledVersion_Code, cx      ; remember installed code version
+   cmp     cx, dx                         ; If version number in image is higher
+   jb      IVC_MGU_b                        ;  -> Upgradeable
+   mov     iStatus_Code, Status_Installed
+   ret
+  IVC_MGU_b:
+   mov     iStatus_Code, Status_InstalledMGU
+   ret
+
+
+
+
 Init_VerifyConfig              EndP
 
 ; Carry set, if invalid MBR
@@ -827,7 +869,7 @@ Init_CheckBackupMBR            Proc Near  Uses si
 Init_CheckBackupMBR            EndP
 
 ; Internal
-Init_CheckThisMBR              Proc Near  Uses
+Init_CheckThisMBR              Proc Near
    cmp     wptr es:[si+01FEh], 0AA55h
    jne     ICTM_InvalidMBR
    xor     cx, cx                        ; No entries checked
@@ -877,8 +919,10 @@ Init_CheckThisMBR              EndP
 
 ; Copies BackUp MBR into current MBR area, so it will get installed
 Init_CopyBackupMBR             Proc Near  Uses ds si es di
-   push    ds es
-   pop     ds es                         ; Exchange DS&ES so DS==HDD, ES==New BootCode
+   push    ds
+   push    es
+   pop     ds
+   pop     es                         ; Exchange DS&ES so DS==HDD, ES==New BootCode
    mov     si, 7600h                     ; Sector 60...
    mov     di, offset BootImage          ;  -> to Sector 1 of New BootCode
    mov     cx, 256
@@ -1033,5 +1077,3 @@ Status_Impossible             equ  4     ; Unable/Not willing to install
 ; | 60 | Backup of our MBR  | Config
 ; ---------------------------
 
-; Space for bootcode-image
-BootImage       db 31744 dup (?)

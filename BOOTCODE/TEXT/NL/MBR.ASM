@@ -20,7 +20,7 @@
 ; v001 - Dutch - by Kris Steenhaut
 ;------------------------------------------------------------------------------
 
-TXT_LanguageID                equ 'D'
+TXT_LanguageID                equ 'N'
 
 ; Those strings are saved within MBR.
 ; Total Length maximum 165 chars (include 13,10 (CRs), excluding ending Zeros)

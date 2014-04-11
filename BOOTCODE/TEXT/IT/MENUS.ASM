@@ -109,17 +109,17 @@ TXT_SETUP_MAGIC_Set            db 'Forza a ', 0
 
 ; Setup Control Help - Max Length: 33
 ;----------------------------------|-------------------------------|--------
-TXT_SETUPHELP_Main:            db 24,32,25,32,26,32,27,' : Scelta Azione', 0
+TXT_SETUPHELP_Main             db 24,32,25,32,26,32,27,' : Scelta Azione', 0
                                db               'Enter   : Conferma Azione', 0
                                db               'F10 : Salva Config. & Esci', 0
                                db               'Esc : Abbandona Config.', 0
 
-TXT_SETUPHELP_SubMenu:         db 24,32,25,32,26,32,27,' : Scelta Opzione', 0
+TXT_SETUPHELP_SubMenu          db 24,32,25,32,26,32,27,' : Scelta Opzione', 0
                                db               'PgUp/Dn : Cambio Opzione', 0
                                db               'F1  : Mostra Aiuto Opzione', 0
                                db               'Esc : Ritorna al Menu Principale', 0
 
-TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Scelta Partizione', 0
+TXT_SETUPHELP_PartSetup        db 24,32,25,32,26,32,27,' : Scelta Partizione', 0
                                db               'Enter   : Modifica Etichetta', 0
                                db               'F1  : Opz. (premi tasto x camb.)', 0
                                db               'Esc : Ritorna al Menu Principale', 0
@@ -128,38 +128,38 @@ TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Scelta Partizione', 0
 
                                   ;1234567890123456789012
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_PartitionSetup:  db 'Rende le partizioni ', 0
+TXT_SETUPHELP_PartitionSetup   db 'Rende le partizioni ', 0
                                db 'avviabili, cambia il', 0
                                db 'loro nome, le nasconde', 0
                                db 'etc.', 0
                                db 0
-TXT_SETUPHELP_BasicOptions:    db 'Opzioni disponibili', 0
+TXT_SETUPHELP_BasicOptions     db 'Opzioni disponibili', 0
                                db 'per utenti anche non', 0
                                db 'esperti', 0
                                db 0
-TXT_SETUPHELP_AdvOptions:      db 'Opzioni solo per', 0
+TXT_SETUPHELP_AdvOptions       db 'Opzioni solo per', 0
                                db 'utenti esperti. Se si', 0
                                db 'ignora come agiscono', 0
                                db 'non utilizzarle', 0
                                db 0
-TXT_SETUPHELP_ExtOptions:      db 'Opzioni speciali per', 0
+TXT_SETUPHELP_ExtOptions       db 'Opzioni speciali per', 0
                                db 'specifici sistemi', 0
                                db 'operativi', 0
                                db 0
-TXT_SETUPHELP_DefMasterPwd:    db 'Definisce la password', 0
+TXT_SETUPHELP_DefMasterPwd     db 'Definisce la password', 0
                                db 'per accedere alla', 0
                                db 'configurazione del', 0
                                db 'sistema', 0
                                db 0
-TXT_SETUPHELP_DefBootPwd:      db 'Definisce la password', 0
+TXT_SETUPHELP_DefBootPwd       db 'Definisce la password', 0
                                db 'per accedere al', 0
                                db 'sistema', 0
                                db 0
-TXT_SETUPHELP_SaveAndExit:     db 'Continua l''avvio e', 0
+TXT_SETUPHELP_SaveAndExit      db 'Continua l''avvio e', 0
                                db 'salva le impostazioni', 0
                                db 'correnti', 0
                                db 0
-TXT_SETUPHELP_JustExit:        db 'Continua l''avvio, ', 0
+TXT_SETUPHELP_JustExit         db 'Continua l''avvio, ', 0
                                db 'ma non salva', 0
                                db 'le impostazioni', 0
                                db 0
@@ -171,7 +171,7 @@ TXT_SETUPHELP_InPartitionSetup db 'A -Avviabile (boot)', 0
                                db 'P -Est-Part MS inventi', 0
                                db 0
 
-TXT_SETUPHELP_HideSetup:       db 'Definisce lo stato', 0
+TXT_SETUPHELP_HideSetup        db 'Definisce lo stato', 0
                                db 'delle altre partizioni', 0
                                db 'quando la partizione', 0
                                db 'selezionata viene', 0
@@ -304,7 +304,7 @@ TXT_SETUPHELP_ContinueBIOSboot db 'Restituisce il', 0
 ;TXT_SETUPHELP_LinuxRootPart    db 'Cambia la partizione', 0
 ;                               db 'root di Linux', 0
 ;                               db 0
-;TXT_SETUPHELP_DefLinuxCmd:     db 'Definisce la linea di', 0
+;TXT_SETUPHELP_DefLinuxCmd      db 'Definisce la linea di', 0
 ;                               db 'comando per Linux, se', 0
 ;                               db 'disponibile', 0
 ;                               db 0

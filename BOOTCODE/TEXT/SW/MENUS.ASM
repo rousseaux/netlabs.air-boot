@@ -109,17 +109,17 @@ TXT_SETUP_MAGIC_Set            db 'sÑtt ', 0
 
 ; Setup Control Help - Max Length: 33
 ;----------------------------------|-------------------------------|--------
-TXT_SETUPHELP_Main:            db 24,32,25,32,26,32,27,' : VÑlj Aktion', 0
+TXT_SETUPHELP_Main             db 24,32,25,32,26,32,27,' : VÑlj Aktion', 0
                                db               'Enter   : VÑlj Aktion', 0
                                db               'F10 : Spara&Avsluta Setup', 0
                                db               'Esc : LÑmna Setup', 0
 
-TXT_SETUPHELP_SubMenu:         db 24,32,25,32,26,32,27,' : VÑlj Post', 0
+TXT_SETUPHELP_SubMenu          db 24,32,25,32,26,32,27,' : VÑlj Post', 0
                                db               'PgUp/Dn : éndra Post', 0
                                db               'F1  : Visa hjÑlp fîr post', 0
                                db               'Esc : ètervÑnd till huvud-menyn', 0
 
-TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : VÑlj partition', 0
+TXT_SETUPHELP_PartSetup        db 24,32,25,32,26,32,27,' : VÑlj partition', 0
                                db               'Enter   : Editera etikett', 0
                                db               'F1  : Flagga (tryck tg fîr vÑxl)', 0
                                db               'Esc : ètervÑnd till huvud-menyn', 0
@@ -128,37 +128,37 @@ TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : VÑlj partition', 0
 
                                   ;1234567890123456789012
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_PartitionSetup:  db 'Gîr dina partitioner', 0
+TXT_SETUPHELP_PartitionSetup   db 'Gîr dina partitioner', 0
                                db 'bootningsbara, Ñndra', 0
                                db 'deras namn, definiera', 0
                                db 'gîmma och mycket', 0
                                db 'annat.', 0
                                db 0
-TXT_SETUPHELP_BasicOptions:    db 'Dessa optioner Ñr fîr', 0
+TXT_SETUPHELP_BasicOptions     db 'Dessa optioner Ñr fîr', 0
                                db 'oerfarna anvÑndare.', 0
-TXT_SETUPHELP_AdvOptions:      db 'Dessa Ñr fîr', 0
+TXT_SETUPHELP_AdvOptions       db 'Dessa Ñr fîr', 0
                                db 'avancerade anvÑndare.', 0
                                db 'Om du inte vet vad de', 0
                                db 'gîr, lÑmna som de Ñr.', 0
                                db 0
-TXT_SETUPHELP_ExtOptions:      db 'Utîkade optioner fîr', 0
+TXT_SETUPHELP_ExtOptions       db 'Utîkade optioner fîr', 0
                                db 'specifika OS.', 0
                                db 0
-TXT_SETUPHELP_DefMasterPwd:    db 'Definiera ett', 0
+TXT_SETUPHELP_DefMasterPwd     db 'Definiera ett', 0
                                db 'lîsenord fîr access', 0
                                db 'till setup och', 0
                                db 'system.', 0
                                db 0
-TXT_SETUPHELP_DefBootPwd:      db 'Definiera ett', 0
+TXT_SETUPHELP_DefBootPwd       db 'Definiera ett', 0
                                db 'lîsenord fîr access', 0
                                db 'till system.',0
                                db 0
-TXT_SETUPHELP_SaveAndExit:     db 'Kommer att forsÑtta', 0
+TXT_SETUPHELP_SaveAndExit      db 'Kommer att forsÑtta', 0
                                db 'bootprocessen och', 0
                                db 'spara de aktuella', 0
                                db 'optionerna.',0
                                db 0
-TXT_SETUPHELP_JustExit:        db 'Kommer att forsÑtta', 0
+TXT_SETUPHELP_JustExit         db 'Kommer att forsÑtta', 0
                                db 'men ignorerar alla', 0
                                db 'Ñndringar som gjorts', 0
                                db 'till optionerna.',0
@@ -171,7 +171,7 @@ TXT_SETUPHELP_InPartitionSetup db 'B - Bootningbar', 0
                                db 'P - Ext-Part MS invent', 0
                                db 0
 
-TXT_SETUPHELP_HideSetup:       db 'VÑlj status fîr', 0
+TXT_SETUPHELP_HideSetup        db 'VÑlj status fîr', 0
                                db 'vilka partitioner', 0
                                db 'som skall dîljas,', 0
                                db 'nÑr den aktuellt valda', 0
@@ -210,7 +210,7 @@ TXT_SETUPHELP_BootLastIfTimed  db 'AiR-BOOT kommer att', 0
                                db 'part. med TidsBoot.', 0
                                db 'Annars kommer den', 0
                                db 'att anvÑnda standard', 0
-			       db 0
+			                   db 0
 TXT_SETUPHELP_RememberLastBoot db 'AiR-BOOT kommer att', 0
                                db 'hÜlla meny-raden pÜ', 0
                                db 'sist bootade', 0
@@ -221,7 +221,7 @@ TXT_SETUPHELP_RememberTimeBoot db 'Liksom den senaste', 0
                                db 'AiR-BOOT att hÜlla', 0
                                db 'raden ocksÜ fîr', 0
                                db 'Tidsstyrd Bootning.', 0
-			       db 0
+			                   db 0
 TXT_SETUPHELP_IncludeFloppy    db 'AiR-BOOT kommer att', 0
                                db 'tillÜta booting', 0
                                db 'frÜn A: via menyn.', 0
@@ -231,13 +231,13 @@ TXT_SETUPHELP_MbrProtection    db 'Skydda din MBR via', 0
                                db '1 KByte av bas-minne', 0
                                db 'Kan vara inkompatibelt', 0
                                db 'med vissa OS.', 0
-			       db 0
+			                   db 0
 TXT_SETUPHELP_IgnoreMbrWrites  db 'Om det Ñr aktiverat,', 0
                                db 'kommer all skrivning', 0
                                db 'att ignoreras, annars', 0
                                db 'kommer systemet att', 0
                                db '"krascha".', 0
-			       db 0
+                               db 0
 TXT_SETUPHELP_MakeSounds       db 'AiR-BOOT kan fÜs att', 0
                                db 'utfîra ljud med din', 0
                                db 'interna hîgtalare.', 0

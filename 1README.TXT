@@ -19,9 +19,20 @@
 
 Note:
 -----
-This is the "eComStation fork" of AiR-BOOT and it is maintained by a 
-different developer. The file you are currently reading, 1README.TXT, 
-replaces the original README.TXT as created by Martin Kiewitz. 
+This is the "eComStation fork" of AiR-BOOT and it is maintained by a
+different developer. The file you are currently reading, 1README.TXT,
+replaces the original README.TXT as created by Martin Kiewitz.
 The latter can be found in README.MKW but note that the information
-there about building AiR-BOOT is possibly outdated.
+in there about building AiR-BOOT is completely outdated.
 
+Building AiR-BOOT
+-----------------
+- Checkout the sources from http://svn.netlabs.org/air-boot.
+- Setup your Open Watcom build-environment for your OS.
+- Download JWasm for your OS.
+- Run wmake help to see a list of build options -or-
+- Run wmake without paramaters to build AiR-BOOT for all languages.
+
+See BUILD.NFO for more information.
+
+Rousseau.

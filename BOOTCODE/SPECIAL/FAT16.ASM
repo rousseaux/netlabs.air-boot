@@ -102,10 +102,12 @@ FAT16_SearchEntry               Proc Near  Uses ax bx es di
    mov    es, ax
    xor    di, di
   FAT16SE_SearchLoop:
-      push   si di
+      push   si
+      push   di
          mov    cx, 11
          repe   cmpsb                    ; Compare total 11-bytes
-      pop    di si
+      pop    di
+      pop    si
       je     FAT16SE_EntryFound
       add    di, 32                      ; Skip 1 FAT16-Entry now :)
    dec    bx
@@ -220,7 +222,9 @@ FAT16_ProcessKrnlDirectory      Proc Near  Uses ds si es di
       jnz    FAT16PPD_IgnoreEntry        ; Bit 3 -> Volume
 
       ; Set Size-Entry in KernelSizeTable
-      push   ds si di
+      push   ds
+      push   si
+      push   di
          mov    bx, ds:[si+30]
          mov    ax, ds:[si+28]           ; BX:AX - Size of file in Bytes
 
@@ -239,7 +243,9 @@ FAT16_ProcessKrnlDirectory      Proc Near  Uses ds si es di
          pop    ax
          mov    di, si
          call   PART_FillOutSizeElement  ; BX:AX -> ES:DI (Size Element)
-      pop    di si ds
+      pop    di
+      pop    si
+      pop    ds
 
       ; Copy entry and make append extension to basename
       ; "TEST    TMP" -> "TESTTMP    "

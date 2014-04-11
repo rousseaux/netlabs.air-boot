@@ -7,7 +7,10 @@ if errorlevel 1 goto Failed
 if errorlevel 1 goto Failed
 %exe2bin% inithdd.exe inithdd.com >nul
 if errorlevel 1 goto Failed
-copy inithdd.com ..\..\..\RELEASE\DOS\inithdd.com
+copy inithdd.com ..\..\..\RELEASE\DOS\INITHDD.COM
+
+@ren inithdd.LST inithdd.TSL
+@ren inithdd.TSL INITHDD.LST
 
 rem Cleanup
 del inithdd.com

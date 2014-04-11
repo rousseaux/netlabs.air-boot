@@ -108,17 +108,17 @@ TXT_SETUP_MAGIC_Set            db 'set ', 0
 
 ; Setup Control Help - Max Length: 33
 ;----------------------------------|-------------------------------|--------
-TXT_SETUPHELP_Main:            db 24,32,25,32,26,32,27,' : Choose Action', 0
+TXT_SETUPHELP_Main             db 24,32,25,32,26,32,27,' : Choose Action', 0
                                db               'Enter   : Select Action', 0
                                db               'F10 : Save&Exit Setup', 0
                                db               'Esc : Quit Setup', 0
 
-TXT_SETUPHELP_SubMenu:         db 24,32,25,32,26,32,27,' : Choose Item', 0
+TXT_SETUPHELP_SubMenu          db 24,32,25,32,26,32,27,' : Choose Item', 0
                                db               'PgUp/Dn : Change Item', 0
                                db               'F1  : Show help for Item', 0
                                db               'Esc : Return to main-menu', 0
 
-TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Choose partition', 0
+TXT_SETUPHELP_PartSetup        db 24,32,25,32,26,32,27,' : Choose partition', 0
                                db               'Enter   : Edit label', 0
                                db               'F1  : Flags (press key to toogle)', 0
                                db               'Esc : Return to main-menu', 0
@@ -127,34 +127,34 @@ TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Choose partition', 0
 
                                   ;1234567890123456789012
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_PartitionSetup:  db 'Make your partitions', 0
+TXT_SETUPHELP_PartitionSetup   db 'Make your partitions', 0
                                db 'bootable, change their', 0
                                db 'name, define hiding', 0
                                db 'and much more.', 0
                                db 0
-TXT_SETUPHELP_BasicOptions:    db 'These options are for', 0
+TXT_SETUPHELP_BasicOptions     db 'These options are for', 0
                                db 'non-experienced users.', 0
                                db 0
-TXT_SETUPHELP_AdvOptions:      db 'These are for advanced', 0
+TXT_SETUPHELP_AdvOptions       db 'These are for advanced', 0
                                db 'users. If you do not', 0
                                db 'what they do, leave', 0
                                db 'them like they are.', 0
                                db 0
-TXT_SETUPHELP_ExtOptions:      db 'Extended options for', 0
+TXT_SETUPHELP_ExtOptions       db 'Extended options for', 0
                                db 'specific OSes.', 0
                                db 0
-TXT_SETUPHELP_DefMasterPwd:    db 'Define a password for', 0
+TXT_SETUPHELP_DefMasterPwd     db 'Define a password for', 0
                                db 'access to setup and', 0
                                db 'system.', 0
                                db 0
-TXT_SETUPHELP_DefBootPwd:      db 'Define a password for', 0
+TXT_SETUPHELP_DefBootPwd       db 'Define a password for', 0
                                db 'access to system.', 0
                                db 0
-TXT_SETUPHELP_SaveAndExit:     db 'Will continue boot-', 0
+TXT_SETUPHELP_SaveAndExit      db 'Will continue boot-', 0
                                db 'process and save the', 0
                                db 'current options.', 0
                                db 0
-TXT_SETUPHELP_JustExit:        db 'Will continue, but', 0
+TXT_SETUPHELP_JustExit         db 'Will continue, but', 0
                                db 'discard any changes', 0
                                db 'done to options.', 0
                                db 0
@@ -166,7 +166,7 @@ TXT_SETUPHELP_InPartitionSetup db 'B - Bootable', 0
                                db 'P - Ext-Part MS invent', 0
                                db 0
 
-TXT_SETUPHELP_HideSetup:       db 'Select the state at', 0
+TXT_SETUPHELP_HideSetup        db 'Select the state at', 0
                                db 'which the partitions', 0
                                db 'shall be, when the', 0
                                db 'currently selected', 0
@@ -342,6 +342,8 @@ TXT_SETUP_AreYouSure2          db '(Y/N)', 0
 ;TXT_SETUP_EnterLinuxCmdLine    db 'Please enter/modify your Linux command-line:', 0
 ;TXT_SETUP_NoLinuxInstalled     db 'You do not have Linux installed', 0
 TXT_SETUP_NoLDLpartition       db 'The selected partition is not HPFS/FAT16/JFS', 0
+
+;;;;;;;;;
 
 ; Maximum 34 chars (should not be reached)
 ;----------------------------------|--------------------------------|-------

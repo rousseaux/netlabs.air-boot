@@ -1,3 +1,2 @@
-/* REXX */
+@wmake
 
-'wmake';

@@ -1,0 +1,78 @@
+###############################################################################
+# MAKEFRWD.MIF :: Make Include -- Forwards GNU Make to other Make Utilities.  #
+###############################################################################
+
+#
+# A Linux build-environment where "make" would not work is like having
+# a motorbike with an empty tank, flat tires and no wrench in site.
+# Penguins like to "just make" using GNU Make, so let's forward it.
+#
+# This is done by defining 2 targets: 'all:' for when no targets are specified,
+# and '%:' to forward one or more targets.
+#
+# Because GNU Make first looks for GNUmakefile, which only includes this
+# forwarder, it will process this file before Makefile.
+# The Make Utility that we forward to will process Makefile.
+#
+# Note that GNU Make processes the '%:' target-list sequentially.
+# So for multiple targets specified on the cli, there is a difference
+# whether make (and thus this front-end) or wmake directly (using Makefile)
+# was used.
+#
+# With wmake the targets are all specified in the Makefile so dependencies
+# are resolved. With make each target is seperately forwarded to wmake,
+# so no dependencies are resolved. This means that a 'make rebuild clean'
+# behaves exactly like that, removing all just built targets,
+# because the 'clean' is performed last.
+# The 'wmake rebuild clean' will not run the last 'clean' because 'rebuild'
+# runs it before doing the build, so 'clean' is considered up-to-date.
+#
+
+#
+# The Make Utility we want to forward to.
+#
+OTHER_MAKE=wmake
+
+#
+# Braces need to be escaped on Linux.
+#
+ifeq "$(SHELL)"  "/bin/sh"
+LB  = \(
+RB  = \)
+LQ  = \'
+RQ  = \'
+LDQ = \"
+RDQ = \"
+else
+LB  = (
+RB  = )
+LQ  = '
+RQ  = '
+LDQ = "
+RDQ = "
+endif
+
+#
+# Show this message to indicate this front-end is active.
+#
+HEADER=GNU Make front-end invoked for $(LQ)$(OTHER_MAKE)$(RQ)
+
+
+
+#
+# Forward to the other Make Utility.
+# Note that the local target 'default:' is not passed so the
+# first target in Makefile is used.
+#
+default:
+	@echo $(HEADER)
+	@$(OTHER_MAKE)
+
+#
+# Forward any target to the other Make Utility.
+# Note that this rule gets processed in sequence for every target
+# specified on the cli.
+#
+%:
+	@echo $(HEADER) with target: $(LQ)$@$(RQ)
+	@$(OTHER_MAKE) $@

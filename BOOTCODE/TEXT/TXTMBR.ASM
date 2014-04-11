@@ -1,1 +1,1 @@
-Include TEXT\EN\MBR.asm 
+Include TEXT/EN/MBR.ASM 		

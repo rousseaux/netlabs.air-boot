@@ -109,17 +109,17 @@ TXT_SETUP_MAGIC_Set            db 'kies ', 0
 
 ; Setup Control Help - Max Length: 33
 ;----------------------------------|-------------------------------|--------
-TXT_SETUPHELP_Main:            db 24,32,25,32,26,32,27,' : Maak uw keuze', 0
+TXT_SETUPHELP_Main             db 24,32,25,32,26,32,27,' : Maak uw keuze', 0
                                db 'Enter   : Keuze bevestigen', 0
                                db 'F10 : Opslaan en afsluiten', 0
                                db 'Esc : Setup afsluiten', 0
 
-TXT_SETUPHELP_SubMenu:         db 24,32,25,32,26,32,27,' : Item kiezen', 0
+TXT_SETUPHELP_SubMenu          db 24,32,25,32,26,32,27,' : Item kiezen', 0
                                db 'PgUp/Dn : Onderdelen van het item', 0
                                db 'F1  : Hulp voor dit item', 0
                                db 'Esc : Terug naar het hoofdmenu', 0
 
-TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Partitie kiezen', 0
+TXT_SETUPHELP_PartSetup        db 24,32,25,32,26,32,27,' : Partitie kiezen', 0
                                db 'Enter   : Label bewerken', 0
                                db 'F1  : Uitleg bij de toetsen', 0
                                db 'Esc : Terug naar het hoofdmenu', 0
@@ -128,38 +128,38 @@ TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Partitie kiezen', 0
 
                                   ;1234567890123456789012
 ;----------------------------------|--------------------|--------------------
-TXT_SETUPHELP_PartitionSetup:  db 'Partities opstartbaar', 0
+TXT_SETUPHELP_PartitionSetup   db 'Partities opstartbaar', 0
                                db 'maken, label wijzigen,', 0
                                db 'partities verbergen of', 0
                                db 'toegankelijk maken', 0
                                db 'en nog veel meer.', 0
                                db 0
-TXT_SETUPHELP_BasicOptions:    db 'Opties voor minder', 0
+TXT_SETUPHELP_BasicOptions     db 'Opties voor minder', 0
                                db 'ervaren gebruikers.', 0
                                db 0
-TXT_SETUPHELP_AdvOptions:      db 'Opties voor ervaren', 0
+TXT_SETUPHELP_AdvOptions       db 'Opties voor ervaren', 0
                                db 'gebruikers. Stel hier', 0
                                db 'niets in tenzij u goed', 0
                                db 'weet waarover het gaat.', 0
                                db 0
-TXT_SETUPHELP_ExtOptions:      db 'Opties enkel bedoeld', 0
+TXT_SETUPHELP_ExtOptions       db 'Opties enkel bedoeld', 0
                                db 'voor een bepaald sy-', 0
                                db 'steem.', 0
                                db 0
-TXT_SETUPHELP_DefMasterPwd:    db 'Wachtwoord instellen', 0
+TXT_SETUPHELP_DefMasterPwd     db 'Wachtwoord instellen', 0
                                db 'voor de setup en voor', 0
                                db 'het systeem.', 0
                                db 0
-TXT_SETUPHELP_DefBootPwd:      db 'Wachtwoord instellen', 0
+TXT_SETUPHELP_DefBootPwd       db 'Wachtwoord instellen', 0
                                db 'voor de toegang', 0
                                db 'tot het systeeem.', 0
                                db 0
-TXT_SETUPHELP_SaveAndExit:     db 'Het opstarten wordt nu', 0
+TXT_SETUPHELP_SaveAndExit      db 'Het opstarten wordt nu', 0
                                db 'verder gezet terwijl', 0
                                db 'de nieuwe instellingen' , 0
                                db 'bewaard worden.', 0
                                db 0
-TXT_SETUPHELP_JustExit:        db 'Het opstarten wordt nu', 0
+TXT_SETUPHELP_JustExit         db 'Het opstarten wordt nu', 0
                                db 'verder gezet terwijl', 0
                                db 'de nieuwe instellingen' , 0
                                db 'NIET bewaard worden.', 0
@@ -171,7 +171,7 @@ TXT_SETUPHELP_InPartitionSetup db 'O - Opstartbaar', 0
                                db 'P - Ext-Part MS invent', 0
                                db 0
 
-TXT_SETUPHELP_HideSetup:       db 'Bepaal hoe de andere', 0
+TXT_SETUPHELP_HideSetup        db 'Bepaal hoe de andere', 0
                                db 'partities moeten wor-', 0
                                db 'den getoond wanneer', 0
                                db 'van de nu gekozen par-', 0

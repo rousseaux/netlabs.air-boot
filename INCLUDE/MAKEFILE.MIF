@@ -1,0 +1,178 @@
+###############################################################################
+# MAKEFILE.MIF :: Make Include File -- Defines Cross Platform Stuff.  [wmake] #
+###############################################################################
+
+#
+# This file can be included by Open Watcom Makefiles.
+# It tests several conditions and defines macros to build
+# under DOS, OS/2, Win32 and Linux.
+#
+
+
+#
+# The below does not work because the other make-utility *still* processes
+# stuff outside the !ifndef and barks on wmake specific constructs.
+# This essentially disables forwarding for these other make utils.
+# So we prohibit their use altogether.
+#
+#!ifndef __MAKEFILES__
+#front-end:
+#	@echo Invoking WMake for $(MAKE)
+#	@wmake
+#	@echo.
+#	@echo == Other Make Utility "$(MAKE)" used, please use "wmake" ==
+#	@echo.
+#!endif
+#
+
+#
+# Prohibit processing with other Make Utilities.
+# Because WMake expands $(MAKE) to a full path-name, we cannot use it to
+# to string-compare it to "wmake". So we assume the __MAKEFILES__ macro
+# is unique to WMake. If it's not defined it must be a non-WMake utility.
+# GNU Make is not in the list below because it first looks for GNUmakefile.
+# Where a Makefile is used, a special GNUmakefile is present that forwards
+# to WMake, including selective targets.
+#
+!ifndef __MAKEFILES__
+ERR_NOT_WMAKE=Please use Open Watcom "wmake"
+	# Borland make
+!	if "$(MAKE)"=="MAKE"
+!		error (make): $(ERR_NOT_WMAKE).
+!	endif
+!	if "$(MAKE)"=="BMAKE"
+!		error (make): $(ERR_NOT_WMAKE).
+!	endif
+	# VisualAge v3 nmake and MS nmake
+!	if "$(MAKE)"=="nmake"
+!		error (nmake): $(ERR_NOT_WMAKE).
+!	endif
+!	if "$(MAKE)"=="Nmake"
+!		error (nmake): $(ERR_NOT_WMAKE).
+!	endif
+!	if "$(MAKE)"=="NMake"
+!		error (nmake): $(ERR_NOT_WMAKE).
+!	endif
+!	if "$(MAKE)"=="NMAKE"
+!		error (nmake): $(ERR_NOT_WMAKE).
+!	endif
+	# OS/2 ToolKit v4.5 nmake32
+!	if "$(MAKE)"=="nmake32"
+!		error ERROR (nmake32): $(ERR_NOT_WMAKE).
+!	endif
+!	if "$(MAKE)"=="Nmake32"
+!		error ERROR (nmake32): $(ERR_NOT_WMAKE).
+!	endif
+!	if "$(MAKE)"=="NMake32"
+!		error ERROR (nmake32): $(ERR_NOT_WMAKE).
+!	endif
+!	if "$(MAKE)"=="NMAKE32"
+!		error ERROR (nmake32): $(ERR_NOT_WMAKE).
+	# Unknown Make Utility (like a renamed one)
+!	else
+!		error ERR: $(ERR_NOT_WMAKE).
+!	endif
+!endif
+
+
+
+
+# ===============================
+# == From here we're "WMaking" ==
+# ===============================
+
+#
+# The first thing we need is the Open Watcom tool-chain.
+#
+!ifndef	%WATCOM
+!	error No WATCOM Environment Variable set !
+!endif
+
+#
+# Messages.
+#
+MSG_SUCCESS=has been built successfully !
+
+#
+# Warnings.
+#
+WARN_DOS_BLD_ENV=Warning: The DOS build-environment has limited functionality !
+
+#
+# Variables defined here will be placed into the environment
+# and are available in spawned Makefiles or Scripts.
+#
+%ZVAR=This variable will be placed in the Environment
+
+#
+# Define how a spawning shell is invoked.
+#
+DOSSHELL	= COMMAND.COM /c
+OS2SHELL	= CMD.EXE /c
+WINSHELL	= CMD.EXE /c
+LINSHELL	= bash -c
+
+#
+# WMake is invoked under DOS.
+#
+!ifdef	__MSDOS__
+LP		= aap noot mies
+LS		= dir
+CP		= copy
+MV		= ren
+RM		= del
+STRIP	= wstrip
+DS		= \
+PS		= ;
+BS		= _build.bat
+SHELL	= $(DOSSHELL)
+!endif
+
+#
+# WMake is invoked under OS/2.
+#
+!ifdef	__OS2__
+LP		= wim zus jet
+LS		= dir
+CP		= copy
+MV		= ren
+RM		= del
+STRIP	= wstrip
+DS		= \
+PS		= ;
+BS		= _build.cmd
+SHELL	= $(OS2SHELL)
+!endif
+
+#
+# WMake is invoked under Win32.
+#
+!ifdef	__NT__
+LP		= teun vuur gijs
+LS		= dir
+CP		= copy
+MV		= ren
+RM		= del
+STRIP	= wstrip
+DS		= \
+PS		= ;
+BS		= _build.cmd
+SHELL	= $(WINSHELL)
+!endif
+
+#
+# WMake is invoked under Linux.
+#
+!ifdef	__LINUX__
+LP		= lam kees bok
+LS		= 'ls -1'
+CP		= cp -a
+MV		= mv
+RM		= rm
+STRIP	= strip
+DS		= /
+PS		= :
+BS		= _build.bash
+SHELL	= $(LINSHELL)
+!endif
+

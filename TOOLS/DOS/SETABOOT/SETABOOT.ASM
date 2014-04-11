@@ -18,8 +18,8 @@
 
 JUMPS
 
-Include ..\..\..\Include\asm.inc
-include ..\..\..\include\dos\airboot.inc
+Include ../../../INCLUDE/ASM.INC
+include ../../../INCLUDE/DOS/AIRBOOT.INC
 
 		.386p
                 model large, basic
@@ -59,7 +59,7 @@ TXT_NowRebooting        db 'SETABOOT: Now rebooting system...', 13, 10, 0
 TXT_AiRBOOTdetected     db 'SETABOOT: AiR-BOOT ', 0
                         db ' detected.', 13, 10, 0
 
-   Include ..\..\..\include\dos\Const.asm
+   Include ../../../INCLUDE/DOS/CONST.ASM
 
 AiRBOOTdetected         db 0
 
@@ -342,7 +342,9 @@ SETABOOT_Start: mov     ax, cs
                 ;  BX contains length of name to search for
                 ;  DL holds total IPT entries to go
                 ;  DH holds current partition number (base 0)
-                push    cx es di
+                push    cx
+                push    es
+                push    di
                    mov     ax, ds
                    mov     es, ax        ; ES == DS for now
                    movzx   dx, bptr [TrackZero+6C00h+22] ; [Partition count]
@@ -350,11 +352,13 @@ SETABOOT_Start: mov     ax, cs
                    jz      CmdLine_RebootToNotFound
                    mov     di, offset TrackZero+6E00h ; Starting at sector 56
                   CmdLine_RebootToSearchLoop:
-                      push    si di
+                      push    si
+                      push    di
                          add     di, 4   ; Seek to "PartitionName" item
                          mov     cx, bx
                          rep     cmpsb
-                      pop     di si
+                      pop     di
+                      pop     si
                       je      CmdLine_RebootToSearchDone
                       add     di, 34     ; Length of IPT entry
                       inc     dh         ; Partition number +1
@@ -362,7 +366,9 @@ SETABOOT_Start: mov     ax, cs
                       jnz     CmdLine_RebootToSearchLoop
                   CmdLine_RebootToSearchDone:
                    mov     bl, ds:[di+17] ; Get "Flags"
-                pop     di es cx
+                pop     di
+                pop     es
+                pop     cx
                 or      dl, dl           ; If no partitions left -> not found
                 jz      CmdLine_RebootToNotFound
                 test    bl, 1b           ; Check, if that's bootable

@@ -32,7 +32,7 @@ IFDEF ReleaseCode
 ENDIF
 StackSeg        equ     7000h
 
-Include ..\..\include\asm.inc
+Include ../../INCLUDE/ASM.INC
 
 		.386p
                 model large, basic
@@ -83,7 +83,9 @@ APIAfterQuit:   mov     ax, 8600h
 
 ; =============================================================================
 ; DS:SI - NUL-terminated message to display to console
-APIShowMessage: push    ax bx si
+APIShowMessage: push    ax
+                push    bx
+                push    si
                    mov     ah, 0Eh
                    mov     bx, 7
 ASM_Loop:          lodsb
@@ -91,15 +93,19 @@ ASM_Loop:          lodsb
                    jz      ASM_Done
                    int     10h           ; BIOS: TELETYPE
                    jmp     ASM_Loop
-ASM_Done:       pop     si bx ax
+ASM_Done:       pop     si
+                pop     bx
+                pop     ax
                 retn
 
 ; =============================================================================
-APIShowChar:    push    ax bx
+APIShowChar:    push    ax
+                push    bx
                    mov     ah, 0Eh
                    mov     bx, 7
                    int     10h           ; BIOS: TELETYPE
-                pop     bx ax
+                pop     bx
+                pop     ax
                 retn
 
 ; =============================================================================
@@ -115,7 +121,7 @@ APIReadKeyboard:xor     ah, ah
 
 APILockVolume:  retn
 
-                Include ..\INST_X86\install.inc ; Execute generic code
+                Include ../INST_X86/INSTALL.INC ; Execute generic code
 COM_EndOfSegment:
 
 code_seg	ends

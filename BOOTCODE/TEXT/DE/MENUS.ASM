@@ -108,17 +108,17 @@ TXT_SETUP_MAGIC_Set            db 'setze ', 0
 
 ; Setup Control Help - Max Length: 33
 ;----------------------------------|-------------------------------|--------
-TXT_SETUPHELP_Main:            db 24,32,25,32,26,32,27,' : Aktion AuswÑhlen', 0
+TXT_SETUPHELP_Main             db 24,32,25,32,26,32,27,' : Aktion AuswÑhlen', 0
                                db               'Enter   : Aktion BestÑtigen', 0
                                db               'F10 : Speichern&Beenden', 0
                                db               'Esc : Beenden', 0
 
-TXT_SETUPHELP_SubMenu:         db 24,32,25,32,26,32,27,' : Option AuswÑhlen', 0
+TXT_SETUPHELP_SubMenu          db 24,32,25,32,26,32,27,' : Option AuswÑhlen', 0
                                db               'Bild ',24,25,' : Option éndern', 0
                                db               'F1  : Zeige Hilfe Åber Option', 0
                                db               'Esc : ZurÅck ins HauptmenÅ', 0
 
-TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Partition AuswÑhlen', 0
+TXT_SETUPHELP_PartSetup        db 24,32,25,32,26,32,27,' : Partition AuswÑhlen', 0
                                db               'Enter   : Label editieren', 0
                                db               'F1  : Optionen', 0
                                db               'Esc : ZurÅck ins HauptmenÅ', 0
@@ -127,36 +127,36 @@ TXT_SETUPHELP_PartSetup:       db 24,32,25,32,26,32,27,' : Partition AuswÑhlen',
 
                                   ;1234567890123456789012
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_PartitionSetup:  db 'Partionen als Bootbar', 0
+TXT_SETUPHELP_PartitionSetup   db 'Partionen als Bootbar', 0
                                db 'definieren, Namen', 0
                                db 'Ñndern und einiges', 0
                                db 'mehr.', 0
                                db 0
-TXT_SETUPHELP_BasicOptions:    db 'Diese Optionen sind', 0
+TXT_SETUPHELP_BasicOptions     db 'Diese Optionen sind', 0
                                db 'fÅr unerfahrene User.', 0
                                db 0
-TXT_SETUPHELP_AdvOptions:      db 'Diese Optionen sind', 0
+TXT_SETUPHELP_AdvOptions       db 'Diese Optionen sind', 0
                                db 'fÅr erfahrene User.', 0
                                db 'VerÑndern Sie nichts,', 0
                                db 'falls Sie nicht wissen', 0
                                db 'was es bedeutet.', 0
                                db 0
 ;----------------------------------|--------------------|-------------------
-TXT_SETUPHELP_ExtOptions:      db 'Spezial Optionen fÅr', 0
+TXT_SETUPHELP_ExtOptions       db 'Spezial Optionen fÅr', 0
                                db 'bestimmte Betriebs-', 0
                                db 'system.', 0
                                db 0
-TXT_SETUPHELP_DefMasterPwd:    db 'Definiert ein Passwort', 0
+TXT_SETUPHELP_DefMasterPwd     db 'Definiert ein Passwort', 0
                                db 'fÅr Setup und System.', 0
                                db 0
-TXT_SETUPHELP_DefBootPwd:      db 'Definiert ein Passwort', 0
+TXT_SETUPHELP_DefBootPwd       db 'Definiert ein Passwort', 0
                                db 'fÅrs Booten.', 0
                                db 0
-TXT_SETUPHELP_SaveAndExit:     db 'Mit dem Boot-Prozess', 0
+TXT_SETUPHELP_SaveAndExit      db 'Mit dem Boot-Prozess', 0
                                db 'fortfahren und die', 0
                                db 'Optionen speichern.', 0
                                db 0
-TXT_SETUPHELP_JustExit:        db 'Mit dem Boot-Prozess', 0
+TXT_SETUPHELP_JustExit         db 'Mit dem Boot-Prozess', 0
                                db 'fortfahren und die', 0
                                db 'énderungen verwerfen.', 0
                                db 0
@@ -168,7 +168,7 @@ TXT_SETUPHELP_InPartitionSetup db 'B - Bootbar', 0
                                db 'P - Erw-Part MS invent', 0
                                db 0
 
-TXT_SETUPHELP_HideSetup:       db 'Status wÑhlen, indem', 0
+TXT_SETUPHELP_HideSetup        db 'Status wÑhlen, indem', 0
                                db 'sich die Partitionen', 0
                                db 'befinden sollen, wenn', 0
                                db 'die ausgewÑhlte', 0

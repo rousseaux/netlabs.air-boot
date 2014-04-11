@@ -20,16 +20,18 @@
 ;  a) it includes MBR protection image from mbr-prot\mbr_prot.com
 ;  b) it writes totally used sectors to byte at offset 10h in the image
 
-JUMPS
+;JUMPS
 
-Include ..\..\include\asm.inc
-; include ..\..\include\dos\airboot.inc
+Include ../../INCLUDE/ASM.INC
 
-		.386p
-                model large, basic
+		.286p
+                .model small, basic
 
-code_seg        segment public use16
-                assume  cs:code_seg, ds:code_seg, es:nothing, ss:nothing
+fixcode         group code_seg,bss_data
+
+code_seg        segment  use16 public 'CODE'
+                ;assume  cs:code_seg, ds:code_seg, es:nothing, ss:nothing
+                assume  cs:fixcode, ds:fixcode, es:nothing, ss:nothing
                 org     100h
 COM_StartUp:    jmp     COM_Init
 
@@ -62,21 +64,22 @@ ShowMessage     Proc Near  Uses ax
    ret
 ShowMessage     EndP
 
-ShowError       Proc Near  Uses
+ShowError       Proc Near
    mov     ah, 09h
    int     21h              ; DOS: WRITE STRING DS:DX TO CONSOLE
-  EndProgram:
-   mov     ax, 4C00h
-   int     21h              ; DOS: TERMINATE PROGRAM
+   jmp     EndProgram
+   ret
 ShowError       EndP
 
-COM_Init:       mov     ax, cs
+COM_Init:
+                ; Setup and Copyright.
+                mov     ax, cs
                 mov     ds, ax
                 mov     es, ax           ; CS==DS==ES
                 mov     dx, offset COM_Copyright
                 call    ShowMessage
 
-                ; =========================================== Load air-boot.bin
+                ; Open AIR-BOOT.COM
                 mov     dx, offset COM_LoadCode
                 call    ShowMessage
                 mov     ax, 3D00h
@@ -89,6 +92,7 @@ COM_Init:       mov     ax, cs
 
 DoneOpenCode:   mov     bx, ax           ; BX = Filehandle
 
+                ; Load AIR-BOOT.COM
                 mov     ah, 3Fh
                 mov     cx, image_size   ; Image size
                 mov     dx, offset BootCode
@@ -97,11 +101,16 @@ DoneOpenCode:   mov     bx, ax           ; BX = Filehandle
                 mov     dx, offset COM_FailedReadCode
                 call    ShowError
 
-DoneReadCode:   cmp     ax, image_size
+
+DoneReadCode:
+                ; See if at least 'image-size' is loaded.
+                cmp     ax, image_size
                 je      DoneReadCode2
 InvalidCode:    mov     dx, offset COM_FailedInvalidCode
                 call    ShowError
 
+                ; Try to read again which is expected to fail.
+                ; Otherwise image is too large.
 DoneReadCode2:  mov     ah, 3Fh
                 mov     cx, 1
                 mov     dx, offset BootCode
@@ -111,13 +120,14 @@ DoneReadCode2:  mov     ah, 3Fh
                 jz      DoneReadCode3    ; EOF -> is now expected
                 jmp     InvalidCode
 
+                ; It's loaded now, close it.
 DoneReadCode3:  mov     ah, 3Eh
                 int     21h              ; DOS: CLOSE FILE
 
                 mov     dx, offset COM_Okay
                 call    ShowMessage
 
-                ; =================================== Load MBR-protection image
+                ; Open MBR_PROT.COM
                 mov     dx, offset COM_LoadMBR
                 call    ShowMessage
                 mov     ax, 3D00h
@@ -130,6 +140,7 @@ DoneReadCode3:  mov     ah, 3Eh
 
 DoneOpenMBR:    mov     bx, ax           ; BX = Filehandle
 
+                ; Load MBR_PROT.COM
                 mov     ah, 3Fh
                 mov     cx, 1024         ; Image size
                 mov     dx, offset MBRProtection
@@ -138,11 +149,15 @@ DoneOpenMBR:    mov     bx, ax           ; BX = Filehandle
                 mov     dx, offset COM_FailedReadMBR
                 call    ShowError
 
-DoneReadMBR:    cmp     ax, 1024
+DoneReadMBR:
+                ; See if at least 1kB is loaded.
+                cmp     ax, 1024
                 je      DoneReadMBR2
 InvalidMBR:     mov     dx, offset COM_FailedInvalidMBR
                 call    ShowError
 
+                ; Try to read again which is expected to fail.
+                ; Otherwise image is too large.
 DoneReadMBR2:   mov     ah, 3Fh
                 mov     cx, 1
                 mov     dx, offset MBRProtection
@@ -152,25 +167,36 @@ DoneReadMBR2:   mov     ah, 3Fh
                 jz      DoneReadMBR3     ; EOF -> is now expected
                 jmp     InvalidMBR
 
+                ; It's loaded now, close file.
 DoneReadMBR3:   mov     ah, 3Eh
                 int     21h              ; DOS: CLOSE FILE
 
                 mov     dx, offset COM_Okay
                 call    ShowMessage
 
+
+
                 ; ========================== Merge MBR-Protection into Bootcode
                 mov     dx, offset COM_MergeMBR
                 call    ShowMessage
 
                 ; Search for signature in Bootcode
+                ; Note the search is with sector granularity.
+                ; This means the signature must be 512 bytes aligned.
                 mov     si, offset BootCode
                 mov     di, offset MBRProtectionSignature
                 mov     cx, MBRProtectionSignatureLen
-                mov     dx, 54 ; 54 sectors where signature may be (all sectors preceding config sector)
+                ; 54 sectors where signature may be.
+                ; (all sectors preceding config sector)
+                mov     dx, 54
 COM_SignatureLoop:
-                push    cx si di
+                push    cx
+                push    si
+                push    di
                    repe    cmpsb
-                pop     di si cx
+                pop     di
+                pop     si
+                pop     cx
                 je      COM_GotSignature
                 add     si, 512
                 dec     dx
@@ -196,7 +222,9 @@ COM_GotSignature:
                 add     si, 512*53
                 mov     cx, 256
                 mov     dx, 53
-COM_CodeEndLoop:push    cx si di
+COM_CodeEndLoop:push    cx
+                push    si
+                push    di
 COM_CodeEndLoop2:
                    cmp     wptr ds:[si], 0
                    jne     COM_ExitCodeEndLoop
@@ -204,7 +232,9 @@ COM_CodeEndLoop2:
                    dec     cx
                    jnz     COM_CodeEndLoop2
 COM_ExitCodeEndLoop:
-                pop     di si cx
+                pop     di
+                pop     si
+                pop     cx
                 jne     COM_FoundCodeEnd
                 sub     si, 512
                 dec     dx
@@ -248,11 +278,22 @@ DoneWriteCode:  cmp     ax, image_size
                 call    ShowMessage
                 jmp     EndProgram
 
-; Buffers for files
-BootCode        db  image_size dup (?)
-MBRProtection   db  1024 dup (?)
+
+EndProgram:
+   ; DOS: TERMINATE PROGRAM
+   mov     ax, 4C00h
+   int     21h
+
+
 
 COM_EndOfSegment:
 
 code_seg	ends
+
+bss_data    segment  use16 public   'BSS'
+; Buffers for files
+BootCode        db  image_size dup (?)
+MBRProtection   db  1024 dup (?)
+bss_data    ends
+
 		end	COM_StartUp
