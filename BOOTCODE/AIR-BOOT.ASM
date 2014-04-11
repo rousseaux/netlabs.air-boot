@@ -357,7 +357,7 @@ AiR_BOOT:
                 db      0EBh
 
                 ; ID String, Date (DD,MM,CC,YY), Version Number, Language ID
-                db      'AiRBOOT', 20h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
+                db      'AiRBOOT', 21h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
 
                 ; Total Sectors Count.
                 ; Will get overwritten by FIXCODE.
@@ -1742,7 +1742,7 @@ NewDriveLetters             db  partition_count dup (?)         ; Logical Drive-
 PartitionSizeTable          db  partition_count * 6 dup (?) ; Size-Table (6 bytes per partition)
 PartitionPointers           dw  52 dup (?)  ; Maximum is 52 entries till now
 PartitionPointerCount       db  ?           ; Count of total Partition Pointers
-PartitionXref               db  partition_count dup (?) ; X-Reference Table
+PartitionXref               db  partition_count dup (?) ; X-Reference Table (holds new partnr, index is old part nr)
 PartitionVolumeLetters      db  partition_count dup (?) ; Volume-Letters
                                                 ;  0 - no LVM support
                                                 ;  1 - LVM support, but no letter
@@ -1886,6 +1886,8 @@ i13xbuf     dw  1   dup (?)     ; Size of the buffer;
             db  126 dup(?)      ; The buffer itself.
             i13xbuf_size = $-offset i13xbuf-2   ; Size of buffer
                                                 ; (excluding the size word at the start).
+
+ott         db  512 dup(?)
 
 eobss:
 

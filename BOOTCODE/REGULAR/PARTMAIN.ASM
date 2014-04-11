@@ -1621,7 +1621,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
 IFDEF AUX_DEBUG
    call     DEBUG_Dump2
-   call     DEBUG_DumpBSSSectors
+   ;~ call     DEBUG_DumpBSSSectors
 ENDIF
 
 

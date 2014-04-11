@@ -70,13 +70,6 @@ AuxIO_Init      Proc  Near  Uses dx si
 AuxIO_Init      EndP
 
 
-; In:          AL - Single Char to send to Com Port
-;              DL - Port number; 0 for com1, etc.
-; Destroyed: None
-AuxIO_PrintSingleChar   Proc  Near  Uses ax es di
-        nop
-AuxIO_PrintSingleChar   EndP
-
 
 ; Print char to com-port (teletype style)
 AuxIO_Teletype  Proc     Near  Uses  ax dx

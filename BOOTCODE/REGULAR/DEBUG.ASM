@@ -189,7 +189,7 @@ DEBUG_Dump1     Proc  Near
 
         ;~ call    DEBUG_DumpGeo
 
-
+        call    DEBUG_CheckBitFields
 
         popa
         popf
@@ -225,98 +225,129 @@ DEBUG_DumpBSSSectors    Proc    Near
         popa
         popf
         ret
-
-
 DEBUG_DumpBSSSectors    EndP
 
 
+DEBUG_CheckBitFields    Proc
+        pushf
+        pusha
 
+        mov     bx,offset [ott]
+
+        mov     al,0
+        mov     dl,0
+        mov     dh,6
+    DEBUG_CheckBitFields_next_write:
+        call    CONV_SetBitfieldValue
+        inc     al
+        inc     dl
+        ;~ cmp     dl,70
+        jnz     DEBUG_CheckBitFields_next_write
+
+        mov     dl,0
+        mov     dh,6
+    DEBUG_CheckBitFields_next_read:
+        mov     al,dl
+        call    AuxIO_TeletypeHexByte
+        mov     al,':'
+        call    AuxIO_Teletype
+        call    CONV_GetBitfieldValue
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+        inc     dl
+        ;~ cmp     dl,70
+        jnz     DEBUG_CheckBitFields_next_read
+
+        popa
+        popf
+        ret
+DEBUG_CheckBitFields    EndP
 
 ;
 ; Dump information before the partition is booted.
 ;
 DEBUG_Dump2     Proc  Near
-        pushf
-        pusha
-
-
-        call    AuxIO_TeletypeNL
-        call    AuxIO_TeletypeNL
-
-
-        mov     si,offset db_config
-        call    AuxIO_Print
-
-        mov     si,offset db_cfgparts
-        call    AuxIO_Print
-        mov     al,[CFG_Partitions]
-        call    AuxIO_TeletypeHexByte
-        call    AuxIO_TeletypeNL
-
-        mov     si,offset db_cfgpartdef
-        call    AuxIO_Print
-        mov     al,[CFG_PartDefault]
-        call    AuxIO_TeletypeHexByte
-        call    AuxIO_TeletypeNL
-
-        mov     si,offset db_cfgpartlast
-        call    AuxIO_Print
-        mov     al,[CFG_PartLast]
-        call    AuxIO_TeletypeHexByte
-        call    AuxIO_TeletypeNL
-        call    AuxIO_TeletypeNL
-
-
-
-        mov     si,offset db_vars
-        call    AuxIO_Print
-
-        mov     si,offset db_newpart
-        call    AuxIO_Print
-        mov     si,offset NewPartTable
-        call    AuxIO_DumpSector
-        call    AuxIO_TeletypeNL
-        add     si,512
-        call    AuxIO_DumpSector
-        call    AuxIO_TeletypeNL
-        call    AuxIO_TeletypeNL
-
-        mov     si,offset db_newhide
-        call    AuxIO_Print
-        mov     si,offset NewHidePartTable
-        call    AuxIO_DumpSector
-        call    AuxIO_TeletypeNL
-        add     si,512
-        call    AuxIO_DumpSector
-        call    AuxIO_TeletypeNL
-        call    AuxIO_TeletypeNL
-
-        mov     si,offset db_dletters
-        call    AuxIO_Print
-        mov     si,offset NewDriveLetters
-        call    AuxIO_DumpParagraph
-        call    AuxIO_TeletypeNL
-        add     si,16
-        call    AuxIO_DumpParagraph
-        call    AuxIO_TeletypeNL
-        call    AuxIO_TeletypeNL
-
-        mov     si,offset db_tmpec
-        call    AuxIO_Print
-        mov     si,offset TmpSector
-        call    AuxIO_DumpSector
-        call    AuxIO_TeletypeNL
-        call    AuxIO_TeletypeNL
-
-        mov     si,offset db_partsec
-        call    AuxIO_Print
-        mov     si,offset PartitionSector
-        call    AuxIO_DumpSector
-        call    AuxIO_TeletypeNL
-        call    AuxIO_TeletypeNL
-
-        popa
-        popf
+        ;~ pushf
+        ;~ pusha
+;~
+;~
+        ;~ call    AuxIO_TeletypeNL
+        ;~ call    AuxIO_TeletypeNL
+;~
+;~
+        ;~ mov     si,offset db_config
+        ;~ call    AuxIO_Print
+;~
+        ;~ mov     si,offset db_cfgparts
+        ;~ call    AuxIO_Print
+        ;~ mov     al,[CFG_Partitions]
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     si,offset db_cfgpartdef
+        ;~ call    AuxIO_Print
+        ;~ mov     al,[CFG_PartDefault]
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     si,offset db_cfgpartlast
+        ;~ call    AuxIO_Print
+        ;~ mov     al,[CFG_PartLast]
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+        ;~ call    AuxIO_TeletypeNL
+;~
+;~
+;~
+        ;~ mov     si,offset db_vars
+        ;~ call    AuxIO_Print
+;~
+        ;~ mov     si,offset db_newpart
+        ;~ call    AuxIO_Print
+        ;~ mov     si,offset NewPartTable
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+        ;~ add     si,512
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     si,offset db_newhide
+        ;~ call    AuxIO_Print
+        ;~ mov     si,offset NewHidePartTable
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+        ;~ add     si,512
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     si,offset db_dletters
+        ;~ call    AuxIO_Print
+        ;~ mov     si,offset NewDriveLetters
+        ;~ call    AuxIO_DumpParagraph
+        ;~ call    AuxIO_TeletypeNL
+        ;~ add     si,16
+        ;~ call    AuxIO_DumpParagraph
+        ;~ call    AuxIO_TeletypeNL
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     si,offset db_tmpec
+        ;~ call    AuxIO_Print
+        ;~ mov     si,offset TmpSector
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     si,offset db_partsec
+        ;~ call    AuxIO_Print
+        ;~ mov     si,offset PartitionSector
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ popa
+        ;~ popf
         ret
 DEBUG_Dump2     EndP
 

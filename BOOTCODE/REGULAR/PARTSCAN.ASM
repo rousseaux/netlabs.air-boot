@@ -196,9 +196,9 @@ PARTSCAN_ScanPartition          Proc Near  Uses ax si
         cmp     al, 0                      ; Is Partition EMPTY ?
         je      PSSP_IgnorePartition
         ; Ignore these partitions, because there are no real Partitions
-                call    DEBUG_DumpBSSSectors
+                ;~ call    DEBUG_DumpBSSSectors
         call    PARTSCAN_CheckThisPartition
-                call    DEBUG_DumpBSSSectors
+                ;~ call    DEBUG_DumpBSSSectors
     PSSP_IgnorePartition:
         ; L”scht das Boot-Able Flag...
         and     byte ptr [si+LocBRPT_Flags], 7Fh ; Reset the Active-Flag
