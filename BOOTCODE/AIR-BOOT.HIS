@@ -1,0 +1,218 @@
+;
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
+
+
+
+; ---------------------------------
+; Rousseau: Fixes and Enhancements
+; ---------------------------------
+;
+; v1.0.8-rc2-bld20120213
+;-----------------------
+; # Removed requirement for LVM P and V name to be the same to edit #
+;   However, when both are the same before the edit, the V name will be
+;   synved to the P name to have them both the same again after the edit.
+;   If they differ, only the V name is updated.
+;
+; # Trying to edit the label of a type 0x35 partition now shows a popup #
+;   The user is informed that type 0x35 labels cannot be edited.
+;
+; # Type 0x35 partitions cannot be added to the AB-menu anymore #
+;   They are not bootable anyway. The user is informed by a popup.
+;
+; # De-tasemized the Assembler sources for JWasm compatibility #
+;   AiR-BOOT can now be built using JWasm, which is now the preferred
+;   assembler.
+;
+; # Completely reworked the build-system #
+;   Everything is now done with Makefiles using WMake, Wlink and the
+;   C/C++ Compilers from the Open Watcom development tools together with JWasm.
+;   This obsoletes tasm, tlink and exe2bin.
+;
+; # Cross-Platform support #
+;   AiR-BOOT and it's helpers can now be built on: DOS, Win32, OS/2 and Linux.
+;
+; # Rewrote FIXCODE.ASM in C so the tool-chain is not dependent on a DOS .COM
+;   program for embedding the MBR-protection. DOS,Win32,OS/2 and Linux
+;   versions of FIXCODE are now used. (EXE[MZ|PE|LX] and ELF)
+;
+; v1.0.8-rc1-bld20120124
+; ----------------------
+; # Changed version format to be more WarpIN compatible #
+;   This is a cosmetic change only, the internal format has not changed.
+;
+; # Show LVM VolumeName instead of LVM PartitionName #
+;   Previous versions of AiR-BOOT used the LVM PartitionName as the Label
+;   if LVM-info was present for the partition.
+;   This is inconsistent with MiniLVM which shows the LVM VolumeName.
+;   Starting with v1.0.8 the LVM VolumeName is displayed.
+;
+; # LVM Partition and Volume name Synchronization #
+;   Changing the Label of a partition with LVM-info now synchronizes
+;   the LVM Partition Name with the LVM Volume Name.
+;   This is the same behavior as MiniLVM.
+;   Note however that the Label can only be changed when both the
+;   LVM PartitionName and LVM VolumeName are the same.
+;   See protected editing below.
+;
+; # Protected editing of the Label when LVM-info is present #
+;   When the LVM VolumeName differs from the LVM PartitionName, the user can
+;   edit the label but it will not be saved to the LVM record on disk.
+;   This is to protect configurations created with the classic LVM tool.
+;   Since MiniLVM assigns the same name to both the Partition and the Volume,
+;   the Label can be edited and will be saved for such partitions.
+;   To further protect a given configuration, LVM volumes with type 0x35
+;   cannot be edited at all. This is to ensure that the LVM PartitionNames
+;   remain unique when Spanning Volumes are used.
+;
+; # Editing the Label appended spaces #
+;   When editing and changing the Label of a System using SETUP,
+;   trailing spaces were stored in the LVM Volume and Partition names.
+;   These labels need to be padded with zero's.
+;   This has been fixed.
+;   This bug is also present in v1.06.
+;
+; # Reworked Primary Partition <-> LVM-info association #
+;   The previous way was to use a 1:1 correspondence between the PT-index
+;   and the LVM-index. However, when the PT is cross-linked, lower entries
+;   pointing to higher locations on the disk, or vice-versa, incorrect
+;   LVM-info was associated. Such a cross-linked PT is sometimes generated
+;   by the LVM engine when creating or deleting multiple partitions at once.
+;   Best is to intermediately save after creating or deleting a partition
+;   with (Mini)LVM.
+;   The new way is to search the LVM-entries for the partition requested.
+;
+; # Reworked MBR-code to provide two I13X signatures #
+;   The normal LVM MBR-code uses a special setup to indicate Int13X capability.
+;   It contains the instruction, MOV EAX,'X31I', and some software checks
+;   for the presence of the 'I13X' string in the MBR.
+;   However, the location of this instruction differs between eCS 1.x and
+;   eCS 2.x LVM MBR-code.
+;   For compatibility, the v1.0.8 MBR has the 'I13X' string at both locations.
+;
+; # Fixed booting older eCS installations on HPFS #
+;   When restoring systems from archive or otherwise generated systems,
+;   the HPFS BPB sometimes lacked information that AiR-BOOT did not fill in.
+;   The result was that a wrong partition was booted or that booting
+;   stalled with the "unable to operate harddisk" message.
+;   This has been fixed.
+;
+; # Fixed booting Windows from a logical partition with loader on FAT32 #
+;   Depending on the configuration, sometimes the NTLDR could not be found.
+;   This has been fixed.
+;
+; # Fixed drive-letter feature which was broken in v1.07 #
+;   a)  v1.07 did remember the drive-letter feature was active for a partition,
+;       but it failed to store the drive-letter because too few configuration
+;       sectors were saved. This resulted in arbitrary values to be assigned
+;       to the drive-letter for the partition.
+;   b)  The JFS PBR-code does not use the in-memory BPB but uses the one
+;       that is on disk. This prevented AiR-BOOT from passing the user assigned
+;       drive-letter. AiR-BOOT now inserts the drive-letter in the BPB on disk,
+;       but only if the partition is JFS.
+;       AB v1.06 is also unable to use the drive-letter feature on JFS.
+;   As a convenience, a drive-letter in the dl-feature pop-up can now be set
+;   to "Disabled" by pressing backspace.
+;   (As opposed to arrowing up/down to get to the "Disabled" entry)
+;
+; # Fixed stuck phase1 indicator when wrong name entered #
+;   When using SET(A)BOOT /4:NAME with the MEMDRIVE env-var set,
+;   and NAME being a non-existing partition, the phase1 indicator
+;   would stay stuck between reboots.
+;   This has been fixed.
+;
+; # Fixed DOS installer (AIRBOOT.COM) #
+;   Behavior should now be the same as the eCS and WIN installers.
+;   This re-enables the use of a bootable floppy or usb-stick
+;   to install AiR-BOOT.
+;
+; # Fixed booting from FloppyDrive #
+;   This is actually also broken in v1.06 when Int13X is forced on.
+;   Now regular BIOS calls are used when booting from floppydrive.
+;   A fresh AiR-BOOT installation now includes the floppydrive menu entry.
+;
+; # Fixed chainloading IBM Boot Manager #
+;   AiR-BOOT v1.06 could chainload IBM-BM but only when it resided on
+;   the first disk and was located below the 1024 cylinder and forced Int13X
+;   extensions were disabled.
+;   AiR-BOOT v1.0.8 can now chainload IBM-BM with forced Int13X extensions
+;   enabled (the default) and if IBM-BM resides above the 1024 cylinder limit.
+;   Also, chainloading IBM-BM from the second disk is supported.
+;   Do not use chainloading IBM-BM unless you really have a need to.
+;   See the AiR-BOOT Manual for "gotcha's" when using both AiR-BOOT and IBM-BM.
+;
+; # Corrected contact links #
+;   Version 1.07 still presented the old contact links to the sourceforge
+;   repository and the original author.
+;   This caused confusion with regard to issues with v1.07.
+;   This has been corrected.
+;
+; NOTE:
+;   AB v1.07 had a bug with saving and loading the correct size of the
+;   configuration. This broke the drive-letter feature.
+;   As a result, the CRC over the config was also calculated wrongly.
+;   While AB v1.0.8 fixes this, it has to use the v1.07 way of CRC calculation.
+;   Otherwise SET(A)BOOT from the eCS v2.1 would break on AB v1.0.8 because it
+;   sees a corrupt AiR-BOOT configuration.
+;   This means that the CRC over the AB config is calculated over 5 sectors
+;   instead of 7, just like in v1.07.
+;
+; NOTE:
+;   Because of space constraints most of the debug code has been commented
+;   out in this version.
+;   Possibly it will be re-enabled after code cleanup and changing to JWasm.
+;
+;
+; v1.07
+; -----
+; # Huge Drives and LVM #
+;   When using disks >512GB under eComStation, the drive geometry changes to
+;   127 or 255 sectors per track. Since LVM-info is written at the last sector
+;   of a track, and AiR-BOOT uses the geometry of the MBR, it cannot find the
+;   LVM-info and the eCS partition / volume bootsector.
+;   This has been fixed.
+;   Now, when an eCS-partition is discovered and the drive is >512GB, AiR-BOOT
+;   will use the eCS geometry to locate the LVM-info and the bootsector.
+;
+; # Special loader handling #
+;   The special handling of partition boot-loaders has been enhanced to
+;   enable booting of legacy systems on huge drives with or without OS/2
+;   extended geometry.
+;
+; # eComStation boot-through after phase 1 #
+;   Special functionality is implemented to directly boot a newly
+;   installed eCS system after completing phase 1 of the installation.
+;   This works in conjuntion with the OS/2 specific SET(A)BOOT.EXE program,
+;   also part of the AiR-BOOT package.
+;
+; # Math, Debug, Conv and Aux modules #
+;   These are used for 32-bit arithmatic on 16-bit code,
+;   debug the booting process, converting between data-types
+;   and outputting log-data to the com-port.
+;
+;
+; v1.06
+; -----
+; This is the last version developed by Martin Kiewitz.
+; It serves as the base for the versions above.
+; Please do not post your feedback on sourceforge or bother Martin with
+; regard to issues with the above versions.
+; Use the eCS bug-tracker or the Trac project-page at netlabs and see the
+; documentation of this newer versions for the relevant contact information.
+

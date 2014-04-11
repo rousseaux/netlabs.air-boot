@@ -38,9 +38,9 @@ COM_StartUp:    jmp     COM_Init
 COM_Copyright   db 'AiR-BOOT Bootcode Image Fix', 13, 10
                 db ' - (c) Copyright 2009 by M. Kiewitz', 13, 10, '$'
 COM_LoadCode    db ' - Loading bootcode from file...$'
-COM_CodeName    db 'air-boot.com', 0
+COM_CodeName    db 'AIR-BOOT.COM', 0
 COM_LoadMBR     db ' - Loading MBR-protection from file...$'
-COM_MBRName     db 'mbr-prot\mbr_prot.com', 0
+COM_MBRName     db 'MBR-PROT\MBR_PROT.COM', 0
 COM_MergeMBR    db ' - Merging MBR-protection into bootcode...$'
 COM_CountCode   db ' - Count code in bootcode-image...$'
 COM_WriteCode   db ' - Saving bootcode to file...$'

@@ -1,12 +1,4 @@
 ;
-; BSS moet op A000 liggen
-; Segmented werkt niet
-; Moet met Tasm/DOS assembleren
-; Wat we dus *niet* willen !!
-;
-
-
-
 ; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
 ;
 ; This file is part of AiR-BOOT
@@ -24,220 +16,6 @@
 ; You should have received a copy of the GNU General Public License along with
 ;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
 ;
-
-
-;IFDEF   JWASM
-;    db  'JWASM'
-;ENDIF
-;IFDEF   TASM
-;    db  'TASM'
-;ENDIF
-
-
-
-;IF  DEBUG_LEVEL EQ  0
-;    db  'L0'
-;ELSE
-;    db  'Lx'
-;ENDIF
-
-
-; ---------------------------------
-; Rousseau: Fixes and Enhancements
-; ---------------------------------
-;
-; v1.0.8-rc2-bld20120213
-;-----------------------
-; # Removed requirement for LVM P and V name to be the same to edit #
-;   However, when both are the same before the edit, the V name will be
-;   synved to the P name to have them both the same again after the edit.
-;   If they differ, only the V name is updated.
-;
-; # Trying to edit the label of a type 0x35 partition now shows a popup #
-;   The user is informed that type 0x35 labels cannot be edited.
-;
-; # Type 0x35 partitions cannot be added to the AB-menu anymore #
-;   They are not bootable anyway. The user is informed by a popup.
-;
-; # De-tasemized the Assembler sources for JWasm compatibility #
-;   AiR-BOOT can now be built using JWasm, which is now the preferred
-;   assembler.
-;
-; # Completely reworked the build-system #
-;   Everything is now done with Makefiles using WMake, Wlink and the
-;   C/C++ Compilers from the Open Watcom development tools together with JWasm.
-;   This obsoletes tasm, tlink and exe2bin.
-;
-; # Cross-Platform support #
-;   AiR-BOOT and it's helpers can now be built on: DOS, Win32, OS/2 and Linux.
-;
-; # Rewrote FIXCODE.ASM in C so the tool-chain is not dependent on a DOS .COM
-;   program for embedding the MBR-protection. DOS,Win32,OS/2 and Linux
-;   versions of FIXCODE are now used. (EXE[MZ|PE|LX] and ELF)
-;
-; v1.0.8-rc1-bld20120124
-; ----------------------
-; # Changed version format to be more WarpIN compatible #
-;   This is a cosmetic change only, the internal format has not changed.
-;
-; # Show LVM VolumeName instead of LVM PartitionName #
-;   Previous versions of AiR-BOOT used the LVM PartitionName as the Label
-;   if LVM-info was present for the partition.
-;   This is inconsistent with MiniLVM which shows the LVM VolumeName.
-;   Starting with v1.0.8 the LVM VolumeName is displayed.
-;
-; # LVM Partition and Volume name Synchronization #
-;   Changing the Label of a partition with LVM-info now synchronizes
-;   the LVM Partition Name with the LVM Volume Name.
-;   This is the same behavior as MiniLVM.
-;   Note however that the Label can only be changed when both the
-;   LVM PartitionName and LVM VolumeName are the same.
-;   See protected editing below.
-;
-; # Protected editing of the Label when LVM-info is present #
-;   When the LVM VolumeName differs from the LVM PartitionName, the user can
-;   edit the label but it will not be saved to the LVM record on disk.
-;   This is to protect configurations created with the classic LVM tool.
-;   Since MiniLVM assigns the same name to both the Partition and the Volume,
-;   the Label can be edited and will be saved for such partitions.
-;   To further protect a given configuration, LVM volumes with type 0x35
-;   cannot be edited at all. This is to ensure that the LVM PartitionNames
-;   remain unique when Spanning Volumes are used.
-;
-; # Editing the Label appended spaces #
-;   When editing and changing the Label of a System using SETUP,
-;   trailing spaces were stored in the LVM Volume and Partition names.
-;   These labels need to be padded with zero's.
-;   This has been fixed.
-;   This bug is also present in v1.06.
-;
-; # Reworked Primary Partition <-> LVM-info association #
-;   The previous way was to use a 1:1 correspondence between the PT-index
-;   and the LVM-index. However, when the PT is cross-linked, lower entries
-;   pointing to higher locations on the disk, or vice-versa, incorrect
-;   LVM-info was associated. Such a cross-linked PT is sometimes generated
-;   by the LVM engine when creating or deleting multiple partitions at once.
-;   Best is to intermediately save after creating or deleting a partition
-;   with (Mini)LVM.
-;   The new way is to search the LVM-entries for the partition requested.
-;
-; # Reworked MBR-code to provide two I13X signatures #
-;   The normal LVM MBR-code uses a special setup to indicate Int13X capability.
-;   It contains the instruction, MOV EAX,'X31I', and some software checks
-;   for the presence of the 'I13X' string in the MBR.
-;   However, the location of this instruction differs between eCS 1.x and
-;   eCS 2.x LVM MBR-code.
-;   For compatibility, the v1.0.8 MBR has the 'I13X' string at both locations.
-;
-; # Fixed booting older eCS installations on HPFS #
-;   When restoring systems from archive or otherwise generated systems,
-;   the HPFS BPB sometimes lacked information that AiR-BOOT did not fill in.
-;   The result was that a wrong partition was booted or that booting
-;   stalled with the "unable to operate harddisk" message.
-;   This has been fixed.
-;
-; # Fixed booting Windows from a logical partition with loader on FAT32 #
-;   Depending on the configuration, sometimes the NTLDR could not be found.
-;   This has been fixed.
-;
-; # Fixed drive-letter feature which was broken in v1.07 #
-;   a)  v1.07 did remember the drive-letter feature was active for a partition,
-;       but it failed to store the drive-letter because too few configuration
-;       sectors were saved. This resulted in arbitrary values to be assigned
-;       to the drive-letter for the partition.
-;   b)  The JFS PBR-code does not use the in-memory BPB but uses the one
-;       that is on disk. This prevented AiR-BOOT from passing the user assigned
-;       drive-letter. AiR-BOOT now inserts the drive-letter in the BPB on disk,
-;       but only if the partition is JFS.
-;       AB v1.06 is also unable to use the drive-letter feature on JFS.
-;   As a convenience, a drive-letter in the dl-feature pop-up can now be set
-;   to "Disabled" by pressing backspace.
-;   (As opposed to arrowing up/down to get to the "Disabled" entry)
-;
-; # Fixed stuck phase1 indicator when wrong name entered #
-;   When using SET(A)BOOT /4:NAME with the MEMDRIVE env-var set,
-;   and NAME being a non-existing partition, the phase1 indicator
-;   would stay stuck between reboots.
-;   This has been fixed.
-;
-; # Fixed DOS installer (AIRBOOT.COM) #
-;   Behavior should now be the same as the eCS and WIN installers.
-;   This re-enables the use of a bootable floppy or usb-stick
-;   to install AiR-BOOT.
-;
-; # Fixed booting from FloppyDrive #
-;   This is actually also broken in v1.06 when Int13X is forced on.
-;   Now regular BIOS calls are used when booting from floppydrive.
-;   A fresh AiR-BOOT installation now includes the floppydrive menu entry.
-;
-; # Fixed chainloading IBM Boot Manager #
-;   AiR-BOOT v1.06 could chainload IBM-BM but only when it resided on
-;   the first disk and was located below the 1024 cylinder and forced Int13X
-;   extensions were disabled.
-;   AiR-BOOT v1.0.8 can now chainload IBM-BM with forced Int13X extensions
-;   enabled (the default) and if IBM-BM resides above the 1024 cylinder limit.
-;   Also, chainloading IBM-BM from the second disk is supported.
-;   Do not use chainloading IBM-BM unless you really have a need to.
-;   See the AiR-BOOT Manual for "gotcha's" when using both AiR-BOOT and IBM-BM.
-;
-; # Corrected contact links #
-;   Version 1.07 still presented the old contact links to the sourceforge
-;   repository and the original author.
-;   This caused confusion with regard to issues with v1.07.
-;   This has been corrected.
-;
-; NOTE:
-;   AB v1.07 had a bug with saving and loading the correct size of the
-;   configuration. This broke the drive-letter feature.
-;   As a result, the CRC over the config was also calculated wrongly.
-;   While AB v1.0.8 fixes this, it has to use the v1.07 way of CRC calculation.
-;   Otherwise SET(A)BOOT from the eCS v2.1 would break on AB v1.0.8 because it
-;   sees a corrupt AiR-BOOT configuration.
-;   This means that the CRC over the AB config is calculated over 5 sectors
-;   instead of 7, just like in v1.07.
-;
-; NOTE:
-;   Because of space constraints most of the debug code has been commented
-;   out in this version.
-;   Possibly it will be re-enabled after code cleanup and changing to JWasm.
-;
-;
-; v1.07
-; -----
-; # Huge Drives and LVM #
-;   When using disks >512GB under eComStation, the drive geometry changes to
-;   127 or 255 sectors per track. Since LVM-info is written at the last sector
-;   of a track, and AiR-BOOT uses the geometry of the MBR, it cannot find the
-;   LVM-info and the eCS partition / volume bootsector.
-;   This has been fixed.
-;   Now, when an eCS-partition is discovered and the drive is >512GB, AiR-BOOT
-;   will use the eCS geometry to locate the LVM-info and the bootsector.
-;
-; # Special loader handling #
-;   The special handling of partition boot-loaders has been enhanced to
-;   enable booting of legacy systems on huge drives with or without OS/2
-;   extended geometry.
-;
-; # eComStation boot-through after phase 1 #
-;   Special functionality is implemented to directly boot a newly
-;   installed eCS system after completing phase 1 of the installation.
-;   This works in conjuntion with the OS/2 specific SET(A)BOOT.EXE program,
-;   also part of the AiR-BOOT package.
-;
-; # Math, Debug, Conv and Aux modules #
-;   These are used for 32-bit arithmatic on 16-bit code,
-;   debug the booting process, converting between data-types
-;   and outputting log-data to the com-port.
-;
-;
-; v1.06
-; -----
-; This is the last version developed by Martin Kiewitz.
-; It serves as the base for the versions above.
-; Please do not post your feedback on sourceforge or bother Martin with
-; regard to issues with the above versions.
-; Use the eCS bug-tracker or the Trac project-page at netlabs and see the
-; documentation of this newer versions for the relevant contact information.
 
 
 ;------------------------------------------------------------------------------
@@ -261,9 +39,9 @@
 ; In this case 4 NOP instructions are generated after forward referencing jump
 ; instructions, to allow for automatic recoding by TASM.
 ; This seems to be a TASM bug. (v2,v3,v4, dunno v5)
-;
-;JUMPS
-;
+IFDEF   TASM
+    ;~ JUMPS
+ENDIF
 
 ;
 ; If defined then each module is prefixed with it's name.
@@ -271,66 +49,6 @@
 ; It should be off in release code.
 ;
 ;ModuleNames             equ     1
-
-
-
-
-
-;
-; An ORG directive resets the location counter where code and data is
-; generated. If the location counter is reset back to a point where
-; code or data already has been generated, this will be overwritten
-; without warning.
-; This macro is run at every ORG directive to check for this condition,
-; and when it occurs further assembly is terminated.
-; FIXME: Get JWasm and Tasm use some common ECHO/%OUT method.
-;        (Tasm only pases first word of non-quoted string to a macro)
-;
-check_overlap   MACRO   loc
-
-    ; Exit macro immediately if no overlap.
-    ; We don't want to assign values to z_last_... if there is no
-    ; overlap because they would then hold the values the last time this
-    ; macro was called and not those of the last overlap.
-    IF (loc - $) LE 0
-        EXITM
-    ENDIF
-
-    ; Calculate the overlap.
-    z_last_overlap_location = loc
-    z_last_overlap_size = (loc - $)
-
-    IFDEF   JWASM
-        ; Output message.
-        ECHO
-        ECHO ** ERROR: LOCATION OVERLAP DETECTED [JWASM] ! **
-        ECHO .         THIS IS MOST LIKELY CAUSED BY CODE / DATA
-        ECHO .         EXPANSION TOWARDS AN 'ORG' DIRECTIVE.
-        ECHO .         LOOK AT 'z_last_overlap_location' TO SEE WHERE.
-        ECHO .         LOOK AT 'z_last_overlap_size' TO SEE SIZE.
-        ECHO .         FORCING ERROR...
-        ECHO
-    ENDIF
-    IFDEF   TASM
-        IF2
-            ; Output message (only on pass2).
-            %OUT
-            %OUT ** ERROR: LOCATION OVERLAP DETECTED [TASM] ! **
-            %OUT .         THIS IS MOST LIKELY CAUSED BY CODE / DATA
-            %OUT .         EXPANSION TOWARDS AN 'ORG' DIRECTIVE.
-            %OUT .         LOOK AT 'z_last_overlap_location' TO WHERE.
-            %OUT .         LOOK AT 'z_last_overlap_size' TO SEE SIZE.
-            %OUT .         FORCING ERROR...
-            %OUT
-        ENDIF
-    ENDIF
-
-    ; Terminate assembly by forcing an error.
-    .ERR
-
-ENDM
-
-
 
 
 ;
@@ -341,13 +59,13 @@ ENDM
 ;
 MaxDisks                equ     64
 
-;
-; If defined then include DEBUG.ASM and output debug-info to serial-port.
-;
-;AuxDebug                equ     1
-
-; Com-port for debugging, 0 is disabled
-BiosComPort             equ     0
+; Only when assembled with JWasm because Tasm generates too large code.
+IFDEF   JWASM
+    ; If defined then include DEBUG.ASM and output debug-info to serial-port.
+    AUX_DEBUG       EQU
+ELSE
+    ;~ AUX_DEBUG       EQU
+ENDIF
 
 
 ;
@@ -362,19 +80,22 @@ BiosComPort             equ     0
 ;
 
 ; 9600 bps, no parity, 1 stop-bit, 8 bits per char
-AuxInitParms            equ     11100011b
+AUX_INIT_PARMS          EQU     11100011b
+
+; Com-port for debugging, 0 is disabled
+BIOS_COM_PORT           EQU     1
 
 ; Default word value for BIOS_AuxParms variable
 ; Note that is has moved since v1.07
-BIOS_AuxParmsDefault    equ     (AuxInitParms SHL 8) OR BiosComPort
+BIOS_AUXPARMS_DEFAULT   EQU     (AUX_INIT_PARMS SHL 8) OR BIOS_COM_PORT
+
+
+
 
 ;
 ; If ReleaseCode is not defined, it will produce debug-able code...
 ;
 ReleaseCode             equ     -1
-
-
-
 
 
 ;
@@ -541,30 +262,30 @@ Keys_Space                  equ     20h
 Keys_Flags_EnterSetup       equ     1100b   ; Strg+Alt (AL)
 
 
-                ; ------------------------------------------
-                ; Rousseau: # Changed this from .386 to .286
-                ; ------------------------------------------
-                ; Because of the TASM-bug the processor had to be changed to turn JUMPS
-                ; off. Existing movzx instructions were replaced with 286 equivalent code.
-                ; Out of range relative jumps have been recoded.
-                ; TASM still generates an extra NOP after test [mem],1
-                ; instructions.
-                ; JWasm produces tighter code.
-                ; JWasm:
-                ; With segment overrides, the address is expanded to the bit-width.
-                ; So, .386 will generate a 32-bit address, even in a USE16 segment.
-                .286
+; ------------------------------------------
+; Rousseau: # Changed this from .386 to .286
+; ------------------------------------------
+; Because of the TASM-bug the processor had to be changed to turn JUMPS
+; off. Existing movzx instructions were replaced with 286 equivalent code.
+; Out of range relative jumps have been recoded.
+; TASM still generates an extra NOP after test [mem],1
+; instructions.
+; JWasm produces tighter code.
+; JWasm:
+; With segment overrides, the address is expanded to the bit-width.
+; So, .386 will generate a 32-bit address, even in a USE16 segment.
+.286
 
-                ; This influences the uses directive and other stuff,
-                ; like calling-style and local variables.
-                ; The model itself,large, has no effect because we generate
-                ; a binairy image and not a segmented executable.
+; This influences the uses directive and other stuff,
+; like calling-style and local variables.
+; The model itself,large, has no effect because we generate
+; a binairy image and not a segmented executable.
 
-                ; Tasm needs a memory model for USES on PROC to work.
-                IFDEF   TASM
-                ;.model large, basic
-                .model  tiny,c
-                ENDIF
+; Tasm needs a memory model for USES on PROC to work.
+IFDEF   TASM
+    ;.model large, basic
+    .model  tiny,c
+ENDIF
 
 ;
 ; This is used to switch between the original 1-segment (code_seg) and the
@@ -579,21 +300,20 @@ Keys_Flags_EnterSetup       equ     1100b   ; Strg+Alt (AL)
 ; They are now segment-relative. The true offset is resolved at link
 ; time.
 ;
-SEGMENTED   EQU 1
+SEGMENTED   EQU
 
 IFDEF   SEGMENTED
-            AIRBOOT     GROUP   IMAGE,VOLATILE
+    AIRBOOT     GROUP   LDRIMAGE,VOLATILE
 ENDIF
 
 ; Our code-segment starts here.
-IMAGE       SEGMENT     USE16   PUBLIC  'MIXED'
+LDRIMAGE    SEGMENT     USE16   PUBLIC  'MIXED'
 
 IFDEF   SEGMENTED
-            ASSUME      CS:AIRBOOT, DS:AIRBOOT, ES:nothing, SS:nothing
+    ASSUME  CS:AIRBOOT, DS:AIRBOOT, ES:nothing, SS:nothing
 ELSE
-            ASSUME      CS:IMAGE,   DS:IMAGE,   ES:nothing, SS:nothing
+    ASSUME  CS:LDRIMAGE,DS:LDRIMAGE,ES:nothing, SS:nothing
 ENDIF
-
 
 ;==============================================================================
                                                                     ; Sector 1
@@ -637,7 +357,7 @@ AiR_BOOT:
                 db      0EBh
 
                 ; ID String, Date (DD,MM,CC,YY), Version Number, Language ID
-                db      'AiRBOOT', 16h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
+                db      'AiRBOOT', 20h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
 
                 ; Total Sectors Count.
                 ; Will get overwritten by FIXCODE.
@@ -708,21 +428,17 @@ MBR_HaltSys:    cli
                 jmp     MBR_HaltSys
 
 
-
 ; Comport settings
 ; It had to be moved to create room for the double I13X
 ; signature.
 ; It cannot be in the config-area (sector 55)
-; because that area
-; is crc-protected.
-BIOS_AuxParms   dw      BIOS_AuxParmsDefault
+; because that area is crc-protected and would not allow 'poking'.
+here = $
+                org     0003Ch
+                check_overlap   here
+BIOS_AuxParms   dw      BIOS_AUXPARMS_DEFAULT
 
-;
-; Reserved space
-; Should check overflow here, later...
-;
 reserved        db      6   dup('X')
-
 
                 ;
                 ; We arrive here after the first jump using the 'A' of the
@@ -732,11 +448,6 @@ reserved        db      6   dup('X')
                 ; insert a CLI on start and did not
                 ; want to change the AiR-BOOT signature
                 ; because of Microsoft inventions...
-
-
-
-
-
 here = $
                 org     044h
                 check_overlap   here
@@ -830,6 +541,7 @@ MBR_RealStart:
                 mov     sp, 7FFEh       ; Even is better
                 mov     ax, es          ; ES holds segment where we moved to
                 mov     ds, ax          ; Set DS==ES to Code Segment
+
 
             ; If we are in debug-mode, all code is moved already,
             ; so we can directly jump to it.
@@ -966,6 +678,10 @@ here = $
                 dw      '$$'
 
 
+here = $
+                org     001beh
+                check_overlap   here
+
                 ; Partition Table
                 db      16  dup('0')
                 db      16  dup('1')
@@ -1056,22 +772,10 @@ here = $
 sos3:
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
                 ; ##############################################
                 ; ## ENTRY-POINT AFTER ALL THE INITIAL HASSLE ##
                 ; ##############################################
+
 
 
 
@@ -1105,6 +809,16 @@ AiR_BOOT_Start:
         pop     es                      ; Restore previous value of ES
         popa                            ; Restore all the general purpose regs
 
+
+                mov     ax, offset sobss
+                mov     ax,offset BeginOfVariables
+                mov     ax,offset [TrueSecs]
+                lea     ax, [TrueSecs]
+                mov     ax,word ptr [TrueSecs]
+                mov     ax,offset EndOfVariables
+                mov     ax, offset eobss
+                nop
+                ;~ mov     ax, offset qqqq
 
 
                 ;jmp skip
@@ -1266,7 +980,7 @@ AiR_BOOT_Start:
                 call    MBR_TeletypeBold
 
 
-skip:
+    skip:
 
 
 
@@ -1440,6 +1154,10 @@ b_driveio:
 Include REGULAR/DRIVEIO.ASM     ; Drive I/O, Config Load/Save
 size_driveio = $-b_driveio
 
+b_lvm:
+Include SPECIAL/LVM.ASM         ; LVM-specific code
+size_lvm = $-b_lvm
+
 b_videoio:
 Include REGULAR/VIDEOIO.ASM     ; Video I/O
 size_videoio = $-b_videoio
@@ -1468,10 +1186,10 @@ b_other:
 Include REGULAR/OTHER.ASM       ; Other Routines
 size_other = $-b_other
 
-; Rousseau: Special modules moved upwards.
 b_main:
 Include SETUP/MAIN.ASM          ; The whole AiR-BOOT SETUP
 size_main = $-b_main
+
 
 
 IFDEF TXT_IncludeCyrillic
@@ -1480,31 +1198,23 @@ b_ccharset:
 size_ccharset = $-b_ccharset
 ENDIF
 
+
 b_math:
 Include REGULAR/MATH.ASM        ; Math functions (like 32-bit multiply)
 size_math = $-b_math
 
 
 
-IFDEF AuxDebug
+
+; Various debugging routines, uses AUXIO and CONV
+IFDEF AUX_DEBUG
 b_debug:
-;   Include REGULAR/DEBUG.ASM     ; Various debugging routines,
-                                ; uses AUXIO and CONV
+Include REGULAR/DEBUG.ASM
 size_debug = $-b_debug
-ENDIF
-
 b_auxio:
-;Include REGULAR/AUXIO.ASM       ; Com-port support for debugging
+Include REGULAR/AUXIO.ASM       ; Com-port support for debugging
 size_auxio = $-b_auxio
-
-; Rousseau: moved upwards
-;IFDEF TXT_IncludeCyrillic
-;   Include SPECIAL/CHARSET.ASM  ; Charset Support (e.g. Cyrillic)
-;ENDIF
-
-b_lvm:
-Include SPECIAL/LVM.ASM         ; LVM-specific code
-size_lvm = $-b_lvm
+ENDIF
 
 
 ; End of sector 3.
@@ -1602,34 +1312,48 @@ Include BLDDATE.ASM                      ; Build Date generated by _build.cmd
 eosx:
 
 
-
-CODE_END:
-
-                ;org     06A00h - 4
+                ;
+                ; End of code marker.
+                ;
                 db      'BABE'
-
-                ;org     06A00h
                 db      'FACE'
+
+code_end:
+
+
+
+here = $
+                org     06800h
+                ; For some reason, this overlap check does not work !!
+                ; I gues it's because 'here' has no definitive value yet
+                ; and since JWasm is a single pass assembler, it won't
+                ; change anymore. it is off by 1dh bytes.
+                ; (Changing the ORG to 6700h produces an overlap of 11dh.
+                ; This 1dh is by sheer coincidence the same length as the
+                ; MBR_Prot signature on my system, but it's not related.
+                check_overlap   here
 
                 ;
                 ; This is the AiR-BOOT MBR-Protection Image.
-                ; 04600 / 200h = 34h = 52d sectors are before this point.
+                ; 06800 / 200h = 34h = 52d sectors are before this point.
                 ; The stuff generated here gets overwritten when the MBR_PROT.ASM
                 ; module, which is assembled separately, gets merged.
                 ; So you won't find the string below in the generated binary.
                 ;
-here = $
-                org     06800h
-                check_overlap   here
-
+; Hardcoded to 1k (1024 bytes) (MBR_PROT.ASM)
 MBR_Protection  db 'AiR-BOOT MBR-Protection Image'
-; Hardcoded to 1k (1024 bytes)
-                db  1024-($-MBR_Protection)  dup(0)
 
+                ; Just fill.
+                db  1024-($-MBR_Protection)  dup('M')
 
-;CODE_SEG        ENDS
-
+;LDRIMAGE        ENDS
 ;DATA_SEG        SEGMENT     USE16   PUBLIC  'CODE'
+
+
+
+;~ MYDATA  SEGMENT     COMMON    'MIXED'
+;~ qqqq     dw  'QQ'
+;~ MYDATA  ENDS
 
 ;==============================================================================
                                                                    ; Sector 55
@@ -1978,9 +1702,9 @@ IFDEF   SEGMENTED
 ; End of AiR-BOOT code and data.
 ;
 
-IMAGE           ENDS
+LDRIMAGE    ENDS
 
-;DATA_SEG        ENDS
+;DATA_SEG    ENDS
 
 ;
 ; Uninitialized Data (BSS)
@@ -1999,7 +1723,7 @@ sobss:
                             ; If org 0 corruption occurs.
                             ;
                             org 02400h                         ; Uninitialized
-
+                            ;~ org 00200h                         ; 200h geeft 3 floppies !
 
 ; This space actually gets initialized in PreCrap to NUL (till EndOfVariables)
 BeginOfVariables:
@@ -2009,7 +1733,9 @@ LVMSector                   db  512 dup (?) ; Temporary Sector for LVM
 TmpSector                   db  512 dup (?) ; Temporary Sector
 
 ; Everything used to build a new IPT and reference it to the old one
+; IETS OVERSCHRIJFT DIT !!
 NewPartTable                db  1536 dup (?)                    ; New Partition Table
+
 NewHidePartTable            db  partition_count * LocHPT_LenOfHPT dup (?)    ; New Hide-Partition Table
 NewDriveLetters             db  partition_count dup (?)         ; Logical Drive-Letters
 
@@ -2166,9 +1892,8 @@ eobss:
 IFDEF   SEGMENTED
 VOLATILE    ENDS
 ELSE
-IMAGE       ENDS
+LDRIMAGE    ENDS
 ENDIF
+
             END     AIR_BOOT
-
-
 

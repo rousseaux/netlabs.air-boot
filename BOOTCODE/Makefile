@@ -129,9 +129,9 @@ TARGET=$(MODULE).BIN
 #
 #ASM=masm
 #ASM=alp
-#ASM=tasm
+ASM=tasm
 #ASM=wasm
-ASM=jwasm
+#ASM=jwasm
 
 #
 # JWasm does not work on DOS, so we override it.

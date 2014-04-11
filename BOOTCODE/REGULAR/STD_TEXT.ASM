@@ -41,7 +41,7 @@ CopyrightVersionLen   equ   6
 ;Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz    <<Release Candidate>>    (build: #18)', 0
 ;Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz  <<Release Candidate 1>> (bld: 20120124)', 0
 ;Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz  <<Release Candidate 2>> (bld: 20120214)', 0
-Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz  <<Internal Release 2c>> (bld: 20120216)', 0
+Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz  <<Internal Release 2f>> (bld: 20120220)', 0
 ;Copyright             db ' AiR-BOOT v1.0.8 - (c) 1998-2012 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
 
 ; Message in case the user wants to edit the label of a type 0x35 partition

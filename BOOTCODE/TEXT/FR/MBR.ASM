@@ -28,5 +28,10 @@ TXT_LanguageID                equ 'F'
 TXT_ERROR_Attention            db 'AiR-BOOT: !ATTENTION!', 13, 10, 0
 TXT_ERROR_CheckCode            db ' - Le code', 0
 TXT_ERROR_CheckFailed          db ' de AiR-BOOT a ‚t‚ alt‚r‚.', 13, 10
-                               db '   Veuillez red‚marrer avec la disquette AiR-BOOT afin de le restaurer.', 13, 10
-                               db '   SystŠme arrˆt‚. Veuillez appuyez sur RESET.', 0
+                               ;~ db '   Veuillez red‚marrer avec la disquette AiR-BOOT afin de le restaurer.', 13, 10
+                               ;~ db '   SystŠme arrˆt‚. Veuillez appuyez sur RESET.', 0
+
+                                ; Had to shorten this to prevent overlap with double 'I13X' signature in MBR.
+                                ; Hope it still makes sense...
+                                db '   Veuillez red‚marrer avec la disq AiR-BOOT pour restaurer.', 13, 10
+                                db '   SystŠme arrˆt‚. Veuillez appuyez RESET.', 0

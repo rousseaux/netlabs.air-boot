@@ -35,274 +35,329 @@ IFDEF ModuleNames
 DB 'DEBUG',0
 ENDIF
 
+DEBUG_CheckMath Proc    Near
+        pushf
+        pusha
+
+        ; Msg check math-module
+        mov     si,offset db_checkmath
+        call    AuxIO_Print
+
+        ; Output hex-word
+        mov     ax,0BABEh
+        call    AuxIO_TeletypeHexWord
+
+        mov     al,' '
+        call    AuxIO_Teletype
+        mov     al,'*'
+        call    AuxIO_Teletype
+        mov     al,' '
+        call    AuxIO_Teletype
+
+        ; Output hex-word
+        mov     ax,0BABEh
+        call    AuxIO_TeletypeHexWord
+
+        mov     al,' '
+        call    AuxIO_Teletype
+        mov     al,'='
+        call    AuxIO_Teletype
+        mov     al,' '
+        call    AuxIO_Teletype
+
+        mov     ax,0BABEh
+        mul     ax
+        call    AuxIO_TeletypeHexDWord
+
+        ; Start new line
+        call    AuxIO_TeletypeNL
+
+        ; Output hex-dword
+        mov     dx,0DEADh
+        mov     ax,0FACEh
+        call    AuxIO_TeletypeHexDWord
+
+        mov     al,' '
+        call    AuxIO_Teletype
+        mov     al,'*'
+        call    AuxIO_Teletype
+        mov     al,' '
+        call     AuxIO_Teletype
+
+        ; Output hex-dword
+        mov     dx,0DEADh
+        mov     ax,0FACEh
+        call    AuxIO_TeletypeHexDWord
+
+        mov     al,' '
+        call    AuxIO_Teletype
+        mov     al,'='
+        call    AuxIO_Teletype
+        mov     al,' '
+        call    AuxIO_Teletype
+
+        mov     bx,0DEADh
+        mov     cx,0FACEh
+        mov     dx,0DEADh
+        mov     ax,0FACEh
+        call    MATH_Mul32
+        call    AuxIO_TeletypeHexQWord
+
+        ; Start new line
+        call    AuxIO_TeletypeNL
+
+        ;~ ; Start new line
+        call    AuxIO_TeletypeNL
+
+        popa
+        popf
+
+        ret
+DEBUG_CheckMath EndP
+
+
+DEBUG_DumpGeo   Proc
+        pushf
+        pusha
+
+        ; BIOS cyls
+        mov     dx,word ptr [BIOS_Cyls+02]
+        mov     ax,word ptr [BIOS_Cyls+00]
+        call    AuxIO_TeletypeHexDWord
+        call    AuxIO_TeletypeNL
+
+        ; BIOS heads
+        mov     dx,word ptr [BIOS_Heads+02]
+        mov     ax,word ptr [BIOS_Heads+00]
+        call    AuxIO_TeletypeHexDWord
+        call    AuxIO_TeletypeNL
+
+        ; BIOS secs
+        mov     dx,word ptr [BIOS_Secs+02]
+        mov     ax,word ptr [BIOS_Secs+00]
+        call    AuxIO_TeletypeHexDWord
+        call    AuxIO_TeletypeNL
 
+        ; Bytes per sector
+        mov     ax,[BIOS_Bytes]
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
 
-; Initialize the com-port
-; In:          AL - com-port, 0=disable com-port logging, 1=com1 etc. (max 4)
-;              AH - initialization parameters (see below)
-; Out:         AX - line status
-DEBUG_Dump1             Proc  Near
-      pushf
-      pusha
-
-      ; Hello message
-      mov      si, offset AuxIOHello
-      call     AuxIO_Print
-
-      ; Build Date
-      mov      si, offset BUILD_DATE
-      call     AuxIO_Print
-
-      ; Start new line
-      call     AuxIO_TeletypeNL
-      Call     AuxIO_TeletypeNL
-
-      ; Msg check math-module
-      mov      si,offset db_checkmath
-      call     AuxIO_Print
-
-      ; Output hex-word
-      mov      ax,0BABEh
-      call     AuxIO_TeletypeHexWord
-
-      mov      al,' '
-      call     AuxIO_Teletype
-      mov      al,'*'
-      call     AuxIO_Teletype
-      mov      al,' '
-      call     AuxIO_Teletype
-
-      ; Output hex-word
-      mov      ax,0BABEh
-      call     AuxIO_TeletypeHexWord
-
-      mov      al,' '
-      call     AuxIO_Teletype
-      mov      al,'='
-      call     AuxIO_Teletype
-      mov      al,' '
-      call     AuxIO_Teletype
-
-      mov      ax,0BABEh
-      mul      ax
-      call     AuxIO_TeletypeHexDWord
+        ; Total secs
+        mov     bx, word ptr [BIOS_TotalSecs+06]
+        mov     cx, word ptr [BIOS_TotalSecs+04]
+        mov     dx, word ptr [BIOS_TotalSecs+02]
+        mov     ax, word ptr [BIOS_TotalSecs+00]
+        call    AuxIO_TeletypeHexDWord
+        call    AuxIO_TeletypeNL
 
-      ; Start new line
-      call     AuxIO_TeletypeNL
+        ; CHS to LBA
+        mov     dx,1
+        mov     ax,29e5h
+        mov     bx,23h
+        mov     cx,9h
+        call    CONV_CHS2LBA
+        call     AuxIO_TeletypeHexDWord
+        call     AuxIO_TeletypeNL
 
+        popa
+        popf
 
-      ; Output hex-dword
-      mov      dx,0DEADh
-      mov      ax,0FACEh
-      call     AuxIO_TeletypeHexDWord
+        ret
+DEBUG_DumpGeo   Endp
 
-      mov      al,' '
-      call     AuxIO_Teletype
-      mov      al,'*'
-      call     AuxIO_Teletype
-      mov      al,' '
-      call     AuxIO_Teletype
+;
+; Dump information before the menu is displayed.
+;
+DEBUG_Dump1     Proc  Near
+        pushf
+        pusha
 
-      ; Output hex-dword
-      mov      dx,0DEADh
-      mov      ax,0FACEh
-      call     AuxIO_TeletypeHexDWord
+        ; Hello message
+        mov     si, offset AuxIOHello
+        call    AuxIO_Print
 
-      mov      al,' '
-      call     AuxIO_Teletype
-      mov      al,'='
-      call     AuxIO_Teletype
-      mov      al,' '
-      call     AuxIO_Teletype
+        ; Build Date
+        mov     si, offset BUILD_DATE
+        call    AuxIO_Print
 
+        ; Start new line
+        call    AuxIO_TeletypeNL
+        call    AuxIO_TeletypeNL
 
+        ;~ call    DEBUG_CheckMath
 
-      mov      bx,0DEADh
-      mov      cx,0FACEh
-      mov      dx,0DEADh
-      mov      ax,0FACEh
-      call     MATH_Mul32
-      call     AuxIO_TeletypeHexQWord
+        ;~ call    DEBUG_DumpGeo
 
-
-      ; Start new line
-      call     AuxIO_TeletypeNL
 
-
-      ; Start new line
-      call     AuxIO_TeletypeNL
-
-
-      ; BIOS cyls
-;      mov      dx,word ptr [BIOS_Cyls+02]
-;      mov      ax,word ptr [BIOS_Cyls+00]
-;      call     AuxIO_TeletypeHexDWord
-;      call     AuxIO_TeletypeNL
-
-      ; BIOS heads
-;      mov      dx,word ptr [BIOS_Heads+02]
-;      mov      ax,word ptr [BIOS_Heads+00]
-;      call     AuxIO_TeletypeHexDWord
-;      call     AuxIO_TeletypeNL
-
-      ; BIOS secs
-;      mov      dx,word ptr [BIOS_Secs+02]
-;      mov      ax,word ptr [BIOS_Secs+00]
-;      call     AuxIO_TeletypeHexDWord
-;      call     AuxIO_TeletypeNL
-
-      ; Bytes per sector
-;      mov      ax,[BIOS_Bytes]
-;      call     AuxIO_TeletypeHexWord
-;      call     AuxIO_TeletypeNL
-
-      ; Total secs
-;      mov      bx, word ptr [BIOS_TotalSecs+06]
-;      mov      cx, word ptr [BIOS_TotalSecs+04]
-;      mov      dx, word ptr [BIOS_TotalSecs+02]
-;      mov      ax, word ptr [BIOS_TotalSecs+00]
-;      call     AuxIO_TeletypeHexDWord
-;      call     AuxIO_TeletypeNL
-
-      ; CHS to LBA
-;      mov      dx,1
-;      mov      ax,29e5h
-;      mov      bx,23h
-;      mov      cx,9h
-;      call     CONV_CHS2LBA
-;      call     AuxIO_TeletypeHexDWord
-;      call     AuxIO_TeletypeNL
-
-
-      popa
-      popf
-      ret
-DEBUG_Dump1             EndP
-
-
-
-;DEBUG_Dump2             Proc  Near
-;      pushf
-;      pusha
-
-
-;      call     AuxIO_TeletypeNL
-;      call     AuxIO_TeletypeNL
-
-
-;      mov      si,offset db_config
-;      call     AuxIO_Print
-
-;      mov      si,offset db_cfgparts
-;      call     AuxIO_Print
-;      mov      al,[CFG_Partitions]
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-
-;      mov      si,offset db_cfgpartdef
-;      call     AuxIO_Print
-;      mov      al,[CFG_PartDefault]
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-
-;      mov      si,offset db_cfgpartlast
-;      call     AuxIO_Print
-;      mov      al,[CFG_PartLast]
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-;      call     AuxIO_TeletypeNL
-
-
-
-;      mov      si,offset db_vars
-;      call     AuxIO_Print
-
-;      mov      si,offset db_newpart
-;      call     AuxIO_Print
-;      mov      si,offset NewPartTable
-;      call     AuxIO_DumpSector
-;      call     AuxIO_TeletypeNL
-;      add      si,512
-;      call     AuxIO_DumpSector
-;      call     AuxIO_TeletypeNL
-;      call     AuxIO_TeletypeNL
-
-;      mov      si,offset db_newhide
-;      call     AuxIO_Print
-;      mov      si,offset NewHidePartTable
-;      call     AuxIO_DumpSector
-;      call     AuxIO_TeletypeNL
-;      add      si,512
-;      call     AuxIO_DumpSector
-;      call     AuxIO_TeletypeNL
-;      call     AuxIO_TeletypeNL
-
-;      mov      si,offset db_dletters
-;      call     AuxIO_Print
-;      mov      si,offset NewDriveLetters
-;      call     AuxIO_DumpParagraph
-;      call     AuxIO_TeletypeNL
-;      add      si,16
-;      call     AuxIO_DumpParagraph
-;      call     AuxIO_TeletypeNL
-;      call     AuxIO_TeletypeNL
-
-;      mov      si,offset db_tmpec
-;      call     AuxIO_Print
-;      mov      si,offset TmpSector
-;      call     AuxIO_DumpSector
-;      call     AuxIO_TeletypeNL
-;      call     AuxIO_TeletypeNL
-
-;      mov      si,offset db_partsec
-;      call     AuxIO_Print
-;      mov      si,offset PartitionSector
-;      call     AuxIO_DumpSector
-;      call     AuxIO_TeletypeNL
-;      call     AuxIO_TeletypeNL
-
-;      popa
-;      popf
-;      ret
-;DEBUG_Dump2             EndP
-
-
-
-db_mbr:           db "## MBR ##",10,0
-db_masterlvm:     db "## MLVMR ##",10,0
-
-db_checkmath:     db "## CHK MATH ##",10,0
-
-
-db_config:        db '## CFG (DMP2) ##',10,0
-db_cfgparts:      db 'CFG_Partitions:',0
-db_cfgpartdef:    db 'CFG_PartDefault:',0
-db_cfgpartlast:   db 'CFG_PartLast:',0
-
-
-db_vars:          db '## VARS ##',10,0
-db_partsec:       db 'PartitionSector:',10,0
-;db_lvmsec:        db 'LVMSector :',10,0
-db_tmpec:         db 'TmpSector :',10,0
-
-db_newpart:       db 'NewPartTable :',10,0
-db_newhide:       db 'NewHideTable:',10,0
-db_dletters:      db 'NewDriveLetters:',10,0
-
-;db_partsize:      db 'PartitionSizeTable:',10,0
-;db_partpoint:     db 'PartitionPointers:',10,0
-;db_partpointcnt:  db 'PartitionPointerCount:',0
-;db_partxref:      db 'PartitionXref:',10,0
-;db_partvoldl:     db 'PartitionVolumeLetters:',10,0
-
-;db_totaldisks:    db 'TotalHarddiscs:',0
-;db_lbaswitchtab:  db 'LBASwitchTable:',10,0
-;db_newparts:      db 'NewPartitions:',0
-
-;db_exabspos:      db 'ExtendedAbsPos:',0
-;db_exabsposset:   db 'ExtendedAbsPosSet:',0
-
-db_curpartloc:    db 'CurPartition_Location:',0
-;db_curiox:        db 'CurIO_UseExtension:',0
-
-db_curlvmsec:     db 'Current LVM Sector:',0
+
+        popa
+        popf
+        ret
+DEBUG_Dump1     EndP
+
+
+DEBUG_DumpBSSSectors    Proc    Near
+        pushf
+        pusha
+
+        mov     si, offset [PartitionSector]
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+
+        mov     si, offset [JfsPBR]
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+
+        mov     si, offset [LVMSector]
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+
+        mov     si, offset [TmpSector]
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+
+        mov     si, offset [NewPartTable]
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+        call    AuxIO_TeletypeNL
+
+        popa
+        popf
+        ret
+
+
+DEBUG_DumpBSSSectors    EndP
+
+
+
+
+;
+; Dump information before the partition is booted.
+;
+DEBUG_Dump2     Proc  Near
+        pushf
+        pusha
+
+
+        call    AuxIO_TeletypeNL
+        call    AuxIO_TeletypeNL
+
+
+        mov     si,offset db_config
+        call    AuxIO_Print
+
+        mov     si,offset db_cfgparts
+        call    AuxIO_Print
+        mov     al,[CFG_Partitions]
+        call    AuxIO_TeletypeHexByte
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset db_cfgpartdef
+        call    AuxIO_Print
+        mov     al,[CFG_PartDefault]
+        call    AuxIO_TeletypeHexByte
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset db_cfgpartlast
+        call    AuxIO_Print
+        mov     al,[CFG_PartLast]
+        call    AuxIO_TeletypeHexByte
+        call    AuxIO_TeletypeNL
+        call    AuxIO_TeletypeNL
+
+
+
+        mov     si,offset db_vars
+        call    AuxIO_Print
+
+        mov     si,offset db_newpart
+        call    AuxIO_Print
+        mov     si,offset NewPartTable
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+        add     si,512
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset db_newhide
+        call    AuxIO_Print
+        mov     si,offset NewHidePartTable
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+        add     si,512
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset db_dletters
+        call    AuxIO_Print
+        mov     si,offset NewDriveLetters
+        call    AuxIO_DumpParagraph
+        call    AuxIO_TeletypeNL
+        add     si,16
+        call    AuxIO_DumpParagraph
+        call    AuxIO_TeletypeNL
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset db_tmpec
+        call    AuxIO_Print
+        mov     si,offset TmpSector
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset db_partsec
+        call    AuxIO_Print
+        mov     si,offset PartitionSector
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+        call    AuxIO_TeletypeNL
+
+        popa
+        popf
+        ret
+DEBUG_Dump2     EndP
+
+
+
+db_mbr              db "## MBR ##",10,0
+db_masterlvm        db "## MLVMR ##",10,0
+
+db_checkmath        db "## CHK MATH ##",10,0
+
+
+db_config           db '## CFG (DMP2) ##',10,0
+db_cfgparts         db 'CFG_Partitions:',0
+db_cfgpartdef       db 'CFG_PartDefault:',0
+db_cfgpartlast      db 'CFG_PartLast:',0
+
+
+db_vars             db '## VARS ##',10,0
+db_partsec          db 'PartitionSector:',10,0
+;db_lvmsec           db 'LVMSector :',10,0
+db_tmpec            db 'TmpSector :',10,0
+
+db_newpart          db 'NewPartTable :',10,0
+db_newhide          db 'NewHideTable:',10,0
+db_dletters         db 'NewDriveLetters:',10,0
+
+;db_partsize         db 'PartitionSizeTable:',10,0
+;db_partpoint        db 'PartitionPointers:',10,0
+;db_partpointcnt     db 'PartitionPointerCount:',0
+;db_partxref         db 'PartitionXref:',10,0
+;db_partvoldl        db 'PartitionVolumeLetters:',10,0
+
+;db_totaldisks       db 'TotalHarddiscs:',0
+;db_lbaswitchtab     db 'LBASwitchTable:',10,0
+;db_newparts         db 'NewPartitions:',0
+
+;db_exabspos         db 'ExtendedAbsPos:',0
+;db_exabsposset      db 'ExtendedAbsPosSet:',0
+
+db_curpartloc       db 'CurPartition_Location:',0
+;db_curiox           db 'CurIO_UseExtension:',0
+
+db_curlvmsec        db 'Current LVM Sector:',0
+

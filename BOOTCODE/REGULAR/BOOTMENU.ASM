@@ -597,380 +597,383 @@ BOOTMENU_BuildChoiceBar         EndP
 
 ;        In: CL - Color, DL - Partition
 ; Destroyed: None, but Locate-Pointer gets set
-BOOTMENU_ReColorPart            Proc Near   Uses bx cx es di
+BOOTMENU_ReColorPart    Proc Near   Uses bx cx es di
 
-  ; call  SOUND_Beep
+        ; call  SOUND_Beep
 
-   mov     bh, cl     ; Color to BH
-   ; First calculate location of bar
-   cmp     Menu_UpperPart, dl
-   ja      BMRCP_NotInWindowView
-   mov     ch, dl
-   sub     ch, Menu_UpperPart            ; CH - Position relative to UpperPart
-   cmp     ch, 14                        ; 14 - Maximum Total in Window
-   ja      BMRCP_NotInWindowView
-   add     ch, 5                         ; Y-Position add-on fixed 5
-   mov     cl, 2                         ; X-Position is always 2
-   call    VideoIO_Locate                ; geht zu CX
-   call    VideoIO_Internal_SetRegs
-   inc     di                            ; DI - Destination+1 -> Color-Byte
-   mov     cl, 78                        ; Length of Bar is always 78
-  BMRCP_ClearLoop:
-      mov     al, es:[di]
-      and     al, 0Fh
-      or      al, bh                     ; Adds background color (from BH)
+        mov     bh, cl     ; Color to BH
+        ; First calculate location of bar
+        cmp     Menu_UpperPart, dl
+        ja      BMRCP_NotInWindowView
+        mov     ch, dl
+        sub     ch, Menu_UpperPart          ; CH - Position relative to UpperPart
+        cmp     ch, 14                      ; 14 - Maximum Total in Window
+        ja      BMRCP_NotInWindowView
+        add     ch, 5                       ; Y-Position add-on fixed 5
+        mov     cl, 2                       ; X-Position is always 2
+        call    VideoIO_Locate              ; geht zu CX
+        call    VideoIO_Internal_SetRegs
+        inc     di                          ; DI - Destination+1 -> Color-Byte
+        mov     cl, 78                      ; Length of Bar is always 78
+    BMRCP_ClearLoop:
+        mov     al, es:[di]
+        and     al, 0Fh
+        or      al, bh                      ; Adds background color (from BH)
 
-      ;mov      al,97h
+        ;mov      al,97h
 
-      mov     es:[di], al
-      add     di, 2
-   dec     cl
-   jnz     BMRCP_ClearLoop
-  BMRCP_NotInWindowView:
-   ret
-BOOTMENU_ReColorPart            EndP
+        mov     es:[di], al
+        add     di, 2
+        dec     cl
+        jnz     BMRCP_ClearLoop
+    BMRCP_NotInWindowView:
+        ret
+BOOTMENU_ReColorPart    EndP
 
 
 ; Calculate Menu-Variables for Boot-Menu, these use the filtered Part-Pointers
-BOOTMENU_ResetMenuVars          Proc Near   Uses dx
-   xor     dl, dl                        ; Partition at Pos 0 == 1st
-   mov     Menu_UpperPart, dl
+BOOTMENU_ResetMenuVars      Proc Near   Uses dx
+        xor     dl, dl                        ; Partition at Pos 0 == 1st
+        mov     Menu_UpperPart, dl
 
-   ; = TIMED BOOTING =
-   mov     dl, CFG_TimedBoot
-   mov     TimedBootEnable, dl
-   mov     al, CFG_TimedSecs
-   mov     TimedSecondLeft, al
-   call    TIMER_TranslateSecToTic
-   add     ax, 16                        ; So that the required ammount will
-   mov     CFG_TimedDelay, ax            ; be shown and not Timer-1.
-   call    BOOTMENU_ResetTimedBoot
-   ; = FLOPPY-GET-NAME TIMER =
-   call    BOOTMENU_ResetGetFloppy
+        ; = TIMED BOOTING =
+        mov     dl, CFG_TimedBoot
+        mov     TimedBootEnable, dl
+        mov     al, CFG_TimedSecs
+        mov     TimedSecondLeft, al
+        call    TIMER_TranslateSecToTic
+        add     ax, 16                        ; So that the required ammount will
+        mov     CFG_TimedDelay, ax            ; be shown and not Timer-1.
+        call    BOOTMENU_ResetTimedBoot
+        ; = FLOPPY-GET-NAME TIMER =
+        call    BOOTMENU_ResetGetFloppy
 
-   ; Resettet die Base-Variablen...
-   mov     dl, PartitionPointerCount
-   mov     Menu_TotalParts, dl
+        ; Resettet die Base-Variablen...
+        mov     dl, PartitionPointerCount
+        mov     Menu_TotalParts, dl
 
-   ; Copy device-name to the ContBIOSbootSeq-IPT entry
-   ;  Normally this does not need to get done here, but is done for safety
-   ;  reasons if e.g. IPT got changed by SETUP, but that setup was discarded.
-   call    PART_UpdateResumeBIOSName
+        ; Copy device-name to the ContBIOSbootSeq-IPT entry
+        ;  Normally this does not need to get done here, but is done for safety
+        ;  reasons if e.g. IPT got changed by SETUP, but that setup was discarded.
+        call    PART_UpdateResumeBIOSName
 
-   ; Default-Partition -> Filtered View -> Menu_EntryDefault
-   mov     dl, CFG_PartDefault
-   call    PART_ConvertFromStraight
-   mov     Menu_EntryDefault, dl
+        ; Default-Partition -> Filtered View -> Menu_EntryDefault
+        mov     dl, CFG_PartDefault
+        call    PART_ConvertFromStraight
+        mov     Menu_EntryDefault, dl
 
-   ; Last-Booted-Partition -> Filtered View -> Menu_EntryLast
-   mov     dl, CFG_PartLast
-   call    PART_ConvertFromStraight
-   mov     Menu_EntryLast, dl
+        ; Last-Booted-Partition -> Filtered View -> Menu_EntryLast
+        mov     dl, CFG_PartLast
+        call    PART_ConvertFromStraight
+        mov     Menu_EntryLast, dl
 
-   ; Automatic-Partition -> Filtered View -> Menu_EntryAutomatic
-   mov     dl, CFG_PartAutomatic
-   call    PART_ConvertFromStraight
-   mov     Menu_EntryAutomatic, dl
+        ; Automatic-Partition -> Filtered View -> Menu_EntryAutomatic
+        mov     dl, CFG_PartAutomatic
+        call    PART_ConvertFromStraight
+        mov     Menu_EntryAutomatic, dl
 
-; [Linux support removed since v1.02]
-;   ; Okay, now we check if Default/Last Kernel Partition Name is available...
-;   ;  if so, simply set Menu_EntryDefault/Menu_EntryLast.
-;   mov     si, offset CFG_LinuxDefaultKernel
-;   call    LINUX_SearchKernelName        ; DL - Filtered Entry No
-;   cmp     dl, 0FFh
-;   je      BMRMV_DefaultKernelNF
-;   mov     Menu_EntryDefault, dl
-;  BMRMV_DefaultKernelNF:
-;   mov     si, offset CFG_LinuxLastKernel
-;   call    LINUX_SearchKernelName        ; DL - Filtered Entry No
-;   cmp     dl, 0FFh
-;   je      BMRMV_LastKernelNF
-;   mov     Menu_EntryLast, dl
-;  BMRMV_LastKernelNF:
+        ;~ ; [Linux support removed since v1.02]
+        ;~ ; Okay, now we check if Default/Last Kernel Partition Name is available...
+        ;~ ;  if so, simply set Menu_EntryDefault/Menu_EntryLast.
+        ;~ mov     si, offset CFG_LinuxDefaultKernel
+        ;~ call    LINUX_SearchKernelName        ; DL - Filtered Entry No
+        ;~ cmp     dl, 0FFh
+        ;~ je      BMRMV_DefaultKernelNF
+        ;~ mov     Menu_EntryDefault, dl
+    ;~ BMRMV_DefaultKernelNF:
+        ;~ mov     si, offset CFG_LinuxLastKernel
+        ;~ call    LINUX_SearchKernelName        ; DL - Filtered Entry No
+        ;~ cmp     dl, 0FFh
+        ;~ je      BMRMV_LastKernelNF
+        ;~ mov     Menu_EntryLast, dl
+    ;~ BMRMV_LastKernelNF:
 
-   ; restlichen Variablen berechnen...
-   mov     dl, Menu_TotalParts
-   cmp     Menu_TotalParts, 14
-   jbe     BMRMV_NotMoreThan14
-   mov     dl, 14
-  BMRMV_NotMoreThan14:
-   mov     Menu_TotalLines, dl
+        ; restlichen Variablen berechnen...
+        mov     dl, Menu_TotalParts
+        cmp     Menu_TotalParts, 14
+        jbe     BMRMV_NotMoreThan14
+        mov     dl, 14
+    BMRMV_NotMoreThan14:
+        mov     Menu_TotalLines, dl
 
-   ; Now copy the name of the Timed-Booted Partition to TimedBoot-Field
-   mov     dl, Menu_EntryDefault
-   test    CFG_TimedBootLast, 1
-   jz      BMRMV_TimedBootDefault
-   mov     dl, Menu_EntryLast
-  BMRMV_TimedBootDefault:
-   call    PART_GetPartitionPointer      ; Holt SI fr Partition DL
-   add     si, LocIPT_Name
-   mov     cx, 11
-   call    GetLenOfName
-   mov     di, offset TXT_TimedBootEntryName
-   jz      BMRMV_NoName
-   rep     movsb
-  BMRMV_NoName:
-   xor     al, al
-   stosb              ; Ending Zero
-   ret
-BOOTMENU_ResetMenuVars          EndP
+        ; Now copy the name of the Timed-Booted Partition to TimedBoot-Field
+        mov     dl, Menu_EntryDefault
+        test    CFG_TimedBootLast, 1
+        jz      BMRMV_TimedBootDefault
+        mov     dl, Menu_EntryLast
+    BMRMV_TimedBootDefault:
+        call    PART_GetPartitionPointer      ; Holt SI fr Partition DL
+        add     si, LocIPT_Name
+        mov     cx, 11
+        call    GetLenOfName
+        mov     di, offset TXT_TimedBootEntryName
+        jz      BMRMV_NoName
+        rep     movsb
+    BMRMV_NoName:
+        xor     al, al
+        stosb              ; Ending Zero
+        ret
+BOOTMENU_ResetMenuVars      EndP
 
 ; Will Set some Vars after user selected entry to boot...
 ;  ...don't select Straight View !
-BOOTMENU_SetVarsAfterMenu Proc Near
-   ; No Straight View in here...we got filtered view since BootMenu-Startup...
-   mov     al, CFG_RememberTimed
-   test    TimedBootUsed, 1
-   jnz     BMSVAM_TimedBootUsed
-   mov     al, CFG_RememberBoot
-  BMSVAM_TimedBootUsed:
-   or      al, al
-   jz      BMSVAM_DontRememberBoot
-   mov     dl, Menu_EntrySelected
-   call    PART_ConvertToStraight        ; CFG_PartLast is non-filtered
-;   mov     di, offset CFG_LinuxLastKernel
-;   mov     cx, 11
-   cmp     dl, 0FDh                      ; Dont Remember on Floppy/CD-ROM/etc.
-   ja      BMSVAM_DontRememberBoot
-;   je      BMSVAM_RememberKernelBoot     ; but remember Kernel-Bootings...
-   mov     CFG_PartLast, dl              ; Remember partition in CFG_PartLast
-;   mov     al, ' '
-;   rep     stosb                         ; SPACE out CFG_LinuxLastKernel
-  BMSVAM_DontRememberBoot:
-   ret
-;
-;  BMSVAM_RememberKernelBoot:
-;   mov     dl, Menu_EntrySelected
-;   call    PART_GetPartitionPointer      ; SI - Pointer to Kernel Entry...
-;   add     si, LocIPT_Name
-;   rep     movsb                         ; Copy KernelName 2 CFG_LinuxLastKernel
-;   ret
-BOOTMENU_SetVarsAfterMenu       EndP
+BOOTMENU_SetVarsAfterMenu   Proc Near
+        ; No Straight View in here...we got filtered view since BootMenu-Startup...
+        mov     al, CFG_RememberTimed
+        test    TimedBootUsed, 1
+        jnz     BMSVAM_TimedBootUsed
+        mov     al, CFG_RememberBoot
+    BMSVAM_TimedBootUsed:
+        or      al, al
+        jz      BMSVAM_DontRememberBoot
+        mov     dl, Menu_EntrySelected
+        call    PART_ConvertToStraight        ; CFG_PartLast is non-filtered
+        ;~ mov     di, offset CFG_LinuxLastKernel
+        ;~ mov     cx, 11
+        cmp     dl, 0FDh                      ; Dont Remember on Floppy/CD-ROM/etc.
+        ja      BMSVAM_DontRememberBoot
+        ;   je      BMSVAM_RememberKernelBoot     ; but remember Kernel-Bootings...
+        mov     CFG_PartLast, dl              ; Remember partition in CFG_PartLast
+        ;~ mov     al, ' '
+        ;~ rep     stosb                         ; SPACE out CFG_LinuxLastKernel
+    BMSVAM_DontRememberBoot:
+        ret
+
+    ;~ BMSVAM_RememberKernelBoot:
+        ;~ mov     dl, Menu_EntrySelected
+        ;~ call    PART_GetPartitionPointer      ; SI - Pointer to Kernel Entry...
+        ;~ add     si, LocIPT_Name
+        ;~ rep     movsb                         ; Copy KernelName 2 CFG_LinuxLastKernel
+        ;~ ret
+BOOTMENU_SetVarsAfterMenu   EndP
+
+
+
 
 ; Actually does the Boot-Menu Interaction
 ; Sets Carry-flag, if Setup is to be entered, otherwise system shall get booted
 ; On boot: Fills out some variables (like Menu_EntrySelected), when Booting
-BOOTMENU_Execute                Proc Near   Uses es di
-   ; Finds out, where to place the bar at first...
-   mov     dl, Menu_EntryDefault
-   test    CFG_RememberBoot, 1
-   jnz     BME_RememberMode
-   test    CFG_RememberTimed, 1
-   jz      BME_ForgetMode
-  BME_RememberMode:
-   mov     dl, Menu_EntryLast
-  BME_ForgetMode:
-   ; Got it, so display bar...
-   mov     dh, dl
+BOOTMENU_Execute    Proc Near   Uses es di
+        ; Finds out, where to place the bar at first...
+        mov     dl, Menu_EntryDefault
+        test    CFG_RememberBoot, 1
+        jnz     BME_RememberMode
+        test    CFG_RememberTimed, 1
+        jz      BME_ForgetMode
+    BME_RememberMode:
+        mov     dl, Menu_EntryLast
+    BME_ForgetMode:
+        ; Got it, so display bar...
+        mov     dh, dl
 
-   ;call  SOUND_Beep
+        ;~ call    SOUND_Beep
 
-   call    BOOTMENU_BuildChoiceBar       ; DH - Active, DL - Last Active
+        call    BOOTMENU_BuildChoiceBar       ; DH - Active, DL - Last Active
 
-   ;call  SOUND_Beep
+        ;~ call    SOUND_Beep
 
-   call    SOUND_PreBootMenu
+        call    SOUND_PreBootMenu
 
 
-  BME_MainLoop:
+    BME_MainLoop:
 
-     ;call    VideoIO_DBG_WriteString2    ; Rousseau
+        ;call    VideoIO_DBG_WriteString2    ; Rousseau
 
-   test    TimedBootEnable, 1
-   jz      BME_NoTimedBoot
-      ; ------------------------------------------------ TIMED BOOT
-      push    ax
-      push    dx
-         call    TIMER_GetTicCount
-         mov     dx, word ptr [TimedTimeOut]
-         sub     dx, ax
-         mov     ax, dx
-         call    TIMER_TranslateTicToSec ; DX - Timertics till ByeBye
-         cmp     al, TimedSecondLeft     ; -> AL - Seconds till ByeBye
-         je      BME_NoFixSecond
-         mov     TimedSecondLeft, al
-         call    BOOTMENU_BuildTimedBootText ; Display Timed-Boot-Text
-        BME_NoFixSecond:
-         cmp     al, 0
-         jne     BME_NoTimeOut
-      pop     dx
-      pop     ax
-      mov     dl, Menu_EntryDefault
-      and     CFG_TimedBootLast, 1
-      jz      BME_TimedBootDefault
-      mov     dl, Menu_EntryLast
-     BME_TimedBootDefault:
-      mov     Menu_EntrySelected, dl        ; Just boot default partition
-      mov     TimedBootUsed, 1           ; set flag...
-      clc                                ; Boot-Now!
-      ret
+        test    TimedBootEnable, 1
+        jz      BME_NoTimedBoot
+        ; ------------------------------------------------ TIMED BOOT
+        push    ax
+        push    dx
+        call    TIMER_GetTicCount
+        mov     dx, word ptr [TimedTimeOut]
+        sub     dx, ax
+        mov     ax, dx
+        call    TIMER_TranslateTicToSec ; DX - Timertics till ByeBye
+        cmp     al, TimedSecondLeft     ; -> AL - Seconds till ByeBye
+        je      BME_NoFixSecond
+        mov     TimedSecondLeft, al
+        call    BOOTMENU_BuildTimedBootText ; Display Timed-Boot-Text
+    BME_NoFixSecond:
+        cmp     al, 0
+        jne     BME_NoTimeOut
+        pop     dx
+        pop     ax
+        mov     dl, Menu_EntryDefault
+        and     CFG_TimedBootLast, 1
+        jz      BME_TimedBootDefault
+        mov     dl, Menu_EntryLast
+    BME_TimedBootDefault:
+        mov     Menu_EntrySelected, dl        ; Just boot default partition
+        mov     TimedBootUsed, 1           ; set flag...
+        clc                                ; Boot-Now!
+        ret
 
-     BME_NoTimeOut:
-      pop     dx
-      pop     ax
-  BME_NoTimedBoot:
-   ; ------------------------------------------------ FLOPPY-NAME TIMER
-   test    CFG_FloppyBootGetTimer, 1
-   jz      BME_NoFloppyNameTimer
-      ; Wait 2 Seconds everytime
-      push    ax
-      push    dx
-         call    TIMER_GetTicCount
-         cmp     dx, wptr [FloppyGetNameTimer+2]
-         ja      BME_ExpiredGetFloppy
-         cmp     ax, wptr [FloppyGetNameTimer+0]
-         jb      BME_NoFloppyNameExpired
-        BME_ExpiredGetFloppy:
-         call    BOOTMENU_ResetGetFloppy
-      pop     dx
-      pop     ax
-      jmp     BME_RefreshFloppyName
-        BME_NoFloppyNameExpired:
-      pop     dx
-      pop     ax
-  BME_NoFloppyNameTimer:
-   ; ------------------------------------------------ KEYBOARD
-   push    dx
-      mov     ah, 1
-      int     16h
-   pop     dx
-   jnz     BME_KeyAvailable
-   jmp     BME_MainLoop
+    BME_NoTimeOut:
+        pop     dx
+        pop     ax
+    BME_NoTimedBoot:
+        ; ------------------------------------------------ FLOPPY-NAME TIMER
+        test    CFG_FloppyBootGetTimer, 1
+        jz      BME_NoFloppyNameTimer
+        ; Wait 2 Seconds everytime
+        push    ax
+        push    dx
+        call    TIMER_GetTicCount
+        cmp     dx, wptr [FloppyGetNameTimer+2]
+        ja      BME_ExpiredGetFloppy
+        cmp     ax, wptr [FloppyGetNameTimer+0]
+        jb      BME_NoFloppyNameExpired
+    BME_ExpiredGetFloppy:
+        call    BOOTMENU_ResetGetFloppy
+        pop     dx
+        pop     ax
+        jmp     BME_RefreshFloppyName
+    BME_NoFloppyNameExpired:
+        pop     dx
+        pop     ax
+    BME_NoFloppyNameTimer:
+        ; ------------------------------------------------ KEYBOARD
+        push    dx
+        mov     ah, 1
+        int     16h
+        pop     dx
+        jnz     BME_KeyAvailable
+        jmp     BME_MainLoop
 
-  BME_RefreshFloppyName:
-   test    CFG_IncludeFloppy, 1
-   jz      BME_NoRefreshFloppyName
-      test    CFG_FloppyBootGetName, 1
-      jz      BME_NoRefreshFloppyName
-         call    DriveIO_UpdateFloppyName
-         call    BOOTMENU_RefreshPartitionText
-         call    BOOTMENU_BuildChoiceBar ; Redisplay the selection-bar
-  BME_NoRefreshFloppyName:
-   jmp     BME_MainLoop
+    BME_RefreshFloppyName:
+        test    CFG_IncludeFloppy, 1
+        jz      BME_NoRefreshFloppyName
+        test    CFG_FloppyBootGetName, 1
+        jz      BME_NoRefreshFloppyName
+        call    DriveIO_UpdateFloppyName
+        call    BOOTMENU_RefreshPartitionText
+        call    BOOTMENU_BuildChoiceBar ; Redisplay the selection-bar
+    BME_NoRefreshFloppyName:
+        jmp     BME_MainLoop
 
-  BME_KeyAvailable:
-   push    dx
-      mov     ah, 0
-      int     16h
-   pop     dx
-   cmp     ah, Keys_ENTER
-   je      BME_KeyEnter
-   cmp     ah, Keys_F10
-   je      BME_KeyF10
-   cmp     ah, Keys_Delete
-   je      BME_KeyDelete
-   cmp     ah, Keys_ESC
-   je      BME_KeyESC
-   ; Upper Keys do not fall under Timed Boot Key Handling
-   test    TimedBootEnable, 1
-   je      BME_NoTimedKeyHandling
-      cmp     CFG_TimedKeyHandling, 1
-      jb      BME_NoTimedKeyHandling     ; = 0
-      je      BME_ResetTimedBoot         ; = 1
-      mov     al, TimedBootEnable        ; = 2
-      xor     al, 1                      ; Flip Flop Switch :]
-      mov     TimedBootEnable, al
-     BME_ResetTimedBoot:
-      push    dx
-         call    BOOTMENU_ResetTimedBoot     ; Reset Timer
-         call    BOOTMENU_BuildTimedBootText ; Refresh TimedBootText
-      pop     dx
-  BME_NoTimedKeyHandling:
-   cmp     ah, Keys_TAB
-   je      BME_KeyTAB
-   cmp     ah, Keys_Up
-   je      BME_KeyUp
-   cmp     ah, Keys_Down
-   je      BME_KeyDown
-   jmp     BME_MainLoop
+        BME_KeyAvailable:
+        push    dx
+        mov     ah, 0
+        int     16h
+        pop     dx
+        cmp     ah, Keys_ENTER
+        je      BME_KeyEnter
+        cmp     ah, Keys_F10
+        je      BME_KeyF10
+        cmp     ah, Keys_Delete
+        je      BME_KeyDelete
+        cmp     ah, Keys_ESC
+        je      BME_KeyESC
+        ; Upper Keys do not fall under Timed Boot Key Handling
+        test    TimedBootEnable, 1
+        je      BME_NoTimedKeyHandling
+        cmp     CFG_TimedKeyHandling, 1
+        jb      BME_NoTimedKeyHandling     ; = 0
+        je      BME_ResetTimedBoot         ; = 1
+        mov     al, TimedBootEnable        ; = 2
+        xor     al, 1                      ; Flip Flop Switch :]
+        mov     TimedBootEnable, al
+    BME_ResetTimedBoot:
+        push    dx
+        call    BOOTMENU_ResetTimedBoot     ; Reset Timer
+        call    BOOTMENU_BuildTimedBootText ; Refresh TimedBootText
+        pop     dx
+    BME_NoTimedKeyHandling:
+        cmp     ah, Keys_TAB
+        je      BME_KeyTAB
+        cmp     ah, Keys_Up
+        je      BME_KeyUp
+        cmp     ah, Keys_Down
+        je      BME_KeyDown
+        jmp     BME_MainLoop
 
-  BME_KeyUp:
-   dec     dh
-   call    BOOTMENU_BuildChoiceBar       ; DH - Active, DL - Last Active
-   jmp     BME_MainLoop
+    BME_KeyUp:
+        dec     dh
+        call    BOOTMENU_BuildChoiceBar       ; DH - Active, DL - Last Active
+        jmp     BME_MainLoop
 
-  BME_KeyDown:
-   inc     dh
-   call    BOOTMENU_BuildChoiceBar       ; DH - Active, DL - Last Active
-   jmp     BME_MainLoop
+    BME_KeyDown:
+        inc     dh
+        call    BOOTMENU_BuildChoiceBar       ; DH - Active, DL - Last Active
+        jmp     BME_MainLoop
 
-  BME_KeyEnter:
-   mov     Menu_EntrySelected, dl
-   mov     TimedBootUsed, 0              ; reset flag...
-   clc                                   ; Boot-Now!
-   ret
+    BME_KeyEnter:
+        mov     Menu_EntrySelected, dl
+        mov     TimedBootUsed, 0              ; reset flag...
+        clc                                   ; Boot-Now!
+        ret
 
-  BME_KeyF10:
-   mov     al, Keys_Flags_EnterSetup
-   mov     SETUP_KeysOnEntry, al         ; Simulate user wants to enter setup
-   stc                                   ; Go Re-Enter Setup
-   ret
+    BME_KeyF10:
+        mov     al, Keys_Flags_EnterSetup
+        mov     SETUP_KeysOnEntry, al         ; Simulate user wants to enter setup
+        stc                                   ; Go Re-Enter Setup
+        ret
 
-  BME_KeyDelete:
-   call    SOUND_ExecuteBoot
-   call    APM_TurnOffComputer
-   jmp     BME_MainLoop
+    BME_KeyDelete:
+        call    SOUND_ExecuteBoot
+        call    APM_TurnOffComputer
+        jmp     BME_MainLoop
 
-  BME_KeyESC:
-   mov     al, TimedBootEnable
-   xor     al, 1                         ; Flip Flop Switch :]
-   mov     TimedBootEnable, al
-   push    dx
-      call    BOOTMENU_ResetTimedBoot     ; Reset Timer
-      call    BOOTMENU_BuildTimedBootText ; Refresh TimedBootText
-   pop     dx
-   jmp     BME_MainLoop
+    BME_KeyESC:
+        mov     al, TimedBootEnable
+        xor     al, 1                         ; Flip Flop Switch :]
+        mov     TimedBootEnable, al
+        push    dx
+        call    BOOTMENU_ResetTimedBoot     ; Reset Timer
+        call    BOOTMENU_BuildTimedBootText ; Refresh TimedBootText
+        pop     dx
+        jmp     BME_MainLoop
 
-  BME_KeyTAB:
-   push    dx
-      test    CFG_CooperBars, 1
-      jnz     BME_KeyTAB_ShowFX
-      mov     ax, 0501h                  ; Go To Page 1 -> BIOS POST crap
-      int     10h
-      mov     ah, 0
-      int     16h                        ; Wait for any key
-      call    BOOTMENU_ResetTimedBoot     ; Reset Timer
-      call    BOOTMENU_BuildTimedBootText ; Refresh TimedBootText
-      mov     ax, 0500h                  ; Go Back to Page 0
-      int     10h
-   pop     dx
-   jmp     BME_MainLoop
-     BME_KeyTAB_ShowFX:
-      pusha
-         mov     ax, VideoIO_Page1
-         mov     bx, VideoIO_Page0
-         mov     dx, 160
-         xor     di, di
-         call    FX_InterleaveCopy
-         call    FX_ScrollScreenLeft
-         mov     ah, 0
-         int     16h                        ; Wait for any key
-         call    BOOTMENU_ResetTimedBoot     ; Reset Timer
-         call    BOOTMENU_BuildTimedBootText ; Refresh TimedBootText
-         call    FX_ScrollScreenRight
-         call    FX_EndScreenInternalCleanUp
-         call    BOOTMENU_ResetTimedBoot    ; Reset Timer again...
-      popa
-   pop     dx
-   jmp     BME_MainLoop
+    BME_KeyTAB:
+        push    dx
+        test    CFG_CooperBars, 1
+        jnz     BME_KeyTAB_ShowFX
+        mov     ax, 0501h                  ; Go To Page 1 -> BIOS POST crap
+        int     10h
+        mov     ah, 0
+        int     16h                        ; Wait for any key
+        call    BOOTMENU_ResetTimedBoot     ; Reset Timer
+        call    BOOTMENU_BuildTimedBootText ; Refresh TimedBootText
+        mov     ax, 0500h                  ; Go Back to Page 0
+        int     10h
+        pop     dx
+        jmp     BME_MainLoop
+    BME_KeyTAB_ShowFX:
+        pusha
+        mov     ax, VideoIO_Page1
+        mov     bx, VideoIO_Page0
+        mov     dx, 160
+        xor     di, di
+        call    FX_InterleaveCopy
+        call    FX_ScrollScreenLeft
+        mov     ah, 0
+        int     16h                        ; Wait for any key
+        call    BOOTMENU_ResetTimedBoot     ; Reset Timer
+        call    BOOTMENU_BuildTimedBootText ; Refresh TimedBootText
+        call    FX_ScrollScreenRight
+        call    FX_EndScreenInternalCleanUp
+        call    BOOTMENU_ResetTimedBoot    ; Reset Timer again...
+        popa
+        pop     dx
+        jmp     BME_MainLoop
 BOOTMENU_Execute                EndP
 
 ; Resettet den TimedBoot Timer...
-BOOTMENU_ResetTimedBoot         Proc Near   Uses ax
-   call    TIMER_GetTicCount
-   add     ax, CFG_TimedDelay
-   adc     dx, 0
-   mov     wptr [TimedTimeOut], ax
-   mov     wptr [TimedTimeOut+2], dx
-   ret
-BOOTMENU_ResetTimedBoot         EndP
+BOOTMENU_ResetTimedBoot     Proc Near   Uses ax
+        call    TIMER_GetTicCount
+        add     ax, CFG_TimedDelay
+        adc     dx, 0
+        mov     wptr [TimedTimeOut], ax
+        mov     wptr [TimedTimeOut+2], dx
+        ret
+BOOTMENU_ResetTimedBoot     EndP
 
 ; Resettet den Floppy-Get-Name Timer...
-BOOTMENU_ResetGetFloppy         Proc Near   Uses ax
-   call    TIMER_GetTicCount
-   add     ax, 36                      ; 18*2 -> 2 seconds
-   adc     dx, 0
-   mov     word ptr [FloppyGetNameTimer], ax
-   mov     word ptr [FloppyGetNameTimer+2], dx
-   ret
-BOOTMENU_ResetGetFloppy         EndP
+BOOTMENU_ResetGetFloppy     Proc Near   Uses ax
+        call    TIMER_GetTicCount
+        add     ax, 36                      ; 18*2 -> 2 seconds
+        adc     dx, 0
+        mov     word ptr [FloppyGetNameTimer], ax
+        mov     word ptr [FloppyGetNameTimer+2], dx
+        ret
+BOOTMENU_ResetGetFloppy     EndP

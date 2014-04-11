@@ -1,0 +1,75 @@
+#!/bin/bash
+
+#
+# $airboot@ecomstation.com$
+#
+# This is a hack until the Linux version of FIXCODE.C is finished.
+# Note that it does not search for the AiR-BOOT Protection Signature,
+# but embeds it at the 'well known' location.
+# It the protection image is moved, this script will corrupt AIR-BOOT.COM
+# of which the final AIRBOOT.BIN is derived.
+# Also, a code-size of 35h (max size) is always inserted.
+# Furthermore, it does no sanity checks whatsoever.
+#
+
+PROT_IMG="MBR-PROT/MBR_PROT.COM"
+AB_INTERIM_IMG="AIR-BOOT.COM"
+CODE_SIZE_OFFSET=16
+PROT_IMG_OFFSET=26624
+
+
+function	Header() {
+	echo "Header";
+}
+
+function	CheckIfFileExists() {
+	echo "CheckIfFileExists";
+	if [ ! -f "${1}" ]; then
+		echo "ERROR: File ${1} could not be found !";
+		echo "       Aborting...";
+		exit 1;
+	else
+		echo "File ${1} found, OK.";
+	fi;
+}
+
+function	EmbedCodeSize() {
+	echo "EmbedCodeSize";
+	echo -n "5" | dd of="${1}" bs=1 seek=${CODE_SIZE_OFFSET} conv=notrunc;
+}
+
+function	EmbedProtectionImage() {
+	echo "EmbedProtectionImage";
+	dd if="${1}" of="${2}" bs=1 seek=${PROT_IMG_OFFSET} conv=notrunc;
+}
+
+function	VerifyImage() {
+	echo "VerfyImage";
+}
+
+function	Footer() {
+	echo "Footer";
+}
+
+
+
+#
+# Main program logic.
+#
+function	Main() {
+	echo "## Main ##";
+	Header;
+	CheckIfFileExists "${PROT_IMG}"
+	CheckIfFileExists "${AB_INTERIM_IMG}"
+	EmbedCodeSize "${AB_INTERIM_IMG}";
+	EmbedProtectionImage "${PROT_IMG}" "${AB_INTERIM_IMG}";
+	Footer;
+}
+
+
+
+
+#
+# Invoke the main function.
+#
+Main;

@@ -1305,7 +1305,7 @@ PARTHIDESETUP_GetHideConfigAndSpread EndP
 ; This is called by MBRS_PS_HiddenSetup
 ;        In: DL - Partition, where to save Hide-Config
 ; Destroyed: None, but Locate-Pointer
-PARTHIDESETUP_CollectHideConfigAndPutToTable Proc Near Uses ax si es di
+PARTHIDESETUP_CollectHideConfigAndPutToTable Proc Near Uses ax si es di         ; checken !
    ; First calculate, where to put Hide-Config
    mov     ax, LocIPT_MaxPartitions
    mul     dl

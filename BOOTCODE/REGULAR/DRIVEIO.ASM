@@ -34,112 +34,112 @@ ENDIF
 
 ; Will only load base-configuration, will NOT load IPT nor Hide-Config
 ;  Those are originally loaded on startup and will NOT get reloaded.
-DriveIO_LoadConfiguration       Proc Near   Uses ax bx cx dx es
-   mov     ax, cs
-   mov     es, ax
-   mov     bx, offset Configuration
-   mov     dx, 0080h                     ; First harddrive, Sector 55...
-   mov     cx, 0037h
-   mov     ax, 0201h                     ; Function 02, read 1 sector...
-   int     13h
-   jnc     DIOLC_NoError
-   call    MBR_LoadError                 ; Will Abort BootUp
-  DIOLC_NoError:
-   ret
-DriveIO_LoadConfiguration       EndP
+DriveIO_LoadConfiguration   Proc Near   Uses ax bx cx dx es
+        mov     ax, cs
+        mov     es, ax
+        mov     bx, offset Configuration
+        mov     dx, 0080h                     ; First harddrive, Sector 55...
+        mov     cx, 0037h
+        mov     ax, 0201h                     ; Function 02, read 1 sector...
+        int     13h
+        jnc     DIOLC_NoError
+        call    MBR_LoadError                 ; Will Abort BootUp
+    DIOLC_NoError:
+        ret
+DriveIO_LoadConfiguration   EndP
 
-DriveIO_SaveConfiguration       Proc Near   Uses ax bx cx dx ds es si
-   mov     ax, cs
-   mov     ds, ax
-   mov     es, ax                        ; Safety first (CS==DS==ES)
-   ; --- Overwrite Floppy-Name with "FloppyDrive"
-   mov     si, offset TXT_Floppy_Drive
-   mov     di, offset PartitionTable
-   sub     di, 30                        ; Adjust to Floppy-Name
-   mov     cx, 11
-   rep     movsb
-   mov     si, offset Configuration      ; Calculate new checksum
-   xor     bx, bx
+DriveIO_SaveConfiguration   Proc Near   Uses ax bx cx dx ds es si
+        mov     ax, cs
+        mov     ds, ax
+        mov     es, ax                        ; Safety first (CS==DS==ES)
+        ; --- Overwrite Floppy-Name with "FloppyDrive"
+        mov     si, offset TXT_Floppy_Drive
+        mov     di, offset PartitionTable
+        sub     di, 30                        ; Adjust to Floppy-Name
+        mov     cx, 11
+        rep     movsb
+        mov     si, offset Configuration      ; Calculate new checksum
+        xor     bx, bx
 
-   ; Changed from 5 to calculated value (not here, see compat. issue below)
-   ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
-   ; Size of the ab-configuration in 512 byte sectors
-   ;mov     cx, (MBR_BackUpMBR - Configuration) / 200h
+        ; Changed from 5 to calculated value (not here, see compat. issue below)
+        ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
+        ; Size of the ab-configuration in 512 byte sectors
+        ;mov     cx, (MBR_BackUpMBR - Configuration) / 200h
 
-   ; AB v1.07 stores a 5 sector configuration with a 5 sector checksum.
-   ; AB v1.0.8 *should* stores a 7 sector configuration with a
-   ; 7 sector checksum.
-   ; Because 5 was hardcoded here, SET(A)BOOT v1.07 will see see an AB v1.0.8
-   ; config as corrupted, while this is not the case.
-   ; So, for compatibility reasons, in v1.0.8, the checksum stored is over
-   ; 5 sectors, to be compatible with v1.07.
-   ; This may change (be corrected) in future versions !
-   mov     cx,5
+        ; AB v1.07 stores a 5 sector configuration with a 5 sector checksum.
+        ; AB v1.0.8 *should* stores a 7 sector configuration with a
+        ; 7 sector checksum.
+        ; Because 5 was hardcoded here, SET(A)BOOT v1.07 will see see an AB v1.0.8
+        ; config as corrupted, while this is not the case.
+        ; So, for compatibility reasons, in v1.0.8, the checksum stored is over
+        ; 5 sectors, to be compatible with v1.07.
+        ; This may change (be corrected) in future versions !
+        mov     cx,5
 
-   mov     dx, [CFG_CheckConfig]
-   mov     [CFG_CheckConfig], bx
-  DIOSC_Loop:
-      call    MBR_GetCheckOfSector
-   loop    DIOSC_Loop
-   mov     [CFG_CheckConfig], bx
-   ; --------------------------------------------------------------------
-   ; ES == CS
-   mov     bx, offset Configuration
-   mov     dx, 0080h                     ; First harddrive, Sector 55...
-   mov     cx, 0037h
+        mov     dx, [CFG_CheckConfig]
+        mov     [CFG_CheckConfig], bx
+    DIOSC_Loop:
+        call    MBR_GetCheckOfSector
+        loop    DIOSC_Loop
+        mov     [CFG_CheckConfig], bx
+        ; --------------------------------------------------------------------
+        ; ES == CS
+        mov     bx, offset Configuration
+        mov     dx, 0080h                     ; First harddrive, Sector 55...
+        mov     cx, 0037h
 
-   ; Changed from 5 to calculated value
-   ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
-   ; Size of the ab-configuration in 512 byte sectors
-   mov     al, (MBR_BackUpMBR - Configuration) / 200h
-   mov     ah,03h
+        ; Changed from 5 to calculated value
+        ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
+        ; Size of the ab-configuration in 512 byte sectors
+        mov     al, (MBR_BackUpMBR - Configuration) / 200h
+        mov     ah,03h
 
-   int     13h
-   jnc     DIOSC_NoError
-   call    MBR_SaveError                 ; Will Abort BootUp
-  DIOSC_NoError:
-   ret
-DriveIO_SaveConfiguration       EndP
+        int     13h
+        jnc     DIOSC_NoError
+        call    MBR_SaveError                 ; Will Abort BootUp
+    DIOSC_NoError:
+        ret
+DriveIO_SaveConfiguration   EndP
 
-DriveIO_UpdateFloppyName        Proc Near   Uses bx cx dx ds si es di
-   mov     ax, cs
-   mov     ds, ax
-   mov     es, ax
+DriveIO_UpdateFloppyName    Proc Near   Uses bx cx dx ds si es di
+        mov     ax, cs
+        mov     ds, ax
+        mov     es, ax
 
-   mov     ah, 00h                        ; Function 2 - Reset Drive
-   xor     dl, dl
-   int     13h
-   xor     dx, dx                         ; Cylinder=0, Head=0
-   mov     cx,  1                         ; Sector=1, Drive=0
-   mov     bx, offset TmpSector           ; ES:BX - TmpSector
-   mov     ax, 0201h                      ; Function 2 - Load Sector
-   int     13h
-   jnc     DIOUFN_AllFine
+        mov     ah, 00h                        ; Function 2 - Reset Drive
+        xor     dl, dl
+        int     13h
+        xor     dx, dx                         ; Cylinder=0, Head=0
+        mov     cx,  1                         ; Sector=1, Drive=0
+        mov     bx, offset TmpSector           ; ES:BX - TmpSector
+        mov     ax, 0201h                      ; Function 2 - Load Sector
+        int     13h
+        jnc     DIOUFN_AllFine
 
-   ; --- Overwrite Floppy-Name with "No Disc"
-   mov     si, offset TXT_Floppy_NoDisc
-   xor     ax, ax
-  DIOUFN_WriteFloppyName:
-   mov     di, offset PartitionTable
-   sub     di, 30                         ; Adjust to Floppy-Name
-   mov     cl, 11
-   rep     movsb
-   ret     ; AX=-1 -> GotDisc, =0 -> NoDisc
+        ; --- Overwrite Floppy-Name with "No Disc"
+        mov     si, offset TXT_Floppy_NoDisc
+        xor     ax, ax
+    DIOUFN_WriteFloppyName:
+        mov     di, offset PartitionTable
+        sub     di, 30                         ; Adjust to Floppy-Name
+        mov     cl, 11
+        rep     movsb
+        ret     ; AX=-1 -> GotDisc, =0 -> NoDisc
 
-   ; --- Floppy found and read, data in TempSector
-  DIOUFN_AllFine:
-   mov     ax, -1
-   mov     si, offset TXT_Floppy_NoName
-   cmp     wptr es:[bx+54], 'AF'
-   jne     DIOUFN_WriteFloppyName
-   cmp     wptr es:[bx+56], '1T'
-   jne     DIOUFN_WriteFloppyName
-   cmp     bptr es:[bx+58], '2'
-   jne     DIOUFN_WriteFloppyName
-   mov     si, bx
-   add     si, 43                         ; FAT12 - Volume Label Location
-   jmp     DIOUFN_WriteFloppyName
-DriveIO_UpdateFloppyName        EndP
+        ; --- Floppy found and read, data in TempSector
+    DIOUFN_AllFine:
+        mov     ax, -1
+        mov     si, offset TXT_Floppy_NoName
+        cmp     wptr es:[bx+54], 'AF'
+        jne     DIOUFN_WriteFloppyName
+        cmp     wptr es:[bx+56], '1T'
+        jne     DIOUFN_WriteFloppyName
+        cmp     bptr es:[bx+58], '2'
+        jne     DIOUFN_WriteFloppyName
+        mov     si, bx
+        add     si, 43                         ; FAT12 - Volume Label Location
+        jmp     DIOUFN_WriteFloppyName
+DriveIO_UpdateFloppyName    EndP
 
 ; =============================================================================
 ;                      HARDDRIVE / GENERAL ACCESS
@@ -151,56 +151,56 @@ DriveIO_UpdateFloppyName        EndP
 ;
 ;  Internal access (to AiR-BOOT) is always done via INT 13h/CHS.
 
-DriveIO_GetHardDriveCount       Proc Near   Uses ds si
-   push    ds
-   push    si
-      push    0040h
-      pop     ds
-      mov     si, 0075h
-      mov     dh, ds:[si]                ; 40:75 -> POST: Total Harddiscs == DL
-   pop     si
-   pop     ds
-   mov     TotalHarddiscs, dh
-   ret
-DriveIO_GetHardDriveCount       EndP
+DriveIO_GetHardDriveCount   Proc Near   Uses ds si
+        push    ds
+        push    si
+        push    0040h
+        pop     ds
+        mov     si, 0075h
+        mov     dh, ds:[si]                ; 40:75 -> POST: Total Harddiscs == DL
+        pop     si
+        pop     ds
+        mov     TotalHarddiscs, dh
+        ret
+DriveIO_GetHardDriveCount   EndP
 
 
 ; Fills our LBA-Usage table. It holds the LBA-address, where BIOS/CHS access is
 ;  stopped and BIOS/LBA access is started.
 ;  This is calculated by Sector*Heads. Comparing will get done with Bit 25-10
 ;  on LBA sectors, so we actually divide sector number by 1024.
-DriveIO_InitLBASwitchTable      Proc Near   Uses es di
-   mov     di, offset LBASwitchTable
-   mov     dh, TotalHarddiscs
-   mov     dl, 80h
-  DIOILUT_DriveLoop:
-      push    dx
-      push    di
-         mov     ah, 08h
-         int     13h            ; DISK - GET DRIVE PARAMETERS
-         mov     ah, 0FBh       ; Assume 255 heads/63 sectors, if error
-         jc      DIOILUT_Error
-         and     cl, 111111b    ; Isolate lower 6 bits of CL -> sector count
+DriveIO_InitLBASwitchTable  Proc Near   Uses es di
+        mov     di, offset LBASwitchTable
+        mov     dh, TotalHarddiscs
+        mov     dl, 80h
+    DIOILUT_DriveLoop:
+        push    dx
+        push    di
+        mov     ah, 08h
+        int     13h            ; DISK - GET DRIVE PARAMETERS
+        mov     ah, 0FBh       ; Assume 255 heads/63 sectors, if error
+        jc      DIOILUT_Error
+        and     cl, 111111b    ; Isolate lower 6 bits of CL -> sector count
 
-         ;movzx   ax, cl
-         mov   al,cl
-         mov   ah,0
+        ;movzx   ax, cl
+        mov   al,cl
+        mov   ah,0
 
-         mov     bl, dh         ; DH -> max head number
-         mul     bl             ; AX = Sectors*Heads
-         shl     ah, 1
-         shl     ah, 1          ; Shift 2 bits, so we are able to compare to
-                                ;  bit 16-23 of the LBA address
-        DIOILUT_Error:
-      pop     di
-      pop     dx
-      mov     bptr ds:[di], ah  ; Save that value
-      inc     di                ; Go to next BYTE
-      inc     dl
-   dec     dh
-   jnz     DIOILUT_DriveLoop
-   ret
-DriveIO_InitLBASwitchTable      EndP
+        mov     bl, dh         ; DH -> max head number
+        mul     bl             ; AX = Sectors*Heads
+        shl     ah, 1
+        shl     ah, 1          ; Shift 2 bits, so we are able to compare to
+                ;  bit 16-23 of the LBA address
+    DIOILUT_Error:
+        pop     di
+        pop     dx
+        mov     bptr ds:[di], ah  ; Save that value
+        inc     di                ; Go to next BYTE
+        inc     dl
+        dec     dh
+        jnz     DIOILUT_DriveLoop
+        ret
+DriveIO_InitLBASwitchTable  EndP
 
 
 
@@ -211,108 +211,102 @@ DriveIO_InitLBASwitchTable      EndP
 ;           Ugly, need to cleanup.
 DriveIO_LVMAdjustToInfoSector   Proc Near
 
+        ;~ pusha
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; LBA
+        ;~ xchg    dx,bx
+        ;~ call    AuxIO_TeletypeHexDWord
+        ;~ call    AuxIO_TeletypeNL
+        ;~ xchg    bx,dx
+;~
+        ;~ ; CYL
+        ;~ mov     al,ch
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; HEAD
+        ;~ mov     al,dh
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; SEC
+        ;~ mov     al,cl
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; DRIVE
+        ;~ mov     al,dl
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+        ;~ popa
+;~
+        ;~ ;local   ts:word
+        ;~ ;local   ts2:word
 
+        pusha
 
-;      pusha
-;      call     AuxIO_TeletypeNL
+            ; Dump drive
+            mov      si,offset drive
+            ;call     AuxIO_Print
+            xchg     al,dl
+            ;call     AuxIO_TeletypeHexByte
+            ;call     AuxIO_TeletypeNL
+            xchg     dl,al
 
-      ; LBA
-;      xchg     dx,bx
-;      call     AuxIO_TeletypeHexDWord
-;      call     AuxIO_TeletypeNL
-;      xchg     bx,dx
-
-      ; CYL
-;      mov      al,ch
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-
-      ; HEAD
-;      mov      al,dh
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-
-      ; SEC
-;      mov      al,cl
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-
-      ; DRIVE
-;      mov      al,dl
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-
-;      popa
-
-
-      ;local ts:word
-      ;local ts2:word
-
-      pusha
-
-         ; Dump drive
-         mov      si,offset drive
-;         call     AuxIO_Print
-         xchg     al,dl
-;         call     AuxIO_TeletypeHexByte
-;         call     AuxIO_TeletypeNL
-         xchg     dl,al
-
-         ; Dump SPT
-         mov      si,offset spt_used
-;         call     AuxIO_Print
-         push     dx
-         push     bx
-            xor      dh,dh
-            and      dl,01111111b
-            shl      dx,1
-            shl      dx,1
-            mov      bx, offset TrueSecs
-            add      bx,dx
-            mov      ax,word ptr [bx]
-
-            ;mov      [ts],ax
-
-;            call     AuxIO_TeletypeHexWord
-;            call     AuxIO_TeletypeNL
-         pop      bx
-         pop      dx
-
-         pusha
+            ; Dump SPT
+            mov      si,offset spt_used
+            ;call     AuxIO_Print
             push     dx
-               ; Location of extended position
-               mov      dx,word ptr [ExtendedAbsPos+02]
-               mov      ax,word ptr [ExtendedAbsPos+00]
-;               call     AuxIO_TeletypeHexDWord
-;               call     AuxIO_TeletypeNL
+            push     bx
+                xor      dh,dh
+                and      dl,01111111b
+                shl      dx,1
+                shl      dx,1
+                mov      bx, offset TrueSecs
+                add      bx,dx
+                mov      ax,word ptr [bx]
+                ;mov      [ts],ax
+                ;call     AuxIO_TeletypeHexWord
+                ;call     AuxIO_TeletypeNL
+            pop      bx
             pop      dx
 
-            xor      dh,dh
-            and      dl,01111111b
-            shl      dx,1
-            shl      dx,1
-            mov      bx, offset TrueSecs
-            add      bx,dx
+            pusha
+                push    dx
+                ; Location of extended position
+                mov     dx,word ptr [ExtendedAbsPos+02]
+                mov     ax,word ptr [ExtendedAbsPos+00]
+                ;call    AuxIO_TeletypeHexDWord
+                ;call    AuxIO_TeletypeNL
+                pop     dx
 
-            mov      ax, word ptr[bx]
-;            call     AuxIO_TeletypeHexWord
-;            call     AuxIO_TeletypeNL
-            mov      al,[ExtendedAbsPosSet]           ; if true -> 1st sector of extpart (EBR), not logpart(BPB)
-;            call     AuxIO_TeletypeHexByte
-;            call     AuxIO_TeletypeNL
-      ;      mov      si,offset PartitionSector
-      ;      call     AuxIO_DumpSector
-         popa
+                xor     dh,dh
+                and     dl,01111111b
+                shl     dx,1
+                shl     dx,1
+                mov     bx, offset TrueSecs
+                add     bx,dx
 
-         ; LBA
-         mov      si,offset before_lvm_adjust
-;         call     AuxIO_Print
+                mov     ax, word ptr[bx]
+                ;call    AuxIO_TeletypeHexWord
+                ;call    AuxIO_TeletypeNL
+                mov     al,[ExtendedAbsPosSet]           ; if true -> 1st sector of extpart (EBR), not logpart(BPB)
+                ;call    AuxIO_TeletypeHexByte
+                ;call    AuxIO_TeletypeNL
+                ;mov     si,offset PartitionSector
+                ;call    AuxIO_DumpSector
+            popa
 
-         xchg     dx,bx
-;         call     AuxIO_TeletypeHexDWord
-;         call     AuxIO_TeletypeNL
-         xchg     bx,dx
-      popa
+            ; LBA
+            mov     si,offset before_lvm_adjust
+            ;call    AuxIO_Print
+
+            xchg    dx,bx
+            ;call    AuxIO_TeletypeHexDWord
+            ;call    AuxIO_TeletypeNL
+            xchg    bx,dx
+        popa
 
 
       ;or       bx,ax
@@ -322,157 +316,154 @@ DriveIO_LVMAdjustToInfoSector   Proc Near
 
 
 
-      pusha
-         mov      si,offset before_lvm_adjust_log
-;         call     AuxIO_Print
-         ; LBA
-         xchg     dx,bx
-;         call     AuxIO_TeletypeHexDWord
-;         call     AuxIO_TeletypeNL
-         xchg     bx,dx
-      popa
+        pusha
+            mov      si,offset before_lvm_adjust_log
+            ;call     AuxIO_Print
+            ; LBA
+            xchg     dx,bx
+            ;call     AuxIO_TeletypeHexDWord
+            ;call     AuxIO_TeletypeNL
+            xchg     bx,dx
+        popa
 
 
-      push     dx
-      push     bx
-         xor      dh,dh
-         and      dl,01111111b
-         shl      dx,1
-         shl      dx,1
-         mov      bx,offset TrueSecs
-         add      bx,dx
-         mov      dx,[bx]
-         dec      dx
-         add      ax,dx
-      pop      bx
-      pop      dx
-      adc      bx,0
+        push     dx
+        push     bx
 
-
-      pusha
-         mov      si,offset after_lvm_adjust_log
-;         call     AuxIO_Print
-         ; LBA
-         xchg     dx,bx
-;         call     AuxIO_TeletypeHexDWord
-;         call     AuxIO_TeletypeNL
-         xchg     bx,dx
-      popa
-
-      jmp      done
-
-
-
-
-pri:
-
-
-      push     ax
-      push     cx
-         xor      ch, ch                           ; Zero out upper-byte
-
-         push     dx
             xor      dh,dh
             and      dl,01111111b
             shl      dx,1
             shl      dx,1
-            push     bx
-               mov      bx,offset TrueSecs
-               add      bx,dx
-               mov      ax,[bx]
-               ;mov      [ts2],ax
-            pop      bx
-         pop      dx
+            mov      bx,offset TrueSecs
+            add      bx,dx
+            mov      dx,[bx]
+            dec      dx
+            add      ax,dx
+
+        pop      bx
+        pop      dx
+        adc      bx,0
+
+
+        pusha
+            mov     si,offset after_lvm_adjust_log
+            ;call    AuxIO_Print
+            ; LBA
+            xchg    dx,bx
+            ;call    AuxIO_TeletypeHexDWord
+            ;call    AuxIO_TeletypeNL
+            xchg    bx,dx
+        popa
+
+        jmp      done
 
 
 
-         ;mov      al, 63
-         ;call VideoIO_PrintByteDynamicNumber
-         ;self: jmp self
+
+    pri:
+
+
+        push    ax
+        push    cx
+            xor     ch, ch                           ; Zero out upper-byte
+
+            push    dx
+                xor     dh,dh
+                and     dl,01111111b
+                shl     dx,1
+                shl     dx,1
+
+                push    bx
+                    mov     bx,offset TrueSecs
+                    add     bx,dx
+                    mov     ax,[bx]
+                    ;mov     [ts2],ax
+                pop     bx
+            pop     dx
 
 
 
-         ; DEZE WERKT SOMS NIET GOED
-         ; ROMMELT MET CYLINDERS
-         ; ALLEEN TOEPASSEN ALS INT13X NIET ACTIEF !
-
-         and      cl, al                           ; Isolate lower bits, because upper
-         mov      ah, 0
-         mov      si, ax                           ;  ones may be used for cylinder
-         sub      si, cx
-
-      pop      cx
-      pop      ax
-
-      or       cl, al                           ; Set sector to last sector
-
-      add      ax, si                           ; Adjust lower LBA
-      adc      bx, 0                            ; Adjust LBA Sector (BX:AX)
+            ;~ mov     al, 63
+            ;~ call    VideoIO_PrintByteDynamicNumber
+            ;~ self:   jmp self
 
 
 
-      ;push     ax
-      ;call     AuxIO_TeletypeHexWord
-      ;call     AuxIO_TeletypeNL
-      ;mov      ax,[ts]
-      ;call     AuxIO_TeletypeHexWord
-      ;call     AuxIO_TeletypeNL
-      ;mov      ax,[ts2]
-      ;call     AuxIO_TeletypeHexWord
-      ;call     AuxIO_TeletypeNL
-      ;pop      ax
+            ; DEZE WERKT SOMS NIET GOED
+            ; ROMMELT MET CYLINDERS
+            ; ALLEEN TOEPASSEN ALS INT13X NIET ACTIEF !
 
-      ;and      ax,[ts]
+            and     cl, al                           ; Isolate lower bits, because upper
+            mov     ah, 0
+            mov     si, ax                           ;  ones may be used for cylinder
+            sub     si, cx
+
+        pop     cx
+        pop     ax
+
+        or      cl, al                           ; Set sector to last sector
+        add     ax, si                           ; Adjust lower LBA
+        adc     bx, 0                            ; Adjust LBA Sector (BX:AX)
+
+
+
+        ;~ push    ax
+        ;~ call    AuxIO_TeletypeHexWord
+        ;~ call    AuxIO_TeletypeNL
+        ;~ mov     ax,[ts]
+        ;~ call    AuxIO_TeletypeHexWord
+        ;~ call    AuxIO_TeletypeNL
+        ;~ mov     ax,[ts2]
+        ;~ call    AuxIO_TeletypeHexWord
+        ;~ call    AuxIO_TeletypeNL
+        ;~ pop     ax
+
+        ;~ and      ax,[ts]
 
       jmp done
 
 
 
-done:
+    done:
 
+        pusha
+            mov     si,offset after_lvm_adjust
+            ;~ call    AuxIO_Print
+            ; LBA
+            xchg    dx,bx
+            ;~ call    AuxIO_TeletypeHexDWord
+            ;~ call    AuxIO_TeletypeNL
+            xchg    bx,dx
+        popa
 
-
-      pusha
-         mov      si,offset after_lvm_adjust
-;         call     AuxIO_Print
-         ; LBA
-         xchg     dx,bx
-;         call     AuxIO_TeletypeHexDWord
-;         call     AuxIO_TeletypeNL
-         xchg     bx,dx
-      popa
-
-
-
-;      pusha
-;      call     AuxIO_TeletypeNL
-
-      ; CYL
-;      mov      al,ch
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-
-      ; HEAD
-;      mov      al,dh
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-
-      ; SEC
-;      mov      al,cl
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-
-      ; DRIVE
-;      mov      al,dl
-;      call     AuxIO_TeletypeHexByte
-;      call     AuxIO_TeletypeNL
-
-;      popa
-
-
+        ;~ pusha
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; CYL
+        ;~ mov     al,ch
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; HEAD
+        ;~ mov     al,dh
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; SEC
+        ;~ mov     al,cl
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ ; DRIVE
+        ;~ mov     al,dl
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+        ;~ popa
 
       ret
 DriveIO_LVMAdjustToInfoSector   EndP
+
+
 
 drive                   db 'drive                    : ',0
 before_lvm_adjust       db 'before lvm adjust        : ',0
@@ -491,47 +482,47 @@ spt_used                db 'spt used                 : ',0
 ; Returns : Carry Set if invalid partition encountered
 ; Preserve: all registers
 ; #########################################################################
-DriveIO_LoadPartition           Proc Near  Uses si
-   mov     wptr cs:[CurPartition_Location+0], ax
-   mov     wptr cs:[CurPartition_Location+2], bx
-   mov     wptr cs:[CurPartition_Location+4], dx
-   mov     wptr cs:[CurPartition_Location+6], cx ; Saves the location
-   mov     si, offset PartitionSector    ; DS:SI - ExecBase
-   call    DriveIO_LoadSector
-   clc
-   cmp     wptr [si+LocBR_Magic], 0AA55h
-   je      DIOLP_Success
-   ; We check, if we are scanning partitions. In that case, if CHS is not 0/0/1
-   ;  we will display a "bad partition table" message and halt the system.
-   cmp     cx, 0001h
-   jne     DIOLP_Failed
-   or      dh, dh
-   jnz     DIOLP_Failed
-   stc                                   ; Set carry, so no partition table
-  DIOLP_Success:
+DriveIO_LoadPartition   Proc Near  Uses si
+        mov     wptr cs:[CurPartition_Location+0], ax
+        mov     wptr cs:[CurPartition_Location+2], bx
+        mov     wptr cs:[CurPartition_Location+4], dx
+        mov     wptr cs:[CurPartition_Location+6], cx ; Saves the location
+        mov     si, offset PartitionSector    ; DS:SI - ExecBase
+        call    DriveIO_LoadSector
+        clc
+        cmp     wptr [si+LocBR_Magic], 0AA55h
+        je      DIOLP_Success
+        ; We check, if we are scanning partitions. In that case, if CHS is not 0/0/1
+        ;  we will display a "bad partition table" message and halt the system.
+        cmp     cx, 0001h
+        jne     DIOLP_Failed
+        or      dh, dh
+        jnz     DIOLP_Failed
+        stc                                   ; Set carry, so no partition table
+    DIOLP_Success:
 
-IFDEF AuxDebug
-   ; show current partition location
-   pushf
-   pusha
-      call     AuxIO_TeletypeNL
-      mov      si,offset db_curpartloc
-      call     AuxIO_Print
-      mov      dx,word ptr [CurPartition_Location+02]
-      mov      ax,word ptr [CurPartition_Location+00]
-      call     AuxIO_TeletypeHexDWord
-      call     AuxIO_TeletypeNL
-      mov      si,offset PartitionSector
-      call     AuxIO_DumpSector
-      call     AuxIO_TeletypeNL
-   popa
-   popf
-ENDIF
+    IFDEF AUX_DEBUG
+        ; show current partition location
+        ;~ pushf
+        ;~ pusha
+        ;~ call     AuxIO_TeletypeNL
+        ;~ mov      si,offset db_curpartloc
+        ;~ call     AuxIO_Print
+        ;~ mov      dx,word ptr [CurPartition_Location+02]
+        ;~ mov      ax,word ptr [CurPartition_Location+00]
+        ;~ call     AuxIO_TeletypeHexDWord
+        ;~ call     AuxIO_TeletypeNL
+        ;~ mov      si,offset PartitionSector
+        ;~ call     AuxIO_DumpSector
+        ;~ call     AuxIO_TeletypeNL
+        ;~ popa
+        ;~ popf
+    ENDIF
 
-   ret
-  DIOLP_Failed:
-   jmp     DriveIO_GotLoadError
-DriveIO_LoadPartition           EndP
+        ret
+    DIOLP_Failed:
+        jmp     DriveIO_GotLoadError
+DriveIO_LoadPartition   EndP
 
 ; #########################################################################
 ; Routine: Writes a partition from ExecBase to its original sector
@@ -540,128 +531,130 @@ DriveIO_LoadPartition           EndP
 ; Returns : none
 ; Preserve: all registers
 ; #########################################################################
-DriveIO_SavePartition           Proc Near  Uses ax bx cx dx si
-   mov     ax, wptr cs:[CurPartition_Location+0]
-   mov     bx, wptr cs:[CurPartition_Location+2]
-   mov     dx, wptr cs:[CurPartition_Location+4]
-   mov     cx, wptr cs:[CurPartition_Location+6] ; Gets prev. saved location
-   mov     si, offset PartitionSector    ; DS:SI - ExecBase
-   cmp     wptr [si+LocBR_Magic], 0AA55h ; Checks for signature, if not found
-   jne     DIOSP_SevereError             ;  we assume a really bad error
-   call    DriveIO_SaveSector
-  DIOSP_SevereError:
-   ret
-DriveIO_SavePartition           EndP
+DriveIO_SavePartition   Proc Near  Uses ax bx cx dx si
+        mov     ax, wptr cs:[CurPartition_Location+0]
+        mov     bx, wptr cs:[CurPartition_Location+2]
+        mov     dx, wptr cs:[CurPartition_Location+4]
+        mov     cx, wptr cs:[CurPartition_Location+6] ; Gets prev. saved location
+        mov     si, offset PartitionSector    ; DS:SI - ExecBase
+        cmp     wptr [si+LocBR_Magic], 0AA55h ; Checks for signature, if not found
+        jne     DIOSP_SevereError             ;  we assume a really bad error
+        call    DriveIO_SaveSector
+    DIOSP_SevereError:
+        ret
+DriveIO_SavePartition   EndP
 
 ; Keeps DS:SI for caller
-DriveIO_LoadTmpSector           Proc Near
-   mov     si, offset TmpSector
-   call    DriveIO_LoadSector                                                    ; Uses INT13X if needed
-   ret
-DriveIO_LoadTmpSector           EndP
+DriveIO_LoadTmpSector   Proc Near
+        mov     si, offset TmpSector
+        call    DriveIO_LoadSector
+        ret
+DriveIO_LoadTmpSector   EndP
 
 ; Keeps DS:SI for caller
-DriveIO_SaveTmpSector           Proc Near
-   mov     si, offset TmpSector
-   call    DriveIO_SaveSector
-   ret
-DriveIO_SaveTmpSector           EndP
+DriveIO_SaveTmpSector   Proc Near
+        mov     si, offset TmpSector
+        call    DriveIO_SaveSector
+        ret
+DriveIO_SaveTmpSector   EndP
 
 ; Keeps DS:SI for caller, sets carry if valid LVM sector encountered
-DriveIO_LoadLVMSector           Proc Near  Uses ax bx cx dx
-   test    [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
-   jnz     DIOLLVMS_NoLVMSector          ;  don't load but declare as bad!
-   mov     ax, wptr cs:[CurPartition_Location+0]
-   mov     bx, wptr cs:[CurPartition_Location+2]
-   mov     dx, wptr cs:[CurPartition_Location+4]
-   mov     cx, wptr cs:[CurPartition_Location+6] ; Gets cur. partition location
+DriveIO_LoadLVMSector   Proc Near  Uses ax bx cx dx
+        test    [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
+        jnz     DIOLLVMS_NoLVMSector          ;  don't load but declare as bad!
+        mov     ax, wptr cs:[CurPartition_Location+0]
+        mov     bx, wptr cs:[CurPartition_Location+2]
+        mov     dx, wptr cs:[CurPartition_Location+4]
+        mov     cx, wptr cs:[CurPartition_Location+6] ; Gets cur. partition location
 
-   call    DriveIO_LVMAdjustToInfoSector
+        call    DriveIO_LVMAdjustToInfoSector
 
-   mov     si, offset LVMSector
-   call    DriveIO_LoadSector
+        mov     si, offset LVMSector
+        call    DriveIO_LoadSector
 
-IFDEF AuxDebug
-   ; show current partition location
-   pushf
-   pusha
-;      call     AuxIO_TeletypeNL
-      mov      si,offset db_curlvmsec
-;      call     AuxIO_Print
-      mov      dx,bx
-;      call     AuxIO_TeletypeHexDWord
-;      call     AuxIO_TeletypeNL
-      mov      si,offset LVMSector
-;      call     AuxIO_DumpSector
-;      call     AuxIO_TeletypeNL
-   popa
-   popf
-ENDIF
+    IFDEF AUX_DEBUG
+        ; show current partition location
+        pushf
+        pusha
+        ;~ call    AuxIO_TeletypeNL
+        ;~ mov     si,offset db_curlvmsec
+        ;~ call    AuxIO_Print
+        mov     dx,bx
+        ;~ call    AuxIO_TeletypeHexDWord
+        ;~ call    AuxIO_TeletypeNL
+        mov     si,offset LVMSector
+        ;~ call    AuxIO_DumpSector
+        ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+    ENDIF
 
-   call    LVM_CheckSectorSignature
-   jnc     DIOLLVMS_NoLVMSector
-   call    LVM_CheckSectorCRC
-   jnc     DIOLLVMS_NoLVMSector
-   ret
-   ; This here is called, if an invalid (or no) LVM information sector is found
-   ;  It will truncate the first byte of the sector, so all other routines
-   ;  will notice it easily by just comparing the first byte.
-  DIOLLVMS_NoLVMSector:
-   mov     bptr [si+LocLVM_SignatureStart], 0
-   ret
-DriveIO_LoadLVMSector           EndP
+        call    LVM_CheckSectorSignature
+        jnc     DIOLLVMS_NoLVMSector
+        call    LVM_CheckSectorCRC
+        jnc     DIOLLVMS_NoLVMSector
+        ret
+        ; This here is called, if an invalid (or no) LVM information sector is found
+        ;  It will truncate the first byte of the sector, so all other routines
+        ;  will notice it easily by just comparing the first byte.
+    DIOLLVMS_NoLVMSector:
+        mov     bptr [si+LocLVM_SignatureStart], 0
+        ret
+DriveIO_LoadLVMSector   EndP
 
 ; Keeps DS:SI for caller, saves at anytime w/o checks (!)
-DriveIO_SaveLVMSector           Proc Near  Uses ax bx cx dx
-   test    [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
-   jnz     DIOSLVMS_SevereError          ;  don't save at anytime (security!)
-   mov     ax, wptr cs:[CurPartition_Location+0]
-   mov     bx, wptr cs:[CurPartition_Location+2]
-   mov     dx, wptr cs:[CurPartition_Location+4]
-   mov     cx, wptr cs:[CurPartition_Location+6] ; Gets cur. partition location
-   call    LVM_CheckSectorSignature
-   jnc     DIOSLVMS_SevereError                  ; LVM Signature must be there
-   call    DriveIO_LVMAdjustToInfoSector
-   mov     si, offset LVMSector
-   call    DriveIO_SaveSector
-  DIOSLVMS_SevereError:
-   ret
-DriveIO_SaveLVMSector           EndP
+DriveIO_SaveLVMSector   Proc Near  Uses ax bx cx dx
+        test    [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
+        jnz     DIOSLVMS_SevereError          ;  don't save at anytime (security!)
+        mov     ax, wptr cs:[CurPartition_Location+0]
+        mov     bx, wptr cs:[CurPartition_Location+2]
+        mov     dx, wptr cs:[CurPartition_Location+4]
+        mov     cx, wptr cs:[CurPartition_Location+6] ; Gets cur. partition location
+        call    LVM_CheckSectorSignature
+        jnc     DIOSLVMS_SevereError                  ; LVM Signature must be there
+        call    DriveIO_LVMAdjustToInfoSector
+        mov     si, offset LVMSector
+        call    DriveIO_SaveSector
+    DIOSLVMS_SevereError:
+        ret
+DriveIO_SaveLVMSector   EndP
+
+; Rousseau: Move this to BSS and merge with int13xbuf there.
 
 ; Memory-Block that holds information for LBA-access via INT 13h
-DriveIO_DAP                db       10h  ; Size of paket
-                           db        0   ; Reserved
-DriveIO_DAP_NumBlocks      dw        0   ; Number of blocks
-DriveIO_DAP_Transfer       dd        0   ; Transfer Adress
-DriveIO_DAP_Absolute       dd        0   ; Absolute Sector
-                           dd        0   ; Second Part of QWORD
+DriveIO_DAP                 db      10h ; Size of paket
+                            db      0   ; Reserved
+DriveIO_DAP_NumBlocks       dw      0   ; Number of blocks
+DriveIO_DAP_Transfer        dd      0   ; Transfer Adress
+DriveIO_DAP_Absolute        dd      0   ; Absolute Sector
+                            dd      0   ; Second Part of QWORD
 
 ; Special error message instead of "LOAD ERROR" during partition scanning,
 ;  so users will notice that something is bad with their partition table(s)
-DriveIO_GotLoadError            Proc Near
-   test    cs:CurIO_Scanning, 1          ; Must be CS:, cause DS!=CS maybe here
-   jnz     InScanMode
-   jmp     MBR_LoadError
-  InScanMode:
-   mov     si, offset TXT_BrokenPartitionTable
-   push    cs
-   pop     ds
-   call    MBR_Teletype
-   mov     si, offset BrokenHDD
-   sub     dl, 50h                       ; 80h -> '0'
-   cmp     dl, 39h
-   jbe     DIOGLE_BelowA
-   add     dl, 7                         ; 3Ah -> 'A'
-  DIOGLE_BelowA:
-   mov     bptr [si+5], dl
-   call    MBR_Teletype
+DriveIO_GotLoadError    Proc Near
+        test    cs:CurIO_Scanning, 1          ; Must be CS:, cause DS!=CS maybe here
+        jnz     InScanMode
+        jmp     MBR_LoadError
+    InScanMode:
+        mov     si, offset TXT_BrokenPartitionTable
+        push    cs
+        pop     ds
+        call    MBR_Teletype
+        mov     si, offset BrokenHDD
+        sub     dl, 50h                       ; 80h -> '0'
+        cmp     dl, 39h
+        jbe     DIOGLE_BelowA
+        add     dl, 7                         ; 3Ah -> 'A'
+    DIOGLE_BelowA:
+        mov     bptr [si+5], dl
+        call    MBR_Teletype
 
-   ; JWasm: cannot jump to local label in procedure.
-   ; Changed to halt here.
-   ;jmp     MBRLE_Halt
-  DriveIO_GotLoadError_halt:
-   jmp     DriveIO_GotLoadError_halt
-DriveIO_GotLoadError            EndP
+        ; JWasm: cannot jump to local label in other procedure.
+        ; Changed to halt here.
+        ;jmp     MBRLE_Halt
+    DriveIO_GotLoadError_halt:
+        jmp     DriveIO_GotLoadError_halt
+DriveIO_GotLoadError    EndP
 
 ; #########################################################################
 ; Routine: Loads a specified sector to DS:DI
@@ -672,59 +665,59 @@ DriveIO_GotLoadError            EndP
 ; Returns : none
 ; Preserve: all registers
 ; #########################################################################
-DriveIO_LoadSector              Proc Near  Uses ax bx ds si es di
-   ; Is the drive not a harddrive?
-   cmp      dl, 80h
-   jb       DIOLS_UseNormal
+DriveIO_LoadSector      Proc Near  Uses ax bx ds si es di
+        ; Is the drive not a harddrive?
+        cmp     dl, 80h
+        jb      DIOLS_UseNormal
 
-   test     cs:[CurIO_UseExtension], 1
-   jz       DIOLS_UseNormal
-   ; Are we forced do use LBA via Setting?
-   jnz      DIOLS_UseExtension
+        test    cs:[CurIO_UseExtension], 1
+        jz      DIOLS_UseNormal
+        ; Are we forced do use LBA via Setting?
+        jnz     DIOLS_UseExtension
 
-   ; Upper 8 bits of LBA-address set? -> Use LBA (maximum boundary is FB0400h)
-   or       bh, bh
-   jnz      DIOLS_UseExtension
-   ; Compare Switch-Table value to bit 16-23 of LBA-address
-   mov      di, dx
-   and      di, 007Fh
-   cmp      bptr cs:[LBASwitchTable+di], bl
-   jbe      DIOLS_UseExtension
-  DIOLS_UseNormal:
-      mov      di, 3
-     DIOLS_ErrorLoop:
-         push     ds
-         pop      es
-         mov      bx, si                     ; ES:BX - Destination
-         mov      ax, 0201h                  ; Function 2 - Load Sector
-         int      13h
-         jnc      DIOLS_Success
-      dec      di
-      jnz      DIOLS_ErrorLoop
-      ; Sector load failed...
-      jmp      DriveIO_GotLoadError
+        ; Upper 8 bits of LBA-address set? -> Use LBA (maximum boundary is FB0400h)
+        or      bh, bh
+        jnz     DIOLS_UseExtension
+        ; Compare Switch-Table value to bit 16-23 of LBA-address
+        mov     di, dx
+        and     di, 007Fh
+        cmp     bptr cs:[LBASwitchTable+di], bl
+        jbe     DIOLS_UseExtension
+    DIOLS_UseNormal:
+        mov     di, 3
+    DIOLS_ErrorLoop:
+        push    ds
+        pop     es
+        mov     bx, si                     ; ES:BX - Destination
+        mov     ax, 0201h                  ; Function 2 - Load Sector
+        int     13h
+        jnc     DIOLS_Success
+        dec     di
+        jnz     DIOLS_ErrorLoop
+        ; Sector load failed...
+        jmp     DriveIO_GotLoadError
 
-  DIOLS_UseExtension:
-   push    cx
-      mov     cs:[DriveIO_DAP_NumBlocks], 1         ; Copy ONE sector
-      mov     wptr cs:[DriveIO_DAP_Transfer+0], si
-      mov     cx, ds
-      mov     wptr cs:[DriveIO_DAP_Transfer+2], cx ; Fill out Transfer Adress
-      mov     wptr cs:[DriveIO_DAP_Absolute+0], ax
-      mov     wptr cs:[DriveIO_DAP_Absolute+2], bx ; Fill out Absolute Sector
-      push    cs
-      pop     ds
-      mov     si, offset DriveIO_DAP
-      mov     ah, 42h                        ; Extended Read
-      int     13h
-   pop     cx
-   jnc     DIOLS_Success
-   ; Sector load failed...
-   jmp     DriveIO_GotLoadError
+    DIOLS_UseExtension:
+        push    cx
+        mov     cs:[DriveIO_DAP_NumBlocks], 1         ; Copy ONE sector
+        mov     wptr cs:[DriveIO_DAP_Transfer+0], si
+        mov     cx, ds
+        mov     wptr cs:[DriveIO_DAP_Transfer+2], cx ; Fill out Transfer Adress
+        mov     wptr cs:[DriveIO_DAP_Absolute+0], ax
+        mov     wptr cs:[DriveIO_DAP_Absolute+2], bx ; Fill out Absolute Sector
+        push    cs
+        pop     ds
+        mov     si, offset DriveIO_DAP
+        mov     ah, 42h                        ; Extended Read
+        int     13h
+        pop     cx
+        jnc     DIOLS_Success
+        ; Sector load failed...
+        jmp     DriveIO_GotLoadError
 
-  DIOLS_Success:
-   ret
-DriveIO_LoadSector              EndP
+    DIOLS_Success:
+        ret
+DriveIO_LoadSector      EndP
 
 
 
@@ -743,49 +736,49 @@ DriveIO_LoadSector              EndP
 ; ---
 ; AX     = Error code
 ;
-DriveIO_LoadSectorLBA           Proc Near  Uses bx cx dx si di ds es
-      ; Get one sector
-      mov     cs:[DriveIO_DAP_NumBlocks], 1
+DriveIO_LoadSectorLBA       Proc Near  Uses bx cx dx si di ds es
+        ; Get one sector
+        mov     cs:[DriveIO_DAP_NumBlocks], 1
 
-      ; Setup buffer address
-      mov     wptr cs:[DriveIO_DAP_Transfer+0], si
-      mov     wptr cs:[DriveIO_DAP_Transfer+2], di
+        ; Setup buffer address
+        mov     wptr cs:[DriveIO_DAP_Transfer+0], si
+        mov     wptr cs:[DriveIO_DAP_Transfer+2], di
 
-      ; Setup LBA address of requested sector
-      mov     wptr cs:[DriveIO_DAP_Absolute+0], cx
-      mov     wptr cs:[DriveIO_DAP_Absolute+2], bx
-      mov     wptr cs:[DriveIO_DAP_Absolute+4], 0
-      mov     wptr cs:[DriveIO_DAP_Absolute+6], 0
+        ; Setup LBA address of requested sector
+        mov     wptr cs:[DriveIO_DAP_Absolute+0], cx
+        mov     wptr cs:[DriveIO_DAP_Absolute+2], bx
+        mov     wptr cs:[DriveIO_DAP_Absolute+4], 0
+        mov     wptr cs:[DriveIO_DAP_Absolute+6], 0
 
-      ; Address of packet
-      mov     si, offset DriveIO_DAP
+        ; Address of packet
+        mov     si, offset DriveIO_DAP
 
-      ; Do the extended read
-      mov     ah, 42h
-      int     13h
+        ; Do the extended read
+        mov     ah, 42h
+        int     13h
 
-      ; Looking good so far
-      jnc     DriveIO_LoadSectorLBA_succes1
+        ; Looking good so far
+        jnc     DriveIO_LoadSectorLBA_succes1
 
-      ; AH should not be zero, if it is then set to undefined and set carry
-      test    ah,ah
-      jnz     DriveIO_LoadSectorLBA_error1
-      mov     ah, 0bbh        ; Undefined error
-   DriveIO_LoadSectorLBA_error1:
-      stc
-      jmp     DriveIO_LoadSectorLBA_exit
+        ; AH should not be zero, if it is then set to undefined and set carry
+        test    ah,ah
+        jnz     DriveIO_LoadSectorLBA_error1
+        mov     ah, 0bbh        ; Undefined error
+    DriveIO_LoadSectorLBA_error1:
+        stc
+        jmp     DriveIO_LoadSectorLBA_exit
 
-      ; AL should be zero, if not then set to undefined and set carry
-   DriveIO_LoadSectorLBA_succes1:
-      test    ah,ah
-      jz      DriveIO_LoadSectorLBA_exit
-      stc
-      jmp     DriveIO_LoadSectorLBA_exit
+        ; AL should be zero, if not then set to undefined and set carry
+    DriveIO_LoadSectorLBA_succes1:
+        test    ah,ah
+        jz      DriveIO_LoadSectorLBA_exit
+        stc
+        jmp     DriveIO_LoadSectorLBA_exit
 
-      ; Return to caller
-   DriveIO_LoadSectorLBA_exit:
-      ret
-DriveIO_LoadSectorLBA           EndP
+        ; Return to caller
+    DriveIO_LoadSectorLBA_exit:
+        ret
+DriveIO_LoadSectorLBA       EndP
 
 
 
@@ -800,54 +793,54 @@ DriveIO_LoadSectorLBA           EndP
 ; Preserve: all registers
 ; #########################################################################
 DriveIO_SaveSector              Proc Near  Uses ax bx cx ds si es di
-   test     cs:[CurIO_UseExtension], 1
-   jz       DIOSS_UseNormal
-   ; Are we forced do use LBA via Setting?
-   test     cs:[CFG_ForceLBAUsage], 1
-   jnz      DIOSS_UseExtension
-   ; Is the drive not a harddrive?
-   cmp      dl, 80h
-   jb       DIOSS_UseNormal
-   ; Upper 8 bits of LBA-address set? -> Use LBA (maximum boundary is FB0400h)
-   or       bh, bh
-   jnz      DIOSS_UseExtension
-   ; Compare Switch-Table value to bit 16-23 of LBA-address
-   mov      di, dx
-   and      di, 007Fh
-   cmp      bptr cs:[LBASwitchTable+di], bl
-   jbe      DIOSS_UseExtension
-  DIOSS_UseNormal:
-      mov      di, 3
-     DIOSS_ErrorLoop:
-         push     ds
-         pop      es
-         mov      bx, si                     ; ES:BX - Destination
-         mov      ax, 0301h                  ; Function 3 - Write Sector
-         int      13h
-         jnc      DIOSS_Success
-      dec      di
-      jnz      DIOSS_ErrorLoop
-      call     MBR_SaveError
+        test    cs:[CurIO_UseExtension], 1
+        jz      DIOSS_UseNormal
+        ; Are we forced do use LBA via Setting?
+        test    cs:[CFG_ForceLBAUsage], 1
+        jnz     DIOSS_UseExtension
+        ; Is the drive not a harddrive?
+        cmp     dl, 80h
+        jb      DIOSS_UseNormal
+        ; Upper 8 bits of LBA-address set? -> Use LBA (maximum boundary is FB0400h)
+        or      bh, bh
+        jnz     DIOSS_UseExtension
+        ; Compare Switch-Table value to bit 16-23 of LBA-address
+        mov     di, dx
+        and     di, 007Fh
+        cmp     bptr cs:[LBASwitchTable+di], bl
+        jbe     DIOSS_UseExtension
+    DIOSS_UseNormal:
+        mov     di, 3
+    DIOSS_ErrorLoop:
+        push    ds
+        pop     es
+        mov     bx, si                     ; ES:BX - Destination
+        mov     ax, 0301h                  ; Function 3 - Write Sector
+        int     13h
+        jnc     DIOSS_Success
+        dec     di
+        jnz     DIOSS_ErrorLoop
+        call    MBR_SaveError
 
-  DIOSS_UseExtension:
-   push    cx
-      mov     cs:[DriveIO_DAP_NumBlocks], 1        ; Copy ONE sector
-      mov     wptr cs:[DriveIO_DAP_Transfer+0], si
-      mov     cx, ds
-      mov     wptr cs:[DriveIO_DAP_Transfer+2], cx ; Fill out Transfer Adress
-      mov     wptr cs:[DriveIO_DAP_Absolute+0], ax
-      mov     wptr cs:[DriveIO_DAP_Absolute+2], bx ; Fill out Absolute Sector
-      push    cs
-      pop     ds
-      mov     si, offset DriveIO_DAP
-      mov     ax, 4300h                  ; Extended Write (No Verify)
-      int     13h
-   pop     cx
-   jnc     DIOSS_Success
-   call    MBR_SaveError
+    DIOSS_UseExtension:
+        push    cx
+        mov     cs:[DriveIO_DAP_NumBlocks], 1        ; Copy ONE sector
+        mov     wptr cs:[DriveIO_DAP_Transfer+0], si
+        mov     cx, ds
+        mov     wptr cs:[DriveIO_DAP_Transfer+2], cx ; Fill out Transfer Adress
+        mov     wptr cs:[DriveIO_DAP_Absolute+0], ax
+        mov     wptr cs:[DriveIO_DAP_Absolute+2], bx ; Fill out Absolute Sector
+        push    cs
+        pop     ds
+        mov     si, offset DriveIO_DAP
+        mov     ax, 4300h                  ; Extended Write (No Verify)
+        int     13h
+        pop     cx
+        jnc     DIOSS_Success
+        call    MBR_SaveError
 
-  DIOSS_Success:
-   ret
+    DIOSS_Success:
+        ret
 DriveIO_SaveSector              EndP
 
 
@@ -857,11 +850,11 @@ DriveIO_SaveSector              EndP
 DriveIO_LVMSectorValid           Proc  Near
         pusha
 
-        call     LVM_CheckSectorSignature
+        call    LVM_CheckSectorSignature
         ; NC if no signature found
-        jnc       DriveIO_LVMSectorValid_End
+        jnc     DriveIO_LVMSectorValid_End
 
-        call     LVM_CheckSectorCRC
+        call    LVM_CheckSectorCRC
         ; Force valid !!!
         stc
 
@@ -888,27 +881,27 @@ DriveIO_LVMSectorValid           EndP
 ;
 ; Return CF when valid master LVM sector found, NC if not.
 ; Loads sector at [LVMSector] !
-DriveIO_LoadMasterLVMSector      Proc  Near
+DriveIO_LoadMasterLVMSector     Proc  Near
         pusha
 
-        ;mov      si,offset db_lmlvm
-        ;call     AuxIO_Print
+        ;~ mov      si,offset db_lmlvm
+        ;~ call     AuxIO_Print
 
-        ; Physical disk
-;        mov     al,'<'
-;        call    VideoIO_PrintSingleChar
-;        mov     al,dl
-;        call    VideoIO_PrintHexByte
-;        mov     al,'>'
-;        call    VideoIO_PrintSingleChar
-
-        ;call     AuxIO_TeletypeHexByte
-        ;call     AuxIO_TeletypeNL
+        ;~ ; Physical disk
+        ;~ mov     al,'<'
+        ;~ call    VideoIO_PrintSingleChar
+        ;~ mov     al,dl
+        ;~ call    VideoIO_PrintHexByte
+        ;~ mov     al,'>'
+        ;~ call    VideoIO_PrintSingleChar
+;~
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
 
 
         ; Loop over the sector-translation table,
         ; process the first three values from high (255) to low (bios spt, most likely 63)
-        mov      cx,3
+        mov     cx,3
     DriveIO_LoadMasterLVMSector_NextTry:
         ; Number of sectors to read
         mov     [DriveIO_DAP_NumBlocks],1
@@ -933,17 +926,17 @@ DriveIO_LoadMasterLVMSector      Proc  Near
         ; This is all in track0 so the address will not exceed 64kiB sectors.
         ;
 
-;        push    ax
-;        push    ax
-;        mov     al,'$'
-;        call    VideoIO_PrintSingleChar
-;        pop     ax
-;        call    VideoIO_PrintHexByte
-;        mov     al,'$'
-;        call    VideoIO_PrintSingleChar
-;        pop     ax
+        ;~ push    ax
+        ;~ push    ax
+        ;~ mov     al,'$'
+        ;~ call    VideoIO_PrintSingleChar
+        ;~ pop     ax
+        ;~ call    VideoIO_PrintHexByte
+        ;~ mov     al,'$'
+        ;~ call    VideoIO_PrintSingleChar
+        ;~ pop     ax
 
-IFDEF AuxDebug
+IFDEF AUX_DEBUG
       ; Dump the value
       ;call     AuxIO_TeletypeHexByte
       ;call     AuxIO_TeletypeNL
@@ -962,7 +955,7 @@ ENDIF
         mov     si,offset LVMSector
 
         ; See if this is a valid LVM-sector
-        call     DriveIO_LVMSectorValid
+        call    DriveIO_LVMSectorValid
 
 ;        pushf
 ;        mov     ah,0
@@ -979,7 +972,7 @@ ENDIF
         ; Yep, we found the master LVM-sector
         jc      DriveIO_LoadMasterLVMSector_Found
         ; Try next location
-        loop     DriveIO_LoadMasterLVMSector_NextTry
+        loop    DriveIO_LoadMasterLVMSector_NextTry
 
         ; No master LVM-sector found, set CF=false
         clc
@@ -1082,164 +1075,164 @@ DriveIO_LoadMasterLVMSector     Endp
 
 ; DL contains BIOS disk-number; 80h for first, 81h for second, etc.
 DriveIO_GatherDiskInfo  Proc Near
-      pushf
-      push    bx
-      push    cx
-      push    dx
-      push    si
-      push    di
-      push    es
+        pushf
+        push    bx
+        push    cx
+        push    dx
+        push    si
+        push    di
+        push    es
 
-      ; Set ES to CS for buffer clearing
-      push    cs
-      pop     es
+        ; Set ES to CS for buffer clearing
+        push    cs
+        pop     es
 
-      ; Clear the buffer
-      ; Don't overwrite the word of the buffersize at index 0 !
-      ; Old Phoenix BIOSses require word (flags) at 02 to be zero,
-      ; so we clear the whole buffer to be sure.
-      mov     cx, i13xbuf_size
-      mov     di, offset i13xbuf
-      mov     [di],cx
-      inc     di
-      inc     di
-      xor     ah,ah
-      cld
-      rep stosb
+        ; Clear the buffer
+        ; Also setup the buffer size.
+        ; Old Phoenix BIOSses require word (flags) at 02 to be zero,
+        ; so we clear the whole buffer to be sure.
+        mov     cx, i13xbuf_size        ; Dynamically calculated by assembler.
+        mov     di, offset i13xbuf      ; Points to size field.
+        mov     [di],cx                 ; Setup buffer-size.
+        inc     di
+        inc     di                      ; Now pointing at actual buffer.
+        xor     ah,ah                   ; Fill value.
+        cld                             ; Direction up.
+        rep stosb                       ; Clear buffer.
 
-      ; Get the drive parameters
-      mov     ah, 48h                                 ; Get Drive Parameters (extended version)
-      ;mov     dl, 80h                                ; Drive number
-      mov     si, offset i13xbuf                      ; Buffer for result-info
-      push    dx
-      int     13h                                     ; Call the BIOS-function
-      pop     dx
+        ; Get the drive parameters
+        mov     ah, 48h                 ; Get Drive Parameters (extended version)
+        ;mov     dl, 80h                ; Drive number
+        mov     si, offset i13xbuf      ; Buffer for result-info
+        push    dx
+        int     13h                     ; Call the BIOS-function
+        pop     dx
 
-      ; Do some error-checking
-      or      ah,ah                                   ; AH is zero if no error (ZF=1 if no error)
-      mov     ax,0                                    ; Setup code for non-huge drive (does not influence ZF)
-      jz      DriveIO_GatherDiskInfo_ok               ; Return if error (AL<>0 thus ZF=0) but CY not set, assuming non-huge drive
-      jnc     DriveIO_GatherDiskInfo_ok               ; Return if error (CY=1), assuming non-huge drive
-      jmp     DriveIO_GatherDiskInfo_ret
-
-
-   DriveIO_GatherDiskInfo_ok:
-
-      ;
-      ; Store the drive geometry
-      ;
-
-      mov      si, offset i13xbuf
-
-      xor      dh,dh
-      and      dl,01111111b
-      shl      dx,1
-      shl      dx,1
-
-      ; Store number of cylinders on disk
-      mov      bx, offset BIOS_Cyls
-      add      bx,dx
-      mov      ax,[si+04h]
-
-      mov      word ptr [bx+00],ax
-      mov      ax,[si+06]
-      mov      word ptr [bx+02],ax
-
-      ; Store number of heads per cylinder
-      mov      bx, offset BIOS_Heads
-      add      bx,dx
-      mov      ax,[si+08h]
-      mov      word ptr [bx+00],ax
-      mov      ax,[si+0ah]
-      mov      word ptr [bx+02],ax
-
-      ; Store number of sectors per track
-      mov      bx, offset BIOS_Secs
-      add      bx,dx
-      mov      ax,[si+0ch]
-      mov      word ptr [bx+00],ax
-
-      ; Update first byte of translation-table to conform to BIOS SPT
-      mov      byte ptr [secs_per_track_table], al
-
-      mov      ax,[si+0eh]
-      mov      word ptr [bx+02],ax
-
-      ; Store total secs
-      mov      bx, offset BIOS_TotalSecs
-      add      bx,dx
-      add      bx,dx
-      mov      ax,[si+10h]
-
-      mov      word ptr [bx+00],ax
-      mov      ax,[si+12h]
-      mov      word ptr [bx+02],ax
-      mov      ax,[si+14h]
-      mov      word ptr [bx+04],ax
-      mov      ax,[si+18h]
-      mov      word ptr [bx+06],ax
-
-      ; Store number of bytes per sector
-      mov      bx, offset BIOS_Bytes
-      add      bx,dx
-      mov      ax,[si+18h]
-      mov      [bx],ax
+        ; Do some error-checking
+        or      ah,ah                       ; AH is zero if no error (ZF=1 if no error)
+        mov     ax,0                        ; Setup code for non-huge drive (does not influence ZF)
+        jz      DriveIO_GatherDiskInfo_ok   ; Return if error (AL<>0 thus ZF=0) but CY not set, assuming non-huge drive
+        jnc     DriveIO_GatherDiskInfo_ok   ; Return if error (CY=1), assuming non-huge drive
+        jmp     DriveIO_GatherDiskInfo_ret
 
 
-      ;
-      ; See of it's a huge drive of not
-      ;
+    DriveIO_GatherDiskInfo_ok:
 
-      ; Drive is larger than 2TiB
-      mov     ax,5                                    ; Drive code (5)
-      mov     bx, [si+14h]                            ; Low word of high dword of sector-count
-      or      bx, [si+16h]                            ; High word of high dword of sector-count
-      jnz     DriveIO_GatherDiskInfo_ret              ; If non-zero we have a drive with >2^32 sectors and thus LBA48 addressing
+        ;
+        ; Store the drive geometry
+        ;
 
-      ; Drive is larger than max OS/2 capacity
-      dec     ax                                      ; Drive code (4)
-      mov     bx, [si+12h]                            ; High word of low dword of sector-count
-      cmp     bx, 0fe01h                              ; Boundary
-      jae     DriveIO_GatherDiskInfo_ret              ; If above or equal to boundary,
-                                                      ; we have a drive larger than to 65536*255*255 = FE010000 sectors
+        mov      si, offset i13xbuf
 
-      ; Drive can be completely utilized by OS/2
-      dec     ax                                      ; Drive code (3)
-      cmp     bx, 8000h                               ; Boundary
-      jae     DriveIO_GatherDiskInfo_ret              ; If above or equal to boundary,
-                                                      ; we have a drive larger than 2^31 sectors but smaller than 65536*255*255
+        xor      dh,dh
+        and      dl,01111111b
+        shl      dx,1
+        shl      dx,1
 
-      ; This is the small area between DANI 1TiB and LBA 1TiB
-      dec     ax                                      ; Drive code (2)
-      cmp     bx, 7e81h                               ; Boundary
-      jae     DriveIO_GatherDiskInfo_ret              ; If above or equal to boundary,
-                                                      ; we have a drive larger than 65536*255*127 but <65536*255*255
-                                                      ; DANIS506.ADD will use 255/255 extended geometry
+        ; Store number of cylinders on disk
+        mov      bx, offset BIOS_Cyls
+        add      bx,dx
+        mov      ax,[si+04h]
 
-      ; DANI will use 255/127 in this area, this could impact the location of LVM-sectors ! (last sec on track)
-      dec     ax                                      ; Drive code (1)
-      cmp     bx, 3ec1h                               ; Boundary
-      jae     DriveIO_GatherDiskInfo_ret              ; If above or equal to boundary,
-                                                      ; we have a drive larger than 65536*255*63 sectors (OS/2 502GiB Limit!)
-                                                      ; DANIS506.ADD will use 255/127 extended geometry !
-                                                      ; IBM1S506.ADD will use 255/255 extended geometry !
+        mov      word ptr [bx+00],ax
+        mov      ax,[si+06]
+        mov      word ptr [bx+02],ax
 
-      ; We have a drive that can be addressed using standard 255/63 geometry
-      dec     ax                                      ; Drive code (0)
-                                                      ; We have a drive smaller than 65536*255*63 = 3EC10000 sectors
+        ; Store number of heads per cylinder
+        mov      bx, offset BIOS_Heads
+        add      bx,dx
+        mov      ax,[si+08h]
+        mov      word ptr [bx+00],ax
+        mov      ax,[si+0ah]
+        mov      word ptr [bx+02],ax
 
-   DriveIO_GatherDiskInfo_ret:
-      pop     es
-      pop     di
-      pop     si
-      pop     dx
-      pop     cx
-      pop     bx
+        ; Store number of sectors per track
+        mov      bx, offset BIOS_Secs
+        add      bx,dx
+        mov      ax,[si+0ch]
+        mov      word ptr [bx+00],ax
 
-      mov      [CurIO_UseExtension],1
+        ; Update first byte of translation-table to conform to BIOS SPT
+        mov      byte ptr [secs_per_track_table], al
 
-      popf
-      ret
+        mov      ax,[si+0eh]
+        mov      word ptr [bx+02],ax
+
+        ; Store total secs
+        mov      bx, offset BIOS_TotalSecs
+        add      bx,dx
+        add      bx,dx
+        mov      ax,[si+10h]
+
+        mov      word ptr [bx+00],ax
+        mov      ax,[si+12h]
+        mov      word ptr [bx+02],ax
+        mov      ax,[si+14h]
+        mov      word ptr [bx+04],ax
+        mov      ax,[si+18h]
+        mov      word ptr [bx+06],ax
+
+        ; Store number of bytes per sector
+        mov      bx, offset BIOS_Bytes
+        add      bx,dx
+        mov      ax,[si+18h]
+        mov      [bx],ax
+
+
+        ;
+        ; See of it's a huge drive of not
+        ;
+
+        ; Drive is larger than 2TiB
+        mov     ax,5                        ; Drive code (5)
+        mov     bx, [si+14h]                ; Low word of high dword of sector-count
+        or      bx, [si+16h]                ; High word of high dword of sector-count
+        jnz     DriveIO_GatherDiskInfo_ret  ; If non-zero we have a drive with >2^32 sectors and thus LBA48 addressing
+
+        ; Drive is larger than max OS/2 capacity
+        dec     ax                          ; Drive code (4)
+        mov     bx, [si+12h]                ; High word of low dword of sector-count
+        cmp     bx, 0fe01h                  ; Boundary
+        jae     DriveIO_GatherDiskInfo_ret  ; If above or equal to boundary,
+                                            ; we have a drive larger than to 65536*255*255 = FE010000 sectors
+
+        ; Drive can be completely utilized by OS/2
+        dec     ax                          ; Drive code (3)
+        cmp     bx, 8000h                   ; Boundary
+        jae     DriveIO_GatherDiskInfo_ret  ; If above or equal to boundary,
+                                            ; we have a drive larger than 2^31 sectors but smaller than 65536*255*255
+
+        ; This is the small area between DANI 1TiB and LBA 1TiB
+        dec     ax                          ; Drive code (2)
+        cmp     bx, 7e81h                   ; Boundary
+        jae     DriveIO_GatherDiskInfo_ret  ; If above or equal to boundary,
+                                            ; we have a drive larger than 65536*255*127 but <65536*255*255
+                                            ; DANIS506.ADD will use 255/255 extended geometry
+
+        ; DANI will use 255/127 in this area, this could impact the location of LVM-sectors ! (last sec on track)
+        dec     ax                          ; Drive code (1)
+        cmp     bx, 3ec1h                   ; Boundary
+        jae     DriveIO_GatherDiskInfo_ret  ; If above or equal to boundary,
+                                            ; we have a drive larger than 65536*255*63 sectors (OS/2 502GiB Limit!)
+                                            ; DANIS506.ADD will use 255/127 extended geometry !
+                                            ; IBM1S506.ADD will use 255/255 extended geometry !
+
+        ; We have a drive that can be addressed using standard 255/63 geometry
+        dec     ax                                      ; Drive code (0)
+                                            ; We have a drive smaller than 65536*255*63 = 3EC10000 sectors
+
+    DriveIO_GatherDiskInfo_ret:
+        pop     es
+        pop     di
+        pop     si
+        pop     dx
+        pop     cx
+        pop     bx
+
+        mov      [CurIO_UseExtension],1
+
+        popf
+        ret
 DriveIO_GatherDiskInfo  EndP
 
 
