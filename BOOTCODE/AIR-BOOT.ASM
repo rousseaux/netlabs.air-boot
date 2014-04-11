@@ -1,3 +1,12 @@
+;
+; BSS moet op A000 liggen
+; Segmented werkt niet
+; Moet met Tasm/DOS assembleren
+; Wat we dus *niet* willen !!
+;
+
+
+
 ; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
 ;
 ; This file is part of AiR-BOOT
@@ -1986,7 +1995,7 @@ sobss:
                             ; Removed org for BSS data to be more compatible
                             ; with segment-concatenated layout.
                             ;
-                            ;org 0A000h                         ; Uninitialized
+                            org 0A000h                         ; Uninitialized
 
 
 ; This space actually gets initialized in PreCrap to NUL (till EndOfVariables)

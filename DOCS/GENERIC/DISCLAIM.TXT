@@ -8,11 +8,6 @@
  º warranty for bug-free operation, fitness for a particular purpose or the   º
  º appropriate behaviour of the program.                                      º
  º                                                                            º
- º This software may not be used in any way by US government. This means it   º
- º  may not be used on any US government/military computers in any case. It   º
- º  also means that if you are working for US government in any way, then you º
- º  are not allowed to use it as well.                                        º
- º                                                                            º
  º THE SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED      º
  º WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF       º
  º MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS   º
@@ -31,10 +26,7 @@
  º collections on CD-ROM, as well as on magazine cover CD-ROMs.               º
  º                                                                            º
  º All trademarks mentioned anywhere around here are property of their owners º
- º and the like... This means e.g. "Microsoft Windows (9x/NT/2000/XP/YP/ZP",  º
- º "Microsoft", "bugfix" and "exploit" are trademarks of Microsoft Corp.      º
- º Also "killing people for oil" and "torturing for freedom" are trademarks   º
- º of american government.                                                    º
+ º and the like...                                                            º
  º                                                                            º
  ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄ  ú                           ú  ÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½
      ÓÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ½

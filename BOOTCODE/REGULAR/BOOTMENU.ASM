@@ -717,7 +717,7 @@ BOOTMENU_ResetMenuVars          EndP
 
 ; Will Set some Vars after user selected entry to boot...
 ;  ...don't select Straight View !
-BOOTMENU_SetVarsAfterMenu Proc Near  Uses
+BOOTMENU_SetVarsAfterMenu Proc Near
    ; No Straight View in here...we got filtered view since BootMenu-Startup...
    mov     al, CFG_RememberTimed
    test    TimedBootUsed, 1
@@ -779,7 +779,8 @@ BOOTMENU_Execute                Proc Near   Uses es di
    test    TimedBootEnable, 1
    jz      BME_NoTimedBoot
       ; ------------------------------------------------ TIMED BOOT
-      push    ax dx
+      push    ax
+      push    dx
          call    TIMER_GetTicCount
          mov     dx, word ptr [TimedTimeOut]
          sub     dx, ax
@@ -792,7 +793,8 @@ BOOTMENU_Execute                Proc Near   Uses es di
         BME_NoFixSecond:
          cmp     al, 0
          jne     BME_NoTimeOut
-      pop     dx ax
+      pop     dx
+      pop     ax
       mov     dl, Menu_EntryDefault
       and     CFG_TimedBootLast, 1
       jz      BME_TimedBootDefault
@@ -804,13 +806,15 @@ BOOTMENU_Execute                Proc Near   Uses es di
       ret
 
      BME_NoTimeOut:
-      pop     dx ax
+      pop     dx
+      pop     ax
   BME_NoTimedBoot:
    ; ------------------------------------------------ FLOPPY-NAME TIMER
    test    CFG_FloppyBootGetTimer, 1
    jz      BME_NoFloppyNameTimer
       ; Wait 2 Seconds everytime
-      push    ax dx
+      push    ax
+      push    dx
          call    TIMER_GetTicCount
          cmp     dx, wptr [FloppyGetNameTimer+2]
          ja      BME_ExpiredGetFloppy
@@ -818,10 +822,12 @@ BOOTMENU_Execute                Proc Near   Uses es di
          jb      BME_NoFloppyNameExpired
         BME_ExpiredGetFloppy:
          call    BOOTMENU_ResetGetFloppy
-      pop     dx ax
+      pop     dx
+      pop     ax
       jmp     BME_RefreshFloppyName
         BME_NoFloppyNameExpired:
-      pop     dx ax
+      pop     dx
+      pop     ax
   BME_NoFloppyNameTimer:
    ; ------------------------------------------------ KEYBOARD
    push    dx
@@ -847,7 +853,7 @@ BOOTMENU_Execute                Proc Near   Uses es di
       mov     ah, 0
       int     16h
    pop     dx
-   cmp     ah, Keys_Enter
+   cmp     ah, Keys_ENTER
    je      BME_KeyEnter
    cmp     ah, Keys_F10
    je      BME_KeyF10

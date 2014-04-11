@@ -23,7 +23,7 @@ IFDEF ModuleNames
 DB 'LVM',0
 ENDIF
 
-LVM_InitCRCTable                Proc Near   Uses
+LVM_InitCRCTable                Proc Near
    ; Initializes our LVM-CRC-Table
    xor    cl, cl
    mov    di, offset LVM_CRCTable
@@ -89,7 +89,7 @@ LVM_GetSectorCRC                EndP
 ;        In: DS:SI - Sector that needs to get checked...
 ;       Out: Carry set, if valid LVM signature found
 ; Destroyed: None
-LVM_CheckSectorSignature        Proc Near   Uses
+LVM_CheckSectorSignature        Proc Near
    test    [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
    jnz     LVMCSS_InvalidSignature       ;  any sector is bad!
    cmp     wptr [si+LocLVM_SignatureStart], 5202h                                ; Rousseau: identify LVM sector
@@ -175,8 +175,8 @@ LVM_SearchForPartition          EndP
 
 LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
         ; For primary partitions this information is stored in the last
-        ; sector of track0; for all four partition entries should they
-        ; all be primary ones.
+        ; sector of track0; for all four partition entries in case they
+        ; they are all primary ones.
         ;
         ; LVM DLAT info for logical partitions is stored in the sector
         ; preceding the start of the partition.

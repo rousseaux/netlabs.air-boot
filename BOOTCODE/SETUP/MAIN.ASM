@@ -29,10 +29,10 @@ LocMENU_ItemNamePtr          equ          4
 LocMENU_ItemHelpPtr          equ          6
 LocMENU_ItemPack             equ          8 ; only if VariablePtr>0
 
-SETUP_UpperFixString:         db 'SETUP ',0 ; AddOn fr "AiR-BOOT SETUP vX.XX"
+SETUP_UpperFixString          db 'SETUP ',0 ; AddOn for "AiR-BOOT SETUP vX.XX"
 
-Include SETUP\MENUS.ASM                  ; Menu structures
-Include SETUP\PART_SET.ASM               ; Partition Setup (in extra file)
+Include SETUP/MENUS.ASM                  ; Menu structures
+Include SETUP/PART_SET.ASM               ; Partition Setup (in extra file)
 
 ;            CH - Current Item Number
 ;       Out: SI - Pointer to Item Location
@@ -68,7 +68,7 @@ SETUP_SwitchToSelectedItem      Proc Near   Uses ax cx
    ret   ; Exit is here :)
 SETUP_SwitchToSelectedItem      EndP
 
-SETUP_CheckEnterSETUP           Proc Near   Uses
+SETUP_CheckEnterSETUP           Proc Near
 
 
 
@@ -116,7 +116,7 @@ SETUP_Main                      EndP
 
 ;        In: BP - Pointer to Menu
 ;   CurMenu: Left Side 0-6, Right Side 8-14 (Bit 3!)
-SETUP_MenuTask                  Proc Near   Uses ; the main-menu routine
+SETUP_MenuTask                  Proc Near   ; the main-menu routine
    cmp     SETUP_ExitEvent, 1
    jne     SMT_NoImmediateExit
    ret
@@ -128,7 +128,7 @@ SETUP_MenuTask                  Proc Near   Uses ; the main-menu routine
    call    SETUP_DrawMenuHelp
 
    mov     ax, ds:[bp+1]   ; Help Pointer
-   cmp     ax, offset TXT_SETUPHELP_MAIN ; ask only in main-menu...
+   cmp     ax, offset TXT_SETUPHELP_Main ; ask only in main-menu...
    jne     SMT_NotMainMenu
    call    FX_EndScreenLeft              ; Do FX, if requested...
    test    CFG_PasswordSetup, 1
@@ -154,8 +154,8 @@ SETUP_MenuTask                  Proc Near   Uses ; the main-menu routine
       je      SMT_KeyLeftRight
       cmp     ah, Keys_Right
       je      SMT_KeyLeftRight
-      cmp     ah, Keys_Enter
-      je      SMT_KeyEnter
+      cmp     ah, Keys_ENTER
+      je      SMT_KeyENTER
       cmp     ah, Keys_Plus
       je      SMT_KeyPlus
       cmp     ah, Keys_Minus
@@ -198,7 +198,7 @@ SETUP_MenuTask                  Proc Near   Uses ; the main-menu routine
    mov     bx, offset SMT_KeyLeftRight
    jmp     SMT_FixUpModify
 
-  SMT_KeyEnter:                          ; Enters Menu, if no ItemPack available
+  SMT_KeyENTER:                          ; Enters Menu, if no ItemPack available
    mov     ch, dh
    call    SETUP_SwitchToSelectedItem    ; Calculates SI for Item-No (CH)
    mov     ax, word ptr ds:[si+LocMENU_RoutinePtr]
@@ -237,7 +237,7 @@ SETUP_MenuTask                  Proc Near   Uses ; the main-menu routine
 
   SMT_KeyEsc:
    mov     ax, ds:[bp+1]                 ; Help Pointer
-   cmp     ax, offset TXT_SETUPHELP_MAIN ; embarassing? ;-)
+   cmp     ax, offset TXT_SETUPHELP_Main ; embarassing? ;-)
    jne     SMT_ReturnPrev
    jmp     SMT_ExitWithoutSaving
   SMT_ReturnPrev:
@@ -293,7 +293,7 @@ CLR_MENU_WINDOW_CLASSIC    = 0e01h
 CLR_MENU_WINDOW_BM   = 0e01h
 ;        In: BP - Pointer to Menu
 ;       Out: DH - Active Item on Screen
-SETUP_DrawMenuOnScreen          Proc Near   Uses
+SETUP_DrawMenuOnScreen          Proc Near
    call    SETUP_DrawMenuWindow
    mov     cx, CLR_MENU_WINDOW_BM
    call    VideoIO_Color
@@ -395,7 +395,9 @@ SETUP_DrawItemOnScreen          Proc Near   Uses ax cx dx si es
   SDIOS_ItemPackDraw:
    add     ch, 6                         ; Fix coordinate...
    ; Display the Name and a double-point first
-   push    cx si                         ; BackUp Coordinates and ItemPackPtr
+   ; BackUp Coordinates and ItemPackPtr
+   push    cx
+   push    si
       push    cx
          cmp     cl, 40
          jb      SDIOS_ItemPack_NoFixUpItemPack
@@ -419,7 +421,8 @@ CLR_ITEM_PACK_BM  = 0f01h
       mov     al, 3Ah
       call    VideoIO_PrintSingleChar    ; Write double-point
       mov     word ptr TextColorFore, dx
-   pop     si cx
+   pop     si
+   pop     cx
    add     cl, 26                        ; Fix X-coordinate (for ItemPack)
    call    VideoIO_Locate
 
@@ -497,8 +500,8 @@ SETUP_DrawMenuWindow            Proc Near   Uses es
    ret
 SETUP_DrawMenuWindow            EndP
 
-SETUP_DrawMenuBase              Proc Near   Uses
-   call    BOOTMENU_BuildBackGround
+SETUP_DrawMenuBase              Proc Near
+   call    BOOTMENU_BuildBackground
    ; -------------------------------------------- Upper Copyright...
    mov     cx, 0F00h
    call    VideoIO_Color
@@ -704,13 +707,13 @@ SETUP_EnterMenu_ExtendedOptions EndP
 ;   ret
 ;SETUP_EnterMenu_LinuxCommandLine EndP
 
-SETUP_EnterMenu_DefineMasterPassword Proc Near Uses
+SETUP_EnterMenu_DefineMasterPassword Proc Near
    mov     di, offset CFG_MasterPassword
    call    SETUP_EnterMenu_DefinePassword
    ret
 SETUP_EnterMenu_DefineMasterPassword EndP
 
-SETUP_EnterMenu_DefineBootPassword Proc Near Uses
+SETUP_EnterMenu_DefineBootPassword Proc Near
    mov     di, offset CFG_BootPassword
    call    SETUP_EnterMenu_DefinePassword
    ret
@@ -719,7 +722,7 @@ SETUP_EnterMenu_DefineBootPassword EndP
 ; ============================================================================
 
 ; [Linux support removed since v1.02]
-;SETUP_EnterMenu_EnterLinuxCmdLine Proc Near Uses
+;SETUP_EnterMenu_EnterLinuxCmdLine Proc Near
 ;   mov     cx, 0D05h
 ;   call    VideoIO_Color
 ;   mov     bx, 0C02h
@@ -844,12 +847,14 @@ SETUP_LetEnterPassword          Proc Near   Uses bx cx dx si es di
 
    mov     ax, VideoIO_Page2
    call    VideoIO_BackUpTo
-   push    ax di
+   push    ax
+   push    di
       mov     ax, 20h                    ; Space
       mov     cx, 16
       rep     stosb                      ; Kill new password
       mov     es:[di], ah                ; ending NUL
-   pop     di ax
+   pop     di
+   pop     ax
    cmp     ax, 0ABABh                    ; Magic Processing...
    je      SLEP_MagicLayOut
    mov     cx, 0D05h
@@ -1038,7 +1043,7 @@ SETUP_EnterMenu_SaveAndExitSetup Proc Near   Uses dx bp
    jnz     SEMSAES_UserAbort
   SEMSAES_DoThis:
    xor     al, al
-   mov     CFG_AutoEnterSETUP, al
+   mov     CFG_AutoEnterSetup, al
    add     CFG_LastTimeEditLow, 1
    adc     CFG_LastTimeEditHi, 0         ; Update Time-Stamp
    IFDEF ReleaseCode
@@ -1054,7 +1059,7 @@ SETUP_EnterMenu_ExitWithoutSaving Proc Near   Uses dx bp
    call    SETUP_Warning_AreYouSure
    jnz     SEMEWS_UserAbort
    ; If we were forced to enter Setup, save configuration anyway...
-   test    CFG_AutoEnterSETUP, 1
+   test    CFG_AutoEnterSetup, 1
    jz      SEMEWS_DoThis
    jmp     SEMEWS_DoThis                 ; Cross-Jump to SaveAndExitSetup!
 
@@ -1071,7 +1076,7 @@ SETUP_EnterMenu_ExitWithoutSaving EndP
 ;        In: SI - Sure about what (string, NUL-terminated)
 ;       Out: Non-Zero Flag set -> User is sure
 ; Destroyed: None
-SETUP_Warning_AreYouSure        Proc Near Uses
+SETUP_Warning_AreYouSure        Proc Near
    mov     cx, 0C04h
    call    VideoIO_Color
    call    GetLenOfString                ; CX - Len of Given String
@@ -1166,7 +1171,7 @@ SETUPMAGIC_InternalCopyTillNUL  Proc Near Uses ax cx
 SETUPMAGIC_InternalCopyTillNUL  EndP
 
 ; Cur Value in DL, Maximum Value in DH. Add/Sub in CL
-SETUPMAGIC_InternalCheckUp      Proc Near   Uses
+SETUPMAGIC_InternalCheckUp      Proc Near
    or      cl, cl                        ; CL==0?    -> Decrease
    jz      SMICU_Substract               ; otherwise -> Increase
    inc     dl
@@ -1221,18 +1226,25 @@ SETUPMAGIC_ChangeBootDelay      Proc Near   Uses ax cx dx ds si es di
    rep     stosb                         ; Writes 8x NUL
    mov     al, dl
    call    VideoIO_PrintByteDynamicNumber
-   push    ds es
-   pop     ds es                         ; Pseudo-(XCHG DS, ES)
+   ; Pseudo-(XCHG DS, ES)
+   push    ds
+   push    es
+   pop     ds
+   pop     es
+
    mov     di, si
    add     di, LocMENU_ItemPack          ; ES:DI - ItemPack
    mov     si, 4000                      ; DS:SI - Screen Page 1
-   push    es di
+   push    es
+   push    di
       mov     cx, 4
      SMCBD_Loop:
          lodsw
          stosb
       loop    SMCBD_Loop                 ; okay we got it...trick!
-   pop     si ds                         ; DS:SI - ItemPack
+   ; DS:SI - ItemPack
+   pop     si
+   pop     ds
    mov     cx, 12
    call    GetLenOfName                  ; Gets the length of the number
    add     si, cx
@@ -1298,7 +1310,7 @@ SETUPMAGIC_ChangeDefaultSelection Proc Near   Uses ax cx dx si es di
       ; Get Partition-Pointer (SI) from Partition-Number (DL)
       call    PART_GetPartitionPointer
       mov     ax, ds:[si+LocIPT_Flags]
-      test    ax, Flags_BootAble
+      test    ax, Flags_Bootable
       jz      SMCP_Inc_RejectPartition
       jmp     SMCP_GotSelection
 
@@ -1329,7 +1341,7 @@ SETUPMAGIC_ChangeDefaultSelection Proc Near   Uses ax cx dx si es di
       ; Get Partition-Pointer (SI) from Partition-Number (DL)
       call    PART_GetPartitionPointer
       mov     ax, ds:[si+LocIPT_Flags]
-      test    ax, Flags_BootAble
+      test    ax, Flags_Bootable
       jz      SMCP_Dec_RejectPartition
 
      SMCP_GotSelection:

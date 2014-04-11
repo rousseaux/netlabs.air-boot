@@ -50,13 +50,19 @@ MSHACK_ProcessPartTables        Proc Near  Uses ax dx di
    or      dh, dh
    jz      MSHPPT_NoMShack
   MSHPPT_HarddriveLoop:
-      push    ax bx cx dx
+      push    ax
+      push    bx
+      push    cx
+      push    dx
          xor     ax, ax
          xor     bx, bx     ; Location Absolute Sector 0
          mov     cx, 0001h
          xor     dh, dh     ; Location Cylinder 0, Head 0, Sector 1 MBR/PPT
          call    DriveIO_LoadPartition
-      pop     dx cx bx ax
+      pop     dx
+      pop     cx
+      pop     bx
+      pop     ax
       jc      MSHPPT_Failure
 
       ; Search for ID in AL and exchange with ID in AH

@@ -23,43 +23,43 @@ IFDEF ModuleNames
 DB 'VIDEOIO',0
 ENDIF
 
-VideoIO_WaitRetrace             Proc Near   Uses ax dx
-   mov     dx, 3DAh
- VIOWR_Jump1:
-   in      al, dx
-   test    al, 8
-   jnz     VIOWR_Jump1
- VIOWR_Jump2:
-   in      al, dx
-   test    al, 8
-   jz      VIOWR_Jump2
-   ret
-VideoIO_WaitRetrace             EndP
+VideoIO_WaitRetrace Proc Near   Uses ax dx
+        mov     dx, 3DAh
+    VIOWR_Jump1:
+        in      al, dx
+        test    al, 8
+        jnz     VIOWR_Jump1
+    VIOWR_Jump2:
+        in      al, dx
+        test    al, 8
+        jz      VIOWR_Jump2
+        ret
+VideoIO_WaitRetrace EndP
 
 
 
 ; Holds the current position. Yeah, I know this is in the code area, but who
 ;  cares :))
-TextPosY                     db     0h
-TextPosX                     db     0h
-TextColorFore                db     7h
-TextColorBack                db     0h
+TextPosY                    db  0h
+TextPosX                    db  0h
+TextColorFore               db  7h
+TextColorBack               db  0h
 
 ;        In: CH - Cursor Column, CL - Cursor Row (Start at 1,1)
 ; Destroyed: None
-VideoIO_Locate                  Proc Near   Uses cx
-   or      ch, ch
-   jz      VIOL_IgnoreY
-   dec     ch
-   mov     TextPosY, ch
-  VIOL_IgnoreY:
-   or      cl, cl
-   jz      VIOL_IgnoreX
-   dec     cl
-   mov     TextPosX, cl
-  VIOL_IgnoreX:
-   ret
-VideoIO_Locate                  EndP
+VideoIO_Locate  Proc Near   Uses cx
+        or      ch, ch
+        jz      VIOL_IgnoreY
+        dec     ch
+        mov     TextPosY, ch
+    VIOL_IgnoreY:
+        or      cl, cl
+        jz      VIOL_IgnoreX
+        dec     cl
+        mov     TextPosX, cl
+    VIOL_IgnoreX:
+        ret
+VideoIO_Locate  EndP
 
 ;        In: CH - Cursor Column, CL - Center Cursor Row (Start at 1,1)
 ;            DX - Length to use for centering
@@ -548,7 +548,7 @@ VideoIO_LetUserEditString       Proc Near   Uses ax bx cx dx si es di
          int     16h
          cmp     ah, Keys_ESC
          je      VIOLUES_KeyESC
-         cmp     ah, Keys_Enter
+         cmp     ah, Keys_ENTER
          je      VIOLUES_KeyENTER
          cmp     ah, Keys_Backspace
          je      VIOLUES_KeyBACKSPACE
@@ -835,32 +835,32 @@ VideoIO_DumpDiskInfo    EndP
 
 
 ; Disk Info to Dump to AB LogScreen
-Disk:             db "DISK ",0
-;BiosCyls:         db "Cyls    :",0
-BiosHeads:        db "Heads   :",0
-BiosSecs:         db "Secs    :",0
-LvmSecs:          db "SecsLVM :",0
-BiosLBA:          db "LBA Secs:",0
+Disk              db "DISK ",0
+;BiosCyls          db "Cyls    :",0
+BiosHeads         db "Heads   :",0
+BiosSecs          db "Secs    :",0
+LvmSecs           db "SecsLVM :",0
+BiosLBA           db "LBA Secs:",0
 
 
-HugeBootDisk:     db "Boot Disk is Huge    : ",0
-DisksFound:       db "Disks Found          : ",0
-PartitionsFound:  db "Partitions Found     : ",0
-;AutoStartPart:    db "Auto Start Partition : ",0
+HugeBootDisk      db "Boot Disk is Huge    : ",0
+DisksFound        db "Disks Found          : ",0
+PartitionsFound   db "Partitions Found     : ",0
+;AutoStartPart     db "Auto Start Partition : ",0
 
-Phase1:           db "eCS Install Phase 1  : ",0
+Phase1            db "eCS Install Phase 1  : ",0
 
 
-ShowMenu:         db "Press TAB to return to the AiR-BOOT Menu",0
-;ShowBootLog:      db "Press TAB to see the Boot Log...",0
+ShowMenu          db "Press TAB to return to the AiR-BOOT Menu",0
+;ShowBootLog       db "Press TAB to see the Boot Log...",0
 
-Yes:              db "YES",0
-No:               db "NO",0
-On:               db "ON",0
-Off:              db "OFF",0
-None:             db "NONE",0
-Active:           db "ACTIVE",0
-NotActive:        db "NOT ACTIVE",0
+Yes               db "YES",0
+No                db "NO",0
+On                db "ON",0
+Off               db "OFF",0
+None              db "NONE",0
+Active            db "ACTIVE",0
+NotActive         db "NOT ACTIVE",0
 
 ; New Line for use by MBR_Teletype
-NL:         db 0dh, 0ah, 0
+NL          db 0dh, 0ah, 0
