@@ -141,7 +141,7 @@ PASSWORD_AskSpecifiedPassword   Proc Near   Uses cx dx ds si es di bp
    ret
 PASSWORD_AskSpecifiedPassword   EndP
 
-PasswordSpace                db 16 dup (0) ; Space for Password-Encoding...
+PasswordSpace:               db 16 dup (0) ; Space for Password-Encoding...
                              dw 0BABEh     ; All of these 8 bytes are insider
                              dw 0FC77h     ;  jokes. I bet no one will solve
                              dw 0632Fh     ;  all of them =) they are used by

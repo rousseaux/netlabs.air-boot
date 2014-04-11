@@ -152,14 +152,12 @@ DriveIO_UpdateFloppyName        EndP
 ;  Internal access (to AiR-BOOT) is always done via INT 13h/CHS.
 
 DriveIO_GetHardDriveCount       Proc Near   Uses ds si
-   push    ds
-   push    si
+   push    ds si
       push    0040h
       pop     ds
       mov     si, 0075h
       mov     dh, ds:[si]                ; 40:75 -> POST: Total Harddiscs == DL
-   pop     si
-   pop     ds
+   pop     si ds
    mov     TotalHarddiscs, dh
    ret
 DriveIO_GetHardDriveCount       EndP
@@ -174,8 +172,7 @@ DriveIO_InitLBASwitchTable      Proc Near   Uses es di
    mov     dh, TotalHarddiscs
    mov     dl, 80h
   DIOILUT_DriveLoop:
-      push    dx
-      push    di
+      push    dx di
          mov     ah, 08h
          int     13h            ; DISK - GET DRIVE PARAMETERS
          mov     ah, 0FBh       ; Assume 255 heads/63 sectors, if error
@@ -192,8 +189,7 @@ DriveIO_InitLBASwitchTable      Proc Near   Uses es di
          shl     ah, 1          ; Shift 2 bits, so we are able to compare to
                                 ;  bit 16-23 of the LBA address
         DIOILUT_Error:
-      pop     di
-      pop     dx
+      pop     di dx
       mov     bptr ds:[di], ah  ; Save that value
       inc     di                ; Go to next BYTE
       inc     dl
@@ -209,7 +205,7 @@ DriveIO_InitLBASwitchTable      EndP
 ;  Destroys SI
 ; Rousseau: Enhanced to handle sector-numbers 127 and 255 besides 63 for LVM-info sectors.
 ;           Ugly, need to cleanup.
-DriveIO_LVMAdjustToInfoSector   Proc Near
+DriveIO_LVMAdjustToInfoSector   Proc Near   Uses
 
 
 
@@ -474,12 +470,12 @@ done:
       ret
 DriveIO_LVMAdjustToInfoSector   EndP
 
-drive                   db 'drive                    : ',0
-before_lvm_adjust       db 'before lvm adjust        : ',0
-after_lvm_adjust        db 'after lvm adjust         : ',0
-before_lvm_adjust_log   db 'before lvm logical adjust: ',0
-after_lvm_adjust_log    db 'after lvm logical adjust : ',0
-spt_used                db 'spt used                 : ',0
+drive:                  db 'drive                    : ',0
+before_lvm_adjust:      db 'before lvm adjust        : ',0
+after_lvm_adjust:       db 'after lvm adjust         : ',0
+before_lvm_adjust_log:  db 'before lvm logical adjust: ',0
+after_lvm_adjust_log:   db 'after lvm logical adjust : ',0
+spt_used:               db 'spt used                 : ',0
 
 
 
@@ -554,14 +550,14 @@ DriveIO_SavePartition           Proc Near  Uses ax bx cx dx si
 DriveIO_SavePartition           EndP
 
 ; Keeps DS:SI for caller
-DriveIO_LoadTmpSector           Proc Near
+DriveIO_LoadTmpSector           Proc Near  Uses
    mov     si, offset TmpSector
    call    DriveIO_LoadSector                                                    ; Uses INT13X if needed
    ret
 DriveIO_LoadTmpSector           EndP
 
 ; Keeps DS:SI for caller
-DriveIO_SaveTmpSector           Proc Near
+DriveIO_SaveTmpSector           Proc Near  Uses
    mov     si, offset TmpSector
    call    DriveIO_SaveSector
    ret
@@ -629,7 +625,7 @@ DriveIO_SaveLVMSector           Proc Near  Uses ax bx cx dx
 DriveIO_SaveLVMSector           EndP
 
 ; Memory-Block that holds information for LBA-access via INT 13h
-DriveIO_DAP                db       10h  ; Size of paket
+DriveIO_DAP:               db       10h  ; Size of paket
                            db        0   ; Reserved
 DriveIO_DAP_NumBlocks      dw        0   ; Number of blocks
 DriveIO_DAP_Transfer       dd        0   ; Transfer Adress
@@ -655,12 +651,7 @@ DriveIO_GotLoadError            Proc Near
   DIOGLE_BelowA:
    mov     bptr [si+5], dl
    call    MBR_Teletype
-
-   ; JWasm: cannot jump to local label in procedure.
-   ; Changed to halt here.
-   ;jmp     MBRLE_Halt
-  DriveIO_GotLoadError_halt:
-   jmp     DriveIO_GotLoadError_halt
+   jmp     MBRLE_Halt
 DriveIO_GotLoadError            EndP
 
 ; #########################################################################
@@ -1245,6 +1236,6 @@ DriveIO_GatherDiskInfo  EndP
 
 
 ; Values for sectors per track table corresponding to DriveIO_IsHugeDrive return value.
-secs_per_track_table    db    63,127,255,255,255,255
+secs_per_track_table:   db    63,127,255,255,255,255
 
 ;db_lmlvm:   db 'Load Master LVM -- disk: ',0

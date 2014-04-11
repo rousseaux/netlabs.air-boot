@@ -187,14 +187,10 @@ LINUX_SearchKernelName          Proc Near  Uses cx di
    mov     di, offset LINUX_KernelEntries
    add     di, LocIPT_Name
   LSKN_SearchLoop:
-      push    cx
-      push    si
-      push    di
+      push    cx si di
          mov     cx, 11
          repe    cmpsb                   ; Compare total 11-bytes
-      pop     di
-      pop     si
-      pop     cx
+      pop     di si cx
       je      LSKN_Found
       add     di, LocIPT_LenOfIPT
    dec     cl
@@ -227,8 +223,7 @@ LINUX_LoadKernel                Proc Near  Uses ; Direct Jump, No Preserves
 
    ; Linux has 1 'BR' (which is crap) and some setup sectors
    ; we load them at 9000:0, what a luck, we are at 8000:0 :-))
-   push    ds
-   push    es
+   push    ds es
       mov     ax, 9000h
       mov     es, ax
       xor     di, di
@@ -259,25 +254,18 @@ LINUX_LoadKernel                Proc Near  Uses ; Direct Jump, No Preserves
       mov     ds, ax
       mov     ax, 6000h
       mov     es, ax
-      ; Push Kernel-Entry-Pointer
-      push    cx
-      push    si
+      push    cx si                      ; Push Kernel-Entry-Pointer
          mov     si, di
          shl     cx, 9                   ; Sectors to Byte Count
          sub     si, cx                  ; DS:SI - Begin of Kernel Data
          xor     di, di
          shr     cx, 1
          rep     movsw                   ; Copy Data...
-      ; Get Kernel-Entry-Pointer back
-      pop     si
-      pop     cx
+      pop     si cx                      ; Get Kernel-Entry-Pointer back
      LLL_GotAll:
-   pop     es
-   pop     ds
+   pop     es ds
 
-   ; Push Missing-Sectors, StartCluster
-   push    cx
-   push    dx
+   push    cx dx                          ; Push Missing-Sectors, StartCluster
       mov     ax, 9000h
       mov     ds, ax
 
@@ -347,9 +335,7 @@ LINUX_LoadKernel                Proc Near  Uses ; Direct Jump, No Preserves
          jnz     LLL_CommandLineLoop
          stosb                            ; Write another NUL
       pop     cx
-   ; Pop StartCluster, Missing-Sectors
-   pop     dx
-   pop     bx
+   pop     dx bx                          ; Pop StartCluster, Missing-Sectors
    ; CX - Sector-Count of Kernel Image, DX - Starting Cluster of Kernel Image
    ; BX - Sector-Count left over in 6000:0 area from Setup Code loading
    ; DS == CS

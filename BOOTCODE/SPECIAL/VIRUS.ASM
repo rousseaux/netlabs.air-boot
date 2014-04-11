@@ -32,7 +32,7 @@ VIRUS_CheckForStealth      Proc Near  Uses ds si es di
    mov     cx, 4
    mov     di, offset CFG_VIR_INT08
    push    di
-      repe     scasb
+      rep     scasb
    pop     di
    jne     VCFS_AlreadyInitiated
 
@@ -101,56 +101,37 @@ VIRUS_CheckForStealth      Proc Near  Uses ds si es di
    xor     ah, ah
    int     16h                           ; Waits for any keystroke
    jmp     VCFS_InitNow
-
   VCFS_WhewThisIsOne:
-   call    VIRUS_TryRestore
+   mov     si, offset TXT_VirusFoundMain
+   call    MBR_Teletype
+   ; Now check BackUp MBR for validation (AiRBOOT signature), do this
+   ; using direct-calls to original bios handler.
+   call    ANTIVIR_RestoreMBR
+   jnc     VCFS_ValidRestore
+   mov     si, offset TXT_VirusFound1damn
+   call    MBR_Teletype
+   call    MBR_Teletype                  ; VirusFound1any
+   mov     si, offset TXT_VirusFoundEnd
+   call    MBR_Teletype
+   jmp     MBR_HaltSystem
 
-   ; Code should no reach this since we halt the system in VIRUS_TryRestore.
-   ret
+  VCFS_ValidRestore:
+   mov     si, offset TXT_VirusFound1ok
+   call    MBR_Teletype
+   mov     si, offset TXT_VirusFound1any
+   call    MBR_Teletype
+   mov     si, offset TXT_VirusFoundEnd
+   call    MBR_Teletype
+   jmp     MBR_HaltSystem
 VIRUS_CheckForStealth           EndP
-
-;
-; This procedure is created to avoid jumping to labels that are local to
-; procedures. JWasm does not allow that.
-; Should be fixed better later.
-;
-VIRUS_TryRestore    Proc Near
-        mov     si, offset TXT_VirusFoundMain
-        call    MBR_Teletype
-        ; Now check BackUp MBR for validation (AiRBOOT signature), do this
-        ; using direct-calls to original bios handler.
-        call    ANTIVIR_RestoreMBR
-        jnc     VIRUS_TryRestore_ValidRestore
-
-        mov     si, offset TXT_VirusFound1damn
-        call    MBR_Teletype
-        call    MBR_Teletype                  ; VirusFound1any
-        mov     si, offset TXT_VirusFoundEnd
-        call    MBR_Teletype
-        jmp     MBR_HaltSystem
-
-    VIRUS_TryRestore_ValidRestore:
-        mov     si, offset TXT_VirusFound1ok
-        call    MBR_Teletype
-        mov     si, offset TXT_VirusFound1any
-        call    MBR_Teletype
-        mov     si, offset TXT_VirusFoundEnd
-        call    MBR_Teletype
-        jmp     MBR_HaltSystem
-
-        ; Code should not reach this since we halt the system.
-VIRUS_TryRestore    Endp
-
 
 ; Checks system for normal-MBR-virus... (done by comparing current MBR with
 ; memory image). Note: We will only compare the first 446 bytes.
 ; if one is found, MBR will get restored and system will get halted.
 ; Segment Registers preserved
 VIRUS_CheckForVirus             Proc Near  Uses ds si es di
-   push    cs
-   push    cs
-   pop     ds
-   pop     es
+   push    cs cs
+   pop     ds es
    mov     bx, offset TmpSector
    mov     dx, 0080h
    mov     cx, 0001h  ; Harddisc 0, Sector 1
@@ -163,10 +144,7 @@ VIRUS_CheckForVirus             Proc Near  Uses ds si es di
    mov     di, offset TmpSector
    mov     cx, 223                       ; Compare 446 bytes
    repz    cmpsw                         ; if fail: Cross call to Stealth-Virus
-   ;jne     VCFS_WhewThisIsOne
-   je      VIRUS_CheckForVirus_end
-   call    VIRUS_TryRestore
-  VIRUS_CheckForVirus_end:
+   jne     VCFS_WhewThisIsOne
    ret
 VIRUS_CheckForVirus             EndP
 
@@ -188,11 +166,9 @@ ANTIVIR_SaveBackUpMBR           Proc Near  Uses ax bx cx dx es
 ANTIVIR_SaveBackUpMBR           EndP
 
 ; Will report Carry-Clear, if BackUp MBR is valid (supposingly)
-ANTIVIR_CheckBackUpMBR          Proc Near
-   push    cs
-   push    cs
-   pop     es
-   pop     ds
+ANTIVIR_CheckBackUpMBR          Proc Near  Uses
+   push    cs cs
+   pop     es ds
    mov     bx, offset TmpSector
    mov     dx, 0080h
    ;mov     cx, 003Ch                     ; Harddisc 0, Sector 60
@@ -213,7 +189,7 @@ ANTIVIR_CheckBackUpMBR          Proc Near
    ret
 ANTIVIR_CheckBackUpMBR          EndP
 
-ANTIVIR_RestoreMBR              Proc Near
+ANTIVIR_RestoreMBR              Proc Near  Uses
    call    ANTIVIR_CheckBackUpMBR
    jnc     ARMBR_DoIt
    ret

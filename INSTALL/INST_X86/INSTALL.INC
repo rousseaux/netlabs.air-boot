@@ -686,7 +686,7 @@ Init_VerifyConfig              Proc Near  Uses ds si es di
    ;mov     cx, 7                         ; Total of 7 Sectors
                                          ; Rousseau: changed above to 7
    ; Rousseau: Changed back to 5 to be compatible with the v1.07 OS/2 and WIN
-   ; installers AIRBOOT2.EXE and AIRBOOTW.EXE dat do a CRC over 5 sectors.
+   ; installers AIRBOOT2.EXE and AIRBOOTW.EXE that do a CRC over 5 sectors.
    mov     cx, 5
 
   IVC_CheckSumLoop2:
@@ -863,7 +863,8 @@ Init_CheckCurrentMBR           EndP
 
 ; Carry set, if invalid BackUp
 Init_CheckBackupMBR            Proc Near  Uses si
-   mov     si, 7600h                     ; Fixed location of backup
+    ; Now 7a00h
+   mov     si, 7a00h                     ; Fixed location of backup
    call    Init_CheckThisMBR
    ret
 Init_CheckBackupMBR            EndP
@@ -923,7 +924,8 @@ Init_CopyBackupMBR             Proc Near  Uses ds si es di
    push    es
    pop     ds
    pop     es                         ; Exchange DS&ES so DS==HDD, ES==New BootCode
-   mov     si, 7600h                     ; Sector 60...
+   ; Now 7a00h
+   mov     si, 7a00h                     ; Sector 62...
    mov     di, offset BootImage          ;  -> to Sector 1 of New BootCode
    mov     cx, 256
    rep     movsw                         ; Copies 1 sector...

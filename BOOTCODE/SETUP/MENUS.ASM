@@ -68,7 +68,7 @@ LocMENU_ItemPack             equ          8 ; only if VariablePtr>0
 
 SETUP_MainMenu:
                 db      0                ; Where Current Item will get saved
-                dw      offset TXT_SETUPHELP_Main ; Pointer to help information
+                dw      offset TXT_SETUPHELP_MAIN ; Pointer to help information
                 ; The Menu-Items start here...
                 dw      offset SETUP_EnterMenu_PartitionSetup, 0
                 dw      offset TXT_SETUP_PartitionSetup, offset TXT_SETUPHELP_PartitionSetup
@@ -102,7 +102,7 @@ SETUP_MainMenu:
 
 SETUP_BasicOptions:
                 db      0                ; Where Current Item will get saved
-                dw      offset TXT_SETUPHELP_SubMenu ; Pointer to help info
+                dw      offset TXT_SETUPHELP_SUBMENU ; Pointer to help info
                 ; The Menu-Items start here...
                 dw      offset SETUPMAGIC_ChangeDefaultSelection, offset CFG_PartDefault
                 dw      offset TXT_SETUP_DefaultSelection, offset TXT_SETUPHELP_DefaultSelection
@@ -134,10 +134,10 @@ SETUP_BasicOptions:
                 dw      0, 0
                 dw      0, 0
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_ProtectMBR
-                dw      offset TXT_SETUP_MbrProtection, offset TXT_SETUPHELP_MbrProtection
+                dw      offset TXT_SETUP_MBRprotection, offset TXT_SETUPHELP_MBRprotection
                 dw      6 dup (0)
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_IgnoreWriteToMBR
-                dw      offset TXT_SETUP_IgnoreMbrWrites, offset TXT_SETUPHELP_IgnoreMbrWrites
+                dw      offset TXT_SETUP_IgnoreMBRwrites, offset TXT_SETUPHELP_IGNOREMBRWRITES
                 dw      6 dup (0)
                 dw      0, 0
                 dw      0, 0
@@ -150,7 +150,7 @@ SETUP_BasicOptions:
 
 SETUP_AdvancedOptions:
                 db      0                ; Where Current Item will get saved
-                dw      offset TXT_SETUPHELP_SubMenu ; Pointer to help info
+                dw      offset TXT_SETUPHELP_SUBMENU ; Pointer to help info
                 ; The Menu-Items start here...
                 dw      offset SETUPMAGIC_ChangeBootMenu, offset CFG_BootMenuActive
                 dw      offset TXT_SETUP_BootMenu, offset TXT_SETUPHELP_BootMenu
@@ -162,7 +162,7 @@ SETUP_AdvancedOptions:
                 dw      0, 0
                 ; Separator Line
                 dw      0, 0
-                dw      offset TXT_SETUP_SecurityOptions, 0
+                dw      offset TXT_SETUP_SECURITYOPTIONS, 0
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_PasswordSetup
                 dw      offset TXT_SETUP_PasswordedSetup, offset TXT_SETUPHELP_PasswordedSetup
                 dw      6 dup (0)
@@ -197,7 +197,7 @@ SETUP_AdvancedOptions:
 
 SETUP_ExtendedBootOptions:
                 db      0                ; Where Current Item will get saved
-                dw      offset TXT_SETUPHELP_SubMenu ; Pointer to help information
+                dw      offset TXT_SETUPHELP_SUBMENU ; Pointer to help information
                 ; The Menu-Items start here...
 ; [Linux support removed since v1.02]
 ;                dw      offset SETUPMAGIC_ChangeLinuxKernelPart, offset CFG_LinuxKrnlPartition

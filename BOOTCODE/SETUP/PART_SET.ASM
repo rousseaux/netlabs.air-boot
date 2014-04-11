@@ -24,7 +24,7 @@ DB 'PART_SET',0
 ENDIF
 
 ; This here is called from Menu in AIR-BSET.asm
-PARTSETUP_Main                  Proc Near
+PARTSETUP_Main                  Proc Near   Uses
    ; Build Fixed Content...
    call    PARTSETUP_DrawMenuBase
    ; Build Dynamic Content...
@@ -52,7 +52,7 @@ PARTSETUP_Main                  Proc Near
       je      PSM_KeyESC
       cmp     ah, Keys_F1
       je      PSM_KeyF1
-      cmp     ah, Keys_ENTER
+      cmp     ah, Keys_Enter
       je      PSM_KeyENTER
       ; Flags-Change
       and     al, 0DFh                    ; Upper-Case Input
@@ -109,8 +109,6 @@ PARTSETUP_Main                  Proc Near
    call    SETUP_ShowHelp                ; Shows help
    jmp     PSM_MainLoop
 
-    ; Disabling editing for type 0x35 is currently implemented
-    ; in PARTSETUP_ChangePartitionName.
   PSM_KeyENTER:
    call    PARTSETUP_ChangePartitionName
    ; Rebuild Menu...
@@ -121,19 +119,11 @@ PARTSETUP_Main                  Proc Near
 
   PSM_KeyBootAble:
    call    PART_GetPartitionPointer      ; Gets Partition (DL) Pointer -> SI
-   ; See if this is an eCS LVM Volume.
-   ; In that case, we don't allow it to be made bootable.
-   ; We also show a popup to inform the user.
-   call    PARTSETUP_IsType35
-   je      PSM_KeyBootAble_istype35
-
-  PSM_KeyBootAble_notype35:
    mov     al, [si+LocIPT_Flags]
-   xor     al, Flags_Bootable
+   xor     al, Flags_BootAble
    mov     [si+LocIPT_Flags], al
    call    PARTSETUP_DrawPartitionInfo
    call    PARTSETUP_BuildChoiceBar
-  PSM_KeyBootAble_istype35:
    jmp     PSM_MainLoop
 
   PSM_KeyVIBRdetection:
@@ -172,31 +162,6 @@ PARTSETUP_Main                  Proc Near
    call    PARTSETUP_BuildChoiceBar
    jmp     PSM_MainLoop
 PARTSETUP_Main                  EndP
-
-
-; See if this is a partition of type 0x35 and display error
-; when user tries to set it as bootable.
-; IN:   SI = Pointer to partition
-; OUT:  ZF = Set if 0x35, clear otherwise
-PARTSETUP_IsType35      Proc    Near
-   mov     al, [si+LocIPT_SystemID]
-   cmp     al, 35h
-   jne     PARTSETUP_IsType35_end
-   pushf
-   pusha
-   ; Cannot boot LVM-Data partitions
-   mov     cx, 0C04h
-   mov     si, offset TXT_SETUP_NoBootType35
-   call    SETUP_ShowErrorBox
-   popa
-   call    PARTSETUP_DrawMenuBase
-   call    PARTSETUP_RefreshPartitions
-   call    PARTSETUP_BuildChoiceBar
-   popf
-  PARTSETUP_IsType35_end:
-   ret
-PARTSETUP_IsType35      EndP
-
 
 ; Draw all standard-things for Partition Setup, dynamic content not included.
 PARTSETUP_DrawMenuBase          Proc Near   Uses dx
@@ -285,7 +250,7 @@ PARTSETUP_DrawMenuBase          Proc Near   Uses dx
    mov     cl, 4
    call    VideoIO_FixedPrint
 
-   mov     si, offset TXT_SETUPHELP_PartSetup
+   mov     si, offset TXT_SETUPHELP_PARTSETUP
    call    SETUP_DrawMenuHelp
    ret
 PARTSETUP_DrawMenuBase          EndP
@@ -404,8 +369,7 @@ PARTSETUP_DrawPartitionInfo     Proc Near   Uses ax bx cx dx si
          add     si, LocIPT_Name
          mov     cl, 11
          call    VideoIO_FixedPrint
-   pop     si
-   pop     cx
+   pop     si cx
 
    ; Display "Flags" field aka "BVHL"
    add     cl, 13
@@ -414,7 +378,7 @@ PARTSETUP_DrawPartitionInfo     Proc Near   Uses ax bx cx dx si
    mov     bl, [si+LocIPT_Flags]
    mov     bh, bl
    mov     al, TXT_SETUP_FlagLetterBootable
-   and     bl, Flags_Bootable
+   and     bl, Flags_BootAble
    call    PARTSETUP_DrawOneFlag
    mov     bl, bh
    mov     al, TXT_SETUP_FlagLetterVIBR
@@ -464,7 +428,7 @@ PARTSETUP_DrawOneFlag           EndP
 ;        In: DL - Current Active (to be inactivated)
 ;            DH - New Active (to be activated)
 ; Destroyed: None
-PARTSETUP_BuildChoiceBar        Proc Near
+PARTSETUP_BuildChoiceBar        Proc Near   Uses
    cmp     dl, dh
    je      PSBCB_SkipRetrace
    call    VideoIO_WaitRetrace
@@ -701,25 +665,14 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
         ; If the partition is an LVM partition then disable editing completely.
         cmp     byte ptr [si+LocIPT_SystemID], 035h
         jnz     no_type_35h
-
-   ; Cannot boot LVM-Data partitions
-   pusha
-   mov     cx, 0C04h
-   mov     si, offset TXT_SETUP_NoEditType35
-   call    SETUP_ShowErrorBox
-   popa
-
-
         jmp     PSCPN_AllDone
     no_type_35h:
 
    mov     cx, 11                        ; Partition-Name-Length = 11 Bytes
-   push    si
-   push    di
+   push    si di
       add     si, LocIPT_Name            ; DS:SI -> Partition-Name
       repz    cmpsb
-   pop     di
-   pop     si
+   pop     di si
    jne     PSCPN_LetUserEditPartName     ; -> No BR/LVM Changing/Saving
 
    mov     ChangePartNameSave, 1         ; Remember, so we will save to BR
@@ -787,7 +740,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
 
 
    ; ----------------------------------------------[LVM SAVE PARTITION NAME]---
-   ; Copy 11 bytes from IPT into LVM PartitionName, back-padd with zero's
+   ; Copy 11 bytes from IPT into LVM PartitonName, back-padd with zero's
    mov     cx, 11
    push    si
       rep     movsb
@@ -894,7 +847,7 @@ PARTHIDESETUP_Main              Proc Near   Uses dx
       je      PHSM_KeyESC
       cmp     ah, Keys_F1
       je      PHSM_KeyF1
-      cmp     ah, Keys_ENTER
+      cmp     ah, Keys_Enter
       je      PHSM_KeyToogle
       cmp     ah, Keys_Plus
       je      PHSM_KeyToogle
@@ -1004,16 +957,14 @@ CLR_PART_HIDE_WINDOW_BORDER_BM = 0d02h
    call    GetLenOfName
    sub     dl, cl                        ; Adjust position
    sub     dl, 2
-   push    cx
-   push    si                         ; SI == Label Field
+   push    cx si                         ; SI == Label Field
       mov     cx, dx
       call    VideoIO_Locate
       mov     al, '<'
       call    VideoIO_PrintSingleChar
       mov     si, offset TXT_SETUP_HideFeature2
       call    VideoIO_Print
-   pop     si
-   pop     cx
+   pop     si cx
    call    VideoIO_FixedPrint
    mov     al, '>'
    call    VideoIO_PrintSingleChar
@@ -1182,7 +1133,7 @@ PARTHIDESETUP_DrawPartitionInfo EndP
 ;        In: DL - Current Active (to be inactivated)
 ;            DH - New Active (to be activated)
 ; Destroyed: None
-PARTHIDESETUP_BuildChoiceBar    Proc Near
+PARTHIDESETUP_BuildChoiceBar    Proc Near   Uses
    cmp     dl, dh
    je      PHSBCB_SkipRetrace
    call    VideoIO_WaitRetrace
@@ -1313,8 +1264,7 @@ PARTHIDESETUP_CollectHideConfigAndPutToTable Proc Near Uses ax si es di
    pop     es
    mov     di, offset HidePartitionTable
    add     di, ax                        ; We got the pointer
-   push    di
-   push    di
+   push    di di
       mov     cx, LocIPT_MaxPartitions
       mov     al, 0FFh
       rep     stosb                      ; Fill up with FFh
@@ -1416,7 +1366,7 @@ PARTSETUP_DriveLetterSetup      Proc Near  Uses dx si es di
          je      PSDLS_KeyDown
          cmp     ah, Keys_ESC
          je      PSDLS_KeyDONE
-         cmp     ah, Keys_ENTER
+         cmp     ah, Keys_Enter
          je      PSDLS_KeyDONE
          ; Direct-Letter-Input
          or      al, 20h                 ; Lower-Case Input

@@ -484,6 +484,9 @@ LocIPT_LocationPartTable    equ     23  ; PartitionTable of Partition
 LocIPT_AbsoluteBegin        equ     26  ; Absolute Sector of Begin
 LocIPT_AbsolutePartTable    equ     30  ; Absolute Sector of PartTable
 
+; Hidden Partition Table
+LocHPT_LenOfHPT             equ     30  ; Length of an HPT-entry
+
 ; AiR-BOOT IPT-Flags
 LocIPT_DefaultFlags         equ     00000011b   ; Don't know if boot-able :)
 LocIPT_DefaultNonBootFlags  equ     00000010b   ; ...VIBR Detection is always on
@@ -1198,7 +1201,7 @@ AiR_BOOT_Start:
                 xor     si,si
                 ;call    MBR_TeletypeNL
                 pop     si
-                add     si, 30
+                add     si, 30      ; Add remainder of IPT entry
                 loop    MBR_Parts
 
 
@@ -1853,7 +1856,7 @@ PartitionTable:  ; no-partitions detected... :]
     ; AbsolutePartTab * 4 (where the partition table is, in absolute sectors)
     ; --------------------> 34 Bytes (total maximum partition-entries = 30)
 
-    db  (partition_count * 34) dup (0)
+    db  (LocIPT_MaxPartitions * LocIPT_LenOfIPT) dup (0)
 
 
 ; 73fa !!!!!!!!!!!!!!
@@ -1888,17 +1891,17 @@ here = $
 soipt:
 sos58:
 ; 7400h
-HidePartitionTable      db  (partition_count * 30) dup (0FFh)
+HidePartitionTable      db  (LocIPT_MaxPartitions * LocHPT_LenOfHPT) dup (0FFh)
                         ; Format is:
                         ;============
                         ; PartitionPtr : BYTE * 30
-                        ; --------------------> 30 Bytes * 30
+                        ; --------------------> 30 Bytes * 45
 
-DriveLetters            db  partition_count dup ('L')
+DriveLetters            db  LocIPT_MaxPartitions dup (0)
                         ; Format is:
                         ;============
                         ; Drive-Letter : BYTE (80h-C:, 81h-D:)
-                        ; --------------------> 1 Byte * 30
+                        ; --------------------> 1 Byte * 45
 
         ;
         ; There is some room here, but this is the configuration section.
@@ -1980,12 +1983,10 @@ ENDIF
 sobss:
 ;------------------------------------------------------------------------------
                             ;
-                            ; Disabling the org, so it comes directly after the 
-                            ; image, does not work. All floppy entries.
-                            ; Something goes wrong, so we offset the BSS for
-                            ; now.
+                            ; Removed org for BSS data to be more compatible
+                            ; with segment-concatenated layout.
                             ;
-                            org 02000h                         ; Uninitialized
+                            ;org 0A000h                         ; Uninitialized
 
 
 ; This space actually gets initialized in PreCrap to NUL (till EndOfVariables)
@@ -1997,7 +1998,7 @@ TmpSector                   db  512 dup (?) ; Temporary Sector
 
 ; Everything used to build a new IPT and reference it to the old one
 NewPartTable                db  1536 dup (?)                    ; New Partition Table
-NewHidePartTable            db  partition_count * 30 dup (?)    ; New Hide-Partition Table
+NewHidePartTable            db  partition_count * LocHPT_LenOfHPT dup (?)    ; New Hide-Partition Table
 NewDriveLetters             db  partition_count dup (?)         ; Logical Drive-Letters
 
 PartitionSizeTable          db  partition_count * 6 dup (?) ; Size-Table (6 bytes per partition)

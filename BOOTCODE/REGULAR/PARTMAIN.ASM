@@ -113,7 +113,7 @@ PART_FixUpSelectionNumber       Proc Near Uses ax cx
   PFUPN_BootableSearchLoop:
       call    PART_GetPartitionPointer   ; Gets SI for partition DL
       mov     al, ds:[si+LocIPT_Flags]
-      and     al, Flags_Bootable
+      and     al, Flags_BootAble
       jnz     PFUPN_Found
       dec     cl
       jz      PFUPN_NothingFound
@@ -289,7 +289,7 @@ PART_GetPartitionNumber         EndP
 ; They will convert from and to unfiltered view (used in Boot-Menu)
 ;        In: DL - Number of partition in filtered view
 ;       Out: DL - Number of partition in straight view
-PART_ConvertToStraight          Proc Near
+PART_ConvertToStraight          Proc Near   Uses
    ;movzx   bx, dl
    mov   bl,dl                                  ; partition number to bl
    mov   bh,0                                   ; zero extend to word
@@ -927,9 +927,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
 
   PSP_ForceI13X:
-        push    es
-        push    di
-        push    si
+        push    es di si
 
         ; Setup ES and FS.
         ; FS needs to keep this address.
@@ -953,9 +951,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         mov     ax, wptr [si+LocIPT_AbsoluteBegin+2]
         mov     wptr es:[di+06], ax
 
-        pop     si
-        pop     di
-        pop     es
+        pop     si di es
 
 
 
@@ -1154,9 +1150,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    test    CFG_ProtectMBR, 1
    jz      PSP_NoMBRprotect
    ; -------------------------------------------------- INSTALLS MBR-PROTECTION
-   ; We need DS:SI later...
-   push    ds
-   push    si
+   push    ds si                         ; We need DS:SI later...
       ; First subtract 1024 bytes from Base-Memory...
       push    ds
          mov     ax, 40h
@@ -1200,9 +1194,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       mov     ds:[si], ax
       mov     ds:[si+2], dx              ; Vector hardcoded at DS:0009
       ; MBR-Protection now active :)
-   ; Restore DS:SI
-   pop     si
-   pop     ds
+   pop     si ds                         ; Restore DS:SI
 
 
 
@@ -1286,12 +1278,6 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         call    VideoIO_PrintHexWord
         mov     ax,bx
         call    VideoIO_PrintHexWord
-        mov     ax,[si+LocIPT_AbsolutePartTable+02]
-        call    VideoIO_PrintHexWord
-        mov     ax,[si+LocIPT_AbsolutePartTable+00]
-        call    VideoIO_PrintHexWord
-        mov     al,[ExtendedAbsPosSet]
-        call    VideoIO_PrintHexByte
         popa
 
 
@@ -1307,9 +1293,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
     no_os2_bm:
 
         ;
-        ; Update the phys-disk field
-        ; DI points to PartitionSector
-        ; BX holds index to phys-disk field
+        ; Update the phys-drive field
         ;
         mov     al,byte ptr [si+LocIPT_Drive]
         mov     es:[di+bx],al
@@ -1682,39 +1666,10 @@ start_pbr:
         ;int     16h
         ;popa
 
-        ;~ jmp     skip_delay
 
-
-        ;
-        ; Show "wait dots"
-        ;
-        pusha
-        ; Color white on black
-        mov     ch,7
-        mov     cl,0
-        call    VideoIO_Color
-        ; Locate cursor for output of debug-info
-        mov     ch,8
-        mov     cl,1
-        call    VideoIO_Locate
-
-        ; Print dots with interval.
-        mov     cx,10
-    print_next_dot:
-        mov     al,'.'
-        call    VideoIO_PrintSingleChar
-        ; Value 30 is about 1.5 seconds
-        mov     al,1
+        ; About 1.5 seconds
+        mov     al,30
         call    TIMER_WaitTicCount
-        loop    print_next_dot
-        popa
-
-    ;
-    ; Enter here to skip delay.
-    ;
-    skip_delay:
-
-
 
         ;
         ; BYE BYE
@@ -2121,55 +2076,55 @@ PART_IsFAT32    Endp
 ; ---
 ; CY    = Set if BOOTMGR found, clear if not
 ;
-;PART_IsWinBMGR  Proc Near  Uses ax bx cx dx si di ds es
-;
-;        ; Load specified LBA sector (BX:CX) from the disk in DL
-;        mov     di,ds
-;        mov     si,offset [TmpSector]
-;        call    DriveIO_LoadSectorLBA
+PART_IsWinBMGR  Proc Near  Uses ax bx cx dx si di ds es
 
-;        ; Point to location of 'BOOTMGR' signature.
-;        add     si,169h
+        ; Load specified LBA sector (BX:CX) from the disk in DL
+        mov     di,ds
+        mov     si,offset [TmpSector]
+        call    DriveIO_LoadSectorLBA
 
-;        ; DL holds equality status
-;        xor     dl,dl
-;        cld
+        ; Point to location of 'BOOTMGR' signature.
+        add     si,169h
 
-;        ; Load letter into AL, xor with letter will result 0 if the same.
-;        ; Then or to DL.
-;        ; If at the end of the sequence DL is zero, the signature is present.
-;        lodsb
-;        xor     al,'B'
-;        or      dl,al
-;        lodsb
-;        xor     al,'O'
-;        or      dl,al
-;        lodsb
-;        xor     al,'O'
-;        or      dl,al
-;        lodsb
-;        xor     al,'T'
-;        or      dl,al
-;        lodsb
-;        xor     al,'M'
-;        or      dl,al
-;        lodsb
-;        xor     al,'G'
-;        or      dl,al
-;        lodsb
-;        xor     al,'R'
-;        or      dl,al
+        ; DL holds equality status
+        xor     dl,dl
+        cld
 
-;        ; Assume not present
-;        clc
-;        jnz     PART_IsWinBMGR_exit
+        ; Load letter into AL, xor with letter will result 0 if the same.
+        ; Then or to DL.
+        ; If at the end of the sequence DL is zero, the signature is present.
+        lodsb
+        xor     al,'B'
+        or      dl,al
+        lodsb
+        xor     al,'O'
+        or      dl,al
+        lodsb
+        xor     al,'O'
+        or      dl,al
+        lodsb
+        xor     al,'T'
+        or      dl,al
+        lodsb
+        xor     al,'M'
+        or      dl,al
+        lodsb
+        xor     al,'G'
+        or      dl,al
+        lodsb
+        xor     al,'R'
+        or      dl,al
 
-;        ; BOOTMGR signature found
-;        stc
+        ; Assume not present
+        clc
+        jnz     PART_IsWinBMGR_exit
 
-;    PART_IsWinBMGR_exit:
-;        ret
-;PART_IsWinBMGR  Endp
+        ; BOOTMGR signature found
+        stc
+
+    PART_IsWinBMGR_exit:
+        ret
+PART_IsWinBMGR  Endp
 
 
 ;
