@@ -570,7 +570,7 @@ Keys_Flags_EnterSetup       equ     1100b   ; Strg+Alt (AL)
 ; They are now segment-relative. The true offset is resolved at link
 ; time.
 ;
-SEGMENTED   EQU 1
+;SEGMENTED   EQU 1
 
 IFDEF   SEGMENTED
             AIRBOOT     GROUP   IMAGE,VOLATILE
@@ -2154,7 +2154,7 @@ eobss:
 IFDEF   SEGMENTED
 VOLATILE    ENDS
 ELSE
-CODE_SEG    ENDS
+IMAGE       ENDS
 ENDIF
             END     AIR_BOOT
 
