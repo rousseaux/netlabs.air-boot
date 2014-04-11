@@ -379,6 +379,8 @@ $(TARGET):	.MULTIPLE $(BASENAME).COM
 !endif
 #	@echo 	FIXCODE
 	$(CP) $(BASENAME).COM $(TARGET)
+	ndisasm $(BASENAME).COM > $(BASENAME).COM.NDA
+	ndisasm $(TARGET) > $(TARGET).NDA
 #	@echo $(%BLD_LANG)>$^.
 	@if exist $^. @echo		$^. $(MSG_SUCCESS) - [$(%BLD_LANG) version]
 #	$(RM) $(TARGET)
@@ -390,8 +392,8 @@ $(TARGET):	.MULTIPLE $(BASENAME).COM
 # 16-bits COM :: Intermediate image without embedded MBR-prot. and code count.
 ###############################################################################
 $(BASENAME).COM:	.MULTIPLE $(BASENAME).OBJ
-#	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys dos com
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. form raw
+	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys dos com
+#	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. form raw
 #	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 #	@echo.
 

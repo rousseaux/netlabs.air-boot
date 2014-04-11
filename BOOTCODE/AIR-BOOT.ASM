@@ -579,7 +579,7 @@ Keys_Flags_EnterSetup       equ     1100b   ; Strg+Alt (AL)
 ; They are now segment-relative. The true offset is resolved at link
 ; time.
 ;
-;SEGMENTED   EQU 1
+SEGMENTED   EQU 1
 
 IFDEF   SEGMENTED
             AIRBOOT     GROUP   IMAGE,VOLATILE
@@ -637,7 +637,7 @@ AiR_BOOT:
                 db      0EBh
 
                 ; ID String, Date (DD,MM,CC,YY), Version Number, Language ID
-                db      'AiRBOOT', 15h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
+                db      'AiRBOOT', 16h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
 
                 ; Total Sectors Count.
                 ; Will get overwritten by FIXCODE.
@@ -1995,7 +1995,10 @@ sobss:
                             ; Removed org for BSS data to be more compatible
                             ; with segment-concatenated layout.
                             ;
-                            org 0A000h                         ; Uninitialized
+                            ; What happens before this space ??
+                            ; If org 0 corruption occurs.
+                            ;
+                            org 02400h                         ; Uninitialized
 
 
 ; This space actually gets initialized in PreCrap to NUL (till EndOfVariables)
