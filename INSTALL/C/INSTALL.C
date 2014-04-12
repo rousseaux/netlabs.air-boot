@@ -28,39 +28,44 @@
 
 
 
-//CHAR     Track0[SECTOR_COUNT * BYTES_PER_SECTOR];                                  // current track 0 from harddrive
-//CHAR     Bootcode[SECTOR_COUNT * BYTES_PER_SECTOR];                                // bootcode image from airboot.bin
+//CHAR     Track0[SECTOR_COUNT * BYTES_PER_SECTOR];     // current track 0 from harddrive
+//CHAR     Bootcode[SECTOR_COUNT * BYTES_PER_SECTOR];   // bootcode image from airboot.bin
 
 /*
 // With the addition of the C DOS-version, a static buffer for both
-// Track0 and Bootcode would overflow the DGROUP segment.
-// Placing the buffers in another segment would increase the executable
-// image on disk, so we would like it to be (FAR) BSS data.
+// Track0 and Bootcode would overflow the DGROUP segment. (>64kB)
+// Placing the buffers in another segment does not work with Open Watcom v1.9.
+// While the buffers are BSS and should be in segments like FAR_BSS,
+// Open Watcom places the buffers in FAR_DATA and produces a bloated DOS
+// executable. Using the same source and then building an OS/2 v1.x
+// executable does not produce a bloated .EXE, eventhough the segments are
+// called FAR_DATA and in the middle of the image.
+// Microsoft C v6.0 displays the same behavior; DOS bloated, OS/2 v1.x ok.
+// An interesting feat is that when building an OS/2 v1.x executable and then
+// binding that to produce a FAPI executable does not produce a bloated .EXE
 //
-// When experimenting with segments and #pragma data_seg(), some
+// Also, when experimenting with segments and #pragma data_seg(), some
 // strange behavior was observed.
 // WCC:
 // Explicitly naming a segment and class for the static buffers caused
-// wcc to generate it's default SS: based addressing.
-// Only the -zu flag corrects this.
+// wcc to keep generating it's default SS: based addressing, eventhough
+// the segments are not part of DGROUP.
+// Only the -zu flag corrects this. (DS!=SS)
 // WPP:
 // C++ wpp used correct addressing but the segment class in the #pragma
 // was not honored and the segment name got mangled.
 //
 // In both cases the volatile (transient) data would occupy space in the
-// disk-image because.
+// disk-image.
 // The only way seems to be putting the buffers in a separate segment using
 // pragma's, using wcc with the -zu flag and use the wlink ORDER directive
 // to place the FAR BSS data above the stack acompanied by a NOEMIT modifier.
 // For this all the class names of the previous segments must be included
-// in the wlink ORDER directive which would make the link phase dependent
+// in the wlink ORDER directive which would make the link phase dependend
 // on segment names. This solution does not work for wpp because it mangles
 // the segment name and overrides the custom class name to FAR_DATA.
 //
 // So, these buffers are now dynamically allocated.
-// Currently they are only freed after succesful program termination,
-// but the RTS should free them in other situations.
-// This will be corrected later.
 */
 PCHAR   Track0      = NULL;     // Buffer for Track0 from harddisk.
 PCHAR   Bootcode    = NULL;     // Buffer for AIRBOOT.BIN image.
@@ -88,7 +93,7 @@ BOOL    Install_IsCorrupt       = FALSE;
 USHORT  StatusCode              = 0;
 PSZ     ImpossibleCause         = NULL;
 
-
+CHAR    TempHidPartTable[45 * 34];
 
 
 
@@ -197,10 +202,11 @@ void    do_bf_test() {
 // This is code kidnapped from AiR-BOOT and used here to handle the packed
 // hideparttable. A 'record' in the hideparttable is 34 bytes long and it
 // can store 45 partition numbers using 6-bits per partition number.
-// Bitfield widths from 1 to 8 are supported and the maxumum buffersize is
+// Bitfield widths from 1 to 8 are supported and the maximum buffersize is
 // 256 bytes.
 */
 char    get_bitfield(char* buffer, char index, char fieldwidth) {
+    char    rv = 0;
     // These are used to break-up the far pointer in large-data model 16-bit
     // code so the buffer can be addressed correctly.
     // In 32-bit flat mode they will have no effect and in 32-bit large-data
@@ -284,17 +290,18 @@ char    get_bitfield(char* buffer, char index, char fieldwidth) {
         shr     ax,cl       ; Shift bitfield to the right.
         mov     ah,ch       ; Get mask in AH.
         and     al,ah       ; Mask value.
-        ;ret
     }
 
 
     // Epilog code.
     // Restore caller's DS.
+    // Store return value.
     _asm {
         pop     ds
+        mov     [rv],al
     }
 
-    return;
+    return rv;
 }
 
 
@@ -305,7 +312,7 @@ char    get_bitfield(char* buffer, char index, char fieldwidth) {
 // This is code kidnapped from AiR-BOOT and used here to handle the packed
 // hideparttable. A 'record' in the hideparttable is 34 bytes long and it
 // can store 45 partition numbers using 6-bits per partition number.
-// Bitfield widths from 1 to 8 are supported and the maxumum buffersize is
+// Bitfield widths from 1 to 8 are supported and the maximum buffersize is
 // 256 bytes.
 */
 char    set_bitfield(char* buffer, char index, char fieldwidth, char value) {
@@ -438,7 +445,6 @@ char    set_bitfield(char* buffer, char index, char fieldwidth, char value) {
     CONV_SetBitfieldValue_end:
         mov     ah,ch       ; Get mask in AH.
         and     al,ah       ; Mask value.
-        ;ret
     }
 
     // Epilog code.
@@ -468,51 +474,160 @@ char    set_bitfield(char* buffer, char index, char fieldwidth, char value) {
 #ifdef  PLATFORM_DOS
     USHORT CountHarddrives (void) {
         USHORT NumDrives = 0;
-        // Implement !
+        /* Return the byte at 0040:0075 that contains the nr. of harddisks */
+        _asm {
+            push    es              ; We use ES to address the 40h segment.
+            mov     ax,40h          ; Segment address of DOS BIOS DATA.
+            mov     es,ax           ; Make ES address it.
+            xor     ax,ax           ; Clear AX to receive return value.
+            mov     al,es:[0075h]   ; Nr. of harddisks in AL.
+            pop     es              ; Restore ES.
+            mov     [NumDrives],ax  ; Return this value.
+        }
         return NumDrives;
     }
 
-    USHORT OS2_GetIOCTLHandle () {
-        USHORT IOCTLHandle = 0;
-        // Implement !
-        return IOCTLHandle;
-    }
-
-    void OS2_FreeIOCTLHandle (USHORT IOCTLHandle) {
-        // Implement !
-        return;
-    }
-
-
     BOOL HarddriveCheckGeometry (void) {
-        USHORT               IOCTLHandle;
+        BOOL    rv = FALSE;
+        _asm {
+            ; According to Ralf Brown ES:DI=0000:0000 to avoid BIOS quirks.
+            push    es
+            push    di
+            xor     di,di
+            mov     es,di
 
-        IOCTLHandle = OS2_GetIOCTLHandle();
-        // Implement !
-        return FALSE;
+            ; Get the disk parameters using normal (non-I13X) access.
+            mov     ah,08h          ; Get Disk Parameters.
+            mov     dl,80h          ; Boot Disk.
+            int     13h             ; Transfer to BIOS.
+
+            ; Check for errors
+            mov     dx,0            ; Assume error.
+            jc      end             ; CY if error.
+            test    ah,ah           ; Double check for return-status.
+            jnz     end             ; AH non-zero if error.
+
+            ; Check sectors per track to be above 62
+            and     cl,00111111b    ; Mask sectors.
+            cmp     cl,SECTOR_COUNT ; Compare with max. AiR-BOOT sectors.
+            jbe     end             ; SECTOR_COUNT or less is not enough.
+
+            inc     dx              ; Set to no error.
+
+        end:
+            mov     ax,dx           ; Status to AX.
+            xor     dx,dx           ; High word to zero.
+
+            ; Store in return value (OS/2 BOOL is 32-bits).
+            mov     word ptr [rv],ax
+            mov     word ptr [rv+2],dx
+
+            ; Restore ES:DI
+            pop     di
+            pop     es
+        }
+
+        return rv;
     }
+
+
 
     BOOL Track0Load (void) {
-        USHORT      IOCTLHandle;
         BOOL        Success = FALSE;
 
-        IOCTLHandle = OS2_GetIOCTLHandle();
-        // Implement !
+        _asm {
+
+            push    es              ; ES is used to point to loadbuffer.
+
+            ; Load the complete AiR-BOOT image from Track0.
+            mov     ah,02h          ; Read sectors from disk.
+            mov     al,SECTOR_COUNT ; Number of sectors to read.
+            mov     cx,1            ; Cyl 0, Sector 1.
+            mov     dh,0            ; Head 0.
+            mov     dl,80h          ; Boot Disk.
+            les     bx,[Track0]     ; Buffer in ES:BX.
+            int     13h             ; Transfer to BIOS.
+
+            ; Check for errors
+            mov     dx,0            ; Assume error.
+            jc      end             ; CY if error.
+            test    ah,ah           ; Double check status in AH.
+            jnz     end             ; AH non-zero if error.
+
+            inc     dx              ; Set to no error.
+
+        end:
+            mov     ax,dx           ; Status to AX.
+            xor     dx,dx           ; High word to zero.
+
+            ; Store in return value (OS/2 BOOL is 32-bits).
+            mov     word ptr [Success],ax
+            mov     word ptr [Success+2],dx
+
+            ; Restore ES.
+            pop     es
+        }
+
         return Success;
     }
 
     BOOL Track0Write (void) {
-        USHORT      IOCTLHandle;
         BOOL        Success = FALSE;
 
-        IOCTLHandle = OS2_GetIOCTLHandle();
-        // Implement !
+        _asm {
+
+            push    es              ; ES is used to point to savebuffer.
+
+            ; Save the complete AiR-BOOT image to Track0.
+            mov     ah,03h          ; Write sectors to disk.
+            mov     al,SECTOR_COUNT ; Number of sectors to write.
+            mov     cx,1            ; Cyl 0, Sector 1.
+            mov     dh,0            ; Head 0.
+            mov     dl,80h          ; Boot Disk.
+            les     bx,[Track0]     ; Buffer in ES:BX.
+            int     13h             ; Transfer to BIOS.
+
+            ; Check for errors
+            mov     dx,0            ; Assume error.
+            jc      end             ; CY if error.
+            test    ah,ah           ; Double check status in AH.
+            jnz     end             ; AH non-zero if error.
+
+            inc     dx              ; Set to no error.
+
+        end:
+            mov     ax,dx           ; Status to AX.
+            xor     dx,dx           ; High word to zero.
+
+            ; Store in return value (OS/2 BOOL is 32-bits).
+            mov     word ptr [Success],ax
+            mov     word ptr [Success+2],dx
+
+            ; Restore ES.
+            pop     es
+        }
+
         return Success;
     }
 
     void RebootSystem (void) {
+        _asm {
+            ; 65 * 65536 = 4259840 us = 4.2 sec.
+            mov     ax,8600h        ; BIOS Wait.
+            xor     dx,dx           ; Micro seconds Low.
+            mov     cx,65           ; Micro seconds High.
+            int     15h             ; Transfer to BIOS.
 
-        // Implement !
+            //~ ; Try reboot via keyboard.
+            //~ mov     al,0feh
+            //~ out     64h,al
+
+            ; Otherwise jump to F000:FFF0.
+            db      0EAh
+            dw      0FFF0h
+            dw      0F000h
+        }
+        return;
     }
 
 #endif
@@ -576,8 +691,8 @@ char    set_bitfield(char* buffer, char index, char fieldwidth, char value) {
         if (!DosDevIOCtl(IOCTLHandle, IOCTL_PHYSICALDISK, PDSK_GETPHYSDEVICEPARAMS, NULL, 0, NULL, &DeviceParmBlock, sizeof(DeviceParmBlock), &ulDataLength))
             SectorsPerTrack = DeviceParmBlock.cSectorsPerTrack;
         OS2_FreeIOCTLHandle (IOCTLHandle);
-        //if (SectorsPerTrack > 61) return TRUE;              // >60 should also be ok for normal image (60 for image 1 for lvm)
-        if (SectorsPerTrack > SECTOR_COUNT) return TRUE;      // Note: This is 1 sector smaller than above !!
+        //if (SectorsPerTrack > 61) return TRUE;
+        if (SectorsPerTrack > SECTOR_COUNT) return TRUE;
         // OS/2 is only able to support 512-byte/sector media, so we dont need to check this
         return FALSE;
     }
@@ -761,40 +876,22 @@ char    set_bitfield(char* buffer, char index, char fieldwidth, char value) {
         return NumDrives;
     }
 
-    USHORT OS2_GetIOCTLHandle () {
-        USHORT IOCTLHandle = 0;
-        // Implement !
-        return IOCTLHandle;
-    }
-
-    void OS2_FreeIOCTLHandle (USHORT IOCTLHandle) {
-        // Implement !
-        return;
-    }
-
-
     BOOL HarddriveCheckGeometry (void) {
-        USHORT               IOCTLHandle;
 
-        IOCTLHandle = OS2_GetIOCTLHandle();
         // Implement !
         return FALSE;
     }
 
     BOOL Track0Load (void) {
-        USHORT      IOCTLHandle;
         BOOL        Success = FALSE;
 
-        IOCTLHandle = OS2_GetIOCTLHandle();
         // Implement !
         return Success;
     }
 
     BOOL Track0Write (void) {
-        USHORT      IOCTLHandle;
         BOOL        Success = FALSE;
 
-        IOCTLHandle = OS2_GetIOCTLHandle();
         // Implement !
         return Success;
     }
@@ -845,7 +942,7 @@ BOOL LoadBootcodeFromFile (void) {
     // Seek to end of file to determine image size...
     fseek (FileHandle, 0, SEEK_END);
     BootcodeSize = ftell(FileHandle);
-    if (BootcodeSize!=IMAGE_SIZE) {
+    if (BootcodeSize!=IMAGE_SIZE && BootcodeSize!=IMAGE_SIZE_60SECS) {
         fclose (FileHandle);
         if (!Option_CID) {
             printf("Invalid %sn\n", IMAGE_NAME);
@@ -995,14 +1092,9 @@ void Status_CheckConfig (void) {
         }
 
 
-        /*
-        // HIER AANPASSEN VOOR 1.06 -> 1.07, 1.07/1.0.8-rc1 -> 1.0.8-rc2+ !
-        // MBR-ProtImg, DriveLetters, Packed hideparttable
-        */
-
-        // UPGRADE all later versions
-        //  We don't need to "upgrade" the configuration, we simply copy it over.
-        //   From Sector 55, 6 sectors in total but never header/version
+        // UPGRADE to v1.06 format.
+        // We don't need to "upgrade" the configuration to move to v1.06, we simply copy it over.
+        // From Sector 55, 6 sectors in total but never header/version.
         // Rousseau: We copy two more sectors (8 in total) in the extended (45 partition) version.
         switch (IMAGE_SIZE) {
             case IMAGE_SIZE_60SECS: {
@@ -1014,12 +1106,51 @@ void Status_CheckConfig (void) {
                 break;
             }
         }
+
+        /*
+        // Convert v1.06 hideparttable (30x30) to the v1.07 (30x45) format.
+        */
+        if ((Installed_ConfigVersion == 0x102) && (Bootcode_ConfigVersion >= 0x107)) {
+            int     i,j;
+            char    c;
+            //printf("Converting 1.06 -> 1.07 hidepart");
+            memcpy(&Bootcode[0x7400], &Track0[0x7200], 900);
+            memset(TempHidPartTable, 0xff, 45 * 34);
+            for (i=0; i<30; i++) {
+                for (j=0; j<30; j++) {
+                    c = Bootcode[0x7400+i*30+j];
+                    TempHidPartTable[i*45+j] = c;
+                }
+            }
+            memcpy(&Bootcode[0x7400], TempHidPartTable, 30 * 45);
+        }
+
+        /*
+        // Convert v1.07 hideparttable (30x45) to a packed v1.0.8+ (45x45) format.
+        */
+        if ((Installed_ConfigVersion < 0x108) && (Bootcode_ConfigVersion >= 0x108)) {
+            int     i,j;
+            char    c;
+            //printf("Converting to 1.08 packed hidepart");
+            memset(TempHidPartTable, 0xff, 45 * 34);
+            // Unpacked table is 30 rows with 45 columns per row.
+            // Packed table is 45 rows with 45 columns per row packed in 34 bytes.
+            for (i=0; i<30; i++) {
+                for (j=0; j<45; j++) {
+                    c = Bootcode[0x7400+i*45+j];                            // Get unpacked value
+                    c = set_bitfield(&TempHidPartTable[i*34], j, 6, c);     // Store 6-bit packed value
+                }
+            }
+            memcpy(&Bootcode[0x7400], TempHidPartTable, 45 * 34);
+        }
+
         return;
     }
+    // MKW:
     // Check for prior v0.26 signature
     // not supported in C version anymore
-    //  Don't have this version here for testing and I can't risk breaking
-    //  configuration
+    // Don't have this version here for testing and I can't risk breaking
+    // configuration
     return;
 }
 
@@ -1159,12 +1290,15 @@ void Status_PrintF (ULONG Status, USHORT Version) {
             if (Status==STATUS_INSTALLEDMGU)
                 if (!Option_CID) {
                 printf(", but may be updated");
-                printf("\n");
                 }
+            if (!Option_CID) {
+                printf("\n");
+            }
             break;
+
         case STATUS_IMPOSSIBLE:
             if (!Option_CID) {
-            printf(ImpossibleCause);
+                printf(ImpossibleCause);
             }
             break;
     }
@@ -1263,7 +1397,52 @@ void Install_WriteConfig (void) {
 
 
 
+void    DoDebug() {
+    USHORT  t0codv  = 0;
+    USHORT  t0cfgv  = 0;
+    USHORT  bccodv  = 0;
+    USHORT  bccfgv  = 0;
 
+    //do_bf_test();
+
+    printf("\nHardisks : %d\n", CountHarddrives());
+    printf("\nGEO      : %d\n", HarddriveCheckGeometry());
+    printf("\nTrack0   : %d\n", Track0Load());
+    printf("\nBootcode : %d\n", LoadBootcodeFromFile());
+
+
+    // Dump Track0
+    {
+        int i;
+        for (i=0; i<512; i++) {
+            printf("%02X",Track0[i]);
+        }
+    }
+    printf("\n\n");
+    // Dump Bootcode
+    {
+        int i;
+        for (i=0; i<512; i++) {
+            printf("%02X",Bootcode[i]);
+        }
+    }
+    printf("\n\n");
+
+    t0codv = Track0[13] << 8 | Track0[14];
+    printf("t0codv : %04X\n", t0codv);
+
+    t0cfgv = Track0[0x6c00+13] << 8 | Track0[0x6c00+14];
+    printf("t0cfgv : %04X\n", t0cfgv);
+
+    bccodv = Bootcode[13] << 8 | Bootcode[14];
+    printf("bccodv : %04X\n", bccodv);
+
+    bccfgv = Bootcode[0x6c00+13] << 8 | Bootcode[0x6c00+14];
+    printf("bccfgv : %04X\n", bccfgv);
+
+    return;
+
+}
 
 
 // ============================================================================
@@ -1282,16 +1461,17 @@ int main (int argc, char **argv) {
     BOOL    ExitOnly        = FALSE;
     CHAR    TempSpace[MAXCMDPARMLEN+1];
 
-    char* p = NULL;
 
-
-    do_bf_test();
-    exit(0);
-
-
-//   printf("AiR-BOOT Installer v1.07\n");
-//   printf(" - (c) Copyright 1998-2011 by Martin Kiewitz.\n");
-//   printf("\n-> ...Please wait... <-\n");
+    // Show header.
+    if (!Option_CID) {
+        printf("AiR-BOOT Installer v%s.%s.%s for %s\n",
+            BLDLVL_MAJOR_VERSION,
+            BLDLVL_MIDDLE_VERSION,
+            BLDLVL_MINOR_VERSION,
+            PLATFORM_NAME);
+        printf(" - (c) Copyright 1998-2012 by Martin Kiewitz.\n");
+        printf("\n-> ...Please wait... <-\n");
+    }
 
     // Allocate buffers for Track0 and AIRBOOT.BIN.
     Track0 = malloc(SECTOR_COUNT * BYTES_PER_SECTOR);
@@ -1306,22 +1486,8 @@ int main (int argc, char **argv) {
     }
 
 
-    p = (PCHAR) &Track0;
-    p = (PCHAR) Track0;
-    p[0] = 'A';
-
-    {
-        int i=0;
-        for (i=0; i<sizeof(Track0); i++) {
-            Track0[i]='X';
-        }
-        for (i=0; i<sizeof(Bootcode); i++) {
-            Bootcode[i]='Y';
-        }
-        //~ for (i=0; i<sizeof(Bootcode2); i++) {
-            //~ Bootcode2[i]='Z';
-        //~ }
-    }
+    //~ DoDebug();
+    //~ exit(0);
 
 
     // Check commandline parameters

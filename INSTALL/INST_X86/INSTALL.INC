@@ -370,14 +370,14 @@ InstallConfig                  EndP
 
 
 
-;       Out: Carry Flag SET if Harddisc failed 62-sectors test
+;       Out: Carry Flag SET if Harddisc failed 63-sectors test
 Init_CheckHarddisc             Proc Near
    mov     ah, 08h
    mov     dl, 80h
    int     13h
    and     cl, 111111b
    cmp     cl, 62
-   jae     INITCH_Success
+   ja      INITCH_Success
    stc
    ret
   INITCH_Success:

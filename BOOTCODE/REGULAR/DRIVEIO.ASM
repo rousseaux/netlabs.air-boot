@@ -247,15 +247,15 @@ DriveIO_LVMAdjustToInfoSector   Proc Near
         pusha
 
             ; Dump drive
-            mov      si,offset drive
+            ;mov      si,offset drive
             ;call     AuxIO_Print
-            xchg     al,dl
+            ;xchg     al,dl
             ;call     AuxIO_TeletypeHexByte
             ;call     AuxIO_TeletypeNL
-            xchg     dl,al
+            ;xchg     dl,al
 
             ; Dump SPT
-            mov      si,offset spt_used
+            ;mov      si,offset spt_used
             ;call     AuxIO_Print
             push     dx
             push     bx
@@ -299,13 +299,13 @@ DriveIO_LVMAdjustToInfoSector   Proc Near
             popa
 
             ; LBA
-            mov     si,offset before_lvm_adjust
+            ;mov     si,offset before_lvm_adjust
             ;call    AuxIO_Print
 
-            xchg    dx,bx
+            ;xchg    dx,bx
             ;call    AuxIO_TeletypeHexDWord
             ;call    AuxIO_TeletypeNL
-            xchg    bx,dx
+            ;xchg    bx,dx
         popa
 
 
@@ -316,15 +316,15 @@ DriveIO_LVMAdjustToInfoSector   Proc Near
 
 
 
-        pusha
-            mov      si,offset before_lvm_adjust_log
+        ;pusha
+            ;mov      si,offset before_lvm_adjust_log
             ;call     AuxIO_Print
             ; LBA
-            xchg     dx,bx
+            ;xchg     dx,bx
             ;call     AuxIO_TeletypeHexDWord
             ;call     AuxIO_TeletypeNL
-            xchg     bx,dx
-        popa
+            ;xchg     bx,dx
+        ;popa
 
 
         push     dx
@@ -345,15 +345,15 @@ DriveIO_LVMAdjustToInfoSector   Proc Near
         adc      bx,0
 
 
-        pusha
-            mov     si,offset after_lvm_adjust_log
+        ;pusha
+            ;mov     si,offset after_lvm_adjust_log
             ;call    AuxIO_Print
             ; LBA
-            xchg    dx,bx
+            ;xchg    dx,bx
             ;call    AuxIO_TeletypeHexDWord
             ;call    AuxIO_TeletypeNL
-            xchg    bx,dx
-        popa
+            ;xchg    bx,dx
+        ;popa
 
         jmp      done
 
@@ -426,15 +426,15 @@ DriveIO_LVMAdjustToInfoSector   Proc Near
 
     done:
 
-        pusha
-            mov     si,offset after_lvm_adjust
+        ;pusha
+            ;mov     si,offset after_lvm_adjust
             ;~ call    AuxIO_Print
             ; LBA
-            xchg    dx,bx
+            ;xchg    dx,bx
             ;~ call    AuxIO_TeletypeHexDWord
             ;~ call    AuxIO_TeletypeNL
-            xchg    bx,dx
-        popa
+            ;xchg    bx,dx
+        ;popa
 
         ;~ pusha
         ;~ call    AuxIO_TeletypeNL
@@ -465,12 +465,6 @@ DriveIO_LVMAdjustToInfoSector   EndP
 
 
 
-drive                   db 'drive                    : ',0
-before_lvm_adjust       db 'before lvm adjust        : ',0
-after_lvm_adjust        db 'after lvm adjust         : ',0
-before_lvm_adjust_log   db 'before lvm logical adjust: ',0
-after_lvm_adjust_log    db 'after lvm logical adjust : ',0
-spt_used                db 'spt used                 : ',0
 
 
 

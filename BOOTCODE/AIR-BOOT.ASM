@@ -1315,9 +1315,11 @@ size_billsuxx = $-b_billsuxx
 
                 ;
                 ; Critical end of code marker.
+                ; Should always be in the image, otherwise something
+                ; is very wrong.
                 ;
-                db  'DEAD'
-                db  'FACE'
+                db      'DEAD'
+                db      'FACE'
 
 ;
 ; Keep these modules here at the end of the code section.
@@ -1340,10 +1342,11 @@ size_fx = $-b_fx
 
 
 ; If we are debugging, we overwrite the FX code.
-; As long as no FX is disabled this will do no harm.
+; As long as FX is disabled this will do no harm.
 IFDEF   AUX_DEBUG
                 ORG     06780h
 ENDIF
+
 
 bld_level:
                 ;
@@ -1352,10 +1355,22 @@ bld_level:
                 ; information.
                 ; It is unique for each release of AiR-BOOT.
                 ;
+                ; ?? When AUX_DEBUG is enabled and the above org is active,
+                ; the BLDLEVEL gets corrupted eventhough it gets inserted here
+                ; explicitly. The effect is almost like an 'OR' or a merge
+                ; with the already generated FX code.
+                ; Tasm and JWasm produce different results.
+                ; ??
+                ;
                 InsertBuildLevel
+
+                ;bliep <>
 
                 ;
                 ; End of code marker.
+                ; If this one vanishes in the image, the FX code will not
+                ; be operational.
+                ; Will happen with debugging enabled.
                 ;
                 db      'BABE'
                 db      'FACE'
@@ -1370,6 +1385,7 @@ code_end:
                 ;
                 ORIGIN  06800h
 
+zzz_code_space = $ - code_end
                 ;
                 ; This is the AiR-BOOT MBR-Protection Image.
                 ; 06800 / 200h = 34h = 52d sectors are before this point.

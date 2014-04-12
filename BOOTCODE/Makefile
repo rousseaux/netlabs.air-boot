@@ -104,7 +104,7 @@ DEV_BLD_LANG=EN
 # RU is last in the list since it includes the cyrillic charset and thus
 # will run out-of-space sooner that the other languages.
 # If that happens at least the others will be built.
-BLD_LANGUAGES=EN DE NL FR IT SW #RU
+BLD_LANGUAGES=EN DE NL FR IT SW RU
 #BLD_LANGUAGES=EN DE NL
 
 # For each language the Assembler source is compiled to a binary image

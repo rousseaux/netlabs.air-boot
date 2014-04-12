@@ -49,6 +49,49 @@ ENDIF
 BLDLVL_DESCRIPTION      EQU     'AiR-BOOT Boot Manager'
 
 
+
+;~ bliep   struct
+    ;~ db  '@#'
+    ;~ db  BLDLVL_VENDOR
+    ;~ db  ':'
+    ;~ db  BLDLVL_MAJOR_VERSION
+    ;~ db  '.'
+    ;~ db  BLDLVL_MIDDLE_VERSION
+    ;~ db  '.'
+    ;~ db  BLDLVL_MINOR_VERSION
+    ;~ db  '#@##1## '
+;~ bld_level_date_start    db  BLDLVL_YEAR
+    ;~ db  '/'
+    ;~ db  BLDLVL_MONTH
+    ;~ db  '/'
+    ;~ db  BLDLVL_DAY
+    ;~ db  ' '
+    ;~ db  BLDLVL_HOURS
+    ;~ db  ':'
+    ;~ db  BLDLVL_MINUTES
+    ;~ db  ':'
+    ;~ db  BLDLVL_SECONDS
+;~ bld_level_date_end    db  '      '
+    ;~ db  BLDLVL_MACHINE
+    ;~ db  '::'
+    ;~ ; Wasm can only process the reference to 'lang' in pass 2 because it comes
+    ;~ ; from an included file which it has not processed yet at pass 1.
+    ;~ IFDEF   WASM
+        ;~ IF2
+            ;~ db  BLDLVL_LANGUAGE
+        ;~ ENDIF
+    ;~ ; The other assemblers process 'lang' correctly in pass 1.
+    ;~ ELSE
+        ;~ db  BLDLVL_LANGUAGE
+    ;~ ENDIF
+    ;~ db  '::'
+    ;~ db  BLDLVL_MINOR_VERSION
+    ;~ db  '::@@'
+    ;~ db  BLDLVL_DESCRIPTION
+    ;~ db  0
+;~ bliep   ends
+
+
 ;
 ; This macro inserts the BLDLEVEL string at the place where it is invoked.
 ;

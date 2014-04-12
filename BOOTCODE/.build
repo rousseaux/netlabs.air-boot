@@ -2,3 +2,4 @@
 
 export ASM=jwasm
 make dev
+make dist

@@ -22,10 +22,20 @@
 ; ---------------------------------
 ; Rousseau: Fixes and Enhancements
 ; ---------------------------------
-; v1.0.8-rc2-bld201204??+
-; ---------------------
-
-
+;
+; v1.0.8-rc2-bld2012042?
+; ----------------------
+; # Fixed Installer to handle packed hideparttable #
+;   Hide partition configuration is now preserved when upgrading
+;   Implemented upgrading from v1.06 to v1.0.8
+;   Implemented upgrading from v1.07 to v1.0.8
+;
+; # Implemented DOS code in C cross-platform installer
+;   There is now one C source for 4 platforms:
+;   DOS,WIN32,OS2 and LINUX (Linux portion not ready yet)
+;   This obsoletes AIRBOOT.ASM/AIRBOOT.COM.
+;   DOS Installer is now AIRBOOTD.EXE.
+;
 ; v1.0.8-pre-rc2-bld20120330
 ; --------------------------
 ; # Merged 16-bit Assembler bitfield code to the Installer #

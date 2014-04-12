@@ -21,7 +21,9 @@
 //  This reads AIR-BOOT.COM, merges MBR-PROT.BIN and writes AIRBOOT.BIN.
 //  It is a quick-and-dirty translation of the original DOS-only ASM file.
 //  Of course it's not as small but it's much easier to maintain across
-//  multiple platforms.
+//  multiple platforms. A small change with regard to the old ASM version is
+//  that it directly writes AIRBOOT.BIN instead of writing AIR-BOOT.COM.
+//  This way the pre and post situations are kept valid.
 */
 
 
@@ -48,9 +50,9 @@
 /* File names */
 #define     IN_FILE     "AIR-BOOT.COM"              // Target from assembly.
 #ifdef      PLATFORM_LINUX
-#define     MERGE_FILE  "MBR-PROT/MBR-PROT.BIN"     // MBR protection TSR.
+#define     MERGE_FILE  "MBR-PROT/MBR-PROT.BIN"     // MBR Protection Image.
 #else
-#define     MERGE_FILE  "MBR-PROT\\MBR-PROT.BIN"    // MBR protection TSR.
+#define     MERGE_FILE  "MBR-PROT\\MBR-PROT.BIN"    // MBR Protection Image.
 #endif
 #define     OUT_FILE    "AIRBOOT.BIN"               // Generated loader image.
 
@@ -157,7 +159,8 @@ int     main(int argc, char* argv[]) {
 
     /*
     // Find Protection Image Signature.
-    // Note that this signature must reside on a sector boundary.
+    // Note that this signature must reside on a sector boundary in the
+    // AIR-BOOT.COM image.
     */
     for (i=0; i<55; i++) {
         if (!memcmp(MBRProtectionSignature, &BootCode[i*SECSIZE], strlen(MBRProtectionSignature))) {
@@ -167,22 +170,27 @@ int     main(int argc, char* argv[]) {
     }
 
     /*
-    // Merge Protection Image.
+    // Abort if not found.
     */
     printf("%s",MergeMBR);
     if (!found) {
         printf("%s",Failed);
         exit(2);
     }
+
+    /*
+    // Merge Protection Image.
+    */
     memcpy(&BootCode[i*SECSIZE], MBRProtection, MBRPROT_SIZE);
     printf("%s", Okay);
 
 
     /*
     // Count Code Sectors.
-    // Obsolete now since the Protection Image has moved just below the
-    // Configuration and the code is always max. size.
+    // Obsolete now because since v1.0.8 the Protection Image has moved just
+    // below the Configuration and the code is always max. size.
     // Overlap checking is done while assembling AIR-BOOT.ASM.
+    // So we just write the max. code sectors here.
     */
     printf("%s", CountCode);
     BootCode[16] = 53;

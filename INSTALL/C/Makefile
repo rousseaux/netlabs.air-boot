@@ -326,6 +326,17 @@ $(MODULE)L.OBJ:	$(BASENAME).C $(BASENAME).H
 # MAIN ACTIONS
 #
 
+
+# -----------------------------------------------------------------------------
+# DISTRIBUTE TO RELEASE SPACE
+# -----------------------------------------------------------------------------
+# This distributes all .BIN files to BOOTCODE.
+# Then it installs the English version to RELEASES as AIRBOOT.BIN.
+# -----------------------------------------------------------------------------
+dist:	.SYMBOLIC
+	@if exist *.EXE $(CP) *.EXE ..$(DS)..$(DS)RELEASE$(DS)BOOTCODE
+
+
 #
 # Rebuild all targets.
 #

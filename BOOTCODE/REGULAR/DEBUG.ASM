@@ -425,3 +425,10 @@ db_curpartloc       db 'CurPartition_Location:',0
 
 db_curlvmsec        db 'Current LVM Sector:',0
 
+
+drive                   db 'drive                    : ',0
+before_lvm_adjust       db 'before lvm adjust        : ',0
+after_lvm_adjust        db 'after lvm adjust         : ',0
+before_lvm_adjust_log   db 'before lvm logical adjust: ',0
+after_lvm_adjust_log    db 'after lvm logical adjust : ',0
+spt_used                db 'spt used                 : ',0

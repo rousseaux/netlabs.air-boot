@@ -15,10 +15,10 @@ extern  "C" {
 // Build date
 #define     BLDLVL_YEAR             "2012"
 #define     BLDLVL_MONTH            "04"
-#define     BLDLVL_DAY              "14"
+#define     BLDLVL_DAY              "21"
 // Build time
-#define     BLDLVL_HOURS            "01"
-#define     BLDLVL_MINUTES          "30"
+#define     BLDLVL_HOURS            "08"
+#define     BLDLVL_MINUTES          "35"
 #define     BLDLVL_SECONDS          "00"
 // Build machine
 //#define     BLDLVL_MACHINE          "ecs-devbox"
