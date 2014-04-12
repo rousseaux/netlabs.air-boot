@@ -84,21 +84,21 @@ LVM_GetSectorCRC                Proc Near   Uses bx cx
    ret
 LVM_GetSectorCRC                EndP
 
-; Checks DS:[SI], if a valid LVM Signature is found (sets carry in that case)
+; Checks ds:[SI], if a valid LVM Signature is found (sets carry in that case)
 ;  This does not check for valid LVM CRC (which also needs to be done)
 ;        In: DS:SI - Sector that needs to get checked...
 ;       Out: Carry set, if valid LVM signature found
 ; Destroyed: None
 LVM_CheckSectorSignature        Proc Near
-   test    [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
+   test    byte ptr [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
    jnz     LVMCSS_InvalidSignature       ;  any sector is bad!
-   cmp     wptr [si+LocLVM_SignatureStart], 5202h                                ; Rousseau: identify LVM sector
+   cmp     word ptr [si+LocLVM_SignatureStart], 5202h                                ; Rousseau: identify LVM sector
    jne     LVMCSS_InvalidSignature
-   cmp     wptr [si+LocLVM_SignatureStart+2], 'BM'
+   cmp     word ptr [si+LocLVM_SignatureStart+2], 'BM'
    jne     LVMCSS_InvalidSignature
-   cmp     wptr [si+LocLVM_SignatureStart+4], 'MP'
+   cmp     word ptr [si+LocLVM_SignatureStart+4], 'MP'
    jne     LVMCSS_InvalidSignature
-   cmp     wptr [si+LocLVM_SignatureStart+6], 'DF'
+   cmp     word ptr [si+LocLVM_SignatureStart+6], 'DF'
    jne     LVMCSS_InvalidSignature
    stc
    ret
@@ -114,9 +114,9 @@ LVM_CheckSectorSignature        EndP
 ; Destroyed: None
 LVM_CheckSectorCRC              Proc Near   Uses ax dx
    call    LVM_GetSectorCRC
-   cmp     ax, wptr [si+LocLVM_CRC]
+   cmp     ax, word ptr [si+LocLVM_CRC]
    jne     LVMCSCRC_BadCRC
-   cmp     dx, wptr [si+LocLVM_CRC+2]
+   cmp     dx, word ptr [si+LocLVM_CRC+2]
    jne     LVMCSCRC_BadCRC
    stc
    ret
@@ -132,8 +132,8 @@ LVM_CheckSectorCRC              EndP
 ; Destroyed: None
 LVM_UpdateSectorCRC            Proc Near   Uses ax dx
    call    LVM_GetSectorCRC
-   mov     wptr [si+LocLVM_CRC], ax
-   mov     wptr [si+LocLVM_CRC+2], dx
+   mov     word ptr [si+LocLVM_CRC], ax
+   mov     word ptr [si+LocLVM_CRC+2], dx
    ret
 LVM_UpdateSectorCRC            EndP
 

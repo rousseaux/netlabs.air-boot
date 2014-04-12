@@ -99,15 +99,15 @@ ENDM
 ; without warning.
 ; This macro does a check for this condition and aborts if it exists.
 ; If there is space between the new location and the last emitted code or data
-; will be filled.
+; it will be filled with a filler-value defined in this macro..
 ;
 ; There are differences between assemblers on when and how labels and values
 ; are evaluated. Since JWasm is a single-pass assembler, some expressions
 ; do not work that do work in multi-pass Tasm.
 ; That's why the actual check for overlap is done by db getting a negative
 ; value if an overlap occured.
-; So don't change the (after - before) calculations by assigning it to a
-; variable; that will break this macro.
+; Don't change the (after - before) expression to a pre-calculated label
+; because that won't work and will break this macro.
 ;
 ORIGIN  MACRO   loc
     ;~ IFDEF   JWASM
@@ -118,21 +118,47 @@ ORIGIN  MACRO   loc
 
     ; Use this value to fill the gap between the new origin and the last
     ; emitted code or data.
-    fillchar = 'X'
+    fillchar = '0'
 
     ; Mark the location of the last emitted code or data.
     z_&loc&_1before:
 
     ; JWasm can do db 0 dup (0).
+    ; Using db dup() causes JWasm to recognize the after label so that
+    ; overlap calculations are correct.
     IFDEF   JWASM
         db  (z_&loc&_2after - z_&loc&_1before)   dup(fillchar)
     ENDIF
 
-    ; Tasm cannot.
+    ; Tasm cannot do db 0 dup(0), so we exclude that condition.
+    ; Overlap checking could be done differently in Tasm but to keep things
+    ; easy the JWasm method above is used.
     IFDEF   TASM
         IF (z_&loc&_2after - z_&loc&_1before) NE 0
             db  (z_&loc&_2after - z_&loc&_1before)   dup(fillchar)
         ENDIF
+    ENDIF
+
+    ; Masm can also do db 0 dup (0), and it does calculate correctly
+    ; but cannot find the after label.
+    ; Same issue as with JWasm but the db construct does not solve it for masm.
+    ; The label-values show-up to be correct in the listing though.
+    ; Currently overlap-checking is disabled when assembling with Masm !
+    ; FIXME: Find a solution for Masm.
+    IFDEF   MASM
+        ;~ db  (z_&loc&_2after - z_&loc&_1before)   dup(fillchar)
+        ECHO ** Warning: Overlap Check on: loc not performed !
+    ENDIF
+
+    ; Wasm can also do db 0 dup (0), but it complains about brackets or so.
+    ; Seems to be some syntax issue.
+    ; It cannot generate a list-file so values cannot be checked.
+    ; It does not even support ECHO so no warning can be given.
+    ; So overlap-checking is disabled when assembling with Wasm !
+    ; FIXME: Find a solution for Wasm.
+    IFDEF   WASM
+        ; NOT EVEN ECHO IS SUPPORTED !
+        ;~ db  (z_&loc&_2after - z_&loc&_1before)   dup(fillchar)
     ENDIF
 
     ; Set the new origin.
@@ -160,17 +186,20 @@ qptr                             equ  qword ptr
 tptr                             equ  tbyte ptr
 
 
-sector_size                      equ   512
-image_size_60secs                equ   7800h
-image_size_62secs                equ   7c00h
+sector_size                      equ   512      ; Normal size of a sector.
+image_size_60secs                equ   7800h    ; Size of the pre v1.07 image.
+image_size_62secs                equ   7c00h    ; Size of the post v1.06 image.
 
 ;image_size                       equ   image_size_60secs
 image_size                       equ   image_size_62secs
 
-sector_count                     equ   image_size / sector_size                  ; Image size in sectors
+; Image size in sectors
+sector_count                     equ   image_size / sector_size
 
 IF image_size EQ image_size_60secs
-   partition_count               equ   30                                        ; Maximum number of partitions supported
+    ; Maximum number of partitions supported in pre v1.07.
+   partition_count               equ   30
 ELSE
-   partition_count               equ   45                                        ; Maximum number of partitions supported
+    ; Maximum number of partitions supported in post v1.06.
+   partition_count               equ   45
 ENDIF

@@ -23,6 +23,9 @@
 */
 
 
+#include    "SETABOOT.H"
+
+
 #define INCL_BASE
 #define INCL_WINSHELLDATA
 #define INCL_DOS
@@ -36,7 +39,7 @@
 #include <conio.h>
 #include <string.h>
 
-#include "msghelp.c"
+#include "MSGHELP.C"
 
 // Msg-IDs from OSO001.msg
 #define TXT_QUERY_TimeLimit_None          860

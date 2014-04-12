@@ -208,7 +208,8 @@ CONV_GetBitfieldValue   Proc    Near    Uses bx cx dx
         ; Determine if we need 1 or 2 byte access to extract the bitfield.
         mov     cl,ah       ; Get remainder in CL.
         sub     cl,dh       ; Substract bitfield width to get shift-count.
-        mov     ah,0        ; Prepare upper=0 when field snaps no byte bound.
+        mov     ah,0        ; Prepare upper=0 when field spans no byte bound.
+                            ; Don't change to xor ah,ah or any CY will be lost.
 
         ; Jump if the bitfield does not span byte boundaries.
         ; (Remainder - bitfield width >= 0)
@@ -218,7 +219,8 @@ CONV_GetBitfieldValue   Proc    Near    Uses bx cx dx
         ; and use AH to get first part of bitfield.
         add     cl,8        ; Adjust shift-count.
         mov     ah,[bx]     ; Get byte into AH instead.
-        dec     bx          ; Prepare pointer to load rest of bitfield.
+        dec     bx          ; Adjust pointer to load rest of bitfield.
+
     CONV_GetBitfieldValue_nospan:
         mov     al,[bx]     ; Load (rest of) bitfield into AL.
         shr     ax,cl       ; Shift bitfield to the right.
@@ -266,7 +268,7 @@ CONV_SetBitfieldValue   Proc    Near    Uses bx cx dx
         mov     cl,ah       ; Get remainder in CL.
         sub     cl,dh       ; Substract bitfield width to get shift-count.
 
-        ; Restore value.
+        ; Restore value to poke.
         pop     ax
 
 
@@ -281,14 +283,14 @@ CONV_SetBitfieldValue   Proc    Near    Uses bx cx dx
         ; Merge the bitfield to the array.
         push    cx          ; Save mask (CH) and shift-count (CL).
         push    ax          ; Save value to store.
-        mov     ah,0        ; Clear upper byte so we can shift in it.
+        xor     ah,ah       ; Clear upper byte so we can shift in it.
         and     al,ch       ; Mask value.
         shl     ax,cl       ; Move the bitfield to the proper location.
         mov     dh,[bx]     ; Get 1st part of bitfield from array.
         dec     bx          ; Adjust pointer.
         mov     dl,[bx]     ; Get 2nd part of bitfield from array.
         push    bx          ; We need BX so save it.
-        mov     bh,0        ; Clear upper byte so we can shift in it.
+        xor     bh,bh       ; Clear upper byte so we can shift in it.
         mov     bl,ch       ; Put mask in BL.
         shl     bx,cl       ; Shift mask to proper location.
         not     bx          ; Complement it to mask-out the required bitfield.
@@ -303,7 +305,6 @@ CONV_SetBitfieldValue   Proc    Near    Uses bx cx dx
 
         ; Done.
         jmp     CONV_SetBitfieldValue_end
-
 
     CONV_SetBitfieldValue_nospan:
         ; Merge the bitfield to the array.

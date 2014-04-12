@@ -51,7 +51,7 @@ FX_CalculateTables              Proc Near
    ret
 FX_CalculateTables              EndP
 
-; This routine will dump a color-table to ES:[DI]. Total of 96 bytes.
+; This routine will dump a color-table to ES:es:[DI]. Total of 96 bytes.
 ;        In: AX - Color-Separator (RGB, per value 4 bit)
 ;            DI - Pointer to Buffer for Color-Table
 ;       Out: *none*
@@ -111,9 +111,9 @@ FX_MakeCooperBarColors          EndP
 ;  If FX is active, we will modify the base segment for videoio to page 2,
 ;  so the screen will be generated there instead of the current page.
 FX_StartScreen                  Proc Near
-   test    CFG_CooperBars, 1
+   test    byte ptr [CFG_CooperBars], 1
    jz      FXSS_NoFX
-   mov     VideoIO_Segment, VideoIO_Page2
+   mov     word ptr [VideoIO_Segment], VideoIO_Page2
   FXSS_NoFX:
    ret
 FX_StartScreen                  EndP
@@ -122,7 +122,7 @@ FX_StartScreen                  EndP
 ;  If FX is active, we will copy the new screen to scroll area, do the FX,
 ;  copy the new screen to Page 0 and activate it.
 FX_EndScreenLeft                Proc Near
-   test    CFG_CooperBars, 1
+   test    byte ptr [CFG_CooperBars], 1
    jnz     FXESL_Go
    ret
   FXESL_Go:
@@ -136,22 +136,22 @@ FX_EndScreenLeft                Proc Near
 
       mov     ax, VideoIO_Page2
       call    VideoIO_RestoreFrom
-      mov     VideoIO_Segment, VideoIO_Page0
+      mov     word ptr [VideoIO_Segment], VideoIO_Page0
       call    FX_EndScreenInternalCleanUp
    popa
    ret
 FX_EndScreenLeft                EndP
 
 FX_ScrollScreenLeft             Proc Near
-   mov     FX_WideScrollerCurPos, 640
-   mov     FX_WideScrollerDirection, 0
-   mov     FX_WideScrollerAbsDirection, 0
+   mov     word ptr [FX_WideScrollerCurPos], 640
+   mov     byte ptr [FX_WideScrollerDirection], 0
+   mov     byte ptr [FX_WideScrollerAbsDirection], 0
    call    FX_EndScreenInternalGo
    ret
 FX_ScrollScreenLeft             EndP
 
 FX_EndScreenRight               Proc Near
-   test    CFG_CooperBars, 1
+   test    byte ptr [CFG_CooperBars], 1
    jnz     FXESR_Go
    ret
   FXESR_Go:
@@ -165,36 +165,36 @@ FX_EndScreenRight               Proc Near
 
       mov     ax, VideoIO_Page2
       call    VideoIO_RestoreFrom
-      mov     VideoIO_Segment, VideoIO_Page0
+      mov     word ptr [VideoIO_Segment], VideoIO_Page0
       call    FX_EndScreenInternalCleanUp
    popa
    ret
 FX_EndScreenRight               EndP
 
 FX_ScrollScreenRight            Proc Near
-   mov     FX_WideScrollerCurPos, 0
-   mov     FX_WideScrollerDirection, 1
-   mov     FX_WideScrollerAbsDirection, 1
+   mov     word ptr [FX_WideScrollerCurPos], 0
+   mov     byte ptr [FX_WideScrollerDirection], 1
+   mov     byte ptr [FX_WideScrollerAbsDirection], 1
    call    FX_EndScreenInternalGo
    ret
 FX_ScrollScreenRight            EndP
 
 FX_EndScreenInternalGo          Proc Near
-   mov     FX_WideScrollerSpeed, 1
-   mov     FX_WideScrollerSpeedState, 1
-   mov     FX_WideScrollerBounceSpeed, 25
+   mov     byte ptr [FX_WideScrollerSpeed], 1
+   mov     byte ptr [FX_WideScrollerSpeedState], 1
+   mov     byte ptr [FX_WideScrollerBounceSpeed], 25
    ; Check, if this is 1st time call...
-   inc     FX_UseCount
-   cmp     FX_UseCount, 1
+   inc     word ptr [FX_UseCount]
+   cmp     word ptr [FX_UseCount], 1
    jne     FX_ES_NotFirstTime
-   mov     FX_OverallTimer, 220
-   mov     FX_WideScrollerTimer, 93
-   mov     FX_CooperBarsTimer, 1
+   mov     word ptr [FX_OverallTimer], 220
+   mov     word ptr [FX_WideScrollerTimer], 93
+   mov     word ptr [FX_CooperBarsTimer], 1
    jmp     FX_ES_NowGoMagic
   FX_ES_NotFirstTime:
-   mov     FX_OverallTimer, 127
-   mov     FX_WideScrollerTimer, 1
-   mov     FX_CooperBarsTimer, -1        ; Disable coopers on further goes
+   mov     word ptr [FX_OverallTimer], 127
+   mov     word ptr [FX_WideScrollerTimer], 1
+   mov     word ptr [FX_CooperBarsTimer], -1  ; Disable coopers on further goes
   FX_ES_NowGoMagic:
    call    FX_MakeMagicalStuff
    ret
@@ -274,24 +274,24 @@ FX_MakeMagicalStuff             Proc Near   Uses es
       cmp     di, FX_MaxScanLine
       jb      FX_MCS_VerticalLoop
 
-      mov     ax, FX_CooperBarsTimer
+      mov     ax, [FX_CooperBarsTimer]
       dec     ax
       jnz     FX_MMS_CooperBarsPending
          ; Here we need to calculate the movements of the Coopers...at last
          call    FX_CalculateCoopers
       mov     ax, 1
      FX_MMS_CooperBarsPending:
-      mov     FX_CooperBarsTimer, ax
+      mov     [FX_CooperBarsTimer], ax
 
-      mov     ax, FX_WideScrollerTimer
+      mov     ax, [FX_WideScrollerTimer]
       dec     ax
       jnz     FX_MMS_WideScrollerPending
          call    FX_CalculateWideScroller
       mov     ax, 1
      FX_MMS_WideScrollerPending:
-      mov     FX_WideScrollerTimer, ax
+      mov     [FX_WideScrollerTimer], ax
 
-   dec     FX_OverallTimer
+   dec     word ptr [FX_OverallTimer]
    jnz     FX_MMS_RetraceLoop
    ret
 FX_MakeMagicalStuff             EndP
@@ -416,18 +416,18 @@ FX_CalculateCoopers             Proc Near
 FX_CalculateCoopers             EndP
 
 FX_CalculateWideScroller        Proc Near
-   mov     bx, FX_WideScrollerCurPos
+   mov     bx, [FX_WideScrollerCurPos]
    ;movzx   cx, FX_WideScrollerSpeed
-   mov   cl,FX_WideScrollerSpeed
+   mov   cl, [FX_WideScrollerSpeed]
    mov   ch,0
 
-   test    FX_WideScrollerAbsDirection, 1
+   test    byte ptr [FX_WideScrollerAbsDirection], 1
    jnz     FXCWS_RIGHT
    jmp     FXCWS_LEFT
 
    ; ================================================== WideScroll: LEFT CALC
   FXCWS_LEFT:
-   test    FX_WideScrollerSpeedState, 1
+   test    byte ptr [FX_WideScrollerSpeedState], 1
    jz      FXCWS_LEFT_Bouncing
    or      bx, bx
    jz      FXCWS_LEFT_BounceNOW
@@ -436,22 +436,22 @@ FX_CalculateWideScroller        Proc Near
   FXCWS_LEFT_Bouncing:
    or      cx, cx
    jnz     FXCWS_DoSpeedThing
-   mov     FX_WideScrollerSpeedState, 1
-   mov     FX_WideScrollerDirection, 0
-   mov     dl, FX_WideScrollerBounceSpeed
+   mov     byte ptr [FX_WideScrollerSpeedState], 1
+   mov     byte ptr [FX_WideScrollerDirection], 0
+   mov     dl, [FX_WideScrollerBounceSpeed]
    shr     dl,1
-   mov     FX_WideScrollerBounceSpeed, dl
+   mov     [FX_WideScrollerBounceSpeed], dl
    jmp     FXCWS_DoSpeedThing
 
   FXCWS_LEFT_BounceNOW:
-   mov     cl, FX_WideScrollerBounceSpeed
-   mov     FX_WideScrollerSpeedState, 0
-   mov     FX_WideScrollerDirection, 1
+   mov     cl, [FX_WideScrollerBounceSpeed]
+   mov     byte ptr [FX_WideScrollerSpeedState], 0
+   mov     byte ptr [FX_WideScrollerDirection], 1
    jmp     FXCWS_DoSpeedThing
 
    ; ================================================= WideScroll: RIGHT CALC
   FXCWS_RIGHT:
-   test    FX_WideScrollerSpeedState, 1
+   test    byte ptr [FX_WideScrollerSpeedState], 1
    jz      FXCWS_RIGHT_Bouncing
    cmp     bx, 640 ; 1280
    jae     FXCWS_RIGHT_BounceNOW
@@ -460,22 +460,22 @@ FX_CalculateWideScroller        Proc Near
   FXCWS_RIGHT_Bouncing:
    or      cl, cl
    jnz     FXCWS_DoSpeedThing
-   mov     FX_WideScrollerSpeedState, 1
-   mov     FX_WideScrollerDirection, 1
-   mov     dl, FX_WideScrollerBounceSpeed
+   mov     byte ptr [FX_WideScrollerSpeedState], 1
+   mov     byte ptr [FX_WideScrollerDirection], 1
+   mov     dl, [FX_WideScrollerBounceSpeed]
    shr     dl, 1
-   mov     FX_WideScrollerBounceSpeed, dl
+   mov     [FX_WideScrollerBounceSpeed], dl
    jmp     FXCWS_DoSpeedThing
 
   FXCWS_RIGHT_BounceNOW:
-   mov     cl, FX_WideScrollerBounceSpeed
-   mov     FX_WideScrollerSpeedState, 0
-   mov     FX_WideScrollerDirection, 0
+   mov     cl, [FX_WideScrollerBounceSpeed]
+   mov     byte ptr [FX_WideScrollerSpeedState], 0
+   mov     byte ptr [FX_WideScrollerDirection], 0
    jmp     FXCWS_DoSpeedThing
 
    ; ================================================= WideScroll: SPEED CALC
   FXCWS_DoSpeedThing:
-   test    FX_WideScrollerSpeedState, 1
+   test    byte ptr [FX_WideScrollerSpeedState], 1
    jnz     FXCWS_SpeedUp
   FXCWS_SpeedDown:
    or      cl, cl
@@ -492,7 +492,7 @@ FX_CalculateWideScroller        Proc Near
    ; ================================================== WideScroll: DO SCROLL
   FXCWS_WideScrollNOW:
    xor     ch, ch
-   test    FX_WideScrollerDirection, 1
+   test    byte ptr [FX_WideScrollerDirection], 1
    jnz     FXCWS_ScrollRIGHT
    sub     bx, cx
    jmp     FXCWS_Continue
@@ -507,8 +507,8 @@ FX_CalculateWideScroller        Proc Near
    jb      FXCWS_NotToBig
    mov     bx, 640 ; 1280
   FXCWS_NotToBig:
-   mov     FX_WideScrollerCurPos, bx
-   mov     FX_WideScrollerSpeed, cl
+   mov     [FX_WideScrollerCurPos], bx
+   mov     [FX_WideScrollerSpeed], cl
    mov     ax, 160
    call    FX_SetWideLength
    mov     ax, bx

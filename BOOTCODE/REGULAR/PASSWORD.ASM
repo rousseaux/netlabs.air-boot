@@ -30,7 +30,7 @@ ENDIF
 
 PASSWORD_AskSystemPwd           Proc Near   Uses ax bx si di
    ; Asks System Password, if set...
-   test    CFG_PasswordSystem, 1
+   test    byte ptr [CFG_PasswordSystem], 1
    jz      PASP_NoPassword
       mov     ax, 0ABABh
       mov     si, offset TXT_ProtectedSystem
@@ -42,9 +42,9 @@ PASSWORD_AskSystemPwd           EndP
 
 PASSWORD_AskChangeBootPwd       Proc Near   Uses ax bx si di
    ; Asks System Password, if set...
-   test    CFG_PasswordChangeBoot, 1
+   test    byte ptr [CFG_PasswordChangeBoot], 1
    jz      PACBP_NoPassword
-   test    TimedBootUsed, 1
+   test    byte ptr [TimedBootUsed], 1
    jnz     PACBP_NoPassword
       mov     ax, 0ABABh
       mov     si, offset TXT_ProtectedBootUp
@@ -69,9 +69,9 @@ PASSWORD_AskChangeBootPwd       EndP
 ; Destroyed: None
 PASSWORD_AskSpecifiedPassword   Proc Near   Uses cx dx ds si es di bp
    local AskPasswordMiss:byte, AskPasswordText:word, AskPasswordMagic:word, AskPasswordWhich:word
-   mov     AskPasswordMagic, ax
-   mov     AskPasswordText, si
-   mov     AskPasswordWhich, di
+   mov     [AskPasswordMagic], ax
+   mov     [AskPasswordText], si
+   mov     [AskPasswordWhich], di
    mov     ax, cs
    mov     ds, ax
    mov     es, ax
@@ -79,8 +79,8 @@ PASSWORD_AskSpecifiedPassword   Proc Near   Uses cx dx ds si es di bp
    mov     al, 32
    mov     cx, 8
    rep     stosb                         ; Generates empty password
-   mov     AskPasswordMiss, 0
-   mov     ax, AskPasswordWhich
+   mov     byte ptr [AskPasswordMiss], 0
+   mov     ax, [AskPasswordWhich]
    or      ax, ax
    jnz     PASP_BadBoyRetry              ; Only check one
    ; Encode empty Password...
@@ -105,7 +105,7 @@ PASSWORD_AskSpecifiedPassword   Proc Near   Uses cx dx ds si es di bp
       call    PASSWORD_Encode
 
       ; ...and compare it to the specified on-board one
-      mov     di, AskPasswordWhich
+      mov     di, [AskPasswordWhich]
       or      di, di
       jnz     PASP_OnlyCheckSpecified
       mov     di, offset CFG_MasterPassword
@@ -121,12 +121,12 @@ PASSWORD_AskSpecifiedPassword   Proc Near   Uses cx dx ds si es di bp
       je      PASP_CorrectPass
 
      PASP_LetUserGuessPassword:          ; ;-)))
-      mov     ax, AskPasswordMagic
-      mov     si, AskPasswordText
+      mov     ax, [AskPasswordMagic]
+      mov     si, [AskPasswordText]
       mov     di, offset TempPasswordEntry
       call    SETUP_LetEnterPassword
-   inc     AskPasswordMiss
-   cmp     AskPasswordMiss, 10
+   inc     byte ptr [AskPasswordMiss]
+   cmp     byte ptr [AskPasswordMiss], 10
    jae     PASP_BadBoyAlert
    jmp     PASP_BadBoyRetry
 

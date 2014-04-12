@@ -124,7 +124,7 @@ FAT16_SearchEntry               EndP
 ;        In: DX - Cluster-Number to load, DAP_Transfer-Offset filled out
 ;            ES - Segment, where to read Cluster to
 ;            DI - Offset, where to read Cluster to
-;       Out: DX - Cluster that follows this one, [ES:DI] filled out
+;       Out: DX - Cluster that follows this one, es:[DI] filled out
 ;            DI - Offset, adjusted
 ; Destroyed: None
 FAT16_ReadCluster               Proc Near  Uses eax bx

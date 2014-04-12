@@ -10,9 +10,9 @@
 # This is done by defining 2 targets: 'all:' for when no targets are specified,
 # and '%:' to forward one or more targets.
 #
-# Because GNU Make first looks for GNUmakefile, which only includes this
-# forwarder, it will process this file before Makefile.
-# The Make Utility that we forward to will process Makefile.
+# Because GNU Make first looks for 'GNUmakefile', which only includes this
+# forwarder, it will process this file before 'Makefile'.
+# The Make Utility that we forward to will process 'Makefile'.
 #
 # Note that GNU Make processes the '%:' target-list sequentially.
 # So for multiple targets specified on the cli, there is a difference
@@ -20,11 +20,11 @@
 # was used.
 #
 # With wmake the targets are all specified in the Makefile so dependencies
-# are resolved. With make each target is seperately forwarded to wmake,
-# so no dependencies are resolved. This means that a 'make rebuild clean'
-# behaves exactly like that, removing all just built targets,
-# because the 'clean' is performed last.
-# The 'wmake rebuild clean' will not run the last 'clean' because 'rebuild'
+# are resolved. With GNU Make, each target is seperately forwarded to Makefile
+# wmake, so no dependencies are resolved.
+# This means that a 'make rebuild clean' behaves exactly like that,
+# removing all just built targets, because the 'clean' is performed last.
+# A 'wmake rebuild clean' will not run the last 'clean' because 'rebuild'
 # runs it before doing the build, so 'clean' is considered up-to-date.
 #
 

@@ -70,6 +70,81 @@ AuxIO_Init      Proc  Near  Uses dx si
 AuxIO_Init      EndP
 
 
+;
+; Send the Build Information to the COM-port.
+;
+AuxIO_PrintBuildInfo    Proc    Near    Uses ax cx si di
+        ; Print header.
+        mov     si, offset build_info
+        call    AuxIO_Print
+
+        ; Prepare info in temorary buffer.
+        mov     si,offset bld_level_date_start
+        mov     cx,offset bld_level_date_end
+        sub     cx,si
+        mov     di,offset Scratch
+        cld
+        rep     movsb
+
+        ; Fill spaces until assembler specification.
+        mov     al,' '
+        mov     cx,37
+        rep     stosb
+
+        ; Copy assembler specification.
+IFDEF   JWASM
+        mov     al,'['
+        stosb
+        mov     si,offset jwasm_txt
+ENDIF
+IFDEF   TASM
+        mov     al,' '
+        stosb
+        mov     al,'['
+        stosb
+        mov     si,offset tasm_txt
+ENDIF
+IFDEF   WASM
+        mov     al,' '
+        stosb
+        mov     al,'['
+        stosb
+        mov     si,offset wasm_txt
+ENDIF
+IFDEF   MASM
+        mov     al,' '
+        stosb
+        mov     al,'['
+        stosb
+        mov     si,offset masm_txt
+ELSE
+        mov     al,' '
+        stosb
+        mov     al,'['
+        stosb
+        mov     si,offset unknown_txt
+ENDIF
+    AuxIO_PrintBuildInfo_a1:
+        lodsb
+        test    al,al
+        jz      AuxIO_PrintBuildInfo_e1
+        stosb
+        jmp     AuxIO_PrintBuildInfo_a1
+    AuxIO_PrintBuildInfo_e1:
+        mov     al,']'
+        stosb
+
+        ; Insert NULL Terminator.
+        xor     al,al
+        stosb
+
+        ; Print Info.
+        mov     si, offset Scratch
+        call    AuxIO_Print
+        call    AuxIO_TeletypeNL
+        ret
+AuxIO_PrintBuildInfo    EndP
+
 
 ; Print char to com-port (teletype style)
 AuxIO_Teletype  Proc     Near  Uses  ax dx

@@ -145,7 +145,7 @@ VirusWarning:   mov     si, offset TXT_Virus_Always
                 mov     si, offset TXT_MBRfail_Normal
                 call    APIShowMessage
                 call    Init_CheckBackupMBR
-                jc      VirusNoBackUp
+                jc      VirusNoBackup
                 mov     si, offset TXT_MBRfail_Strike
                 call    APIShowMessage
 VirusKeyLoop:      call    APIReadKeyboard
@@ -219,7 +219,7 @@ MenuProcessADD: mov     si, offset TXT_PROCESS_Split
                 call    ProcessADD
                 mov     si, offset TXT_AfterAdd
                 call    APIShowMessage
-                call    MenuWaitForENTER
+                call    MenuWaitForEnter
                 call    APIAfterAdd
 
 MenuProcessDELETE:
@@ -229,12 +229,12 @@ MenuProcessDELETE:
                 call    APIShowMessage
                 mov     si, offset TXT_AfterDelete
                 call    APIShowMessage
-                call    MenuWaitForENTER
+                call    MenuWaitForEnter
                 call    APIAfterDelete
 
 MenuProcessQUIT:mov     si, offset TXT_AfterQuit
                 call    APIShowMessage
-                call    MenuWaitForENTER
+                call    MenuWaitForEnter
                 call    APIAfterQuit
 
 MenuWaitForEnter               Proc Near

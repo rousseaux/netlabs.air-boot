@@ -26,9 +26,9 @@ ENDIF
 ; Here is some sound code. Requested by Hex1753.
 
 SOUND_PreBootMenu              Proc Near  Uses ax
-   test    CFG_MakeSound, 1
+   test    byte ptr [CFG_MakeSound], 1
    jz      SOUND_PreBootMenu_SkipSound
-   test    StartSoundPlayed, 1
+   test    byte ptr [StartSoundPlayed], 1
    jnz     SOUND_PreBootMenu_SkipSound
    mov     ax, 1500
    call    SOUND_MakeSound
@@ -38,13 +38,13 @@ SOUND_PreBootMenu              Proc Near  Uses ax
    call    SOUND_MakeSound
    mov     ax, 200
    call    SOUND_WaitToSilence
-   mov     StartSoundPlayed, 1
+   mov     byte ptr [StartSoundPlayed], 1
   SOUND_PreBootMenu_SkipSound:
    ret
 SOUND_PreBootMenu              EndP
 
 SOUND_ExecuteBoot              Proc Near  Uses ax
-   test    CFG_MakeSound, 1
+   test    byte ptr [CFG_MakeSound], 1
    jz      SOUND_ExecuteBoot_SkipSound
    mov     ax, 2000
    call    SOUND_MakeSound

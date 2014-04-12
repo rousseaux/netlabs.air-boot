@@ -310,7 +310,7 @@ DriveIO_LVMAdjustToInfoSector   Proc Near
 
 
       ;or       bx,ax
-      test     [ExtendedAbsPosSet],1
+      test     byte ptr [ExtendedAbsPosSet],1
       jz       pri
 
 
@@ -560,7 +560,7 @@ DriveIO_SaveTmpSector   EndP
 
 ; Keeps DS:SI for caller, sets carry if valid LVM sector encountered
 DriveIO_LoadLVMSector   Proc Near  Uses ax bx cx dx
-        test    [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
+        test    byte ptr [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
         jnz     DIOLLVMS_NoLVMSector          ;  don't load but declare as bad!
         mov     ax, wptr cs:[CurPartition_Location+0]
         mov     bx, wptr cs:[CurPartition_Location+2]
@@ -604,7 +604,7 @@ DriveIO_LoadLVMSector   EndP
 
 ; Keeps DS:SI for caller, saves at anytime w/o checks (!)
 DriveIO_SaveLVMSector   Proc Near  Uses ax bx cx dx
-        test    [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
+        test    byte ptr [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
         jnz     DIOSLVMS_SevereError          ;  don't save at anytime (security!)
         mov     ax, wptr cs:[CurPartition_Location+0]
         mov     bx, wptr cs:[CurPartition_Location+2]
@@ -632,7 +632,7 @@ DriveIO_DAP_Absolute        dd      0   ; Absolute Sector
 ; Special error message instead of "LOAD ERROR" during partition scanning,
 ;  so users will notice that something is bad with their partition table(s)
 DriveIO_GotLoadError    Proc Near
-        test    cs:CurIO_Scanning, 1          ; Must be CS:, cause DS!=CS maybe here
+        test    byte ptr cs:[CurIO_Scanning], 1          ; Must be CS:, cause DS!=CS maybe here
         jnz     InScanMode
         jmp     MBR_LoadError
     InScanMode:
@@ -670,7 +670,7 @@ DriveIO_LoadSector      Proc Near  Uses ax bx ds si es di
         cmp     dl, 80h
         jb      DIOLS_UseNormal
 
-        test    cs:[CurIO_UseExtension], 1
+        test    byte ptr cs:[CurIO_UseExtension], 1
         jz      DIOLS_UseNormal
         ; Are we forced do use LBA via Setting?
         jnz     DIOLS_UseExtension
@@ -793,10 +793,10 @@ DriveIO_LoadSectorLBA       EndP
 ; Preserve: all registers
 ; #########################################################################
 DriveIO_SaveSector              Proc Near  Uses ax bx cx ds si es di
-        test    cs:[CurIO_UseExtension], 1
+        test    byte ptr cs:[CurIO_UseExtension], 1
         jz      DIOSS_UseNormal
         ; Are we forced do use LBA via Setting?
-        test    cs:[CFG_ForceLBAUsage], 1
+        test    byte ptr cs:[CFG_ForceLBAUsage], 1
         jnz     DIOSS_UseExtension
         ; Is the drive not a harddrive?
         cmp     dl, 80h
@@ -1229,7 +1229,7 @@ DriveIO_GatherDiskInfo  Proc Near
         pop     cx
         pop     bx
 
-        mov      [CurIO_UseExtension],1
+        mov      byte ptr [CurIO_UseExtension],1
 
         popf
         ret

@@ -35,7 +35,7 @@ PARTSCAN_ScanForPartitions      Proc Near
         xor     al, al
         mov     NewPartitions, al
 
-        mov     CurIO_Scanning, 1             ; Set flag due scanning partitions
+        mov     byte ptr [CurIO_Scanning], 1             ; Set flag due scanning partitions
         mov     dl, 80h                       ; is first harddisc
     PSSFP_HarddiscLoop:
 
@@ -45,7 +45,7 @@ PARTSCAN_ScanForPartitions      Proc Near
         inc     dl
         dec     dh
         jnz     PSSFP_HarddiscLoop
-        mov     CurIO_Scanning, 0             ; Reset flag due scanning complete
+        mov     byte ptr [CurIO_Scanning], 0             ; Reset flag due scanning complete
 
 IFDEF   AUX_DEBUG
         pusha
@@ -123,7 +123,7 @@ ENDIF
         add     si, LocIPT_LenOfIPT
         inc     di
         loop    PSSFP_AutoDrvLetterLoop
-        mov     AutoDrvLetter, 0              ; Disable after processing...
+        mov     byte ptr [AutoDrvLetter], 0              ; Disable after processing...
     PSSFP_NoAutoDriveLetter:
         ret
 PARTSCAN_ScanForPartitions      EndP
@@ -175,11 +175,11 @@ PARTSCAN_ScanPartitionForExtended Proc Near  Uses si
             mov     bx, wptr [si+LocBRPT_RelativeBegin+2]
             add     ax, wptr [ExtendedAbsPos+0] ; Adjust...
             adc     bx, wptr [ExtendedAbsPos+2] ; (Shit Design!)
-            test    [ExtendedAbsPosSet], 1
+            test    byte ptr [ExtendedAbsPosSet], 1
             jnz     PSSPFE_ExtendedMainKnown
             mov     wptr [ExtendedAbsPos+0], ax
             mov     wptr [ExtendedAbsPos+2], bx
-            mov     [ExtendedAbsPosSet], 1
+            mov     byte ptr [ExtendedAbsPosSet], 1
         PSSPFE_ExtendedMainKnown:
             mov     cx, wptr [si+LocBRPT_BeginSector] ; Cylinder/Sector
             mov     dh, bptr [si+LocBRPT_BeginHead]   ; Head
@@ -211,14 +211,14 @@ PARTSCAN_ScanPartition          Proc Near  Uses ax si
         ;
         ; Stop scanning if too many partitions.
         ;
-        cmp     word ptr [cs:NewPartitions],LocIPT_MaxPartitions
+        cmp     word ptr cs:[NewPartitions],LocIPT_MaxPartitions
         jae     skip_check
         call    PARTSCAN_CheckThisPartition
         jmp     PSSP_IgnorePartition
     skip_check:
         ; Cannot boot LVM-Data partitions
         pusha
-        mov     byte ptr [cs:TooManyPartitions],1
+        mov     byte ptr cs:[TooManyPartitions],1
         mov     cx, 0C04h
         ;~ mov     si, offset TXT_ERROR_TooManyPartitions
         mov     si, offset TXT_TooManyPartitions
@@ -629,7 +629,7 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
 
         mov     al, PartTypeFlags
         ; May I auto-add partitions ?
-        test    CFG_PartitionsDetect, 1
+        test    byte ptr [CFG_PartitionsDetect], 1
         jz      PCCTP_MayNotAddAny ; add, but non-bootable
         test    al, FileSysFlags_BootAble     ; AH kam von SearchFileSysName
         jnz     PCCTP_PerhapsBootAble
@@ -709,9 +709,9 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
         stosw
         mov     ax, dx
         stosw
-        inc     NewPartitions                 ; NEW IPT Entry DONE
+        inc     byte ptr [NewPartitions]; Adjusted for Wasm ; NEW IPT Entry DONE
 
-        cmp     NewPartitions, LocIPT_MaxPartitions
+        cmp     byte ptr [NewPartitions], LocIPT_MaxPartitions
         jbe     PCCTP_NotTooManyPartitions
 
         ; Should not be reached since scanning is stopped outside this

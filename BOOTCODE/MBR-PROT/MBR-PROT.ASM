@@ -23,7 +23,12 @@
                 ; the correct default segments are created.
                 ;
                 .286
-                ;.model large,c
+
+; Tasm needs a memory model for USES on PROC to work.
+IFDEF   TASM
+    ;~ .model large, basic
+    .model  tiny,c
+ENDIF
 
 ;_TEXT           SEGMENT     USE16   PUBLIC  'CODE'
 ;_TEXT           ENDS
@@ -37,12 +42,12 @@ CODE_SEG        SEGMENT     USE16   PUBLIC  'CODE'
                 assume cs:MBRPROT, ds:MBRPROT, es:nothing, ss:nothing
 
                 org 0000h
-                .386p
+                ;.386p
+                ;.286
 
-; Yes you are :-)
-;OldInterrupt10  dd      'kcuf'              ; we are nice aren't we ;-)
-;OldInterrupt13  dd      'kcuf'
-
+;
+; Storage for old interrupt vectors.
+;
 OldInterrupt10  dd      0
 OldInterrupt13  dd      0
 
@@ -170,6 +175,8 @@ MBRP_Line2      db      '≥ If you tried to install a OS or something like that ≥
                 db      '≥             or contact your supervisor.             ≥'
 ;MBRP_Line3      db      '‘ÕÕÕ¥AiR-BOOT (c) Copyright by M. Kiewitz 1999-2009√ÕÕæ'
 MBRP_Line3      db      '‘ÕÕÕ¥AiR-BOOT (c) Copyright by M. Kiewitz 1999-2012√ÕÕæ'
+
+xxx:
 
 org             1023
                 db 0

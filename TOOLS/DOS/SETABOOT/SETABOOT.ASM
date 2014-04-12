@@ -19,7 +19,7 @@
 JUMPS
 
 Include ../../../INCLUDE/ASM.INC
-include ../../../INCLUDE/DOS/AIRBOOT.INC
+;include ../../../INCLUDE/DOS/AIRBOOT.INC
 
 		.386p
                 model large, basic
@@ -59,7 +59,7 @@ TXT_NowRebooting        db 'SETABOOT: Now rebooting system...', 13, 10, 0
 TXT_AiRBOOTdetected     db 'SETABOOT: AiR-BOOT ', 0
                         db ' detected.', 13, 10, 0
 
-   Include ../../../INCLUDE/DOS/CONST.ASM
+;   Include ../../../INCLUDE/DOS/CONST.ASM
 
 AiRBOOTdetected         db 0
 

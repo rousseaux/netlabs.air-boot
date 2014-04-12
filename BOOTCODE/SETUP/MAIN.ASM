@@ -23,11 +23,11 @@ IFDEF ModuleNames
 DB 'MAIN',0
 ENDIF
 
-LocMENU_RoutinePtr           equ          0
-LocMENU_VariablePtr          equ          2
-LocMENU_ItemNamePtr          equ          4
-LocMENU_ItemHelpPtr          equ          6
-LocMENU_ItemPack             equ          8 ; only if VariablePtr>0
+;~ LocMENU_RoutinePtr           equ          0
+;~ LocMENU_VariablePtr          equ          2
+;~ LocMENU_ItemNamePtr          equ          4
+;~ LocMENU_ItemHelpPtr          equ          6
+;~ LocMENU_ItemPack             equ          8 ; only if VariablePtr>0
 
 SETUP_UpperFixString          db 'SETUP ',0 ; AddOn for "AiR-BOOT SETUP vX.XX"
 
@@ -85,9 +85,9 @@ SETUP_CheckEnterSETUP           Proc Near
 
 
 
-   test    CFG_AutoEnterSetup, 1
+   test    byte ptr [CFG_AutoEnterSetup], 1
    jnz     SCES_ForceEnter
-   mov     al, SETUP_KeysOnEntry
+   mov     al, [SETUP_KeysOnEntry]
    test    al, Keys_Flags_EnterSetup
 IFDEF ReleaseCode
    jz      SCES_NoEnterSETUP
@@ -99,10 +99,10 @@ ENDIF
 SETUP_CheckEnterSETUP           EndP
 
 SETUP_Main                      Proc Near   Uses si es bp
-   mov     SETUP_ExitEvent, 0
+   mov     byte ptr [SETUP_ExitEvent], 0
    xor     al, al                        ; -PARTITION SETUP PreDefines-
-   mov     PartSetup_UpperPart, al       ; Upper-Partition == 0
-   mov     PartSetup_ActivePart, al      ; Active-Partition == 0
+   mov     [PartSetup_UpperPart], al       ; Upper-Partition == 0
+   mov     [PartSetup_ActivePart], al      ; Active-Partition == 0
 
    ; Setup PartitionPointers-Table...again (needed when re-entering setup)
    call    PART_CalculateStraightPartPointers
@@ -117,7 +117,7 @@ SETUP_Main                      EndP
 ;        In: BP - Pointer to Menu
 ;   CurMenu: Left Side 0-6, Right Side 8-14 (Bit 3!)
 SETUP_MenuTask                  Proc Near   ; the main-menu routine
-   cmp     SETUP_ExitEvent, 1
+   cmp     byte ptr [SETUP_ExitEvent], 1
    jne     SMT_NoImmediateExit
    ret
 
@@ -131,7 +131,7 @@ SETUP_MenuTask                  Proc Near   ; the main-menu routine
    cmp     ax, offset TXT_SETUPHELP_Main ; ask only in main-menu...
    jne     SMT_NotMainMenu
    call    FX_EndScreenLeft              ; Do FX, if requested...
-   test    CFG_PasswordSetup, 1
+   test    byte ptr [CFG_PasswordSetup], 1
    jz      SMT_NotMainMenu
    mov     ax, 0ABABh
    mov     si, offset TXT_ProtectedSetup ; why bother again ?
@@ -201,15 +201,15 @@ SETUP_MenuTask                  Proc Near   ; the main-menu routine
   SMT_KeyENTER:                          ; Enters Menu, if no ItemPack available
    mov     ch, dh
    call    SETUP_SwitchToSelectedItem    ; Calculates SI for Item-No (CH)
-   mov     ax, word ptr ds:[si+LocMENU_RoutinePtr]
-   mov     bx, word ptr ds:[si+LocMENU_VariablePtr]
+   mov     ax, ds:[si+LocMENU_RoutinePtr]
+   mov     bx, ds:[si+LocMENU_VariablePtr]
    or      bx, bx                        ; VarPtr ?
    jnz     SMT_DoNotExecute
   SMT_DirectExecute:
       mov     ds:[bp+0], dh              ; Saves current menu
       call    ax                         ; Call to CodePtr
       call    SETUP_DrawMenuOnScreen     ; Redraw after return
-      cmp     SETUP_ExitEvent, 1
+      cmp     byte ptr [SETUP_ExitEvent], 1
       je      SMT_ExitEvent
   SMT_DoNotExecute:
    jmp     SMT_KeyBored
@@ -225,8 +225,8 @@ SETUP_MenuTask                  Proc Near   ; the main-menu routine
   SMT_KeyChangeEvent:
    mov     ch, dh
    call    SETUP_SwitchToSelectedItem    ; Calculates SI for Item-No (CH)
-   mov     ax, word ptr ds:[si+LocMENU_RoutinePtr]
-   mov     bx, word ptr ds:[si+LocMENU_VariablePtr]
+   mov     ax, ds:[si+LocMENU_RoutinePtr]
+   mov     bx, ds:[si+LocMENU_VariablePtr]
    or      bx, bx                        ; VarPtr ? =0 No ItemPack
    jnz     SMT_DoItemPack
    jmp     SMT_KeyBored
@@ -271,7 +271,7 @@ SETUP_MenuTask                  Proc Near   ; the main-menu routine
   SMT_KeyHelp:                           ; Shows help for selected Item...
    mov     ch, dh
    call    SETUP_SwitchToSelectedItem    ; Calculates SI for Item-No (CH)
-   mov     bx, word ptr ds:[si+LocMENU_ItemHelpPtr]
+   mov     bx, ds:[si+LocMENU_ItemHelpPtr]
    or      bx, bx                        ; Help-Ptr available ?
    jz      SMT_NoHelpAvailable
    call    SETUP_ShowHelp                ; Shows help...
@@ -882,8 +882,8 @@ SETUP_LetEnterPassword          Proc Near   Uses bx cx dx si es di
    call    VideoIO_Print                 ; Uses given string 'Define or Verify'
    mov     cx, 0E05h
    call    VideoIO_Color
-   mov     EnterPwd_Location, 0E26h
-   mov     EnterPwd_DefinePwd, 1
+   mov     word ptr [EnterPwd_Location], 0E26h
+   mov     word ptr [EnterPwd_DefinePwd], 1
    jmp     SLEP_JumpToInputProcess
 
   SLEP_MagicLayOut:
@@ -926,7 +926,7 @@ SETUP_LetEnterPassword          Proc Near   Uses bx cx dx si es di
    xor     dl, dl
    ; DL - location of cursor (first=0)
   SLEP_Loop:
-   mov     cx, EnterPwd_Location
+   mov     cx, [EnterPwd_Location]
    call    VideoIO_Locate
    push    si
       add     si, 8
@@ -989,7 +989,7 @@ SETUP_LetEnterPassword          Proc Near   Uses bx cx dx si es di
   SLEP_Enter:
    or      dl, dl
    jnz     SLEP_GotSomePassword
-   cmp     EnterPwd_DefinePwd, 1
+   cmp     word ptr [EnterPwd_DefinePwd], 1
    je      SLEP_GotSomePassword
    mov     cx, 8
    mov     al, 1                         ; Fill empty password with [01]
@@ -1043,13 +1043,13 @@ SETUP_EnterMenu_SaveAndExitSetup Proc Near   Uses dx bp
    jnz     SEMSAES_UserAbort
   SEMSAES_DoThis:
    xor     al, al
-   mov     CFG_AutoEnterSetup, al
-   add     CFG_LastTimeEditLow, 1
-   adc     CFG_LastTimeEditHi, 0         ; Update Time-Stamp
+   mov     byte ptr [CFG_AutoEnterSetup], al
+   add     word ptr [CFG_LastTimeEditLow], 1
+   adc     word ptr [CFG_LastTimeEditHi], 0         ; Update Time-Stamp
    IFDEF ReleaseCode
       call    DriveIO_SaveConfiguration
    ENDIF
-   mov     SETUP_ExitEvent, 1            ; Exit and continue boot process
+   mov     byte ptr [SETUP_ExitEvent], 1            ; Exit and continue boot process
   SEMSAES_UserAbort:
    ret
 SETUP_EnterMenu_SaveAndExitSetup EndP
@@ -1059,7 +1059,7 @@ SETUP_EnterMenu_ExitWithoutSaving Proc Near   Uses dx bp
    call    SETUP_Warning_AreYouSure
    jnz     SEMEWS_UserAbort
    ; If we were forced to enter Setup, save configuration anyway...
-   test    CFG_AutoEnterSetup, 1
+   test    byte ptr [CFG_AutoEnterSetup], 1
    jz      SEMEWS_DoThis
    jmp     SEMEWS_DoThis                 ; Cross-Jump to SaveAndExitSetup!
 
@@ -1067,7 +1067,7 @@ SETUP_EnterMenu_ExitWithoutSaving Proc Near   Uses dx bp
    IFDEF ReleaseCode                     ; Loads basic configuration...
       call    DriveIO_LoadConfiguration  ; This is *NOT* IPT nor HideConfig
    ENDIF
-   mov     SETUP_ExitEvent, 1            ; Exit and continue boot process
+   mov     byte ptr [SETUP_ExitEvent], 1            ; Exit and continue boot process
   SEMEWS_UserAbort:
    ret
 SETUP_EnterMenu_ExitWithoutSaving EndP
@@ -1269,15 +1269,15 @@ SETUPMAGIC_ChangeDefaultSelection Proc Near   Uses ax cx dx si es di
          xor     dl, dl
         SMCP_AlreadyGotSelection:
          ; We use BL in here for tracking how many selections left
-         mov     bl, CFG_Partitions
+         mov     bl, [CFG_Partitions]
          cmp     dl, 0FEh
          jb      SMCP_DoneAdjust
          je      SMCP_AdjustContinueBIOS
-         cmp     CFG_IncludeFloppy, 0
+         cmp     byte ptr [CFG_IncludeFloppy], 0
          jne     SMCP_DoneAdjust
          dec     dl                      ; No Floppy? -> Try Resume-BIOS
         SMCP_AdjustContinueBIOS:
-         cmp     CFG_ResumeBIOSbootSeq, 0
+         cmp     byte ptr [CFG_ResumeBIOSbootSeq], 0
          jne     SMCP_DoneAdjust
          xor     dl, dl                  ; No Resume-BIOS? -> Start partition 0
         SMCP_DoneAdjust:
@@ -1290,18 +1290,18 @@ SETUPMAGIC_ChangeDefaultSelection Proc Near   Uses ax cx dx si es di
       jc      SMCP_Dec_ModifyDone
      SMCP_Inc_RejectPartition:
       inc     dl                         ; Increase Selection No
-      cmp     dl, CFG_Partitions
+      cmp     dl, [CFG_Partitions]
       jb      SMCP_Inc_ModifyDone
       cmp     dl, 0FFh
       je      SMCP_Inc_TryFloppy
       mov     dl, 0FEh                   ; Try Resume-BIOS
-      cmp     CFG_ResumeBIOSbootSeq, 0
+      cmp     byte ptr [CFG_ResumeBIOSbootSeq], 0
       jne     SMCP_Inc_ModifyDone
       inc     dl                         ; Try Floppy
      SMCP_Inc_TryFloppy:
-      cmp     CFG_IncludeFloppy, 0
+      cmp     byte ptr [CFG_IncludeFloppy], 0
       jne     SMCP_Inc_ModifyDone
-      cmp     CFG_Partitions, 0
+      cmp     byte ptr [CFG_Partitions], 0
       je      SMCP_NoBootable
       inc     dl                         ; Now start at partition 0 again
      SMCP_Inc_ModifyDone:
@@ -1324,14 +1324,14 @@ SETUPMAGIC_ChangeDefaultSelection Proc Near   Uses ax cx dx si es di
       je      SMCP_Dec_TryPartition
       cmp     dl, 0FFh
       jb      SMCP_Dec_TryResumeBIOS
-      cmp     CFG_IncludeFloppy, 0
+      cmp     byte ptr [CFG_IncludeFloppy], 0
       jne     SMCP_Dec_ModifyDone
       dec     dl
      SMCP_Dec_TryResumeBIOS:
-      cmp     CFG_ResumeBIOSbootSeq, 0
+      cmp     byte ptr [CFG_ResumeBIOSbootSeq], 0
       jne     SMCP_Dec_ModifyDone
      SMCP_Dec_TryPartition:
-      mov     dl, CFG_Partitions
+      mov     dl, [CFG_Partitions]
       or      dl, dl
       jz      SMCP_NoBootable
       dec     dl                         ; Now start at last partition again
@@ -1346,7 +1346,7 @@ SETUPMAGIC_ChangeDefaultSelection Proc Near   Uses ax cx dx si es di
 
      SMCP_GotSelection:
    pop     bx
-   mov     ds:[bx], dl                   ; neue Partition setzen
+   mov     ds:[bx], dl                   ; Set new partition
    add     si, LocIPT_Name               ; Location of Name
    push    cs
    pop     es
@@ -1563,7 +1563,7 @@ SETUPMAGIC_ChangeBootMenu       EndP
 
 SETUPMAGIC_ChangeFloppyDisplay  Proc Near   Uses cx dx si es di
    call    SETUPMAGIC_EnableDisable      ; forward call
-   cmp     CFG_PartDefault, 0FFh         ; Default-Selection is us?
+   cmp     byte ptr [CFG_PartDefault], 0FFh         ; Default-Selection is us?
    jne     SMCFD_Done
    xor     ch, ch
    mov     CFG_PartDefault, ch           ; Reset Default-Selection to 1st part
@@ -1589,7 +1589,7 @@ SETUPMAGIC_ChangeBIOSbootSeq    Proc Near   Uses ax bx cx dx si di
    or      dl, dl
    jnz     SMCBBS_Enabled
    mov     si, offset TXT_SETUP_MAGIC_Disabled
-   cmp     CFG_PartDefault, 0FEh         ; Default-Selection is us?
+   cmp     byte ptr [CFG_PartDefault], 0FEh         ; Default-Selection is us?
    jne     SMCBBS_CopyThiz
    mov     CFG_PartDefault, dl           ; Reset Default-Selection to 1st part
    jmp     SMCBBS_CopyThiz

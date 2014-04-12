@@ -174,9 +174,10 @@ DEBUG_Dump1     Proc  Near
         mov     si, offset AuxIOHello
         call    AuxIO_Print
 
-        ; Build Date
-        mov     si, offset BUILD_DATE
-        call    AuxIO_Print
+        ; Build Info
+        ;~ mov     si, offset BUILD_DATE
+        ;~ call    AuxIO_Print
+        call    AuxIO_PrintBuildInfo
 
         ; Start new line
         call    AuxIO_TeletypeNL

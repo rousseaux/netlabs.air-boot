@@ -101,18 +101,20 @@ ASM_FLAGS=$(ASM_FLAGS_D$(DEBUG_LEVEL))
 # 16-bits C Compiler
 #
 CC16=wcc
-CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -w4 -e25 -zq -od -fo=$^.
-CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -d2 -w4 -e25 -zq -od -fo=$^.
-CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -d2 -w4 -e25 -zq -od -fo=$^.
+MM16=-ml
+CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -w4 -e25 -zq -otexan -fo=$^. -fr=$^&.ERR
+CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.ERR
+CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.ERR
 CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
 
 #
 # 32-bits C Compiler
 #
+MM32=-mf
 CC32=wcc386
-CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -w4 -e25 -zq -od -6r -mf -fo=$^.
-CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -d2 -w4 -e25 -zq -od -6r -mf -fo=$^.
-CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -d2 -w4 -e25 -zq -od -6r -mf -fo=$^.
+CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -w4 -e25 -zq -otexan -6r -fo=$^. -fr=$^&.ERR
+CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.ERR
+CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.ERR
 CC32_FLAGS_R=-w4 -e25 -zq -od -6r -mf -fo=$^.
 CC32_FLAGS=$(CC32_FLAGS_D$(DEBUG_LEVEL))
 
@@ -209,22 +211,6 @@ Makefile.bu:	Makefile
 # This does not influence building DOS targets on Linux.
 #
 
-#
-# While the DOS build-environment has been kept alive in this version,
-# it has several drawbacks:
-# - No support for long filenames
-# - Very limited memory
-# - JWasmR does not work because of memory limitations
-# - JWasmD does not work at all
-# - Batch scripting is very rudimentairy
-#
-# Therefore, the DOS build-environment will most probably disappear
-# in future versions.
-# This does not influence the building of DOS targets, which can be done
-# on OS/2, Windows or Linux.
-#
-
-
 
 
 #
@@ -243,7 +229,7 @@ $(BASENAME).OBJ:	$(BASENAME).ASM
 #	@echo.
 	@echo TARGET: $^&.COM	[DOS 16-bits COM-file]
 	$(ASM) $(ASM_FLAGS) $(BASENAME).ASM
-	@wdis $^. > $^&.WDA
+	@wdis -fi $^. > $^&.WDA
 
 
 ###############################################################################
@@ -258,7 +244,7 @@ $(BASENAME)D.OBJ:	$(BASENAME).C $(BASENAME).H
 #	@echo.
 	@echo TARGET: $^&.EXE	[DOS 16-bits Executable]
 	$(CC16) $(CC16_FLAGS) -bt=dos $(BASENAME).C
-	@wdis $^. > $^&.WDA
+	@wdis -fi $^. > $^&.WDA
 
 
 ###############################################################################
@@ -273,7 +259,7 @@ $(BASENAME)W.OBJ:	$(BASENAME).C $(BASENAME).H
 #	@echo.
 	@echo TARGET: $^&.EXE	[NT 32-bits Executable]
 	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)nt -bt=nt $(BASENAME).C
-	@wdis $^. > $^&.WDA
+	@wdis -fi $^. > $^&.WDA
 
 
 ###############################################################################
@@ -288,7 +274,7 @@ $(BASENAME)2.OBJ:	$(BASENAME).C $(BASENAME).H
 #	@echo.
 	@echo TARGET: $^&.EXE	[OS/2 32-bits Executable]
 	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=os2 $(BASENAME).C
-	@wdis $^. > $^&.WDA
+	@wdis -fi $^. > $^&.WDA
 
 
 ###############################################################################
@@ -304,7 +290,7 @@ $(BASENAME)L.OBJ:	$(BASENAME).C $(BASENAME).H
 #	@echo.
 	@echo TARGET: $^&.ELF	[Linux 32-bits Executable]
 	$(CC32) $(CC32_FLAGS) -bt=linux $(BASENAME).C
-	@wdis $^. > $^&.WDA
+	@wdis -fi $^. > $^&.WDA
 
 
 
@@ -329,6 +315,7 @@ clean:	.SYMBOLIC
 	@for %%i in ($(TARGETS)) do @if exist %%i $(RM) %%i
 	@if exist *.OBJ $(RM) *.OBJ
 	@if exist *.WDA $(RM) *.WDA
+	@if exist *.NDA $(RM) *.NDA
 	@if exist *.MAP $(RM) *.MAP
 	@if exist *.LST $(RM) *.LST
 	@if exist *.ERR $(RM) *.ERR

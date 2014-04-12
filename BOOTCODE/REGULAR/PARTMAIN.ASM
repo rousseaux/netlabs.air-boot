@@ -80,11 +80,11 @@ PART_FixUpSelectionNumber       Proc Near Uses ax cx
   PFUPN_SpecialSelection:
    cmp     dl, 0FEh                      ; Resume-BIOS?
    ja      PFUPN_SpecialSelectionFloppy
-   cmp     CFG_ResumeBIOSbootSeq, 0
+   cmp     byte ptr [CFG_ResumeBIOSbootSeq], 0
    je      PFUPN_SelectionGone
    jmp     PFUPN_Found
   PFUPN_SpecialSelectionFloppy:
-   cmp     CFG_IncludeFloppy, 0
+   cmp     byte ptr [CFG_IncludeFloppy], 0
    je      PFUPN_SelectionGone
    jmp     PFUPN_Found
 
@@ -191,14 +191,14 @@ PART_CalculateStraightPartPointers EndP
 PART_CalculateMenuPartPointers Proc Near Uses si
    mov     si, offset PartitionTable
    mov     bx, offset PartitionPointers
-   test    CFG_IncludeFloppy, 1
+   test    byte ptr [CFG_IncludeFloppy], 1
    jz      PCMPP_NoFloppyInclude
    mov     ax, offset FloppyIPTentry
    mov     ds:[bx], ax
    add     bx, 2
   PCMPP_NoFloppyInclude:
 
-   test    CFG_ResumeBIOSbootSeq, 0FFh
+   test    byte ptr [CFG_ResumeBIOSbootSeq], 0FFh
    jz      PCMPP_NoResumeBootSeqInclude
    mov     ax, offset BIOScontIPTentry
    mov     ds:[bx], ax
@@ -919,7 +919,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    adc     bx, wptr es:[di+LocBRPT_AbsoluteLength+2] ;  begin location
    ; BX:AX -> Absolute End-Position of Partition
 
-   test    CFG_ForceLBAUsage, 1
+   test    byte ptr [CFG_ForceLBAUsage], 1
    jnz     PSP_ForceI13X
    ; LBA-boundary at 16450560 (FB0400h) (16320x16x63)
    cmp     bx, 00FBh
@@ -941,17 +941,17 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
         ; Insert signature
         xor     di, di
-        mov     wptr es:[di+00], '1I'
-        mov     wptr es:[di+02], 'X3'
+        mov     word ptr es:[di+00], '1I'
+        mov     word ptr es:[di+02], 'X3'
 
         ;mov     wptr es:[di], 0
         ;mov     wptr es:[di+2], 0
 
         ; Insert LBA address.
-        mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
-        mov     wptr es:[di+04], ax
-        mov     ax, wptr [si+LocIPT_AbsoluteBegin+2]
-        mov     wptr es:[di+06], ax
+        mov     ax, [si+LocIPT_AbsoluteBegin+0]
+        mov     es:[di+04], ax
+        mov     ax, [si+LocIPT_AbsoluteBegin+2]
+        mov     es:[di+06], ax
 
         pop     si
         pop     di
@@ -1029,7 +1029,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
   PSP_NoHideFeature:
    ; Check, if we are supposed to ignore LVM altogether...
-   test    [CFG_IgnoreLVM], 1
+   test    byte ptr [CFG_IgnoreLVM], 1
    jnz     PSP_NoLVMReassignment
    ; --------------------------------------------------------- LVM REASSIGNMENT
       ; Driveletter must be set for this partition
@@ -1055,7 +1055,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    ; Process Partition Tables, if M$-Hack required (changes Ext Part Type)
    call    MSHACK_ProcessPartTables
 
-   test    CFG_BootMenuActive, 0FFh
+   test    byte ptr [CFG_BootMenuActive], 0FFh
    jz      PSP_NoMenuNoSound
 
    ; --------------------------------------------------------------- BOOT-SOUND
@@ -1064,7 +1064,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
    ; -------------------------------------------------- SPECIAL BOOT PROCESSING
    ; Check here, if the Boot shall be done via resume to BIOS...
-   mov     al, bptr [si+LocIPT_SystemID]
+   mov     al, byte ptr [si+LocIPT_SystemID]
    cmp     al, 0FEh                      ; Via BIOS ? (aka resume BIOS boot sequence)
    je      PSP_ResumeBIOSbootSeq
 ; [Linux support removed since v1.02]
@@ -1140,7 +1140,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
   ;
   is_harddisk:
 
-   test    CFG_DetectVIBR, 1
+   test    byte ptr [CFG_DetectVIBR], 1
    jz      PSP_NoVIBR
    test    byte ptr [si+LocIPT_Flags], Flags_VIBR_Detection
    jz      PSP_NoVIBR
@@ -1165,7 +1165,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
       jmp     MBR_HaltSystem
 
  PSP_NoVIBR:
-   test    CFG_ProtectMBR, 1
+   test    byte ptr [CFG_ProtectMBR], 1
    jz      PSP_NoMBRprotect
    ; -------------------------------------------------- INSTALLS MBR-PROTECTION
    ; We need DS:SI later...

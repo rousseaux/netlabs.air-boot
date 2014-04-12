@@ -97,6 +97,7 @@ MSG_SUCCESS=has been built successfully !
 # Warnings.
 #
 WARN_DOS_BLD_ENV=Warning: The DOS build-environment has limited functionality !
+WARN_OVERLAP_NOT_SUPPORTED=Warning: Overlap Checking not supported for assembler: "$(ASM)" !
 
 #
 # Variables defined here will be placed into the environment
@@ -124,6 +125,7 @@ RM		= del
 STRIP	= wstrip
 DS		= \
 PS		= ;
+NULDEV	= nul:
 BS		= _build.bat
 SHELL	= $(DOSSHELL)
 !endif
@@ -140,6 +142,7 @@ RM		= del
 STRIP	= wstrip
 DS		= \
 PS		= ;
+NULDEV	= nul:
 BS		= _build.cmd
 SHELL	= $(OS2SHELL)
 !endif
@@ -156,6 +159,7 @@ RM		= del
 STRIP	= wstrip
 DS		= \
 PS		= ;
+NULDEV	= nul:
 BS		= _build.cmd
 SHELL	= $(WINSHELL)
 !endif
@@ -172,6 +176,7 @@ RM		= rm
 STRIP	= strip
 DS		= /
 PS		= :
+NULDEV	= /dev/null
 BS		= _build.bash
 SHELL	= $(LINSHELL)
 !endif

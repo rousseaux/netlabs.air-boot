@@ -92,7 +92,7 @@ PRECRAP_Main    Proc Near
         inc     cx
         rep     stosw
 
-        mov     VideoIO_Segment, VideoIO_Page0
+        mov     word ptr [VideoIO_Segment], VideoIO_Page0
 
         ; Don't use blinking attribute
         call    VideoIO_NoBlinking
@@ -105,8 +105,8 @@ PRECRAP_Main    Proc Near
         call    VideoIO_ClearScreen
 
         ; Cursor to upper-left
-        mov     TextPosX, 0
-        mov     TextPosY, 0
+        mov     byte ptr [TextPosX], 0
+        mov     byte ptr [TextPosY], 0
         call    VideoIO_CursorSet
 
         ;~ mov     ax, VideoIO_Page1
@@ -121,9 +121,8 @@ PRECRAP_Main    Proc Near
 
         ;call    SOUND_Beep
 
-        ; Build Date
-        mov     si, offset BUILD_DATE
-        call    MBR_TeletypeNL
+        ; Show build info
+        call    VideoIO_PrintBuildInfo
 
     IFDEF   AUX_DEBUG
         ; Initialize the com-port for debugging
@@ -304,11 +303,11 @@ PRECRAP_Main    Proc Near
         ; =======================================
         ; Checks for MBR Virii :) I love that job
         ; =======================================
-        test    CFG_DetectStealth, 1
+        test    byte ptr [CFG_DetectStealth], 1
         jz      PCM_NoStealthDetection
         call    VIRUS_CheckForStealth
     PCM_NoStealthDetection:
-        test    CFG_DetectVirus, 1
+        test    byte ptr [CFG_DetectVirus], 1
         jz      PCM_NoVirusDetection
         call    VIRUS_CheckForVirus
     PCM_NoVirusDetection:
@@ -317,10 +316,10 @@ PRECRAP_Main    Proc Near
         ; ============================================
         ;  Delay for some time and get Strg/Alt State
         ; ============================================
-        test    CFG_CooperBars, 1
+        test    byte ptr [CFG_CooperBars], 1
         jnz     PCM_ShortDelay
         mov     al, 27                        ; About 1.5 seconds
-        test    CFG_FloppyBootGetName, 1
+        test    byte ptr [CFG_FloppyBootGetName], 1
         jz      PCM_LongDelay
     PCM_ShortDelay:
 
@@ -344,7 +343,7 @@ PRECRAP_Main    Proc Near
         ; Now get keyboard Strg/Alt State
         mov     ah, 02h
         int     16h
-        mov     SETUP_KeysOnEntry, al
+        mov     [SETUP_KeysOnEntry], al
 
         ; Copy device-name to the ContBIOSbootSeq-IPT entry
         ; We may not do this before PRECRAP_CheckConfiguration, because otherwise
@@ -357,7 +356,7 @@ AFTERCRAP_Main  Proc Near
         ; ===================================================
         ;  Now get volume label of FloppyDrive, if wanted...
         ; ===================================================
-        test    CFG_FloppyBootGetName, 1
+        test    byte ptr [CFG_FloppyBootGetName], 1
         jz      ACM_NoFloppyGetName
         call    DriveIO_UpdateFloppyName
         or      ax, ax
@@ -380,7 +379,7 @@ PRECRAP_CheckFor13extensions    Proc Near
     PCCF13E_Found:
         and     cx, 1
         jz      PCCF13E_NotFound
-        mov     CurIO_UseExtension, 1
+        mov     byte ptr [CurIO_UseExtension], 1
         ret
 PRECRAP_CheckFor13extensions    EndP
 
@@ -405,8 +404,8 @@ PRECRAP_CheckConfiguration      Proc Near  Uses ds si es di
         ; This may change (be corrected) in future versions !
         mov      cx,5
 
-        mov     dx, CFG_CheckConfig
-        mov     CFG_CheckConfig, bx
+        mov     dx, [CFG_CheckConfig]
+        mov     [CFG_CheckConfig], bx
     PCCC_Loop:
         call    MBR_GetCheckOfSector
         loop    PCCC_Loop
@@ -494,8 +493,8 @@ MBR_TeletypeSyncPos     Proc Near   Uses ax bx cx dx
         pushf
         mov     bh, 0
         mov     ah, 02h
-        mov     dh,[TextPosY]
-        mov     dl,[TextPosX]
+        mov     dh,byte ptr [TextPosY]
+        mov     dl,byte ptr [TextPosX]
         int     10h
         popf
         ret

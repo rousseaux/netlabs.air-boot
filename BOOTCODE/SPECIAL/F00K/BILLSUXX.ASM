@@ -33,7 +33,7 @@ ENDIF
 
 MSHACK_ProcessPartTables        Proc Near  Uses ax dx di
    ; Check Overall M$-Hack Enable
-   test    [CFG_ExtPartitionMShack], 1
+   test    byte ptr [CFG_ExtPartitionMShack], 1
    jz      MSHPPT_NoMShack
 
    ; Now check Boot-Entry's flags...

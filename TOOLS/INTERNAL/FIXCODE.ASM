@@ -40,7 +40,7 @@ COM_Copyright   db 'AiR-BOOT Bootcode Image Fix', 13, 10
 COM_LoadCode    db ' - Loading bootcode from file...$'
 COM_CodeName    db 'AIR-BOOT.COM', 0
 COM_LoadMBR     db ' - Loading MBR-protection from file...$'
-COM_MBRName     db 'MBR-PROT\MBR_PROT.COM', 0
+COM_MBRName     db 'MBR-PROT\MBR-PROT.BIN', 0
 COM_MergeMBR    db ' - Merging MBR-protection into bootcode...$'
 COM_CountCode   db ' - Count code in bootcode-image...$'
 COM_WriteCode   db ' - Saving bootcode to file...$'
@@ -50,9 +50,9 @@ COM_Failed      db 'failed', 13, 10, '$'
 COM_FailedOpenCode    db 'air-boot.com not found', 13, 10, '$'
 COM_FailedReadCode    db 'Read air-boot.com failed', 13, 10, '$'
 COM_FailedInvalidCode db 'Invalid air-boot.com', 13, 10, '$'
-COM_FailedOpenMBR     db 'mbr-prot\mbr_prot.com not found', 13, 10, '$'
-COM_FailedReadMBR     db 'Read mbr-prot\mbr_prot.com failed', 13, 10, '$'
-COM_FailedInvalidMBR  db 'Invalid mbr-prot\mbr_prot.com', 13, 10, '$'
+COM_FailedOpenMBR     db 'mbr-prot\mbr-prot.bin not found', 13, 10, '$'
+COM_FailedReadMBR     db 'Read mbr-prot\mbr-prot.bin failed', 13, 10, '$'
+COM_FailedInvalidMBR  db 'Invalid mbr-prot\mbr-prot.bin', 13, 10, '$'
 COM_FailedWriteCode   db 'Write air-boot.com failed', 13, 10, '$'
 
 MBRProtectionSignature     db 'AiR-BOOT MBR-Protection Image'
@@ -64,12 +64,13 @@ ShowMessage     Proc Near  Uses ax
    ret
 ShowMessage     EndP
 
-ShowError       Proc Near
-   mov     ah, 09h
-   int     21h              ; DOS: WRITE STRING DS:DX TO CONSOLE
-   jmp     EndProgram
-   ret
-ShowError       EndP
+ShowError   Proc Near
+        mov     ah, 09h
+        int     21h             ; DOS: WRITE STRING DS:DX TO CONSOLE
+        mov     al,1            ; Error code
+        jmp     EndProgram
+        ret
+ShowError   EndP
 
 COM_Init:
                 ; Setup and Copyright.
@@ -127,7 +128,7 @@ DoneReadCode3:  mov     ah, 3Eh
                 mov     dx, offset COM_Okay
                 call    ShowMessage
 
-                ; Open MBR_PROT.COM
+                ; Open MBR_PROT.BIN
                 mov     dx, offset COM_LoadMBR
                 call    ShowMessage
                 mov     ax, 3D00h
@@ -140,7 +141,7 @@ DoneReadCode3:  mov     ah, 3Eh
 
 DoneOpenMBR:    mov     bx, ax           ; BX = Filehandle
 
-                ; Load MBR_PROT.COM
+                ; Load MBR-PROT.BIN
                 mov     ah, 3Fh
                 mov     cx, 1024         ; Image size
                 mov     dx, offset MBRProtection
@@ -203,6 +204,7 @@ COM_SignatureLoop:
                 jnz     COM_SignatureLoop
                 mov     dx, offset COM_Failed
                 call    ShowMessage
+                mov     al,2            ; Error code
                 jmp     EndProgram
 
 COM_GotSignature:
@@ -219,9 +221,9 @@ COM_GotSignature:
                 call    ShowMessage
 
                 mov     si, offset BootCode
-                add     si, 512*53
-                mov     cx, 256
-                mov     dx, 53
+                add     si, 512*53  ; 6A00
+                mov     cx, 256     ; 512 bytes
+                mov     dx, 53      ; initial count
 COM_CodeEndLoop:push    cx
                 push    si
                 push    di
@@ -276,12 +278,13 @@ DoneWriteCode:  cmp     ax, image_size
 
                 mov     dx, offset COM_Okay
                 call    ShowMessage
+                xor     al,al           ; No Error
                 jmp     EndProgram
 
 
 EndProgram:
    ; DOS: TERMINATE PROGRAM
-   mov     ax, 4C00h
+   mov     ah, 04Ch
    int     21h
 
 

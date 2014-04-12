@@ -24,7 +24,7 @@ DB 'STD_TEXT',0
 ENDIF
 
 ; If you modify this Copyright and release this under your own name,
-;  I'm going to sue your cheap ass, rape your dog and blow up your house. =)
+; I'm going to sue your cheap ass, rape your dog and blow up your house. =)
 
 CopyrightVersionLen   equ   6
 ;Copyright             db ' AiR-BOOT v1.06 - (c) 1998-2009 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
@@ -41,7 +41,26 @@ CopyrightVersionLen   equ   6
 ;Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz    <<Release Candidate>>    (build: #18)', 0
 ;Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz  <<Release Candidate 1>> (bld: 20120124)', 0
 ;Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz  <<Release Candidate 2>> (bld: 20120224)', 0
-Copyright             db ' AiR-BOOT v1.0.8 - (c) 2012 M. Kiewitz  <<Internal Release 2l>> (bld: 20120224)', 0
+
+
+;~ Copyright             db ' AiR-BOOT v',BLDLVL_MAJOR_VERSION,'.',BLDLVL_MIDDLE_VERSION,'.',BLDLVL_MINOR_VERSION,' - (c) ',BLDLVL_YEAR,' M. Kiewitz  <<Internal Release 2l>> (bld: ',BLDLVL_YEAR,BLDLVL_MONTH,BLDLVL_DAY,')', 0
+
+;
+; Masm found the above to be too complex, so we broke it up.
+;
+Copyright:
+             db ' AiR-BOOT v'
+             db BLDLVL_MAJOR_VERSION,'.'
+             db BLDLVL_MIDDLE_VERSION,'.'
+             db BLDLVL_MINOR_VERSION,' - (c) '
+             db BLDLVL_YEAR
+             db ' M. Kiewitz  <<Internal Release 2p>> (bld: '
+             db BLDLVL_YEAR
+             db BLDLVL_MONTH
+             db BLDLVL_DAY,')'
+             db 0
+
+
 ;Copyright             db ' AiR-BOOT v1.0.8 - (c) 1998-2012 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
 
 ; Message in case the user wants to edit the label of a type 0x35 partition
@@ -66,6 +85,14 @@ TXT_SETUP_LowerMessage      db 'This software is released under ', 0, 'GPLv3+', 
                             db 'For more information and source, please visit:', 0
                             db 'http://svn.netlabs.org/air-boot', 0
                             db 'Contact via e-mail: ', 0, 'airboot@ecomstation.com', 0
+
+; Build Information string.
+build_info          db  'Build Date: ',0
+jwasm_txt           db  'JWasm',0
+masm_txt            db  'Masm',0
+wasm_txt            db  'Wasm',0
+tasm_txt            db  'Tasm',0
+unknown_txt         db  '????',0
 
 ContinueBIOSbootTable dw offset TXT_SETUP_MAGIC_CDROM
                       dw offset TXT_SETUP_MAGIC_Network

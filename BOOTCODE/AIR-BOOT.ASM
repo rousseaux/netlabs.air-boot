@@ -19,9 +19,19 @@
 
 
 ;------------------------------------------------------------------------------
-;                                                         AiR-BOOT / MAIN-CODE
+;                                                       AiR-BOOT / DEFINITIONS
 ;------------------------------------------------------------------------------
 ;
+
+;
+; Include AiR-BOOT Version Information.
+;
+Include VERSION.INC
+
+;
+; Include OS/2 BLDLEVEL Information.
+;
+Include BLDLEVEL.INC
 
 
 ; -------------------------
@@ -65,7 +75,7 @@ MaxDisks                equ     64
 ;
 ; Include Debug Modules and enable COM-port debugging.
 ;
-AUX_DEBUG       EQU
+;~ AUX_DEBUG       EQU
 
 
 
@@ -131,7 +141,7 @@ VideoIO_Page2               equ     0BA00h
 VideoIO_Page4               equ     0BC00h
 VideoIO_FXSegment           equ     0A000h
 
-; Include
+; Include some macro's
 Include ../INCLUDE/ASM.INC
 
 ; Special line-drawing characters
@@ -238,7 +248,7 @@ Flags_Bootable              equ     00000001b
 Flags_VIBR_Detection        equ     00000010b
 Flags_HideFeature           equ     00000100b
 Flags_DriveLetter           equ     00001000b   ; OS/2 FAT16/HPFS only
-Flags_ExtPartMShack         equ     00010000b   ; Extended Partition M$-Hack req ?
+Flags_ExtPartMShack         equ     00010000b   ; Ext. Partition M$-Hack req ?
 Flags_NoPartName            equ     01000000b
 Flags_NowFound              equ     10000000b   ; temp only in OldPartTable
 Flags_SpecialMarker         equ     10000000b   ; temp only for HiddenSetup
@@ -275,6 +285,14 @@ Keys_Space                  equ     20h
 Keys_Flags_EnterSetup       equ     1100b   ; Strg+Alt (AL)
 
 
+
+
+
+
+;------------------------------------------------------------------------------
+;                                                         AiR-BOOT / MAIN-CODE
+;------------------------------------------------------------------------------
+
 ; ------------------------------------------
 ; Rousseau: # Changed this from .386 to .286
 ; ------------------------------------------
@@ -296,7 +314,7 @@ Keys_Flags_EnterSetup       equ     1100b   ; Strg+Alt (AL)
 
 ; Tasm needs a memory model for USES on PROC to work.
 IFDEF   TASM
-    ;.model large, basic
+    ;~ .model large, basic
     .model  tiny,c
 ENDIF
 
@@ -320,7 +338,7 @@ IFDEF   SEGMENTED
 ENDIF
 
 ; Our code-segment starts here.
-LDRIMAGE    SEGMENT     USE16   PUBLIC  'MIXED'
+LDRIMAGE    SEGMENT     USE16   PUBLIC  'CODE'
 
 IFDEF   SEGMENTED
     ASSUME  CS:AIRBOOT, DS:AIRBOOT, ES:nothing, SS:nothing
@@ -331,53 +349,64 @@ ENDIF
 ;==============================================================================
                                                                     ; Sector 1
 
-
-                ; We are not a .com file at 100h but a binary image
-                ; of which only the 1st sector gets loaded at 07c00h.
+;##############################################################################
+                ; We are not a .COM file at 100h but a BINARY image
+                ; of which only the 1st sector gets loaded at 0000:07c00h
+                ; by the BIOS. The code in this 1st sector is position
+                ; independent and moves itself to a new location at 8000:0000h.
+                ; Then it jumps to a new entry-point and loads the rest of
+                ; the image to the new location.
                 org 00000h                          ; Sector 1
+;##############################################################################
 
+
+;
 ; Start of sector 1
-; This is the MBR, note the AiRBOOT signature, it's date (2006), version and
-; language.
-; Version 1.07 was intruduced in 2011.
-; It fixes issues with huge drives and lvm and more.
+; This is the MBR.
+; Note the AiRBOOT signature, it's date, version and language.
+; Version 1.07 was intruduced in 2011, version 1.0.8 in 2012.
+; These new versions fix issues with huge drives, lvm and more.
+; For a detailed description see AIR-BOOT.HIS.
+;
 
-
+;
 ; ---------------------------------------------
 ; Rousseau: # Combined letter and jump offset #
 ; ---------------------------------------------
-; My guess is Martin had a short jump followed by the AiRBOOT signature at first.
-; Then he encountered strange behaviour by some M$ operating-systems if the
-; the first insruction was not a CLI.
+; Martin had a short jump followed by the AiRBOOT signature at first.
+; Then he encountered strange behaviour by some M$ operating-systems
+; if the the first insruction was not a CLI.
 ; But there was no room to insert the CLI and of course he did not want to
 ; change the location of the AiRBOOT signature.
 ; He solved this by inserting the M$ needed CLI at offset 0 followed by a short
 ; jump that uses the 'A' of the AiRBOOT signature as the jump displacement.
+;
 
 
 ;------------------------------------------------------------------------------
 AiR_BOOT:
 
-                ; Some M$ operating systems need a CLI
-                ; here otherwise they will go beserk
-                ; and will do funny things during
-                ; boot phase, it's laughable!
-                cli
+        ; Some M$ operating systems need a CLI
+        ; here otherwise they will go beserk
+        ; and will do funny things during
+        ; boot phase, it's laughable!
+        cli
 
-                ; JMP-Short -> MBR_Start
-                ; Uses the 'A' from the signature as the displacement !
-                db      0EBh
+        ; JMP-Short -> MBR_Start
+        ; Uses the 'A' from the signature as the displacement !
+        db      0EBh
 
-                ; ID String, Date (DD,MM,CC,YY), Version Number, Language ID
-                db      'AiRBOOT', 24h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
+        ; ID String, Date (DD,MM,CC,YY), Version Number, Language ID
+        ;~ db      'AiRBOOT', 24h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
+        InsertAirbootSignature  TXT_LanguageID
 
-                ; Total Sectors Count.
-                ; Will get overwritten by FIXCODE.
-                db      1
+        ; Total Sectors Count.
+        ; Will get overwritten by FIXCODE.
+        db      1
 
-                ; Total Sectors Count,
-                ; Dynamic calculation.
-                ;~ db      (code_end-$)/512
+        ; Total Sectors Count,
+        ; Dynamic calculation.
+        ;~ db      (code_end-$)/512
 
 
 MBR_CheckCode   dw      0               ; Check-Sum for Code
@@ -419,8 +448,8 @@ MBR_Start:
 
                 ; Code an intersegment jump to the new location
                 db      0EAh
-                dw      BootBaseExec        ; This is MBR_RealStart + BootBasePtr
-                dw      BootBaseSeg         ; This is 08000h
+                dw      BootBaseExec    ; This is MBR_RealStart + BootBasePtr
+                dw      BootBaseSeg     ; This is 08000h
                 ;jmp     far ptr BootBaseSeg:BootBaseExec
 
 
@@ -435,8 +464,9 @@ MBR_HaltSystem:
                 mov     ax, 8600h
                 xor     cx, cx
                 mov     dx, 500
-                int     15h                 ; Wait to display the whole screen :]
-MBR_HaltSys:    cli
+                int     15h         ; Wait to display the whole screen :]
+MBR_HaltSys:
+                cli
                 jmp     MBR_HaltSys
 ;db 100 dup (0)
 
@@ -484,7 +514,6 @@ MBR_LoadError   Proc Near
     MBRLE_Halt:
         jmp     MBRLE_Halt
 MBR_LoadError   EndP
-
 
 ;
 ; Entry-point when saving fails.
@@ -748,18 +777,18 @@ FileSysIDs      db      01h, 11h,01h, 04h,014h,01h, 06h,016h,41h, 0Eh,00Eh,01h
                 db      0Ah, 0Ah,20h,0FEh,0FEh,21h,0FFh,0FFh,21h, 00h,000h,21h
                 db      16 dup (0)
 
-FileSysNames    db      'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
-                db      'HPFS    ', 'NTFS    ', 'LVM-Data', 'JFS     '
-                db      'FAT32   ', 'FAT32   ', 'FAT32   ', 'BeOS    '
-                db      'Unix    ', 'Minix   ', 'Linux   ', 'Venix   ' ; x row ;)
-                db      'BSD/386 ', 'OpenBSD ', 'LinuxSwp', 'NeXTSTEP'
-                db      'GNU HURD', 'QNX     ', 'QNX     ', 'QNX     '
-                db      '        ', '        ', '        ', '        '
-                db      '        ', '        ', '        ', '        '
-                db      '        ', '        ', '        ', '        '
-                db      '        ', 'Kernel  ', '        ', '0V-Award'
-;                db      'OS/2 Man', 'via BIOS', 'Floppy  ', 'Unknown '
-                db      'OS2-BMGR', 'via BIOS', 'Floppy  ', 'Unknown '
+FileSysNames    db  'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
+                db  'HPFS    ', 'NTFS    ', 'LVM-Data', 'JFS     '
+                db  'FAT32   ', 'FAT32   ', 'FAT32   ', 'BeOS    '
+                db  'Unix    ', 'Minix   ', 'Linux   ', 'Venix   ' ; x row ;)
+                db  'BSD/386 ', 'OpenBSD ', 'LinuxSwp', 'NeXTSTEP'
+                db  'GNU HURD', 'QNX     ', 'QNX     ', 'QNX     '
+                db  '        ', '        ', '        ', '        '
+                db  '        ', '        ', '        ', '        '
+                db  '        ', '        ', '        ', '        '
+                db  '        ', 'Kernel  ', '        ', '0V-Award'
+;                db  'OS/2 Man', 'via BIOS', 'Floppy  ', 'Unknown '
+                db  'OS2-BMGR', 'via BIOS', 'Floppy  ', 'Unknown '
                          ; -> 44 Partition-Types
 
 
@@ -1010,7 +1039,7 @@ AiR_BOOT_Start:
                 ; COM-PORT DEBUG
                 ;
                 ;call    AuxIO_TeletypeNL
-                mov     si, offset PartitionTable
+                ;mov     si, offset PartitionTable
                 ;call    AuxIO_DumpSector
                 ;call    AuxIO_TeletypeNL
 
@@ -1019,7 +1048,7 @@ AiR_BOOT_Start:
                 ; on next boot.
                 ; Moved here to fix that Esc out of SETUP would also save.
                 ; So moved above the MBR_Main_ReEnterSetup label.
-                mov     [eCS_InstallVolume], 0  ; disable phase 1 for next boot
+                mov     byte ptr [eCS_InstallVolume], 0  ; disable phase 1 for next boot
                 call    DriveIO_SaveConfiguration
 
 
@@ -1043,13 +1072,14 @@ AiR_BOOT_Start:
     ;MBR_Main_NoLinuxKrnlPartition:
 
 
+
     MBR_Main_ReEnterBootMenuPre:
 
                 ; SetUp PartitionPointers for BootMenu (filter non-bootable)
                 call    PART_CalculateMenuPartPointers
 
                 ; ...and count that one...
-                cmp     PartitionPointerCount, 0
+                cmp     byte ptr [PartitionPointerCount], 0
                 jne     MBR_Main_SomethingBootAble
                 mov     si, offset TXT_NoBootAble
                 call    MBR_Teletype
@@ -1064,12 +1094,12 @@ AiR_BOOT_Start:
                 ; -------------------------------------------------- BOOT-MENU
     MBR_Main_ReEnterBootMenu:
                 call    BOOTMENU_ResetMenuVars ; reset has to be done
-                test    CFG_AutomaticBoot, 1
+                test    byte ptr [CFG_AutomaticBoot], 1
                 jz      MBR_Main_NoAutomaticBooting
                 ; ------------------------------------------ AUTOMATIC BOOTING
                 ; Select automatic partition, disable automatic booting for
                 ;  next time and boot system...
-                mov     CFG_AutomaticBoot, 0
+                mov     byte ptr [CFG_AutomaticBoot], 0
                 call    PASSWORD_AskSystemPwd
                 mov     al, Menu_EntryAutomatic
 
@@ -1082,7 +1112,7 @@ AiR_BOOT_Start:
 
                 ;call   SOUND_Beep
 
-                test    CFG_BootMenuActive, 0FFh
+                test    byte ptr [CFG_BootMenuActive], 0FFh
                 jnz     MBR_Main_GotBootMenu
                 ; ----------------------------------------------- NO BOOT-MENU
                 ; Select default partition and boot system...
@@ -1211,7 +1241,7 @@ size_math = $-b_math
 ; Various debugging routines, uses AUXIO and CONV
 IFDEF AUX_DEBUG
 b_debug:
-Include REGULAR/DEBUG.ASM
+Include REGULAR/DEBUG.ASM       ; Debug module
 size_debug = $-b_debug
 b_auxio:
 Include REGULAR/AUXIO.ASM       ; Com-port support for debugging
@@ -1224,10 +1254,15 @@ ENDIF
 ;==============================================================================
 
                 ;
+                ; Moved up.
+                ;
+
+                ;
                 ; This is the AiR-BOOT MBR-Protection Image.
                 ; 04600 / 200h = 23h = 35d sectors are before this point.
-                ; The stuff generated here gets overwritten when the MBR_PROT.ASM
-                ; module, which is assembled separately, gets merged.
+                ; The stuff generated here gets overwritten when the
+                ; MBR_PROT.ASM module, which is assembled separately,
+                ; gets merged.
                 ; So you won't find the string below in the generated binary.
                 ;
                 ; MOVED TO 6800h to create space and have a continuous
@@ -1237,7 +1272,9 @@ ENDIF
                 ;org     04600h                                  ; Sector 36-37
 
 
-
+                ; Rousseau: It needed a sector alignment, so moved it up to
+                ;           have as much space as possible for the modules
+                ;           included here.
 
 
 ;==============================================================================
@@ -1275,6 +1312,7 @@ Include SPECIAL/F00K/BILLSUXX.ASM   ; Extended Partition - Microsoft-Hack
 size_billsuxx = $-b_billsuxx
 
 
+
                 ;
                 ; Critical end of code marker.
                 ;
@@ -1301,10 +1339,20 @@ Include SPECIAL/FX.ASM          ; l33t Cooper-Bars/Scrolling <bg>
 size_fx = $-b_fx
 
 
-;
-; Let's make this always the last module in this section.
-;
-Include BLDDATE.ASM                      ; Build Date generated by _build.cmd
+; If we are debugging, we overwrite the FX code.
+; As long as no FX is disabled this will do no harm.
+IFDEF   AUX_DEBUG
+                ORG     06780h
+ENDIF
+
+bld_level:
+                ;
+                ; Here we insert the OS/2 BLDLEVEL Information.
+                ; It is composed of the AiR-BOOT version-info and other
+                ; information.
+                ; It is unique for each release of AiR-BOOT.
+                ;
+                InsertBuildLevel
 
                 ;
                 ; End of code marker.
@@ -1317,30 +1365,35 @@ code_end:
 
                 ;
                 ; AiR-BOOT Protection Image.
+                ; Moved from below to have it not break the included modules
+                ; with it's sector alignment requirement.
                 ;
                 ORIGIN  06800h
 
                 ;
                 ; This is the AiR-BOOT MBR-Protection Image.
                 ; 06800 / 200h = 34h = 52d sectors are before this point.
-                ; The stuff generated here gets overwritten when the MBR_PROT.ASM
-                ; module, which is assembled separately, gets merged.
+                ; The stuff generated here gets overwritten when the
+                ; MBR_PROT.ASM module, which is assembled separately,
+                ; gets merged.
                 ; So you won't find the string below in the generated binary.
                 ;
+
+                ; 06800-068FF
+                ; 06900-069FF
+                ; 06A00-06AFF
+                ; 06B00-06BFF
+
+;
 ; Hardcoded to 1k (1024 bytes) (MBR_PROT.ASM)
+; The string below is searched for by the FIXCODE helper and *must* be
+; sector (512-bytes) aligned.
+;
 MBR_Protection  db 'AiR-BOOT MBR-Protection Image'
 
                 ; Just fill.
                 db  1024-($-MBR_Protection)  dup('M')
 
-;LDRIMAGE        ENDS
-;DATA_SEG        SEGMENT     USE16   PUBLIC  'CODE'
-
-
-
-;~ MYDATA  SEGMENT     COMMON    'MIXED'
-;~ qqqq     dw  'QQ'
-;~ MYDATA  ENDS
 
 ;==============================================================================
                                                                    ; Sector 55
@@ -1355,23 +1408,31 @@ MBR_Protection  db 'AiR-BOOT MBR-Protection Image'
                 ORIGIN  06C00h
 
 Configuration:
-                ; THERE IS AN INVISIBLE CHAR HERE !!
-                ; Your editor may not display the invisible
+                ; THERE IS A NON-ASCII CHAR HERE !!
+                ; Your editor may not display this non-ASCII
                 ; character at the end if the 'AiRCFG-TABLE'
                 ; string. When this character get's deleted,
                 ; AiR-BOOT will not function because it cannot
                 ; find the config-signature which includes this
-                ; invisible character. The code is: 0x0ad.
+                ; invisible character. The code of the char is: 0x0ad.
                 db  'AiRCFG-TABLE­'
-                db  01h, 07h, 'U' ; "Compressed" ID String
-                ; This is now version 1.07 to have it in sync with
-                ; the new code version for eCS.
+                db  01h, 08h, 'U' ; "Compressed" ID String
                 ; Version 1.02 was for code 1.06, 1.03 was internal
                 ; and 1.04,1.05 and 1.06 do not exist.
+                ;
+                ; 1.07 was used with AB v1.07 and introduced the phase1
+                ; system-name. For the rest it is compatible with v1.02.
+                ;
+                ; 1.0.8 is introduced with AB v1.0.8 and indicates the movement
+                ; of several components and the packing of the hideparttable.
+                ; The core configuration has not changed but the generated
+                ; configuration has. The v1.0.8 installer handles upgrading.
+                ;
                 ; It is not required for the config to have the
                 ; same version as the code, so in the future
                 ; the code version might be higher than the
                 ; config version if there are no changes to the latter.
+                ;
 
 CFG_LastTimeEditLow     dw  0   ; Last Time Edited Stamp (will incr every setup)
 CFG_LastTimeEditHi      dw  0   ; second 16 bit part...
@@ -1482,7 +1543,7 @@ eCS_InstallVolume       db  0,'NOPHASEONE' ,0
                 ; 06DABh - 06C00h = 01ABh = 427 bytes.
                 ; Entries allocated down from 06E00 boundary.
                 ;
-                ORIGIN  % 06DABh                                  ; 427 Boundry
+                ORIGIN  06DABh                                  ; 427 Boundry
 
 ; (432 - 5 = 427)
 AutoDrvLetter           db  0
@@ -1501,8 +1562,9 @@ BIOScontIPTentry:
 ; Most of them are backups of Interrupt Points, so we can check, if a
 ; stealth virus is on-line, we can intercept its call.
 ; Normal (non stealth) virus are trapped simply by rereading the MBR sector.
-; If a virus is found, we will restore MBR from Sektor 60/62 and stop the system
-; from working, so the user has to press reset. That's saver than a Reboot.
+; If a virus is found, we will restore MBR from Sektor 60/62 and stop the
+; system from working, so the user has to press reset.
+; That's saver than a Reboot.
 ;
 ; If a virus is found on the partition to boot, the system will ONLY halt,
 ; nothing more, because we can not remove it. The user shall do it :)
@@ -1545,7 +1607,7 @@ PartitionTable  db  (LocIPT_MaxPartitions * LocIPT_LenOfIPT) dup (0)
 ;                             db    0, 0FFh, Flags_BootAble
 ;                             dw    0    ; No Checksum :)
 ;                             db    0, 0, 1
-;                             db    0, 0, 1  ; Location of Partition/Boot Record
+;                             db    0, 0, 1 ; Location of Partition/Boot Record
 ;                             dd    0, 0
 
     ; Format is:
@@ -1615,7 +1677,8 @@ HidePartitionTable      db  (LocIPT_MaxPartitions * LocHPT_LenOfHPT) dup (0FFh)
                 ORIGIN  % (image_size - 200h)
 
 
-MBR_BackUpMBR           db  'AiR-BOOT MBR-BackUp - Just to fill this sector with something',0
+MBR_BackUpMBR           db  'AiR-BOOT MBR-BackUp',\
+                            ' - Just to fill this sector with something',0
 AirBootRocks            db  'AiR-BOOT Rocks!',0
 
                         db  (512 - ($-MBR_BackUpMBR) - 2)  dup('M')
@@ -1648,93 +1711,126 @@ VOLATILE        SEGMENT     USE16   PUBLIC  'BSS'
 
 ENDIF
 
+
+
 sobss:
 ;------------------------------------------------------------------------------
+
                             ;
-                            ; Removed org for BSS data to be more compatible
+                            ; Removed ORG for BSS data to be more compatible
                             ; with segment-concatenated layout.
                             ;
                             ; What happens before this space ??
                             ; If org 0 corruption occurs.
-                            ; Filling hiddenparttable goes out-of-bounds !
                             ;
-                            org 02400h                         ; Uninitialized
-                            ;~ org 00200h                         ; 200h geeft 3 floppies !
+
+                            ;
+                            ; Filling hiddenparttable goes out-of-bounds !
+                            ; Fixed with 6-bit packing.
+                            ;
+
+;
+; If segmented, offsets are relative to the BSS segment.
+; They are resolved at link-time.
+; If not segmented, offsets are relative to the CODE segment.
+;
+IFDEF   SEGMENTED
+                            ORG 02400h
+ELSE
+                            ORG 0A000h
+ENDIF
+
 
 ; This space actually gets initialized in PreCrap to NUL (till EndOfVariables)
 BeginOfVariables:
-PartitionSector             db  512 dup (?) ; Temporary Sector for Partition
-JfsPBR                      db  512 dup (?) ; Temporary Sector for JFS PBR writeback
-LVMSector                   db  512 dup (?) ; Temporary Sector for LVM
-TmpSector                   db  512 dup (?) ; Temporary Sector
+PartitionSector     db  512 dup (?) ; Temporary Sector for Partition
+JfsPBR              db  512 dup (?) ; Temporary Sector for JFS PBR writeback
+LVMSector           db  512 dup (?) ; Temporary Sector for LVM
+TmpSector           db  512 dup (?) ; Temporary Sector
+Scratch             db  256 dup (?) ; Scratch buffer
 
 ; Everything used to build a new IPT and reference it to the old one
 ; IETS OVERSCHRIJFT DIT !!
-NewPartTable                db  1536 dup (?)                    ; New Partition Table
+NewPartTable                db  1536 dup (?)    ; New Partition Table
 
-NewHidePartTable            db  partition_count * LocHPT_LenOfHPT dup (?)    ; New Hide-Partition Table
-NewDriveLetters             db  partition_count dup (?)         ; Logical Drive-Letters
+; New Hide-Partition Table
+NewHidePartTable            db  partition_count * LocHPT_LenOfHPT dup (?)
 
-PartitionSizeTable          db  partition_count * 6 dup (?) ; Size-Table (6 bytes per partition)
-PartitionPointers           dw  52 dup (?)  ; Maximum is 52 entries till now
-PartitionPointerCount       db  ?           ; Count of total Partition Pointers
-PartitionXref               db  partition_count dup (?) ; X-Reference Table (holds new partnr, index is old part nr)
-PartitionVolumeLetters      db  partition_count dup (?) ; Volume-Letters
-                                                ;  0 - no LVM support
-                                                ;  1 - LVM support, but no letter
-                                                ;  'C'-'Z' - assigned drive letter
+; Logical Drive-Letters
+NewDriveLetters             db  partition_count dup (?)
 
-TotalHarddiscs              db  ?           ; Total harddrives (by POST)
-LBASwitchTable              db  128 dup (?) ; Bit 25-18 for CHS/LBA Switching
-NewPartitions               db  ?           ; Freshly found partitions
+; Size-Table (6 bytes per partition)
+PartitionSizeTable          db  partition_count * 6 dup (?)
+
+; Maximum is 52 entries till now
+PartitionPointers           dw  52 dup (?)
+
+; Count of total Partition Pointers
+PartitionPointerCount       db  ?
+
+; X-Reference Table (holds new partnr, index is old part nr)
+PartitionXref               db  partition_count dup (?)
+
+; Volume-Letters
+; 0 - no LVM support
+; 1 - LVM support, but no letter
+; 'C'-'Z' - assigned drive letter
+PartitionVolumeLetters      db  partition_count dup (?)
+
+
+
+
+TotalHarddiscs          db  ?           ; Total harddrives (by POST)
+LBASwitchTable          db  128 dup (?) ; Bit 25-18 for CHS/LBA Switching
+NewPartitions           db  ?           ; Freshly found partitions
                                             ; Independent of SaveConfiguration
-TooManyPartitions           db  ?           ; Non-zero if too many partitions found
+TooManyPartitions       db  ?           ; Non-zero if too many partitions found
 
-VideoIO_Segment             dw  ?           ; Segment for Video I/O
+VideoIO_Segment         dw  ?           ; Segment for Video I/O
 
-ExtendedAbsPos              dd  ?           ; Extended Partition Absolute Position
-ExtendedAbsPosSet           db  ?           ; If Absolute Position set
+ExtendedAbsPos          dd  ?           ; Extended Partition Absolute Position
+ExtendedAbsPosSet       db  ?           ; If Absolute Position set
 
-CurPartition_Location       dw  4 dup (?)   ; Where did current partition come from?
-CurIO_UseExtension          db  ?           ; 1-Use INT 13h EXTENSIONS
-                                            ; (filled out by PreCrap)
-CurIO_Scanning              db  ?           ; 1-AiR-BOOT is scanning partitions
+CurPartition_Location   dw  4 dup (?)   ; Where did current partition come from?
+CurIO_UseExtension      db  ?           ; 1-Use INT 13h EXTENSIONS
+                                        ; (filled out by PreCrap)
+CurIO_Scanning          db  ?           ; 1-AiR-BOOT is scanning partitions
                                             ; (for detailed error message)
 
 ; [Linux support removed since v1.02]
 ;GotLinux                     db     ?    ; 1-Linux found
 
-Menu_EntrySelected          db  ?   ; Which partition we boot this time...
-Menu_UpperPart              db  ?   ; Which number (Base=0) is the partition upper pos
-Menu_AbsoluteX              db  ?   ; Pos where Menu stuff starts
-Menu_TotalParts             db  ?   ; Copy of CFG_BootParts
-Menu_TotalLines             db  ?   ; Total Lines on Screen used for BootMenu
-Menu_EntryDefault           db  ?   ; Default Entry in filtered View
-Menu_EntryLast              db  ?   ; LastBooted Entry in filtered View
-Menu_EntryAutomatic         db  ?   ; Automatic Entry in filtered View
+Menu_EntrySelected  db  ?   ; Which partition we boot this time...
+Menu_UpperPart      db  ?   ; Which number (Base=0) is the partition upper pos
+Menu_AbsoluteX      db  ?   ; Pos where Menu stuff starts
+Menu_TotalParts     db  ?   ; Copy of CFG_BootParts
+Menu_TotalLines     db  ?   ; Total Lines on Screen used for BootMenu
+Menu_EntryDefault   db  ?   ; Default Entry in filtered View
+Menu_EntryLast      db  ?   ; LastBooted Entry in filtered View
+Menu_EntryAutomatic db  ?   ; Automatic Entry in filtered View
                                          ;  - All adjusted to menu locations
 
-PartSetup_UpperPart         db  ?   ; Partition-Setup (like Menu_UpperPart)
-PartSetup_ActivePart        db  ?   ; Active Partition
-PartSetup_HiddenUpper       db  ?   ; (like Menu_UpperPart)
-PartSetup_HiddenX           db  ?   ; Pos for Hidden-Setup
-PartSetup_HiddenAdd         db  ?   ; Adjust for Hidden-Setup
+PartSetup_UpperPart     db  ?   ; Partition-Setup (like Menu_UpperPart)
+PartSetup_ActivePart    db  ?   ; Active Partition
+PartSetup_HiddenUpper   db  ?   ; (like Menu_UpperPart)
+PartSetup_HiddenX       db  ?   ; Pos for Hidden-Setup
+PartSetup_HiddenAdd     db  ?   ; Adjust for Hidden-Setup
 
-TimedBootEnable             db  ?   ; Local Enable/Disable for timed boot
-TimedTimeOut                dd  ?   ; TimeOut Timer for TimedBoot (too much time here ;)
-TimedSecondLeft             db  ?   ; How many seconds are left till boom ?
-TimedSecondBack             db  ?   ; To get a modification noticed
-TimedBootUsed               db  ?   ; Timed Boot used for bootup ?
-FloppyGetNameTimer          dd  ?   ; Timer for Floppy-Get-Name
-SETUP_KeysOnEntry           db  ?   ; which Shift Status was there, when booting ?
-SETUP_ExitEvent             db  ?   ; Exit Event to end SETUP
-TempPasswordEntry           db  17 dup (?)
-SETUP_OldPwd                db  17 dup (?)
-SETUP_NewPwd                db  17 dup (?)
-SETUP_VerifyPwd             db  17 dup (?)
-StartSoundPlayed            db  ?
-ChangePartNameSave          db  ?   ; Save label after user-edit ?
-SyncLvmLabels               db  ?   ; Sync LVM labels after user-edit ?
+TimedBootEnable     db  ?   ; Local Enable/Disable for timed boot
+TimedTimeOut        dd  ?   ; TimeOut Timer for TimedBoot (too much time here;)
+TimedSecondLeft     db  ?   ; How many seconds are left till boom ?
+TimedSecondBack     db  ?   ; To get a modification noticed
+TimedBootUsed       db  ?   ; Timed Boot used for bootup ?
+FloppyGetNameTimer  dd  ?   ; Timer for Floppy-Get-Name
+SETUP_KeysOnEntry   db  ?   ; which Shift Status was there, when booting ?
+SETUP_ExitEvent     db  ?   ; Exit Event to end SETUP
+TempPasswordEntry   db  17 dup (?)
+SETUP_OldPwd        db  17 dup (?)
+SETUP_NewPwd        db  17 dup (?)
+SETUP_VerifyPwd     db  17 dup (?)
+StartSoundPlayed    db  ?
+ChangePartNameSave  db  ?   ; Save label after user-edit ?
+SyncLvmLabels       db  ?   ; Sync LVM labels after user-edit ?
 
 FX_UseCount                 dw  ?
 FX_OverallTimer             dw  ?
@@ -1747,30 +1843,29 @@ FX_WideScrollerAbsDirection db  ?
 FX_WideScrollerBounceSpeed  db  ?
 FX_CooperBarsTimer          dw  ?
 
-; [Linux support removed since v1.02]
-;FAT16_Drive                  db     ?    ; FAT-16: Drive of FAT16-partition
-;FAT16_AbsPartitionBegin      dd     ?    ; FAT-16: LBA Begin of Partition
-;FAT16_SecsPerCluster         db     ?    ; FAT-16: Sectors Per Cluster
-;FAT16_NumOfRootEntries       dw     ?    ; FAT-16: Number of Root Entries
-;FAT16_SecsPerFAT             dw     ?    ; FAT-16: Sectors Per FAT
-;FAT16_AbsFATBegin            dd     ?    ; FAT-16: LBA Begin of FAT
-;FAT16_AbsRootBegin           dd     ?    ; FAT-16: LBA Begin of Root
-;FAT16_AbsClusterBegin        dd     ?    ; FAT-16: LBA Begin of Clusters
-;FAT16_FATCacheSector         db     ?    ; FAT-16: FAT-Sector No in Cache
-;FAT16_FATCache               db   512 dup (?) ; FAT-16: FAT-Area Cache
-;
-;LINUX_KernelEntries          db   680 dup (?) ; 34*20 -> Space for Kernel-Entries
-;LINUX_KernelNo               db     ?         ; Total of Kernels in KernelEntries
-;LINUX_KernelSizeTable        db   120 dup (?) ; Size-Table (6 bytes per kernel)
-;EndOfVariables:
+;~ ; [Linux support removed since v1.02]
+;~ FAT16_Drive             db     ?    ; FAT-16: Drive of FAT16-partition
+;~ FAT16_AbsPartitionBegin dd     ?    ; FAT-16: LBA Begin of Partition
+;~ FAT16_SecsPerCluster    db     ?    ; FAT-16: Sectors Per Cluster
+;~ FAT16_NumOfRootEntries  dw     ?    ; FAT-16: Number of Root Entries
+;~ FAT16_SecsPerFAT        dw     ?    ; FAT-16: Sectors Per FAT
+;~ FAT16_AbsFATBegin       dd     ?    ; FAT-16: LBA Begin of FAT
+;~ FAT16_AbsRootBegin      dd     ?    ; FAT-16: LBA Begin of Root
+;~ FAT16_AbsClusterBegin   dd     ?    ; FAT-16: LBA Begin of Clusters
+;~ FAT16_FATCacheSector    db     ?    ; FAT-16: FAT-Sector No in Cache
+;~ FAT16_FATCache          db   512 dup (?) ; FAT-16: FAT-Area Cache
+;~ LINUX_KernelEntries     db   680 dup (?) ; 34*20 -> Space for Kernel-Entries
+;~ LINUX_KernelNo          db     ?         ; Total of Kernels in KernelEntries
+;~ LINUX_KernelSizeTable   db   120 dup (?) ; Size-Table (6 bytes per kernel)
 
 ; Dynamically Generated Tables - do not need to get initialized with NUL
-FX_CooperColors             db   672 dup (?) ; 7 cooper bars*96 - runtime calculated
-FX_CooperState              db     7 dup (?)
-FX_SinusPos                 db     7 dup (?)
-FX_CooperPos                dw     7 dup (?)
-CharsetTempBuffer           db  4096 dup (?) ; Uninitialized Charset buffer
-LVM_CRCTable                dd   256 dup (?) ; LVM-CRC (->SPECiAL\LVM.asm)
+FX_CooperColors     db   672 dup (?) ; 7 cooper bars*96 - runtime calculated
+FX_CooperState      db     7 dup (?)
+FX_SinusPos         db     7 dup (?)
+FX_CooperPos        dw     7 dup (?)
+CharsetTempBuffer   db  4096 dup (?) ; Uninitialized Charset buffer
+LVM_CRCTable        dd   256 dup (?) ; LVM-CRC (->SPECiAL\LVM.asm)
+
 
 
 
@@ -1808,31 +1903,35 @@ LOG_Secs                    dd      MaxDisks  dup(?)
 LOG_Bytes                   dw      MaxDisks  dup(?)
 LOG_TotalSecs               dq      MaxDisks  dup(?)
 
-; Rousseau: moved here
+; End of transient variables.
 EndOfVariables:
 
-; Temporary buffer for 48h INT13X bios call
-; Word aligned
-           ;even
-           ;align 2
 
-           ;db     1  dup(?)
+;
+; Temporary buffer for 48h INT13X bios call.
+;
 
-i13xbuf     dw  1   dup (?)     ; Size of the buffer;
-                                ; this param *must* be present.
-                                ; Code inserts it.
-            db  126 dup(?)      ; The buffer itself.
-            i13xbuf_size = $-offset i13xbuf-2   ; Size of buffer
-                                                ; (excluding the size word at the start).
+            ; Size of the buffer.
+            ; this param *must* be filled in.
+            ; Code inserts it.
+i13xbuf     dw  1   dup (?)
 
+            ; The buffer itself.
+            db  126 dup(?)
+
+            ; Size of buffer calculated.
+            ; (excluding the size word at the start).
+            i13xbuf_size = $-offset i13xbuf-2
+
+            ; Some debug area.
 ott         db  512 dup(?)
 
 eobss:
 
 IFDEF   SEGMENTED
-VOLATILE    ENDS
+    VOLATILE    ENDS
 ELSE
-LDRIMAGE    ENDS
+    LDRIMAGE    ENDS
 ENDIF
 
             END     AiR_BOOT

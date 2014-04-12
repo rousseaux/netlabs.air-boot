@@ -1,6 +1,6 @@
-###############################################################
-# Makefile :: Builds the MBR Protection Image.                #
-###############################################################
+###############################################################################
+# Makefile :: Builds the MBR-PROT.BIN 16-bits RAW Protection Image.           #
+###############################################################################
 # rousseau@ecomstation.com
 #
 # Derived from the AIR-BOOT Makefile.
@@ -44,7 +44,7 @@ MAX_DEBUG_LEVEL=2
 #
 # Source Level base-name of Target to build.
 #
-BASENAME=MBR_PROT
+BASENAME=MBR-PROT
 
 #
 # Bin Level base-name.
@@ -80,22 +80,22 @@ ASM=jwasm
 !if "$(ASM)"=="jwasm"
 # -Cp	= case sensitive symbols
 # -zcw	= no _ prefix on symbols (C model)
-ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -zcw -nt='CODE_SEG' -nd='DATA_SEG' -Fo$^. -Fw$^&.ERR
-ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -zcw -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
-ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -zcw -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
+ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -Cp -zcw -Fo$^&.OBJ -Sa -Fl=$^&.LST -Fw$^&.ERR
+ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -Cp -zcw -Zd -Zi -Fo$^&.OBJ -Sa -Fl=$^&.LST -Fw$^&.ERR
+ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -Cp -zcw -Zd -Zi -Fo$^&.OBJ -Sa -Fl=$^&.LST -Fw$^&.ERR
 !elseif "$(ASM)"=="masm"
-ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dMASM -zq -fo=$^. -fr=$^&.ERR
-ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dMASM -zq -d1 -fo=$^. -fr=$^&.ERR
-ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dMASM -zq -d1 -fo=$^. -fr=$^&.ERR
+ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dMASM -zq -fo=$^&.OBJ -fr=$^&.ERR
+ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dMASM -zq -d1 -fo=$^&.OBJ -fr=$^&.ERR
+ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dMASM -zq -d1 -fo=$^&.OBJ -fr=$^&.ERR
 !elseif "$(ASM)"=="wasm"
-ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -fo=$^. -fr=$^&.ERR
-ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -d1 -fo=$^. -fr=$^&.ERR
-ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -d1 -fo=$^. -fr=$^&.ERR
+ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -fo=$^&.OBJ -fr=$^&.ERR
+ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -d1 -fo=$^&.OBJ -fr=$^&.ERR
+ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -d1 -fo=$^&.OBJ -fr=$^&.ERR
 !elseif "$(ASM)"=="tasm"
 # -ml	= case sensitive symbols
-ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -m9 -l
-ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -m9 -z -zi -c -la
-ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -m9 -z -zi -c -la
+ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -ml -m9 -l
+ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -ml -m9 -z -zi -c -la
+ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -ml -m9 -z -zi -c -la
 !elseif "$(ASM)"=="alp"
 ASM_FLAGS_D0=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ALP -Mb +Feo:OBJ +Fl +Fel:LST +Fm +Fem:ERR
 ASM_FLAGS_D1=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ALP -Mb +Od:MS16 +Feo:OBJ +Fl +Fel:LST +Fm +Fem:ERR
@@ -132,38 +132,19 @@ LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 
 
 #
-# This builds all the languages using normal dependency rules.
+# This builds the target using normal dependency rules.
 # If this Makefile was modified, all targets are forcefully rebuilt.
-# At the end all intermediate files are deleted.
-# Use wmake dev to to development; this generated one image and leaves
-# the intermediate files intact.
 #
-all:	.SYMBOLIC Makefile.bu $(TARGET) footer
-#	@echo ALL !!
-#	@#MAKE $(BLD_LANGUAGES)
-#	@for %%i in ($(BLD_LANGUAGES)) do @%MAKE AB-%%i
-#	@echo $<
-#	@%MAKE clean
+all:	.SYMBOLIC Makefile.bu header $(TARGET) footer
 
-
-#
-# Some targets have the .MULTIPLE directive defined.
-# This is because the iteration "calls" for the creation of other (meta)
-# targets. If .MULTIPLE would not be defined these (meta) targets would not
-# be "built" anymore because the are considered up-to-date.
-# With multiple this assumption is removed and the target is "rebuilt" for
-# every target that depends on it.
-# This mostly concerns meta operations like clean etc.,
-# but of course also the main building of the AIRBOOT.BIN module.
-#
 
 #
 # Show the header.
 #
-header:	.SYMBOLIC .MULTIPLE
+header:	.SYMBOLIC
 	@echo.
 	@echo =====================================================================
-	@echo = MODULE: $(TARGET)    [$(%BLD_LANG)]           [16-bits Raw Binary Loader] =
+	@echo = MODULE: $(TARGET)               [16-bits Raw Protection Image] =
 	@echo =====================================================================
 #	@echo.
 
@@ -199,30 +180,34 @@ Makefile.bu:	Makefile
 ###############################################################################
 # 16-bits RAW :: MBR virus protection to be embedded in the AIRBOOT.BIN image.
 ###############################################################################
-$(TARGET):	.MULTIPLE $(BASENAME).COM
+#$(TARGET):	$(BASENAME).COM
 #	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys dos com
-	$(CP) $(BASENAME).COM $(TARGET)
+#	$(CP) $(BASENAME).COM $(TARGET)
 #	@echo $(%BLD_LANG)>$^.
-	@if exist $^. @echo		$^. $(MSG_SUCCESS) - [$(%BLD_LANG) version]
+#	@if exist $^. @echo		$^. $(MSG_SUCCESS) - [$(%BLD_LANG) version]
 #	$(RM) $(TARGET)
 #	@echo.
 
 
 
 ###############################################################################
-# 16-bits COM :: Intermediate image without embedded MBR-prot. and code count.
+# 16-bits RAW :: MBR virus protection to be embedded in the AIRBOOT.BIN image.
 ###############################################################################
-$(BASENAME).COM:	.MULTIPLE $(BASENAME).OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys dos com
-#	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. form raw
-#	@if exist $^. @echo		$^. $(MSG_SUCCESS)
-#	@echo.
-
-$(BASENAME).OBJ:	.MULTIPLE $(BASENAME).ASM
-#	@echo.
+$(TARGET):	$(BASENAME).ASM
 	@echo TARGET: $^.	[DOS 16-bits Raw Image]
 	$(ASM) $(ASM_FLAGS) $(BASENAME).ASM
-	@wdis $^. > $^&.WDA
+	@wdis -fi $^&.OBJ > $^&.WDA
+	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys dos com
+#	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. form raw
+	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@ndisasm -k9,0 $^. > $^&.NDA
+#	@echo.
+
+#$(BASENAME).OBJ:	$(BASENAME).ASM
+#	@echo.
+#	@echo TARGET: $^.	[DOS 16-bits Raw Image]
+#	$(ASM) $(ASM_FLAGS) $(BASENAME).ASM
+#	@wdis -fi $^. > $^&.WDA
 
 
 
@@ -241,12 +226,14 @@ rebuild:	.SYMBOLIC
 #
 # Remove all generated files.
 #
-clean:	.SYMBOLIC .MULTIPLE
+clean:	.SYMBOLIC
 #	@echo CLEANING UP
 #	@for %%i in ($(TARGET)) do @if exist %%i $(RM) %%i
 	@if exist *.COM $(RM) *.COM
+	@if exist *.BIN $(RM) *.BIN
 	@if exist *.OBJ $(RM) *.OBJ
 	@if exist *.WDA $(RM) *.WDA
+	@if exist *.NDA $(RM) *.NDA
 	@if exist *.MAP $(RM) *.MAP
 	@if exist *.LST $(RM) *.LST
 	@if exist *.ERR $(RM) *.ERR

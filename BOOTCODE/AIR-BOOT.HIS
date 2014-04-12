@@ -22,9 +22,39 @@
 ; ---------------------------------
 ; Rousseau: Fixes and Enhancements
 ; ---------------------------------
+; v1.0.8-rc2-bld201204??+
+; ---------------------
+
+
+; v1.0.8-pre-rc2-bld20120330
+; --------------------------
+; # Merged 16-bit Assembler bitfield code to the Installer #
+;   The installer needs to handle the v1.0.8 configuration.
+;   This requires access to the 6-bit packed 'hideparttable'.
+;   To 'not-reinvent-the-wheel', by coding this in C, the Assembler
+;   bitfield functions are integrated using Open Watcom's '_asm' capability.
+;   It may not be pretty and the functions themselves are limited,
+;   but this method prevents maintaining seperate Asm and C implementations.
+;   Will be improved later.
 ;
-; v1.0.8-rc2-bld20120224
-;-----------------------
+; # Implemented BLDLEVEL support #
+;   AIRBOOT.BIN, the Installers and SET(A)BOOT now support OS/2 BLDLEVEL
+;   information. This enhances identification and problem tracking/solving.
+;   While BLDLEVEL is an OS/2 command, the BLDLEVEL information itself can
+;   be embedded in any binary. Invoking BLDLEVEL from within OS/2 on, let's
+;   say, the AIRBOOTL.ELF Linux executable, will also show the BLDLEVEL info.
+;   A slight deficiency of BLDLEVEL is that is forces a format on the version.
+;   So, AiR-BOOT v1.0.8 will be shown as v1.00.8.
+;
+; # Added support for Masm6 and Wasm v1.9 -- Experimental use only #
+;   Trying to assemble with Masm6 or Wasm v1.9 reveiled some interesting
+;   behavior aspects in general. While this version can now be assembled with
+;   Masm6 and Wasm too, this was only done to get a 'cross-feeling' for this
+;   project. Future versions will drop support for Tasm, Masm6 and Wasm since
+;   much conditional assembly is needed to support all of them. This was an
+;   experimental excercise only. JWasm is the assembler of choise for this
+;   project and any future versions.
+;
 ; # Implemented stop scanning when max. partitions limit exceeded #
 ;   Previous versions halted the system when the maximum number of partitions
 ;   that can be handled (45) was exceeded.
@@ -72,9 +102,15 @@
 ; # Cross-Platform support #
 ;   AiR-BOOT and it's helpers can now be built on: DOS, Win32, OS/2 and Linux.
 ;
-; # Rewrote FIXCODE.ASM in C so the tool-chain is not dependent on a DOS .COM
-;   program for embedding the MBR-protection. DOS,Win32,OS/2 and Linux
-;   versions of FIXCODE are now used. (EXE[MZ|PE|LX] and ELF)
+; # Rewrote FIXCODE.ASM in C so the tool-chain is not dependent on a DOS .COM #
+;   Now FIXCODE is built platform-specific and takes care of the embedding
+;   of MPR-protection image.
+;
+; # Created FIXCODE bash-script to accomplish embedding of MBR-protection #
+;   Building on Linux requires that no DOS-tools are used in the tool-chain.
+;   This script essentially performs the same functionality but does not check
+;   certain conditions, like image-too-big, etc.
+;   It is a 'quick-hack' until the Linux version of FIXCODE is operational.
 ;
 ; v1.0.8-rc1-bld20120124
 ; ----------------------

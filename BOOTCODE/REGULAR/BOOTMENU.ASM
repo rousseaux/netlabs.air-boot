@@ -65,7 +65,7 @@ CLR_BOOT_WINDOW_BM         = 0701h
    call    VideoIO_Internal_MakeWinRight
 
    mov     dl, 18h
-   cmp     CFG_BootMenuActive, 2
+   cmp     byte ptr [CFG_BootMenuActive], 2
    jne     BMBM_NoDetailed1
    mov     dl, 15h
   BMBM_NoDetailed1:
@@ -88,7 +88,7 @@ CLR_TOP_INFOS_BM  = 0301h
    ; Dynamic change, if detailed view...
    mov     si, offset TXT_TopInfos_Hd
    add     cl, 5
-   cmp     CFG_BootMenuActive, 2
+   cmp     byte ptr [CFG_BootMenuActive], 2
    jne     BMBM_NoDetailed2
    mov     si, offset TXT_TopInfos_HdSize
    add     cl, 8
@@ -120,7 +120,7 @@ CLR_SEP_VERT_LINES_BM   = 0701h
    call    VideoIO_Internal_MakeWinDown  ; Line between "No" and "Hd"
    push    cx
       add     dl, 5
-      cmp     CFG_BootMenuActive, 2
+      cmp     byte ptr [CFG_BootMenuActive], 2
       jne     BMBM_NoDetailed3
       add     dl, 8
      BMBM_NoDetailed3:
@@ -158,7 +158,7 @@ CLR_SEP_VERT_LINES_BM   = 0701h
       cmp     dl, 2
       jb      BMBM_3rdTweak
       add     cl, 5
-      cmp     CFG_BootMenuActive, 2
+      cmp     byte ptr [CFG_BootMenuActive], 2
       jne     BMBM_BootWinTweakLoop
       add     cl, 8
       jmp     BMBM_BootWinTweakLoop
@@ -445,7 +445,7 @@ CLR_HD_INDEX_BM   = 0701h
    sub     al, 7Fh                       ; Will only display numbers up to 99,
    call    VideoIO_PrintByteNumber       ;  so only showing harddrives...
    add     dh, 5
-   cmp     CFG_BootMenuActive, 2
+   cmp     byte ptr [CFG_BootMenuActive], 2
    jne     BMBPT_NoDetailed
       add     dh, 8
       cmp     al, 99
@@ -547,7 +547,7 @@ BOOTMENU_BuildChoiceBar         Proc near   Uses ax es di
    cmp     dh, cl
    jae     BMBCB_NoScrollUp
   BMBCB_ScrollingUp:
-   dec     Menu_UpperPart
+   dec     byte ptr [Menu_UpperPart]    ; Adjusted for Wasm
    cmp     dh, Menu_UpperPart
    jb      BMBCB_ScrollingUp
    call    BOOTMENU_RefreshPartitionText
@@ -559,7 +559,7 @@ BOOTMENU_BuildChoiceBar         Proc near   Uses ax es di
    jb      BMBCB_AfterScrolling
   BMBCB_ScrollingDown:
    inc     cl
-   inc     Menu_UpperPart
+   inc     byte ptr [Menu_UpperPart]    ; Adjusted for Wasm
    cmp     dh, cl
    jae     BMBCB_ScrollingDown
    call    BOOTMENU_RefreshPartitionText
@@ -695,7 +695,7 @@ BOOTMENU_ResetMenuVars      Proc Near   Uses dx
 
         ; restlichen Variablen berechnen...
         mov     dl, Menu_TotalParts
-        cmp     Menu_TotalParts, 14
+        cmp     byte ptr [Menu_TotalParts], 14
         jbe     BMRMV_NotMoreThan14
         mov     dl, 14
     BMRMV_NotMoreThan14:
@@ -703,7 +703,7 @@ BOOTMENU_ResetMenuVars      Proc Near   Uses dx
 
         ; Now copy the name of the Timed-Booted Partition to TimedBoot-Field
         mov     dl, Menu_EntryDefault
-        test    CFG_TimedBootLast, 1
+        test    byte ptr [CFG_TimedBootLast], 1
         jz      BMRMV_TimedBootDefault
         mov     dl, Menu_EntryLast
     BMRMV_TimedBootDefault:
@@ -725,7 +725,7 @@ BOOTMENU_ResetMenuVars      EndP
 BOOTMENU_SetVarsAfterMenu   Proc Near
         ; No Straight View in here...we got filtered view since BootMenu-Startup...
         mov     al, CFG_RememberTimed
-        test    TimedBootUsed, 1
+        test    byte ptr [TimedBootUsed], 1
         jnz     BMSVAM_TimedBootUsed
         mov     al, CFG_RememberBoot
     BMSVAM_TimedBootUsed:
@@ -761,9 +761,9 @@ BOOTMENU_SetVarsAfterMenu   EndP
 BOOTMENU_Execute    Proc Near   Uses es di
         ; Finds out, where to place the bar at first...
         mov     dl, Menu_EntryDefault
-        test    CFG_RememberBoot, 1
+        test    byte ptr [CFG_RememberBoot], 1
         jnz     BME_RememberMode
-        test    CFG_RememberTimed, 1
+        test    byte ptr [CFG_RememberTimed], 1
         jz      BME_ForgetMode
     BME_RememberMode:
         mov     dl, Menu_EntryLast
@@ -784,7 +784,7 @@ BOOTMENU_Execute    Proc Near   Uses es di
 
         ;call    VideoIO_DBG_WriteString2    ; Rousseau
 
-        test    TimedBootEnable, 1
+        test    byte ptr [TimedBootEnable], 1
         jz      BME_NoTimedBoot
         ; ------------------------------------------------ TIMED BOOT
         push    ax
@@ -804,12 +804,12 @@ BOOTMENU_Execute    Proc Near   Uses es di
         pop     dx
         pop     ax
         mov     dl, Menu_EntryDefault
-        and     CFG_TimedBootLast, 1
+        and     byte ptr [CFG_TimedBootLast], 1
         jz      BME_TimedBootDefault
         mov     dl, Menu_EntryLast
     BME_TimedBootDefault:
         mov     Menu_EntrySelected, dl        ; Just boot default partition
-        mov     TimedBootUsed, 1           ; set flag...
+        mov     byte ptr [TimedBootUsed], 1           ; set flag...
         clc                                ; Boot-Now!
         ret
 
@@ -818,7 +818,7 @@ BOOTMENU_Execute    Proc Near   Uses es di
         pop     ax
     BME_NoTimedBoot:
         ; ------------------------------------------------ FLOPPY-NAME TIMER
-        test    CFG_FloppyBootGetTimer, 1
+        test    byte ptr [CFG_FloppyBootGetTimer], 1
         jz      BME_NoFloppyNameTimer
         ; Wait 2 Seconds everytime
         push    ax
@@ -846,9 +846,9 @@ BOOTMENU_Execute    Proc Near   Uses es di
         jmp     BME_MainLoop
 
     BME_RefreshFloppyName:
-        test    CFG_IncludeFloppy, 1
+        test    byte ptr [CFG_IncludeFloppy], 1
         jz      BME_NoRefreshFloppyName
-        test    CFG_FloppyBootGetName, 1
+        test    byte ptr [CFG_FloppyBootGetName], 1
         jz      BME_NoRefreshFloppyName
         call    DriveIO_UpdateFloppyName
         call    BOOTMENU_RefreshPartitionText
@@ -870,14 +870,14 @@ BOOTMENU_Execute    Proc Near   Uses es di
         cmp     ah, Keys_ESC
         je      BME_KeyESC
         ; Upper Keys do not fall under Timed Boot Key Handling
-        test    TimedBootEnable, 1
+        test    byte ptr [TimedBootEnable], 1
         je      BME_NoTimedKeyHandling
-        cmp     CFG_TimedKeyHandling, 1
+        cmp     byte ptr [CFG_TimedKeyHandling], 1
         jb      BME_NoTimedKeyHandling     ; = 0
         je      BME_ResetTimedBoot         ; = 1
         mov     al, TimedBootEnable        ; = 2
         xor     al, 1                      ; Flip Flop Switch :]
-        mov     TimedBootEnable, al
+        mov     [TimedBootEnable], al
     BME_ResetTimedBoot:
         push    dx
         call    BOOTMENU_ResetTimedBoot     ; Reset Timer
@@ -904,13 +904,13 @@ BOOTMENU_Execute    Proc Near   Uses es di
 
     BME_KeyEnter:
         mov     Menu_EntrySelected, dl
-        mov     TimedBootUsed, 0              ; reset flag...
+        mov     byte ptr [TimedBootUsed], 0              ; reset flag...
         clc                                   ; Boot-Now!
         ret
 
     BME_KeyF10:
         mov     al, Keys_Flags_EnterSetup
-        mov     SETUP_KeysOnEntry, al         ; Simulate user wants to enter setup
+        mov     byte ptr [SETUP_KeysOnEntry], al         ; Simulate user wants to enter setup
         stc                                   ; Go Re-Enter Setup
         ret
 
@@ -920,9 +920,9 @@ BOOTMENU_Execute    Proc Near   Uses es di
         jmp     BME_MainLoop
 
     BME_KeyESC:
-        mov     al, TimedBootEnable
+        mov     al, [TimedBootEnable]
         xor     al, 1                         ; Flip Flop Switch :]
-        mov     TimedBootEnable, al
+        mov     [TimedBootEnable], al
         push    dx
         call    BOOTMENU_ResetTimedBoot     ; Reset Timer
         call    BOOTMENU_BuildTimedBootText ; Refresh TimedBootText
@@ -931,7 +931,7 @@ BOOTMENU_Execute    Proc Near   Uses es di
 
     BME_KeyTAB:
         push    dx
-        test    CFG_CooperBars, 1
+        test    byte ptr [CFG_CooperBars], 1
         jnz     BME_KeyTAB_ShowFX
         mov     ax, 0501h                  ; Go To Page 1 -> BIOS POST crap
         int     10h
@@ -968,8 +968,8 @@ BOOTMENU_ResetTimedBoot     Proc Near   Uses ax
         call    TIMER_GetTicCount
         add     ax, CFG_TimedDelay
         adc     dx, 0
-        mov     wptr [TimedTimeOut], ax
-        mov     wptr [TimedTimeOut+2], dx
+        mov     word ptr [TimedTimeOut], ax
+        mov     word ptr [TimedTimeOut+2], dx
         ret
 BOOTMENU_ResetTimedBoot     EndP
 

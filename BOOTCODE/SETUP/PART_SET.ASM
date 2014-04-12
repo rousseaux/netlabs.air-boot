@@ -601,7 +601,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    add     ch, 7      ; Y-Position add-on fixed 7
    call    VideoIO_Locate                ; Goes to CX
 
-   mov     ChangePartNameSave, 0         ; Don't save to BR / LVM Sector
+   mov     byte ptr [ChangePartNameSave], 0         ; Don't save to BR / LVM Sector
 
    ; We compare, if our IPT contains the same partition name as in BR or LVM
    ;  This is done for security purposes, because if they match, we will update
@@ -611,27 +611,27 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    mov   bl,dl
    mov   bh,0
 
-   cmp     [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
+   cmp     byte ptr [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
    je      PSCPN_NotLVMSupported
 
    ; ------------------------------------------------------------[LVM CHECK]---
    ; Load LVM-Sector here and seek to PartitionName
    ; Set CurPartition_Location information of destination partition
-   mov     ax, wptr [si+LocIPT_AbsolutePartTable]
-   mov     wptr [CurPartition_Location+0], ax
-   mov     ax, wptr [si+LocIPT_AbsolutePartTable+2]
-   mov     wptr [CurPartition_Location+2], ax
-   mov     ah, bptr [si+LocIPT_LocationPartTable+0]
-   mov     al, [si+LocIPT_Drive]
-   mov     wptr [CurPartition_Location+4], ax
-   mov     ax, wptr [si+LocIPT_LocationPartTable+1]
-   mov     wptr [CurPartition_Location+6], ax
+   mov     ax, [si+LocIPT_AbsolutePartTable]
+   mov     [CurPartition_Location+0], ax
+   mov     ax, [si+LocIPT_AbsolutePartTable+2]
+   mov     [CurPartition_Location+2], ax
+   mov     ah, byte ptr [si+LocIPT_LocationPartTable+0]
+   mov     al, byte ptr [si+LocIPT_Drive]
+   mov     [CurPartition_Location+4], ax
+   mov     ax, [si+LocIPT_LocationPartTable+1]
+   mov     [CurPartition_Location+6], ax
    mov     di, si                        ; Put SI into DI
    call    DriveIO_LoadLVMSector
    jnc     PSCPN_LVMGotError             ; Security again, if problem -> halt
    push    dx
-      mov     ax, wptr [di+LocIPT_AbsoluteBegin]
-      mov     dx, wptr [di+LocIPT_AbsoluteBegin+2]
+      mov     ax, [di+LocIPT_AbsoluteBegin]
+      mov     dx, [di+LocIPT_AbsoluteBegin+2]
       call    LVM_SearchForPartition
    pop     dx
    jnc     PSCPN_LVMGotError             ; Not Found? -> display error and halt
@@ -656,8 +656,8 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    ; ----------------------------------------------------[BOOT-RECORD CHECK]---
    ; Load Boot-Record...
    push    dx
-      mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
-      mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
+      mov     ax, [si+LocIPT_AbsoluteBegin+0]
+      mov     bx, [si+LocIPT_AbsoluteBegin+2]
       mov     cx, [si+LocIPT_LocationBegin+1]
       mov     dh, [si+LocIPT_LocationBegin+0]
       mov     dl, [si+LocIPT_Drive]
@@ -695,7 +695,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
   PSCPN_CheckPartName:
 
     ; Do no synchronization initially.
-    mov     [SyncLvmLabels],0
+    mov     byte ptr [SyncLvmLabels],0
 
   ; SI = IPT_Enty, DI points to LVM VolumeName.
 
@@ -728,7 +728,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
         cld
         repe    cmpsb               ; Compare V and P labels
         jnz     LVM_Labels_not_equal
-        mov     [SyncLvmLabels],1   ; Same so set flag for later
+        mov     byte ptr [SyncLvmLabels],1   ; Same so set flag for later
     LVM_Labels_not_equal:
         pop     di
         pop     si
@@ -743,7 +743,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    pop     si
    jne     PSCPN_LetUserEditPartName     ; -> No BR/LVM Changing/Saving
 
-   mov     ChangePartNameSave, 1         ; Remember, so we will save to BR
+   mov     byte ptr [ChangePartNameSave], 1         ; Remember, so we will save to BR
 
   ; SI = IPT_Enty, DI points to LVM PartitionName.
   PSCPN_LetUserEditPartName:
@@ -753,7 +753,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    call    VideoIO_LetUserEditString     ; -> does actual editing
    jnc     PSCPN_AllDone                 ; Did user abort ?
 
-   test    ChangePartNameSave, 1
+   test    byte ptr [ChangePartNameSave], 1
    jz      PSCPN_AllDone                 ; Actually we just skip BR/LVM-Save
 
    ; Check, where to save 2nd destination to...
@@ -762,7 +762,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    mov   bl,dl
    mov   bh,0
 
-   cmp     [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
+   cmp     byte ptr [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
    je      PSCPN_SaveBootRecord
 
 
@@ -813,7 +813,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
         pop     di
 
         ; See if LVM-labels need to be synced.
-        test    [SyncLvmLabels],1
+        test    byte ptr [SyncLvmLabels],1
         jz      LVM_no_sync_labels
 
         ; Sync LVM-labels.
@@ -868,18 +868,18 @@ PARTHIDESETUP_Main              Proc Near   Uses dx
    ; Calculate Position of Window.
    ; If Partition Selected Left-Side -> go Right-Sided Window
    ;                                     otherwise Left-Sided.
-   mov     PartSetup_ActivePart, dl
+   mov     [PartSetup_ActivePart], dl
    mov     ax, 0102h
    and     dl, 1
    jnz     PHSM_FirstStep
    mov     ax, 002Ah
   PHSM_FirstStep:
-   mov     PartSetup_HiddenX, al
-   mov     PartSetup_HiddenAdd, ah
+   mov     [PartSetup_HiddenX], al
+   mov     [PartSetup_HiddenAdd], ah
 
    ; Draw Menu...
    xor     dx, dx
-   mov     PartSetup_HiddenUpper, dl
+   mov     [PartSetup_HiddenUpper], dl
    call    PARTHIDESETUP_DrawMenuBase
    call    PARTHIDESETUP_RefreshPartitions
    ; Show Choice-Bar at DH...
@@ -918,7 +918,7 @@ PARTHIDESETUP_Main              Proc Near   Uses dx
 
   PHSM_KeyESC:
    ; Collect Hide-Partition-Config and put it into Hide-Table
-   mov     dl, PartSetup_ActivePart
+   mov     dl, [PartSetup_ActivePart]
 
 IFDEF   AUX_DEBUG
         pusha
@@ -976,11 +976,11 @@ CLR_PART_HIDE_WINDOW_BASE_BM   = 0a02h
    mov     cx, CLR_PART_HIDE_WINDOW_BASE_BM                    ; Lila on lila
    call    VideoIO_Color
    mov     bh, 05h
-   mov     bl, PartSetup_HiddenX
+   mov     bl, [PartSetup_HiddenX]
    mov     dh, 10h
    mov     dl, bl
    add     dl, 25h
-   add     dl, PartSetup_HiddenAdd
+   add     dl, [PartSetup_HiddenAdd]
    push    bx
       call    VideoIO_MakeWindow
    pop     bx
@@ -1009,14 +1009,14 @@ CLR_PART_HIDE_WINDOW_BORDER_BM = 0d02h
    call    VideoIO_PrintSingleChar
    ; --- Make Window-Footer - "State when booting..." at bottom right frame-line
    mov     dh, 10h
-   mov     dl, PartSetup_HiddenX
+   mov     dl, [PartSetup_HiddenX]
    add     dl, 25h
-   add     dl, PartSetup_HiddenAdd       ; Location 16, HiddenX->right aligned
+   add     dl, [PartSetup_HiddenAdd]       ; Location 16, HiddenX->right aligned
    mov     si, offset TXT_SETUP_HideFeature2
    call    GetLenOfString                ; CX - Length of HideFeature2
    sub     dl, cl                        ; Adjust Position
    push    dx
-      mov     dl, PartSetup_ActivePart
+      mov     dl, [PartSetup_ActivePart]
       call    PART_GetPartitionPointer   ; Holt den Pointer der Partition (DL) nach SI
    pop     dx
    ; Display "Label" field without ending NULs/Spaces
@@ -1079,7 +1079,7 @@ PARTHIDESETUP_DrawMenuBase      EndP
 
 ; Draw all partitions to Hidden-Setup aka Dynamic Content-Draw
 PARTHIDESETUP_RefreshPartitions Proc Near   Uses dx
-   mov     dl, PartSetup_HiddenUpper
+   mov     dl, [PartSetup_HiddenUpper]
    mov     dh, 8
   PHSRP_Loop:
       call    PARTHIDESETUP_DrawPartitionInfo
@@ -1094,19 +1094,19 @@ CLR_PART_HIDE_MENU_MARKERS_BM = 0a02h
    mov     cx, CLR_PART_HIDE_MENU_MARKERS_BM                     ; Lila on lila                          ; Hide Feature Markers
    call    VideoIO_Color
    mov     cx, 0603h                     ; 6, +3
-   add     cl, PartSetup_HiddenX
-   mov     dl, PartSetup_HiddenUpper
+   add     cl, [PartSetup_HiddenX]
+   mov     dl, [PartSetup_HiddenUpper]
    call    PARTSETUP_UpperScrollMarker
    add     cl, 29
-   add     cl, PartSetup_HiddenAdd       ; 6, +29
+   add     cl, [PartSetup_HiddenAdd]       ; 6, +29
    call    PARTSETUP_UpperScrollMarker
    mov     cx, 0F03h                     ; 15, +3
-   add     cl, PartSetup_HiddenX
+   add     cl, [PartSetup_HiddenX]
    add     dl, 8                         ; add 8 -> points to last partition
-   mov     dh, CFG_Partitions            ; Limit
+   mov     dh, [CFG_Partitions]            ; Limit
    call    PARTSETUP_LowerScrollMarker
    add     cl, 29
-   add     cl, PartSetup_HiddenAdd       ; 6, +29
+   add     cl, [PartSetup_HiddenAdd]       ; 6, +29
    call    PARTSETUP_LowerScrollMarker
    ret
 PARTHIDESETUP_RefreshPartitions EndP
@@ -1114,10 +1114,10 @@ PARTHIDESETUP_RefreshPartitions EndP
 PARTHIDESETUP_DrawPartitionInfo Proc Near   Uses dx
    local NoOfPart :byte
    mov     ch, dl
-   sub     ch, PartSetup_HiddenUpper
+   sub     ch, [PartSetup_HiddenUpper]
    add     ch, 7
    mov     cl, 2
-   add     cl, PartSetup_HiddenX
+   add     cl, [PartSetup_HiddenX]
    ; We got location
    mov     NoOfPart, dl
    call    VideoIO_Locate
@@ -1129,7 +1129,7 @@ PARTHIDESETUP_DrawPartitionInfo Proc Near   Uses dx
       call    VideoIO_PrintSingleMultiChar
    pop     cx
 
-   cmp     dl, CFG_Partitions
+   cmp     dl, [CFG_Partitions]
    jae     PHSDPI_NoData
 
    call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
@@ -1221,15 +1221,15 @@ CLR_PART_HIDE_WINDOW_MENU_BAR_BM = 2eh
    jne     PHSBCB_NoUnderflow
    xor     dh, dh
   PHSBCB_NoUnderflow:
-   cmp     dh, CFG_Partitions
+   cmp     dh, [CFG_Partitions]
    jb      PHSBCB_NoOverflow
-   mov     dh, CFG_Partitions
+   mov     dh, [CFG_Partitions]
    dec     dh
   PHSBCB_NoOverflow:
    mov     dl, dh
 
    ; Do we need to scroll ?
-   mov     al, PartSetup_HiddenUpper
+   mov     al, [PartSetup_HiddenUpper]
    cmp     dl, al
    jb      PHSBCB_YesScrolling
    add     al, 8
@@ -1237,12 +1237,12 @@ CLR_PART_HIDE_WINDOW_MENU_BAR_BM = 2eh
    jb      PHSBCB_NoScrolling
    mov     al, dl
    sub     al, 7
-   mov     PartSetup_HiddenUpper, al
+   mov     [PartSetup_HiddenUpper], al
    call    PARTHIDESETUP_RefreshPartitions
    jmp     PHSBCB_NoScrolling
   PHSBCB_YesScrolling:
    mov     al, dl
-   mov     PartSetup_HiddenUpper, al
+   mov     [PartSetup_HiddenUpper], al
    call    PARTHIDESETUP_RefreshPartitions
   PHSBCB_NoScrolling:
 
@@ -1262,16 +1262,16 @@ PARTHIDESETUP_BuildChoiceBar    EndP
 PARTHIDESETUP_ReColorPart       Proc Near   Uses bx cx es di
    mov     bh, cl     ; Color to BH
    ; First calculate location of bar
-   cmp     dl, PartSetup_HiddenUpper
+   cmp     dl, [PartSetup_HiddenUpper]
    jb      PHSRCP_NotInWindowView
    mov     ch, dl
-   sub     ch, PartSetup_HiddenUpper     ; CH - Position relative to HiddenUpper
+   sub     ch, [PartSetup_HiddenUpper]     ; CH - Position relative to HiddenUpper
    cmp     ch, 8                         ; 8 - Maximum Total in Window
    jae     PHSRCP_NotInWindowView
    add     ch, 7
    mov     cl, 26
-   add     cl, PartSetup_HiddenX
-   add     cl, PartSetup_HiddenAdd
+   add     cl, [PartSetup_HiddenX]
+   add     cl, [PartSetup_HiddenAdd]
 
    mov     bl, 10                        ; Length of Bar is 10
    call    VideoIO_Locate                ; geht zu CX
@@ -1314,7 +1314,7 @@ PARTHIDESETUP_GetHideConfigAndSpread Proc Near Uses ax bx dx si di
         ; So process Hide-Config. Read out Bitfield-Entries,
         ; each points to a partition.
         ; 3Fh is end-marker / maximum entries = CFG_Partitions
-        mov     cl, CFG_Partitions
+        mov     cl, [CFG_Partitions]
         mov     bx,di   ; Pointer to hidden-parts entry for this partition.
         mov     ch,0    ; Start index in hidden-parts entry for this partition.
         mov     dh,6    ; Bitfields are 6 bits wide.
@@ -1373,7 +1373,7 @@ PARTHIDESETUP_CollectHideConfigAndPutToTable Proc Near Uses ax si es di
         ; For each do a bitfield-entry containing the number of the partition.
         mov     si, offset PartitionTable
         xor     ch, ch                          ; Partition index
-        mov     cl, CFG_Partitions              ; Nr. of partitions in IPT
+        mov     cl, [CFG_Partitions]            ; Nr. of partitions in IPT
         mov     ah,0                            ; Next hide-index to write.
 
     ;
@@ -1522,7 +1522,7 @@ PARTSETUP_DriveLetterSetup      Proc Near  Uses dx si es di
    mov   bl,dl
    mov   bh,0
 
-   mov     dl, bptr [DriveLetters+bx]
+   mov     dl, byte ptr [DriveLetters+bx]
 
    push    bx
       ; DS:SI - IPT Entry of Partition, DL - LogicalDriveLetter
@@ -1624,7 +1624,7 @@ CLR_PART_DL_XX_BM = 0a02h
    mov     cx, CLR_PART_DL_XX_BM                     ; Lila on lila
    call    VideoIO_Color
    mov     bh, 06h
-   mov     bl, PartSetup_HiddenX
+   mov     bl, [PartSetup_HiddenX]
    mov     dh, 0Ah
    mov     dl, bl
    add     dl, 16h
@@ -1697,7 +1697,7 @@ PARTSETUPDL_DrawDriveLetter     Proc Near   Uses si
    ; 97h -> use Z: as drive letter
    push    dx
       mov     cx, 0805h                  ; Position 8, 5
-      add     cl, PartSetup_HiddenX
+      add     cl, [PartSetup_HiddenX]
       call    VideoIO_Locate
       add     cl, 6                      ; Everything centered (12/2)
       push    cx

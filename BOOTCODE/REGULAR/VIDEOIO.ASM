@@ -649,7 +649,77 @@ VideoIO_SyncPos                 Proc Near   Uses ax bx cx dx
    ret
 VideoIO_SyncPos                 EndP
 
+;
+; Put the Build Information at the POST BIOS screen.
+;
+VideoIO_PrintBuildInfo  Proc    Near    Uses ax cx si di
+        ; Print header.
+        mov     si, offset build_info
+        call    MBR_Teletype
 
+        ; Prepare info in temorary buffer.
+        mov     si,offset bld_level_date_start
+        mov     cx,offset bld_level_date_end
+        sub     cx,si
+        mov     di,offset Scratch
+        cld
+        rep     movsb
+
+        ; Fill spaces until assembler specification.
+        mov     al,' '
+        mov     cx,37
+        rep     stosb
+
+        ; Copy assembler specification.
+IFDEF       JWASM
+        mov     al,'['
+        stosb
+        mov     si,offset jwasm_txt
+ELSEIFDEF   TASM
+        mov     al,' '
+        stosb
+        mov     al,'['
+        stosb
+        mov     si,offset tasm_txt
+
+ELSEIFDEF   WASM
+        mov     al,' '
+        stosb
+        mov     al,'['
+        stosb
+        mov     si,offset wasm_txt
+ELSEIFDEF   MASM
+        mov     al,' '
+        stosb
+        mov     al,'['
+        stosb
+        mov     si,offset masm_txt
+ELSE
+        mov     al,' '
+        stosb
+        mov     al,'['
+        stosb
+        mov     si,offset unknown_txt
+ENDIF
+    VideoIO_PrintBuildInfo_a1:
+        lodsb
+        test    al,al
+        jz      VideoIO_PrintBuildInfo_e1
+        stosb
+        jmp     VideoIO_PrintBuildInfo_a1
+    VideoIO_PrintBuildInfo_e1:
+        mov     al,']'
+        stosb
+
+        ; Insert NULL Terminator.
+        xor     al,al
+        stosb
+
+        ; Print Info.
+        mov     si, offset Scratch
+        call    MBR_TeletypeNL
+        ret
+VideoIO_PrintBuildInfo  EndP
 
 ;VideoIO_DBG_WriteString         Proc Near   Uses ax bx cx dx si es di
 ;   mov   ch, [CFG_Partitions]                                                    ; y

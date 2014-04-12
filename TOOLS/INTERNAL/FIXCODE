@@ -3,52 +3,71 @@
 #
 # $airboot@ecomstation.com$
 #
-# This is a hack until the Linux version of FIXCODE.C is finished.
+# This is a quick-hack until the Linux version of FIXCODE.C is finished.
 # Note that it does not search for the AiR-BOOT Protection Signature,
 # but embeds it at the 'well known' location.
-# It the protection image is moved, this script will corrupt AIR-BOOT.COM
-# of which the final AIRBOOT.BIN is derived.
+# If the protection image is moved, this script will produce a corrupted
+# AIRBOOT.BIN.
 # Also, a code-size of 35h (max size) is always inserted.
-# Furthermore, it does no sanity checks whatsoever.
+# Furthermore, it does not do any sanity checks whatsoever.
 #
 
-PROT_IMG="MBR-PROT/MBR_PROT.COM"
+#
+# This script is now obsolete.
+#
+exit 1;
+
+
+PROT_IMG="MBR-PROT/MBR-PROT.BIN"
 AB_INTERIM_IMG="AIR-BOOT.COM"
+AB_IMG="AIRBOOT.BIN"
 CODE_SIZE_OFFSET=16
 PROT_IMG_OFFSET=26624
 
 
+function    echox() {
+    echo -e $@;
+}
+
+
 function	Header() {
-	echo "Header";
+    echox "\t## FIXCODE script for Linux ##";
 }
 
 function	CheckIfFileExists() {
-	echo "CheckIfFileExists";
+	echox "\tCheckIfFileExists";
 	if [ ! -f "${1}" ]; then
-		echo "ERROR: File ${1} could not be found !";
-		echo "       Aborting...";
+		echox "\tERROR: File ${1} could not be found !";
+		echox "\t       Aborting...";
 		exit 1;
 	else
-		echo "File ${1} found, OK.";
+		echox "\tFile ${1} found, OK.";
 	fi;
 }
 
+function    CreateImage() {
+    echox "\tCreateImage";
+    cp -a "${1}" "${2}";
+}
+
 function	EmbedCodeSize() {
-	echo "EmbedCodeSize";
-	echo -n "5" | dd of="${1}" bs=1 seek=${CODE_SIZE_OFFSET} conv=notrunc;
+	echox "\tEmbedCodeSize";
+    echo "${1}"
+	echo -n "5" | dd of="${1}" bs=1 seek=${CODE_SIZE_OFFSET} conv=notrunc 2> /dev/null;
 }
 
 function	EmbedProtectionImage() {
-	echo "EmbedProtectionImage";
-	dd if="${1}" of="${2}" bs=1 seek=${PROT_IMG_OFFSET} conv=notrunc;
+	echox "\tEmbedProtectionImage";
+	dd if="${1}" of="${2}" bs=1 seek=${PROT_IMG_OFFSET} conv=notrunc 2> /dev/null;
 }
 
 function	VerifyImage() {
-	echo "VerfyImage";
+	echox "\tVerfyImage";
 }
 
 function	Footer() {
-	echo "Footer";
+	echox "\t## AiR-BOOT code fixed ##";
+    echo "";
 }
 
 
@@ -57,12 +76,13 @@ function	Footer() {
 # Main program logic.
 #
 function	Main() {
-	echo "## Main ##";
+    echo "";
 	Header;
-	CheckIfFileExists "${PROT_IMG}"
-	CheckIfFileExists "${AB_INTERIM_IMG}"
-	EmbedCodeSize "${AB_INTERIM_IMG}";
-	EmbedProtectionImage "${PROT_IMG}" "${AB_INTERIM_IMG}";
+	CheckIfFileExists "${PROT_IMG}";
+	CheckIfFileExists "${AB_INTERIM_IMG}";
+    CreateImage "${AB_INTERIM_IMG}" "${AB_IMG}";
+	EmbedProtectionImage "${PROT_IMG}" "${AB_IMG}";
+    EmbedCodeSize "${AB_IMG}";
 	Footer;
 }
 
