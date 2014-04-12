@@ -19,16 +19,24 @@
 
 
 
+
 ; ---------------------------------
 ; Rousseau: Fixes and Enhancements
 ; ---------------------------------
 ;
-; v1.0.8-rc2-bld2012042?
+; v1.0.8-rc2-bld20120423
 ; ----------------------
+; # Fixed some minor Installer bugs with SPT < 63 #
+;   Some extra var StatusCode was used instead of Status_Code.
+;   This caused too few tracks not to be reported.
+;   No installation was done however.
+;   This bug is also present in the v1.06 code.
+;
 ; # Fixed Installer to handle packed hideparttable #
-;   Hide partition configuration is now preserved when upgrading
-;   Implemented upgrading from v1.06 to v1.0.8
-;   Implemented upgrading from v1.07 to v1.0.8
+;   Implemented upgrading from v1.06 directly to v1.0.8.
+;   Fixed minor stuff when upgrading from v1.06 to v1.07.
+;   Hide partition configuration is now preserved when upgrading.
+;   Fixed minor display bug when SPT < 63.
 ;
 ; # Implemented DOS code in C cross-platform installer
 ;   There is now one C source for 4 platforms:
@@ -36,8 +44,6 @@
 ;   This obsoletes AIRBOOT.ASM/AIRBOOT.COM.
 ;   DOS Installer is now AIRBOOTD.EXE.
 ;
-; v1.0.8-pre-rc2-bld20120330
-; --------------------------
 ; # Merged 16-bit Assembler bitfield code to the Installer #
 ;   The installer needs to handle the v1.0.8 configuration.
 ;   This requires access to the 6-bit packed 'hideparttable'.

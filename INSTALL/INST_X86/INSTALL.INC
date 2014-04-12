@@ -967,7 +967,7 @@ TXT_STATUS_nintact             db 'not intact', 0
 TXT_STATUS_ninstall            db 'not installed', 0
 TXT_STATUS_Update              db ', but may be updated', 0
 TXT_STATUS_Hd2Small            db 'unable to install', 13, 10
-                               db '   Your harddisc does not have at least 62 sectors per track.', 0
+                               db '   Your harddisc does not have at least 63 sectors per track.', 0
 TXT_STATUS_EZSETUP             db 'not willing to install', 13, 10
                                db '   Your harddisc contains EZ-SETUP.', 13, 10
                                db '   This program is required, so your computer is able to access the harddisc', 13, 10

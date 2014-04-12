@@ -21,15 +21,18 @@
 
 
 #
-# Specifies the level of debugging.
-# Level 0 is no debugging (release) and each higher level may use other
-# assembler / compiler / linker flags and define jammed-in constants
-# to influence source assembly / compilation.
+# Define min and max debug levels.
+# Level 0 is Release.
 #
 RELEASE_CODE=0
 MAX_DEBUG_LEVEL=2
-#DEBUG_LEVEL=1
-#DEBUG_LEVEL=$(MAX_DEBUG_LEVEL)
+
+#
+# Specifies the level of debugging.
+# Comment-out from low to high to increase the debug level.
+#
+DEBUG_LEVEL=$(MAX_DEBUG_LEVEL)
+DEBUG_LEVEL=1
 DEBUG_LEVEL=$(RELEASE_CODE)
 
 #
@@ -255,7 +258,7 @@ Makefile.bu:	Makefile
 # DOS 16-bits (MZ)
 ###############################################################################
 $(MODULE)D.EXE:	$(MODULE)D.OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys dos
+	$(LNK) $(LNK_FLAGS) op stack=8192 file $^&.OBJ name $^. sys dos
 	@wdump $^. > $^&.WDU
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
@@ -264,7 +267,7 @@ $(MODULE)D.EXE:	$(MODULE)D.OBJ
 $(MODULE)D.OBJ:	$(BASENAME).C $(BASENAME).H
 #	@echo.
 	@echo TARGET: $^&.EXE	[DOS 16-bits Executable]
-	$(CC16) $(CC16_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=dos $(BASENAME).C
+	$(CC16) $(CC16_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os21x -bt=dos $(BASENAME).C
 	@wdis -fi $^. > $^&.WDA
 
 
@@ -335,6 +338,7 @@ $(MODULE)L.OBJ:	$(BASENAME).C $(BASENAME).H
 # -----------------------------------------------------------------------------
 dist:	.SYMBOLIC
 	@if exist *.EXE $(CP) *.EXE ..$(DS)..$(DS)RELEASE$(DS)BOOTCODE
+	@if exist *.ELF $(CP) *.ELF ..$(DS)..$(DS)RELEASE$(DS)BOOTCODE
 
 
 #

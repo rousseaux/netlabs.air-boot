@@ -1,3 +1,3 @@
-@SET ASM=tasm
+@SET ASM=jwasm
 @wmake dev
 @wmake dist

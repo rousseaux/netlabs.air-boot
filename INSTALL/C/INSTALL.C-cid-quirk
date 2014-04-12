@@ -573,7 +573,7 @@ char    set_bitfield(char* buffer, char index, char fieldwidth, char value) {
         return Success;
     }
 
-    BOOL Track0Write (void) {
+    ULONG Track0Write (void) {
         BOOL        Success = FALSE;
 
         _asm {
@@ -602,12 +602,16 @@ char    set_bitfield(char* buffer, char index, char fieldwidth, char value) {
 
             ; Store in return value.
             mov     word ptr [Success],ax
-
+les     bx,[Track0]
+mov     dx,es
+mov     ax,bx
+mov     ax,word ptr [Track0]
+mov     dx,word ptr [Track0+2]
             ; Restore ES.
             pop     es
         }
 
-        return Success;
+        //return Success;
     }
 
     void RebootSystem (void) {
@@ -1498,16 +1502,15 @@ int main (int argc, char **argv) {
         CurArgument++;
     }
 
-
-// Only support /cid on OS/2 for the moment.
-// The DOS code behaves quirky with /cid and Win32 is not tested at all.
-#ifndef PLATFORM_OS2
-    Option_CID = FALSE;
-#endif
+printf("1> c:%d, s:%d\n", Option_CID, Option_Silent);
 
     if (Option_CID) {
         Option_Silent = TRUE;
     }
+
+printf("2> c:%d, s:%d\n", Option_CID, Option_Silent);
+
+//exit(1);
 
 
     // Show header.
@@ -1526,6 +1529,9 @@ int main (int argc, char **argv) {
     Track0 = malloc(SECTOR_COUNT * BYTES_PER_SECTOR);
     Bootcode = malloc(SECTOR_COUNT * BYTES_PER_SECTOR);
 
+    printf("TRACK0   : %08lX\n", Track0);
+    printf("BOOTCODE : %08lX\n", Bootcode);
+
 
     // Exit of allocation failed.
     if (!(Track0 && Bootcode)) {
@@ -1540,6 +1546,9 @@ int main (int argc, char **argv) {
     //~ exit(0);
 
 
+printf("3> c:%d, s:%d\n", Option_CID, Option_Silent);
+
+
 #ifdef PLATFORM_WINNT
     if (CheckWindowsVersion()==FALSE)
         return 1;
@@ -1551,7 +1560,7 @@ int main (int argc, char **argv) {
         }
         return 3;   // Rouseau: changed from 1 to 3
     }
-
+printf("4> c:%d, s:%d\n", Option_CID, Option_Silent);
     if (!Option_CID) {
         printf(" - Loading bootcode from file...");
     }
@@ -1566,8 +1575,8 @@ int main (int argc, char **argv) {
     if (!Option_CID) {
         printf(" - Loading MBR from harddisc...");
     }
-
-
+printf("5> c:%d, s:%d\n", Option_CID, Option_Silent);
+//~ DumpTrack0();
     if (!Track0Load()) {
         if (!Option_CID) {
             printf("LOAD ERROR!\n");
@@ -1579,7 +1588,7 @@ int main (int argc, char **argv) {
             printf("ok\n");
         }
     }
-
+//~ DumpTrack0();
     if (!HarddriveCheckGeometry()) {
         // No EZ-SETUP check here, because we are under 32-bit OS and this
         //  wouldn't make any sense
@@ -1615,7 +1624,7 @@ int main (int argc, char **argv) {
             printf("\n");
         }
     }
-
+printf("6> c:%d, s:%d\n", Option_CID, Option_Silent);
     // =============================================================
     //  PRE-CHECKING, WHAT WE ARE SUPPOSED TO DO...
     // =============================================================
@@ -1699,7 +1708,7 @@ int main (int argc, char **argv) {
         }
     }
 
-
+printf("7> c:%d, s:%d\n", Option_CID, Option_Silent);
 
     // =============================================================
     //  MAIN-MENU
@@ -1726,6 +1735,7 @@ int main (int argc, char **argv) {
     }
 
 
+printf("8> c:%d, s:%d\n", Option_CID, Option_Silent);
 
     if (Option_Silent || Option_CID) {
         // Silent operation? Always add AiR-BOOT then
@@ -1772,15 +1782,22 @@ int main (int argc, char **argv) {
                         printf("ok\n");
                     }
                 }
-
-
-                if (!Track0Write()) {
-                    if (!Option_CID) {
+                //printf("1\n");
+                //DumpTrack0();
+                {
+                ULONG   rv;
+                if (!(rv=Track0Write())) {
+                    //~ if (!Option_CID) {
                         printf("SAVE ERROR!\n");
-                    }
+                    //~ }
                     return 1;
                 }
-
+                printf("\n\n\nRV : %08lX\n\n",(ULONG)rv);
+                printf("TRACK0   : %08lX\n", Track0);
+                printf("BOOTCODE : %08lX\n", Bootcode);
+                }
+                //printf("2\n");
+                //DumpTrack0();
                 if (!Option_CID) {
                     printf("\n");
                     printf("Your copy of AiR-BOOT is now fully functional.\n");
@@ -1845,7 +1862,7 @@ int main (int argc, char **argv) {
         default:
         break;
     }
-
+printf("9> c:%d, s:%d\n", Option_CID, Option_Silent);
     if (ExitOnly) {
         if (!(Option_CID || Option_Silent)) {
             printf("\n");
@@ -1853,10 +1870,10 @@ int main (int argc, char **argv) {
             while (getch()!=0x0D);
         }
     }
-
+printf("10> c:%d, s:%d\n", Option_CID, Option_Silent);
     // Free the buffer memory.
     if (Track0)     free(Track0);
     if (Bootcode)   free(Bootcode);
-
+printf("11> c:%d, s:%d\n", Option_CID, Option_Silent);
    return 0;
 }

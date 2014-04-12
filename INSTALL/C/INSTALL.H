@@ -14,10 +14,10 @@
 // Build date
 #define     BLDLVL_YEAR             "2012"
 #define     BLDLVL_MONTH            "04"
-#define     BLDLVL_DAY              "21"
+#define     BLDLVL_DAY              "23"
 // Build time
-#define     BLDLVL_HOURS            "08"
-#define     BLDLVL_MINUTES          "35"
+#define     BLDLVL_HOURS            "19"
+#define     BLDLVL_MINUTES          "41"
 #define     BLDLVL_SECONDS          "00"
 // Build machine
 //#define     BLDLVL_MACHINE          "ecs-devbox"
@@ -50,7 +50,8 @@ char    bldlevel[]  =   "@#"\
     // DOS platform
     #define PLATFORM_DOS
     #define PLATFORM_NAME   "DOS"
-    #include    <os2def.h>      // We use the OS/2 definitions like CHAR etc.
+    // We use the OS/2 v1.x definitions like CHAR etc.
+    #include    <os2def.h>
 #elif defined(__OS2__) && !defined(OS2)
     // OS/2 platform
     #define     PLATFORM_OS2
@@ -60,7 +61,7 @@ char    bldlevel[]  =   "@#"\
     #define     INCL_DOS
     #define     INCL_DOSDEVIOCTL
     #include    <os2.h>
-    #include    <malloc.h>                                                      // Rousseau: added to use getenv()
+    #include    <malloc.h>
 #elif defined(__NT__)
     // Win32 platform
     #define     PLATFORM_WINNT
@@ -71,7 +72,8 @@ char    bldlevel[]  =   "@#"\
     // Linux platform
     #define     PLATFORM_LINUX
     #define     PLATFORM_NAME   "Linux"
-    #include    <os2def.h>      // We use the OS/2 definitions like CHAR etc.
+    // We use the OS/2 v2.x definitions like CHAR etc.
+    #include    <os2def.h>
 #else
     #error Unsupported platform
 #endif
