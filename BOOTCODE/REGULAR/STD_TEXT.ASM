@@ -54,8 +54,8 @@ Copyright:
              db BLDLVL_MIDDLE_VERSION,'.'
              db BLDLVL_MINOR_VERSION,' - (c) '
              db BLDLVL_YEAR
-             ;~ db ' M. Kiewitz  <<Internal Release 2q>> (bld: '
-             db ' M. Kiewitz  <<Release Candidate 2>> (bld: '
+             db ' M. Kiewitz  <<Internal Release 3b>> (bld: '
+             ;~ db ' M. Kiewitz  <<Release Candidate 2>> (bld: '
              db BLDLVL_YEAR
              db BLDLVL_MONTH
              db BLDLVL_DAY,')'

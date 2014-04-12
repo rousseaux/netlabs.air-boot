@@ -854,149 +854,109 @@ AiR_BOOT_Start:
 
                 ;jmp skip
 
-                ; Rousseau:
-                ; I should cleanup my garbage here...
+                mov     al, byte ptr [CFG_Partitions]
+                mov     byte ptr [OldPartitionCount], al
 
                 ; Initialize Variable-Tables, Detections, etc.
                 call    PRECRAP_Main
 
                 ; Number of harddisks is now known
 
+IFDEF   AUX_DEBUG
+                call    DEBUG_DumpIPT
+                ;~ call    DEBUG_DumpPartitionPointers
+                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpNewPartTable
+ENDIF
+
+                ; Scan all partitions
                 call    PARTSCAN_ScanForPartitions
 
-
-                ; Number of disks found
+                ; Display number of physical disks found
                 mov     si, offset DisksFound
                 call    MBR_Teletype
-
                 mov     al, [TotalHarddiscs]
                 call    VideoIO_SyncPos
                 call    VideoIO_PrintByteDynamicNumber
                 xor     si,si
                 call    MBR_TeletypeNL
 
-                ; Number of bootable systems indicator
+                ; Display number of partitions found
                 mov     si, offset PartitionsFound
                 call    MBR_Teletype
-
                 mov     al, [CFG_Partitions]
                 call    VideoIO_SyncPos
                 call    VideoIO_PrintByteDynamicNumber
 
+                ; Dump summier disk-info for disks found
                 xor     si,si
                 call    MBR_TeletypeNL
                 call    MBR_TeletypeNL
-
                 call    VideoIO_SyncPos
-
                 mov     dl,80h
                 call    VideoIO_DumpDiskInfo
 
-                ;
-                ; Enumberate Bootable Systems by name
-                ; and prepare Phase 1 if active.
-                ;
-                ; This can also be implemented using the
-                ; Installable LVM-flag I think.
-                ; But at the time I had lesser knowledge about LVM...
-                ; So this algorithm may change in the future.
-                ;
-                mov     si, offset PartitionTable
-                xor     cx,cx
-                mov     cl,[CFG_Partitions]
-    MBR_Parts:
-                add     si, 4
-                push    si
-                push    si
-                ;call    MBR_TeletypeVolName
-                pop     si
-                call    PART_IsInstallVolume
-                jnc     MBR_Parts_NI
 
-                ; Install Volume
-                mov     al,' '
-                mov     bl,7
-                mov     ah, 0eh
-                int     10h
-
-                mov     al,'('
-                mov     bl,7
-                mov     ah, 0eh
-                int     10h
-
-                mov     al,[CFG_Partitions]
-                sub     al,cl
-                ;inc     al
-                ;mov     [Menu_EntryAutomatic],al
-                mov     [CFG_PartAutomatic],al  ; Setup entry for install-volume
-                mov     [CFG_PartLast],al
-                mov     ah, [eCS_InstallVolume] ; 1st byte is 0 if no phase 1 active
-                test    ah,ah                   ; test the byte, ZF is 0 if phase 1 active
-                lahf                            ; flags in ah
-                xor     ah, 40h                 ; complement ZF
-                and     ah, 40h                 ; mask ZF
-                shr     ah, 6                   ; move ZF to LSB
-                mov     [CFG_AutomaticBoot], ah ; automatic boot if phase 1 is active
+IFDEF   AUX_DEBUG
+                call    DEBUG_DumpIPT
+                ;~ call    DEBUG_DumpPartitionPointers
+                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpNewPartTable
+ENDIF
 
 
-                add     al,'1'
-                mov     bl,7
-                mov     ah, 0eh
-                int     10h
+                ; ======================
+                ; == eCS PHASE1 check ==
+                ; ======================
 
-                mov     al,')'
-                mov     bl,7
-                mov     ah, 0eh
-                int     10h
+                ; If the firt byte if name of the Install Volume is not 0
+                ; then we potentially have a phase1 boot.
+                test    byte ptr [eCS_InstallVolume],0ffh
+                ; Nope, so continue normally.
+                jz      MBR_Main_ContinueBoot
 
-                mov     bx,cx
+                ; Setup phase1.
+                ; It is still possible that a name was set for the
+                ; Install Volume that does not exist.
+                ; In that case CY will be clear and AL=0FFh.
+                call    PART_SetupPhase1
+                ; Oops, Install Volume not found, continue normally.
+                jnc     MBR_Main_ContinueBoot
 
-    MBR_Parts_NI:
-                xor     si,si
-                ;call    MBR_TeletypeNL
-                pop     si
-                add     si, 30      ; Add remainder of IPT entry
-                loop    MBR_Parts
+
+                ; == Install Volume Found ==
+
+                ; Because the old IPT read from disk differs from the new
+                ; IPT, we need to rescan all partitions.
+                ; This causes the PartitionXref table to be filled with
+                ; correct values so the auto-boot from the new partition
+                ; works correctly.
+                call    PARTSCAN_ScanForPartitions
+
+                ; Setup automatic boot to forgo the Menu.
+                ; PART_SetupPhase1 has filled in the other variables.
+                mov     byte ptr [CFG_AutomaticBoot],1
+
+
+IFDEF   AUX_DEBUG
+                call    DEBUG_DumpIPT
+                ;~ call    DEBUG_DumpPartitionPointers
+                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpNewPartTable
+ENDIF
+
+
+                jmp     MBR_Main_ContinueBoot
 
 
 
 
-                ; Index of automatic start partition
-                ;mov     si, offset AutoStartPart
-                ;call    MBR_Teletype
 
-                ;mov     al, [CFG_PartAutomatic]
-                ;add     al, 31h
-                ;mov     ah, 09h
-                ;mov     bx, 15
-                ;mov     cx, 1
-                ;int     10h
-
-                ;mov     al, [CFG_PartAutomatic]
-                ;add     al, 31h
-                ;mov     ah, 0eh
-                ;mov     bx, 15
-                ;mov     cx, 1
-                ;int     10h
-
+    MBR_Main_ContinueBoot:
                 xor     si,si
                 call    MBR_TeletypeNL
                 xor     si,si
                 call    MBR_TeletypeNL
-
-                ;mov    ax,[BIOS_AuxParms]
-                ;call   VideoIO_SyncPos
-                ;push   ax
-                ;add    al,'0'
-                ;mov     bl,7
-                ;mov     ah, 0eh
-                ;int     10h
-                ;pop    ax
-                ;xchg   al,ah
-                ;sub    al,0a2h
-                ;mov     bl,7
-                ;mov     ah, 0eh
-                ;int     10h
 
 
                 call    MBR_TeletypeSyncPos
@@ -1011,7 +971,7 @@ AiR_BOOT_Start:
                 call    MBR_TeletypeBold
 
 
-    skip:
+
 
 
 
@@ -1022,8 +982,8 @@ AiR_BOOT_Start:
 
                 ; Rousseau:
                 ; Wait for key so we can see debug log if ab-menu hangs.
-                ;;xor     ax, ax
-                ;;int     16h
+                ;~ xor     ax, ax
+                ;~ int     16h
 
                 ;call     SOUND_Beep
 
@@ -1046,8 +1006,6 @@ AiR_BOOT_Start:
 
                 ; Save configuration so phase1 boot-through is disabled
                 ; on next boot.
-                ; Moved here to fix that Esc out of SETUP would also save.
-                ; So moved above the MBR_Main_ReEnterSetup label.
                 mov     byte ptr [eCS_InstallVolume], 0  ; disable phase 1 for next boot
                 call    DriveIO_SaveConfiguration
 
@@ -1096,6 +1054,8 @@ AiR_BOOT_Start:
                 call    BOOTMENU_ResetMenuVars ; reset has to be done
                 test    byte ptr [CFG_AutomaticBoot], 1
                 jz      MBR_Main_NoAutomaticBooting
+
+
                 ; ------------------------------------------ AUTOMATIC BOOTING
                 ; Select automatic partition, disable automatic booting for
                 ;  next time and boot system...
@@ -1108,7 +1068,8 @@ AiR_BOOT_Start:
                 mov     Menu_EntrySelected, al      ; zero based
                 jmp     MBR_Main_NoBootMenu
 
-                MBR_Main_NoAutomaticBooting:
+
+    MBR_Main_NoAutomaticBooting:
 
                 ;call   SOUND_Beep
 
@@ -1166,7 +1127,26 @@ AiR_BOOT_Start:
                 int     21h
             ENDIF
                 call    ANTIVIR_SaveBackUpMBR
-                mov     dl, Menu_EntrySelected
+
+                ; Preload the selected menu-entry
+                ; However, this value will be wrong if eCS phase1 is
+                ; active and the installation partition is newly created.
+                ; See below for the adjustment.
+                mov     dl, byte ptr [Menu_EntrySelected]
+
+                jmp     MBR_Main_StartPartition
+
+
+
+    MBR_Main_StartPartition:
+
+IFDEF   AUX_DEBUG
+                ;~ call    DEBUG_DumpIPT
+                ;~ call    DEBUG_DumpPartitionPointers
+                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpNewPartTable
+ENDIF
+
 
                 ; -------------------------------------------- START PARTITION
                 call    PART_StartPartition
@@ -1545,11 +1525,11 @@ DriveLetters            db  LocIPT_MaxPartitions dup (0)
 ; longer labelnames. The name is also capitalized.
 ;eCS_InstallVolume       db  12 dup (0)
 ;eCS_InstallVolume       db  'HIGHLOG' ,0
-eCS_InstallVolume       db  0,'NOPHASEONE' ,0
 ;eCS_InstallVolume       db  'ECS-MIDDLE',0,0
 ;eCS_InstallVolume       db  'ECS-HIGH',0,0,0,0
 ;eCS_InstallVolume       db  'ECS-HIGH',0,'NO',0
-
+eCS_InstallVolume       db  'KANWEG2',0
+;eCS_InstallVolume       db  0,'NOPHASEONE' ,0
 
 ;
 ; THERE IS ROOM RESERVED HERE FOR MORE VARIABLES
@@ -1778,7 +1758,7 @@ NewDriveLetters             db  partition_count dup (?)
 ; Size-Table (6 bytes per partition)
 PartitionSizeTable          db  partition_count * 6 dup (?)
 
-; Maximum is 52 entries till now
+; Maximum is 52 word entries till now
 PartitionPointers           dw  52 dup (?)
 
 ; Count of total Partition Pointers
@@ -1889,6 +1869,8 @@ LVM_CRCTable        dd   256 dup (?) ; LVM-CRC (->SPECiAL\LVM.asm)
 ; Rousseau: added some stuff.
 ;
 
+Phase1Active                db      ?
+OldPartitionCount           db      ?
 
                               ;EVEN
 HugeDisk                    db      MaxDisks  dup(?)

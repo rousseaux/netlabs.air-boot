@@ -893,11 +893,11 @@ PARTSCAN_SyncHideConfigWithXref Proc Near Uses ax bx cx dx si di
 
 
     IFDEF   AUX_DEBUG
-        pusha
-        mov     al,dl
-        call    AuxIO_TeletypeHexByte
-        call    AuxIO_TeletypeNL
-        popa
+        ;~ pusha
+        ;~ mov     al,dl
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+        ;~ popa
     ENDIF
 
 
@@ -913,9 +913,9 @@ PARTSCAN_SyncHideConfigWithXref Proc Near Uses ax bx cx dx si di
 
     IFDEF   AUX_DEBUG
         ; debug code
-        mov     ax,di
-        call    AuxIO_TeletypeHexWord
-        call    AuxIO_TeletypeNL
+        ;~ mov     ax,di
+        ;~ call    AuxIO_TeletypeHexWord
+        ;~ call    AuxIO_TeletypeNL
     ENDIF
 
     PSSHCWX_NothingLost:

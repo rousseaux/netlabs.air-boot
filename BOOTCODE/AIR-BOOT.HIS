@@ -24,6 +24,16 @@
 ; Rousseau: Fixes and Enhancements
 ; ---------------------------------
 ;
+; v1.0.8-rc3-bld201205nn
+; ----------------------
+; # Fixed a nasty bug when eCS phase1 is active #
+;   When creating a partition in a free space between partitions for
+;   eCS installation, the phase1 boot-through code would calculate the
+;   wrong index for the new partition. As a result the next partition
+;   would be auto-booted instead of the newly installed system.
+;   This has been fixed.
+;   This bug is also present in v1.07.
+;
 ; v1.0.8-rc2-bld20120423
 ; ----------------------
 ; # Fixed some minor Installer bugs with SPT < 63 #

@@ -921,11 +921,11 @@ PARTHIDESETUP_Main              Proc Near   Uses dx
    mov     dl, [PartSetup_ActivePart]
 
 IFDEF   AUX_DEBUG
-        pusha
-        mov     al,dl   ; Partition the hiding is set for.
-        call    AuxIO_TeletypeHexByte
-        call    AuxIO_TeletypeNL
-        popa
+        ;~ pusha
+        ;~ mov     al,dl   ; Partition the hiding is set for.
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+        ;~ popa
 ENDIF
 
    call    PARTHIDESETUP_CollectHideConfigAndPutToTable
@@ -945,11 +945,11 @@ ENDIF
   PHSM_KeyToogle:
 
 IFDEF   AUX_DEBUG
-        pusha
-        mov     al,dl   ; Index of partition to set Special Marker on.
-        call    AuxIO_TeletypeHexByte
-        call    AuxIO_TeletypeNL
-        popa
+        ;~ pusha
+        ;~ mov     al,dl   ; Index of partition to set Special Marker on.
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+        ;~ popa
 ENDIF
 
    call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
@@ -1400,30 +1400,30 @@ PARTHIDESETUP_CollectHideConfigAndPutToTable Proc Near Uses ax si es di
 
 
     IFDEF   AUX_DEBUG
-        pushf
-        pusha
-        push    ax
-        mov     al,dl
-        call    AuxIO_TeletypeHexByte
-        mov     al,':'
-        call    AuxIO_Teletype
-        mov     ax,bx
-        call    AuxIO_TeletypeHexWord
-        mov     al,':'
-        call    AuxIO_Teletype
-        mov     ax,bp
-        call    AuxIO_TeletypeHexWord
-        mov     al,':'
-        call    AuxIO_Teletype
-        mov     ax,sp
-        call    AuxIO_TeletypeHexWord
-        mov     al,':'
-        call    AuxIO_Teletype
-        pop     ax
-        call    AuxIO_TeletypeHexByte
-        call    AuxIO_TeletypeNL
-        popa
-        popf
+        ;~ pushf
+        ;~ pusha
+        ;~ push    ax
+        ;~ mov     al,dl
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ mov     al,':'
+        ;~ call    AuxIO_Teletype
+        ;~ mov     ax,bx
+        ;~ call    AuxIO_TeletypeHexWord
+        ;~ mov     al,':'
+        ;~ call    AuxIO_Teletype
+        ;~ mov     ax,bp
+        ;~ call    AuxIO_TeletypeHexWord
+        ;~ mov     al,':'
+        ;~ call    AuxIO_Teletype
+        ;~ mov     ax,sp
+        ;~ call    AuxIO_TeletypeHexWord
+        ;~ mov     al,':'
+        ;~ call    AuxIO_Teletype
+        ;~ pop     ax
+        ;~ call    AuxIO_TeletypeHexByte
+        ;~ call    AuxIO_TeletypeNL
+        ;~ popa
+        ;~ popf
     ENDIF
 
         call    CONV_SetBitfieldValue   ; Store bitfield.

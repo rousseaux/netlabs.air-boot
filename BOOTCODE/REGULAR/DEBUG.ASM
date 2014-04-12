@@ -163,6 +163,77 @@ DEBUG_DumpGeo   Proc
         ret
 DEBUG_DumpGeo   Endp
 
+
+
+DEBUG_DumpIPT   Proc
+        pushf
+        pusha
+
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset [PartitionTable]
+        call    AuxIO_DumpSector
+
+        popa
+        popf
+        ret
+DEBUG_DumpIPT   EndP
+
+DEBUG_DumpNewPartTable  Proc
+        pushf
+        pusha
+
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset [NewPartTable]
+        call    AuxIO_DumpSector
+
+        popa
+        popf
+        ret
+DEBUG_DumpNewPartTable  EndP
+
+DEBUG_DumpPartitionPointers     Proc
+        pushf
+        pusha
+
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset [PartitionPointers]
+        mov     cx,7
+
+    DEBUG_DumpPartitionPointers_next:
+        call    AuxIO_DumpParagraph
+        add     si,16
+        call    AuxIO_TeletypeNL
+        loop    DEBUG_DumpPartitionPointers_next
+
+        popa
+        popf
+        ret
+DEBUG_DumpPartitionPointers     EndP
+
+
+DEBUG_DumpPartitionXref     Proc
+        pushf
+        pusha
+
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset [PartitionXref]
+        mov     cx,3
+
+    DEBUG_DumpPartitionXref_next:
+        call    AuxIO_DumpParagraph
+        add     si,16
+        call    AuxIO_TeletypeNL
+        loop    DEBUG_DumpPartitionXref_next
+
+        popa
+        popf
+        ret
+DEBUG_DumpPartitionXref     EndP
+
 ;
 ; Dump information before the menu is displayed.
 ;
@@ -229,36 +300,36 @@ DEBUG_DumpBSSSectors    EndP
 
 
 DEBUG_DumpHidePartTables    Proc    Near
-        pushf
-        pusha
-
-        mov     cx,3
-        mov     si, offset [HidePartitionTable]
-    again1:
-        call    AuxIO_DumpSector
-        add     si,512
-        loop    again1
-        call    AuxIO_TeletypeNL
-
-        mov     cx,3
-        mov     si, offset [PartitionXref]
-    again2:
-        call    AuxIO_DumpParagraph
-        call    AuxIO_TeletypeNL
-        add     si,16
-        loop    again2
-        call    AuxIO_TeletypeNL
-
-        mov     cx,3
-        mov     si, offset [NewHidePartTable]
-    again3:
-        call    AuxIO_DumpSector
-        add     si,512
-        loop    again3
-        call    AuxIO_TeletypeNL
-
-        popa
-        popf
+        ;~ pushf
+        ;~ pusha
+;~
+        ;~ mov     cx,3
+        ;~ mov     si, offset [HidePartitionTable]
+    ;~ again1:
+        ;~ call    AuxIO_DumpSector
+        ;~ add     si,512
+        ;~ loop    again1
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     cx,3
+        ;~ mov     si, offset [PartitionXref]
+    ;~ again2:
+        ;~ call    AuxIO_DumpParagraph
+        ;~ call    AuxIO_TeletypeNL
+        ;~ add     si,16
+        ;~ loop    again2
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ mov     cx,3
+        ;~ mov     si, offset [NewHidePartTable]
+    ;~ again3:
+        ;~ call    AuxIO_DumpSector
+        ;~ add     si,512
+        ;~ loop    again3
+        ;~ call    AuxIO_TeletypeNL
+;~
+        ;~ popa
+        ;~ popf
         ret
 DEBUG_DumpHidePartTables    EndP
 

@@ -106,7 +106,7 @@ DriveIO_UpdateFloppyName    Proc Near   Uses bx cx dx ds si es di
         mov     ds, ax
         mov     es, ax
 
-        mov     ah, 00h                        ; Function 2 - Reset Drive
+        mov     ah, 00h                        ; Function 0 - Reset Drive
         xor     dl, dl
         int     13h
         xor     dx, dx                         ; Cylinder=0, Head=0
@@ -568,19 +568,19 @@ DriveIO_LoadLVMSector   Proc Near  Uses ax bx cx dx
 
     IFDEF AUX_DEBUG
         ; show current partition location
-        pushf
-        pusha
+        ;~ pushf
+        ;~ pusha
         ;~ call    AuxIO_TeletypeNL
         ;~ mov     si,offset db_curlvmsec
         ;~ call    AuxIO_Print
-        mov     dx,bx
+        ;~ mov     dx,bx
         ;~ call    AuxIO_TeletypeHexDWord
         ;~ call    AuxIO_TeletypeNL
-        mov     si,offset LVMSector
+        ;~ mov     si,offset LVMSector
         ;~ call    AuxIO_DumpSector
         ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        ;~ popa
+        ;~ popf
     ENDIF
 
         call    LVM_CheckSectorSignature

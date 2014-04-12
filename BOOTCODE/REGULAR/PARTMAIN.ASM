@@ -744,6 +744,109 @@ PART_IsInstallVolume            EndP
 
 
 
+; Setup Phase1
+; If found CY=1, AL=partnum, else CY=0, AL=0FFH
+PART_SetupPhase1    Proc    Uses bx cx dx si di
+
+                ;
+                ; Enumberate Bootable Systems by name
+                ; and prepare Phase 1 if active.
+                ;
+                ; This can also be implemented using the
+                ; Installable LVM-flag I think.
+                ; But at the time I had lesser knowledge about LVM...
+                ; So this algorithm may change in the future.
+                ;
+                mov     byte ptr [Phase1Active],0   ; Clear phase1 indicator
+                mov     si, offset PartitionTable   ; Pointer to IPT
+                xor     cx,cx
+                mov     cl,[CFG_Partitions]         ; Partitions in IPT
+
+    ; Process next entry in IPT
+    MBR_Parts:
+                add     si, 4
+                ;push    si
+                ;push    si
+                ;call    MBR_TeletypeVolName
+                ;pop     si
+                call    PART_IsInstallVolume        ; Check if this is install-volume
+                jnc     MBR_Parts_NI
+
+                ;
+                ; Install Volume found
+                ;
+                mov     byte ptr [Phase1Active],1   ; Set phase1 indicator
+
+                mov     al,' '
+                mov     bl,7
+                mov     ah, 0eh
+                int     10h
+
+                mov     al,'('
+                mov     bl,7
+                mov     ah, 0eh
+                int     10h
+
+
+
+                mov     al,[CFG_Partitions]
+                sub     al,cl
+
+                mov     dh,al
+
+
+                mov     [CFG_PartAutomatic],al  ; Setup entry for install-volume
+                mov     [CFG_PartLast],al
+
+                add     al,'1'
+                mov     bl,7
+                mov     ah, 0eh
+                int     10h
+
+                mov     al,')'
+                mov     bl,7
+                mov     ah, 0eh
+                int     10h
+
+                ;mov     bx,cx       ; ????
+
+                mov     al,dh
+                stc
+                jmp     PART_SetupPhase1_found
+
+    MBR_Parts_NI:
+                ;xor     si,si
+                ;call    MBR_TeletypeNL
+                ;pop     si
+                add     si, 30      ; Add remainder of IPT entry
+                loop    MBR_Parts
+
+                mov     al,0ffh
+                clc
+
+    PART_SetupPhase1_found:
+
+                ret
+
+PART_SetupPhase1    EndP
+
+
+
+
+;~ PART_GetOldPartitionCount   Proc    Uses    cx dx di
+                ;~ mov     di,offset [PartitionXref]
+                ;~ mov     dx,partition_count
+                ;~ mov     cx,dx
+                ;~ mov     al,0ffh
+                ;~ cld
+                ;~ repne   scasb
+                ;~ inc     cx
+                ;~ sub     dx,cx
+                ;~ mov     ax,dx
+                ;~ ret
+;~ PART_GetOldPartitionCount   EndP
+
+
 
 ; ###################
 ; # START PARTITION #
@@ -1293,20 +1396,40 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         call    VideoIO_Locate
         popa
 
+
+
+
+
         ; Debug display physdisk, ptype and physdisk offset in BPB
-        pusha
-        mov     ah,[si+LocIPT_Drive]
-        mov     al,[si+LocIPT_SystemID]
-        call    VideoIO_PrintHexWord
-        mov     ax,bx
-        call    VideoIO_PrintHexWord
-        mov     ax,[si+LocIPT_AbsolutePartTable+02]
-        call    VideoIO_PrintHexWord
-        mov     ax,[si+LocIPT_AbsolutePartTable+00]
-        call    VideoIO_PrintHexWord
-        mov     al,[ExtendedAbsPosSet]
-        call    VideoIO_PrintHexByte
-        popa
+        ;~ pusha
+        ;~ mov     ah,[si+LocIPT_Drive]
+        ;~ mov     al,[si+LocIPT_SystemID]
+        ;~ call    VideoIO_PrintHexWord
+        ;~ mov     ax,bx
+        ;~ call    VideoIO_PrintHexWord
+        ;~ mov     ax,[si+LocIPT_AbsolutePartTable+02]
+        ;~ call    VideoIO_PrintHexWord
+        ;~ mov     ax,[si+LocIPT_AbsolutePartTable+00]
+        ;~ call    VideoIO_PrintHexWord
+        ;~ mov     al,[ExtendedAbsPosSet]
+        ;~ call    VideoIO_PrintHexByte
+        ;~ mov     al,'-'
+        ;~ call    VideoIO_PrintSingleChar
+        ;~ mov     al,byte ptr [Menu_EntrySelected]
+        ;~ call    VideoIO_PrintHexByte
+        ;~ mov     al,byte ptr [CFG_PartAutomatic]
+        ;~ call    VideoIO_PrintHexByte
+        ;~ mov     al,byte ptr [Phase1Active]
+        ;~ call    VideoIO_PrintHexByte
+        ;~ mov     al,byte ptr [NewPartitions]
+        ;~ call    VideoIO_PrintHexByte
+        ;~ mov     al, byte ptr [OldPartitionCount]
+        ;~ call    VideoIO_PrintHexByte
+        ;~ popa
+
+
+
+
 
 
         ;
