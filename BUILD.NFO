@@ -1,5 +1,5 @@
 ===============================================================================
- BUILD.NFO -- Information on building AiR-BOOT v1.0.8
+ BUILD.NFO -- Information on building AiR-BOOT v1.1.0
 ===============================================================================
 
 Building AiR-BOOT and the support tools has been completely revamped
@@ -11,7 +11,7 @@ can be used on: DOS, Windows, OS/2 and Linux.
 This greatly enhances the build-environment, which was previously DOS-only.
 
 The Open Watcom Linker is now used, which obsoletes the use of the (DOS-only)
-exe2bin and tlink programs. WLink replaces the functionality of both while
+exe2bin and TLink programs. WLink replaces the functionality of both while
 also adding extensive cross-platform support.
 
 Several cross-reference files are generated, like object disassemblies
@@ -40,7 +40,7 @@ be built on the other platforms.
 The Open Watcom tool-chain in combination with JWasm is now the
 default tool-chain.
 
-Building AiR-BOOT v1.0.8 requires the following tools:
+Building AiR-BOOT v1.1.0 requires the following tools:
 - Open Watcom Make Utility v1.9 or higher
 - Open Watcom 16-bits C-Compiler v1.9 or higher
 - Open Watcom 32-bits C-Compiler v1.9 or higher

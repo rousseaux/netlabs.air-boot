@@ -1,5 +1,5 @@
 ===============================================================================
- 1README.TXT -- General Information about AiR-BOOT v1.0.8
+ 1README.TXT -- General Information about AiR-BOOT v1.1.0
 ===============================================================================
 
  AiR-BOOT (c) Copyright 1998-2009 M. Kiewitz

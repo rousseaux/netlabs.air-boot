@@ -594,6 +594,12 @@ dist:	.SYMBOLIC
 	@if exist AIRBT-EN.BIN $(CP) AIRBT-EN.BIN ..$(DS)RELEASE$(DS)WINNT$(DS)$(TARGET)
 	@if exist AIRBT-EN.BIN $(CP) AIRBT-EN.BIN ..$(DS)RELEASE$(DS)OS2$(DS)$(TARGET)
 	@if exist AIRBT-EN.BIN $(CP) AIRBT-EN.BIN ..$(DS)RELEASE$(DS)LINUX$(DS)$(TARGET)
+	@cd ..
+	@cd INSTALL$(DS)C
+	@$(MAKE) dist
+	@cd ..$(DS)..
+	@cd TOOLS$(DS)OS2$(DS)SETABOOT
+	@$(MAKE) dist
 
 
 # -----------------------------------------------------------------------------

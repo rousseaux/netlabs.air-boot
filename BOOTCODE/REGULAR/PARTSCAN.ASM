@@ -301,6 +301,7 @@ PARTSCAN_ScanPartition          Proc Near  Uses ax si
 
     PSSP_IgnorePartition:
         ; L”scht das Boot-Able Flag...
+        ; CHECKME: About clearing the active flags, TRACK ticket #6
         and     byte ptr [si+LocBRPT_Flags], 7Fh ; Reset the Active-Flag
         add     si, LocBRPT_LenOfEntry     ; 16 Bytes per partition entry
         cmp     si, 500+offset PartitionSector

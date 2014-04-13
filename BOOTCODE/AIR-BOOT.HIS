@@ -24,6 +24,22 @@
 ; Rousseau: Fixes, Enhancements and fresh bugs :-)
 ; ------------------------------------------------
 ;
+; v1.1.0-pre
+; ----------
+; # Updated textual version information from v1.0.8 to v1.1.0
+;   This does not include the version identifiers.
+;   During v1.0.8 is was decided that odd minor versions will be test-versions.
+;   Since v1.0.8 was a test-version all the way, the final stuff has been
+;   bumped to v1.1.0, including the version of the configuration.
+;   v1.1.1 will be any following test-version, with build-dates separating
+;   test-releases. Version 1.1.2 would be a next release.
+;
+; # Fixed Virus Regression
+;   Using the enhanced drive-letter feature to boot eCS installations using
+;   the same drive-letter caused the PBR-virus protection to activate.
+;   This was caused by a missing update to the PBR CRC in the AB configuration.
+;   This has been fixed.
+;
 ; v1.0.8-rc3-bld20120909
 ; ----------------------
 ; # Added Show LVM Drive Letters in SETUP/BASIC #
@@ -361,8 +377,8 @@
 ;   Possibly it will be re-enabled after code cleanup and changing to JWasm.
 ;
 ;
-; v1.07
-; -----
+; v1.07-final
+; ===========
 ; # Huge Drives and LVM #
 ;   When using disks >512GB under eComStation, the drive geometry changes to
 ;   127 or 255 sectors per track. Since LVM-info is written at the last sector
@@ -390,7 +406,7 @@
 ;
 ;
 ; v1.06
-; -----
+; =====
 ; This is the last version developed by Martin Kiewitz.
 ; It serves as the base for the versions above.
 ; Please do not post your feedback on sourceforge or bother Martin with

@@ -994,14 +994,14 @@ void Status_CheckCode (void) {
         SectorPtr += BYTES_PER_SECTOR;
         TotalCodeSectorsUsed--;
     }
-    if (Checksum!=*(PUSHORT)&Track0[0x11]) {
+    if (Checksum!=*(PUSHORT) &Track0[0x11]) {
         Status_Code = STATUS_CORRUPT;
         return;                                      // Bad checksum for code
     }
     // Checksum fine...
     Installed_LanguageID  = Track0[0x0F];
     Installed_CodeVersion = (Track0[0x0D] << 8) | Track0[0x0E];
-    if (Installed_CodeVersion<Bootcode_Version)
+    if (Installed_CodeVersion < Bootcode_Version)
         Status_Code = STATUS_INSTALLEDMGU;                                         // Do upgrade
     else
         Status_Code = STATUS_INSTALLED;                                            // Same version installed
@@ -1043,21 +1043,21 @@ void Status_CheckConfig (void) {
             SectorCount--;
         }
         // Restore checksum
-        *(PUSHORT)&Track0[54 * BYTES_PER_SECTOR + 20] = ConfigChecksum;            // Config sector secnum hard-coded !
-        if (Checksum!=ConfigChecksum) {
+        *(PUSHORT) &Track0[54 * BYTES_PER_SECTOR + 20] = ConfigChecksum;            // Config sector secnum hard-coded !
+        if (Checksum != ConfigChecksum) {
             Status_Config = STATUS_CORRUPT;
             return;
         }
         // Checksum fine
         Installed_ConfigVersion = (Track0[54 * BYTES_PER_SECTOR + 0x0D] << 8) | Track0[54 * BYTES_PER_SECTOR + 0x0E];
-        if (Installed_ConfigVersion>=Bootcode_ConfigVersion) {
+        if (Installed_ConfigVersion >= Bootcode_ConfigVersion) {
             Status_Config = STATUS_INSTALLED;
             return;
         }
         Status_Config = STATUS_INSTALLEDMGU;
 
         // Abort if unknown installed config version.
-        if ((Installed_ConfigVersion > 0x108)) {
+        if ((Installed_ConfigVersion > 0x110)) {
             if (!Option_CID) {
                 printf("\n");
                 printf("Configuration version of installed AiR-BOOT not supported by this installer !\n");
@@ -1067,7 +1067,7 @@ void Status_CheckConfig (void) {
         }
 
         // Abort if unknown to-install config version.
-        if ((Bootcode_ConfigVersion > 0x108)) {
+        if ((Bootcode_ConfigVersion > 0x110)) {
             if (!Option_CID) {
                 printf("\n");
                 printf("Configuration version of new AiR-BOOT.BIN not supported by this installer !\n");
@@ -1078,10 +1078,10 @@ void Status_CheckConfig (void) {
 
 
         // Those upgrades will copy useful configuration data to the image config
-        //  If new configuration data was added, those spaces are not overwritten
+        // If new configuration data was added, those spaces are not overwritten
         // Sector 60 (MBR-BackUp) *MUST BE* copied, otherwise it would be lost.
         // Rousseau: Upgrade from v0.27
-        if (Installed_ConfigVersion<=0x27) {
+        if (Installed_ConfigVersion <= 0x27) {
             // UPGRADE v0.27 and prior versions
 
             // Sector 55
@@ -1106,7 +1106,7 @@ void Status_CheckConfig (void) {
             return;
         }
         // Rousseau: Upgrade from v0.91
-        if (Installed_ConfigVersion<=0x91) {
+        if (Installed_ConfigVersion <= 0x91) {
             // UPGRADE v0.91 and prior versions
             // Sector 55-57 no changes
             memcpy(&Bootcode[54 * BYTES_PER_SECTOR + 16], &Track0[54 * BYTES_PER_SECTOR + 16], BYTES_PER_SECTOR + 1024 - 16);   // CHACKEN !!
@@ -1136,7 +1136,7 @@ void Status_CheckConfig (void) {
 
         /*
         // Convert v1.06 hideparttable (30x30) to the v1.07 (30x45) format.
-        // Also copy drive-letters to either v1.07 or v1.0.8 location.
+        // Also copy drive-letters to either v1.07 or v1.0.8+ location.
         */
         if ((Installed_ConfigVersion == 0x102) && (Bootcode_ConfigVersion >= 0x107)) {
             int     i,j;
@@ -1161,8 +1161,8 @@ void Status_CheckConfig (void) {
                 memset(&Bootcode[0x7946], 0, 45);
             }
 
-            // Copy over drive-letters from v1.06 location to v1.08 location.
-            if (Bootcode_ConfigVersion == 0x108) {
+            // Copy over drive-letters from v1.06 location to v1.08+ location.
+            if ((Bootcode_ConfigVersion >= 0x108) && (Bootcode_ConfigVersion <= 0x110)) {
                 memset(&Bootcode[0x6cb0], 0, 45);
                 memcpy(&Bootcode[0x6cb0], &Track0[0x7584], 30);
             }
@@ -1171,7 +1171,7 @@ void Status_CheckConfig (void) {
         /*
         // Convert v1.07 hideparttable (30x45) to a packed v1.0.8+ (45x45) format.
         */
-        if ((Installed_ConfigVersion < 0x108) && (Bootcode_ConfigVersion == 0x108)) {
+        if ((Installed_ConfigVersion < 0x108) && (Bootcode_ConfigVersion <= 0x110)) {
             int     i,j;
             char    c;
             //printf("Converting to 1.08 packed hidepart");
@@ -1187,7 +1187,7 @@ void Status_CheckConfig (void) {
                     c = set_bitfield(&TempHidPartTable[i*34], j, 6, c);     // Store 6-bit packed value
                 }
             }
-            // Copy temporary table to final v1.0.8 location (packed format)
+            // Copy temporary table to final v1.0.8+ location (packed format)
             memcpy(&Bootcode[0x7400], TempHidPartTable, 45 * 34);
             // Show LVM Drive Letters.
             Bootcode[0x6c17] = 1;
@@ -1282,7 +1282,7 @@ BOOL Virus_CheckForBackUpMBR (void) {
 
     // All versions above v1.06 have expanded tables so the MBR-backup
     // is located 2 sectors higher in the track0 image.
-    if (Installed_ConfigVersion<=0x0106)
+    if (Installed_ConfigVersion <= 0x0106)
         bMbrBackup = Virus_CheckThisMBR((PCHAR) &Track0[59 * BYTES_PER_SECTOR]);
     else
         bMbrBackup = Virus_CheckThisMBR((PCHAR) &Track0[61 * BYTES_PER_SECTOR]);
@@ -1295,7 +1295,7 @@ BOOL Virus_CheckForStealth (void) {
     USHORT i;
 
     for (i=0; i<511; i++) {
-        if (*(PUSHORT)CurPtr==0x13CD) return FALSE;
+        if (*(PUSHORT)CurPtr == 0x13CD) return FALSE;
         CurPtr++;
     }
     // No CD13h found? possible stealth
@@ -1417,7 +1417,7 @@ void Install_WriteConfig (void) {
     /*
     // Rousseau: # Keep compatible with v1.07 CRC #
     // AB v1.07 had bugs in writing the wrong number of AB config sectors.
-    // This is fixed in v1.0.8 but the CRC has to be calculated the "v1.07 way"
+    // This is fixed in v1.0.8+ but the CRC has to be calculated the "v1.07 way"
     // otherwise v1.07 SET(A)BOOT and AIRBOOT2.EXE will think the AB config
     // is corrupted.
     // So the CRC is calculated over 5 sectors instead of 7.

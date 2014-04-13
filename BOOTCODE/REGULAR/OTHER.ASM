@@ -461,11 +461,11 @@ PRECRAP_CheckConfiguration      Proc Near  Uses ds si es di
         ; mov     cx, (MBR_BackUpMBR - Configuration) / 200h
 
         ; AB v1.07 stores a 5 sector configuration with a 5 sector checksum.
-        ; AB v1.0.8 *should* stores a 7 sector configuration with a
+        ; AB v1.0.8+ *should* stores a 7 sector configuration with a
         ; 7 sector checksum.
-        ; Because 5 was hardcoded here, SET(A)BOOT v1.07 will see see an AB v1.0.8
+        ; Because 5 was hardcoded here, SET(A)BOOT v1.07 will see see an AB v1.0.8+
         ; config as corrupted, while this is not the case.
-        ; So, for compatibility reasons, in v1.0.8, the checksum stored is over
+        ; So, for compatibility reasons, in v1.0.8+, the checksum stored is over
         ; 5 sectors, to be compatible with v1.07.
         ; This may change (be corrected) in future versions !
         mov      cx,5

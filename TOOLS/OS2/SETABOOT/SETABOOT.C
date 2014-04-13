@@ -477,7 +477,12 @@ int   DoAirBootActions(int argc, char **argv, BOOL ab_detected, BOOL ab_bad) {
    */
    //puts ("SETABOOT - AiR-BOOT Configuration Utility (OS/2) - (c) 2004-2009 by M. Kiewitz");
    //puts ("SETABOOT v1.07a - AiR-BOOT Configuration Utility - (c) 2004-2011 by M. Kiewitz");
-   puts ("SETABOOT v1.0.8 - AiR-BOOT Configuration Utility - (c) 2004-2012 by M. Kiewitz");
+   puts ("SETABOOT v"
+    BLDLVL_MAJOR_VERSION"."
+    BLDLVL_MIDDLE_VERSION"."
+    BLDLVL_MINOR_VERSION" - AiR-BOOT Configuration Utility - (c) 2004-"
+    BLDLVL_YEAR
+    " by M. Kiewitz");
 
 
    //return 0;
@@ -975,7 +980,7 @@ BOOL Track0WriteAiRBOOTConfig (void) {
    /*
    // Rousseau: # Keep compatible with v1.07 CRC #
    // AB v1.07 had bugs in writing the wrong number of AB config sectors.
-   // This is fixed in v1.0.8 but the CRC has to be calculated the "v1.07 way"
+   // This is fixed in v1.0.8+ but the CRC has to be calculated the "v1.07 way"
    // otherwise v1.07 SET(A)BOOT and INSTALL2.EXE will think the AB config
    // is corrupted.
    // So the CRC is calculated over 5 sectors instead of 7.

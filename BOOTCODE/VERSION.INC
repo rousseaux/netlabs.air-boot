@@ -36,18 +36,17 @@ AB_MINOR_VERSION    EQU     8
 ; The Year, Month and Day in BCD so we can easily extract nibbles.
 AB_YEAR             EQU     2013h
 AB_MONTH            EQU     04h
-AB_DAY              EQU     03h
+AB_DAY              EQU     05h
 
 ; The Hours, Minutes and Seconds, again in BCD for easy manipulation.
-AB_HOURS            EQU     16h
-AB_MINUTES          EQU     10h
-AB_SECONDS          EQU     00h
+AB_HOURS            EQU     01h
+AB_MINUTES          EQU     00h
+AB_SECONDS          EQU     08h
 
 ; The AiR-BOOT signature uses big-endian so we shuffle some bits around.
 AB_SIG_VERSION      EQU     (((AB_MIDDLE_VERSION SHL 4) OR AB_MINOR_VERSION) SHL 8) OR AB_MAJOR_VERSION
 AB_SIG_YEAR         EQU     ((AB_YEAR SHR 8) OR (AB_YEAR SHL 8) AND 0FFFFh)
 AB_SIG_DATE         EQU     (AB_MONTH SHL 8) OR AB_DAY
-
 
 ;
 ; This macro inserts the AiR-BOOT signature at the place where it is invoked.

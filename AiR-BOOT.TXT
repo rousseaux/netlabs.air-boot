@@ -1,7 +1,5 @@
-== CONCEPT ==
-
 ======================
-AiR-BOOT version 1.0.8                                                 nov 2011
+AiR-BOOT version 1.1.0                                                 apr 2013
 ======================
 
 With this version of AiR-BOOT, the display of the version number has changed
@@ -10,7 +8,27 @@ So all digits are now separated by a dot.
 This change is only visual and tools relying on the way AiR-BOOT stores it's
 version numer internally are not affected.
 
-The following has been fixed:
+During v1.0.8 it was decided that odd minor numbers will be
+test-versions. Since v1.0.8 was actually a test-version with several
+test-releases but with an even minor number, it was decided to bump the
+final release to v1.1.0.
+
+Thus, v1.1.1 will be the next test-version after the upcoming official
+v1.1.0 release. When such test-versions are published, for instance to
+get feedback, or solve a particular issue, the build-date and BLDLEVEL
+information will identify such a test-release. This information can be
+viewed by pressing the TAB-key while the Main Menu is displayed. Such
+test-releases will also have a slightly different visual appearance to
+distinguish them from official releases.
+
+Because all test-versions between official releases identify themselves
+with the same version number, upgrading from one test-release to another
+requires the /forcecode option on the Installer.
+
+
+The following summation of fixes.
+For more details see AIRBOOT.HIS in the BOOTCODE directory.
+
 
 
 - AiR-BOOT does not remember drive-letters (issue #2987)
@@ -26,38 +44,18 @@ The following has been fixed:
   to indicate which drive-letter to use. (issues #3067 and #3119)
   A SYSINSTX would solve such a problem, as did the dl-feature in AB v1.06.
 
-  With this 1.0.8 version, this feature has become almost obsolete.
-  If the information is missing from the HPFS partition, AB recreates it
-  from the LVM information related to that partition.
-  It only does that in memory, just before booting the system and thus does not
-  alter/fix the HPFS partition on disk. The user can do that by regenerating
-  the system using SYSINSTX.
+  With this 1.1.0 version, this feature has become almost obsolete, except
+  when installing multiple eComStation systems using the same drive-letter.
+  In that case, each such an installation needs to have it's drive forced
+  to the letter of it's boot-drive.
 
-  One case where the drive-letter feature can still be of value is when
-  restoring a pre-LVM system from archive to an HPFS partition.
+  This feature feature can still be of value is when restoring a pre-LVM
+  system from archive to an HPFS partition.
   In this case there will be no LVM information AiR-BOOT can use, so the
   user can use the dl-feature to force the proper boot-drive.
   After booting the pre-LVM system, it's advised to do a SYSINSTX to
   permanently fix the HPFS partition. After that, the dl-feature can be
   turned off since now the proper information is present.
-
-  Another situation might occur when the ordering of primary partitions
-  is changed. There are situations when partitioning an empty harddisk,
-  the LVM subsystem creates so called cross-linked entries.
-  This means that the first pointer in the partition table does not point to
-  the first partition on disk. This can happen when creating multiple
-  partitions in MiniLVM and saving them all at once.
-  Good practice is to create-save-create-save...
-
-  Having primary partitions cross-linked is normally not a problem,
-  but if the user corrects the ordering, i.e. with Linux fdisk (not advised!),
-  the relation between those primaries and their LVM information
-  get's mixed up. (The LVM-info is still in the old order)
-  In this case the AiR-BOOT drive-letter feature could be used to force
-  the correct drive-letter. The user should recreate the LVM-info with
-  MiniLVM by unssigning and reassigning the drive-letters for the primary
-  partitions to regenerate the LVM information. After this,
-  the partition should boot and the dl-feature can be turned off.
 
   * Please note that the dl-feature should be used with caution *
   Supplying incorrect information can cause system boot failure !
@@ -93,7 +91,7 @@ The following has been fixed:
   where a v1.x IBM-BM is used with a v2.x generated MBR, or vice-versa.
   (Not advised or supported anyway)
   Previous versions of AiR-BOOT used the v1.x location of the signature.
-  Starting with v1.0.8 the 'I13X' signature is at both places in the AB MBR.
+  Starting with v1.1.0 the 'I13X' signature is at both places in the AB MBR.
 
 
 
@@ -126,7 +124,7 @@ The following has been fixed:
 - Release date corrected
   ----------------------
   AB v1.07 internally had the release date of v1.06.
-  AB v1.0.8 has a correct internal release date.
+  AB v1.1.0 has a correct internal release date.
   This is a non-impact fix.
 
 
@@ -136,7 +134,7 @@ Note:
 -----
 The fixes above also involved the installer, AIRBOOT2.EXE and SET(A)BOOT.EXE
 of which new versions are provided.
-Therefore, you should not try to install v1.0.8 by using the v1.07 installer.
+Therefore, you should not try to install v1.1.0 by using the v1.07 installer.
 It will report a broken configuration while this is not the case.
 
 

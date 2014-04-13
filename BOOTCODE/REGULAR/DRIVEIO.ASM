@@ -67,11 +67,11 @@ DriveIO_SaveConfiguration   Proc Near   Uses ax bx cx dx ds es si
         ;mov     cx, (MBR_BackUpMBR - Configuration) / 200h
 
         ; AB v1.07 stores a 5 sector configuration with a 5 sector checksum.
-        ; AB v1.0.8 *should* stores a 7 sector configuration with a
+        ; AB v1.0.8+ *should* stores a 7 sector configuration with a
         ; 7 sector checksum.
-        ; Because 5 was hardcoded here, SET(A)BOOT v1.07 will see see an AB v1.0.8
+        ; Because 5 was hardcoded here, SET(A)BOOT v1.07 will see see an AB v1.0.8+
         ; config as corrupted, while this is not the case.
-        ; So, for compatibility reasons, in v1.0.8, the checksum stored is over
+        ; So, for compatibility reasons, in v1.0.8+, the checksum stored is over
         ; 5 sectors, to be compatible with v1.07.
         ; This may change (be corrected) in future versions !
         mov     cx,5
@@ -1005,7 +1005,7 @@ DriveIO_SaveSector              Proc Near  Uses ax bx cx dx ds si es di
         test    byte ptr cs:[CurIO_UseExtension], 1
         jz      DIOSS_UseNormal
         ; Are we forced do use LBA via Setting?
-        ; Always use INT13X on v1.0.8.
+        ; Always use INT13X on v1.0.8+.
         ;~ test    byte ptr cs:[CFG_ForceLBAUsage], 1
         ;~ jnz     DIOSS_UseExtension
         jmp     DIOSS_UseExtension

@@ -696,7 +696,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
 
 
     ; This code is used for BR and LVM checking
-    ; Rousseau: Because AiR-BOOT v1.0.8 uses the LVM_VolumeName, which is copied
+    ; Rousseau: Because AiR-BOOT v1.0.8+ uses the LVM_VolumeName, which is copied
     ; to the IPT, this compare fails when the LVM_PartitionName is not
     ; the same as the LVM_VolumeName. In that case, only the LVM_VolumeName
     ; is updated. If they are the same, both are upated so they are the same

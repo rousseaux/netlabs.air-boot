@@ -52,12 +52,12 @@ Copyright:
             db ' AiR-BOOT v'
             db BLDLVL_MAJOR_VERSION,'.'
             db BLDLVL_MIDDLE_VERSION,'.'
-            db BLDLVL_MINOR_VERSION,' - (c) '
+            db BLDLVL_MINOR_VERSION,' - (c) 1998-'
             db BLDLVL_YEAR
-            ;~ db ' M. Kiewitz  <<Internal Release 3o>> (bld: '
-            ;~ db ' M. Kiewitz  <<@ Interim Release @>> (bld: '
-            ;~ db ' M. Kiewitz  <<Release Candidate 2>> (bld: '
-            db ' M. Kiewitz  <<Release Candidate 4>> (bld: '
+            ;~ db ' Martin Kiewitz, Dedicated to Gerd Kiewitz'
+            db ' M. Kiewitz  <<  v1.1.0-pre  >> (bld: '
+            ;~ db ' M. Kiewitz  << Test Version >> (bld: '
+            ;~ db ' Rousseau    << Test Version >> (bld:'
             db BLDLVL_YEAR
             db BLDLVL_MONTH
             db BLDLVL_DAY,')'

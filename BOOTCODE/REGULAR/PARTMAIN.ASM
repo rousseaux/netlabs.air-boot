@@ -1225,7 +1225,7 @@ ENDIF
 
 
     ;
-    ; Always use INT13X v1.0.8.
+    ; Always use INT13X v1.0.8+.
     ;
     ;~ test    byte ptr [CFG_ForceLBAUsage], 1
     ;~ jnz     PSP_ForceI13X

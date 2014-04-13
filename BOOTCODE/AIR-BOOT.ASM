@@ -1802,6 +1802,9 @@ Configuration:
                 ; The core configuration has not changed but the generated
                 ; configuration has. The v1.0.8 installer handles upgrading.
                 ;
+                ; It has been decided that uneven minor numbers will be
+                ; test-versions. Therefore v1.0.8 has been bumbed to v1.1.0.
+                ; 
                 ; It is not required for the config to have the
                 ; same version as the code, so in the future
                 ; the code version might be higher than the

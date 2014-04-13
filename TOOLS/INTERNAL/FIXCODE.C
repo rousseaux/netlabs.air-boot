@@ -189,7 +189,7 @@ int     main(int argc, char* argv[]) {
 
     /*
     // Count Code Sectors.
-    // Obsolete now because since v1.0.8 the Protection Image has moved just
+    // Obsolete now because since v1.0.8+ the Protection Image has moved just
     // below the Configuration and the code is always max. size.
     // Overlap checking is done while assembling AIR-BOOT.ASM.
     // So we just write the max. code sectors here.
