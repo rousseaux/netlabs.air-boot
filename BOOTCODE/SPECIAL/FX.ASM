@@ -19,7 +19,7 @@
 ;                                                            AiR-BOOT / F/X
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'FX',0
 ENDIF
 

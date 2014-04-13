@@ -62,9 +62,9 @@ TARGET=$(MODULE).COM
 #
 #ASM=masm
 #ASM=alp
-ASM=tasm
+#ASM=tasm
 #ASM=wasm
-#ASM=jwasm
+ASM=jwasm
 
 #
 # There are no masm or alp for Linux and the yasm tasm-mode is incompatible.

@@ -20,7 +20,7 @@
 ;---------------------------------------------------------------------------
 
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'PARTSCAN',0
 ENDIF
 
@@ -47,19 +47,19 @@ PARTSCAN_ScanForPartitions      Proc Near
         jnz     PSSFP_HarddiscLoop
         mov     byte ptr [CurIO_Scanning], 0             ; Reset flag due scanning complete
 
-IFDEF   AUX_DEBUG
+    IFDEF   AUX_DEBUG
         ;~ pusha
         ;~ call    DEBUG_DumpHidePartTables
         ;~ popa
-ENDIF
+    ENDIF
         ; Use X-Reference to sync NewPartitionTable with Hide-Config
         call    PARTSCAN_SyncHideConfigWithXref
 
-IFDEF   AUX_DEBUG
+    IFDEF   AUX_DEBUG
         ;~ pusha
         ;~ call    DEBUG_DumpHidePartTables
         ;~ popa
-ENDIF
+    ENDIF
 
         ; Now we copy the new IPT over the old one...
         mov     si, offset NewPartTable
@@ -127,6 +127,78 @@ ENDIF
     PSSFP_NoAutoDriveLetter:
         ret
 PARTSCAN_ScanForPartitions      EndP
+
+
+
+;
+; This function reconnects a forced drive-letter with it's partition
+; when partitions are removed.
+;
+PARTSCAN_UpdateDriveLetters     Proc
+        pusha
+        xor     bx,bx           ; index-pointer
+        xor     cx,cx           ; counter
+        xor     dx,dx           ; backup index-pointer
+        mov     cl,LocIPT_MaxPartitions     ; nr of entries to process
+        mov     si,offset [PartitionXref]   ; old-new relation table
+        mov     di,offset [DriveLetters]    ; forced drive-letters table
+
+        ;
+        ; Loop over each entry in the xref-table to see if the partition
+        ; has been removed or has been given a new index in the IPT.
+        ; A removed partition has 0ffh in it's slot and for a partition
+        ; that has a new index in the IPT the value at the slot is different
+        ; from the index of the slot in the xref-table.
+        ;
+    PARTSCAN_UpdateDriveLetters_next_entry:
+        jcxz    PARTSCAN_UpdateDriveLetters_done
+        dec     cl              ; decrement counter
+        mov     al,[si+bx]      ; get possibly old index for this entry
+        mov     dl,bl           ; save current index
+        inc     bl              ; advance index-pointer
+        inc     al              ; 0ffh will become 0, part removed so continue
+        jz      PARTSCAN_UpdateDriveLetters_next_entry
+
+        ;
+        ; If value in slot is the same as the index of the slot then
+        ; the partition has not moved in the IPT.
+        ;
+        dec     al              ; restore possibly out-of-date index
+        cmp     al,dl           ; same as array index? then ok, do next
+        je      PARTSCAN_UpdateDriveLetters_next_entry
+
+;!
+;! DEBUG_PROBE
+;!
+IFDEF   AUX_DEBUG
+    push    1234h
+    call    DEBUG_Probe
+ENDIF
+
+        ;
+        ; The partition has moved in the IPT so we lookup it's forced
+        ; drive-letter at the old location and put it at the new one.
+        ; The old location is identified by the index in the xref-table
+        ; and the new location is identified by the value at that index.
+        ; Thus, when no partitions have been deleted or added, the xref-table
+        ; contains the sequence 0,1,2,3,...,n,0ffh,0ffh, etc.
+        ; The value 0ffh means that no partition is using the slot.
+        ;
+        xor     ah,ah           ; no drive-letter
+        dec     bl              ; backup index-pointer one position
+        xchg    ah,[di+bx]      ; get drive-letter and store zero
+        xchg    bl,al           ; use slot value as new index
+        mov     [di+bx],ah      ; store drive-letter
+        xchg    al,bl           ; restore index-pointer
+        inc     bl              ; point to next entry
+        jmp     PARTSCAN_UpdateDriveLetters_next_entry
+    PARTSCAN_UpdateDriveLetters_done:
+        popa
+        ret
+PARTSCAN_UpdateDriveLetters     EndP
+
+
+
 
 ; Scannt die Festplatte auf jegliche Partitionstabellen...
 ; Falls eine fehlerhafte Partition gefunden wird, wird abgebrochen.
@@ -269,8 +341,10 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
         add     ax, wptr [CurPartition_Location+0] ; +Partition-Absolute
         adc     bx, wptr [CurPartition_Location+2] ;  sectors
 
+
+
         ; Sets up DS:SI - TmpSector
-        call    DriveIO_LoadTmpSector         ; Loads Boot record                     ; Rousseau: LOAD PARTITION BOOT RECORD !!
+        call    DriveIO_LoadTmpSector         ; Loads Boot record
 
 
 

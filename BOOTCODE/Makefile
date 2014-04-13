@@ -394,12 +394,12 @@ Makefile.bu:	Makefile
 # even though the definition is in uppercase.
 # This gives problems when building in an OS/2 DOS-Box on a (samba) network
 # share with a case-sensitive file-system where also a Linux build-environment
-# is active. The Linux build-environment is will not find the lowercase files.
+# is active. The Linux build-environment will not find the lowercase files.
 # For example, a clean from Linux will not work properly in that case.
 # This does not influence building DOS targets on Linux.
 # It can be circumvented by using a case-insensitive file-system for the
 # network share, like OS/2 JFS for instance.
-# Linux can use OS/2 JFS and will recognize it's case insensitivity.
+# Linux can use OS/2 JFS and will honor it's case insensitivity.
 # Or you could loop-mount the samba share either with the usual cifs tools
 # or fuse-smb.
 #
@@ -512,9 +512,9 @@ $(BASENAME).OBJ:	.MULTIPLE $(BASENAME).ASM
 	@echo $^.:	[16-bits OMF Object File]
 	$(ASM) $(ASM_FLAGS) $(BASENAME).ASM
 !ifndef	__MSDOS__
-	@wdis -a -p -fi $^. > $^&.WDA
-!endif
 	@wdis -fi $^. > $^..WDA
+!endif
+	@wdis -a -p -fi $^. > $^&.WDA
 
 
 
@@ -543,6 +543,11 @@ dev:	.SYMBOLIC
 !ifdef	__OS2__
 	@echo.
 	@bldlevel $(TARGET)
+!endif
+!ifdef	__LINUX__
+	@echo.
+	@if exist AIR-BOOT.LST @grep ^zzz_code_space AIR-BOOT.LST
+	@echo.
 !endif
 
 # -----------------------------------------------------------------------------

@@ -19,7 +19,7 @@
 ;                                          AiR-BOOT SETUP / PARTITION SETUP
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'PART_SET',0
 ENDIF
 
@@ -40,6 +40,11 @@ PARTSETUP_Main                  Proc Near
          mov     ah, 0
          int     16h
       pop     dx
+
+        ;
+        ; INSERT DEBUG KEYHANDLER HERE ?
+        ;
+
       cmp     ah, Keys_Up
       je      PSM_KeyUp
       cmp     ah, Keys_Down
@@ -142,7 +147,7 @@ PARTSETUP_Main                  Proc Near
    xor     al, Flags_VIBR_Detection
    mov     [si+LocIPT_Flags], al
    xor     ax, ax
-   mov     wptr [si+LocIPT_BootRecordCRC], ax
+   mov     word ptr [si+LocIPT_BootRecordCRC], ax
    call    PARTSETUP_DrawPartitionInfo
    call    PARTSETUP_BuildChoiceBar
    jmp     PSM_MainLoop

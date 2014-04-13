@@ -19,7 +19,7 @@
 ;                                                 AiR-BOOT / FAT-16 SUPPORT
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'FAT16',0
 ENDIF
 

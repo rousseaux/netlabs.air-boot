@@ -1,4 +1,26 @@
 ;
+; AiR-BOOT (c) Copyright 1998-2008 M. Kiewitz
+;
+; This file is part of AiR-BOOT
+;
+; AiR-BOOT is free software: you can redistribute it and/or modify it under
+;  the terms of the GNU General Public License as published by the Free
+;  Software Foundation, either version 3 of the License, or (at your option)
+;  any later version.
+;
+; AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+;  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+;  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+;  details.
+;
+; You should have received a copy of the GNU General Public License along with
+;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+;
+
+
+
+
+;
 ; OS/2 BLDLEVEL Information.
 ;
 
@@ -31,7 +53,7 @@ BLDLVL_DAY              EQU     (AB_DAY SHR 4)+'0',(AB_DAY AND 0Fh)+'0'
 BLDLVL_HOURS            EQU     (AB_HOURS SHR 4)+'0',(AB_HOURS AND 0Fh)+'0'
 BLDLVL_MINUTES          EQU     (AB_MINUTES SHR 4)+'0',(AB_MINUTES AND 0Fh)+'0'
 BLDLVL_SECONDS          EQU     (AB_SECONDS SHR 4)+'0',(AB_SECONDS AND 0Fh)+'0'
-; Build machine
+; Build machine (16 chars max ?)
 ;BLDLVL_MACHINE          EQU     'ecs-devbox'
 BLDLVL_MACHINE          EQU     '*UNKNOWN*'
 ; Build language
@@ -74,8 +96,8 @@ BLDLVL_DESCRIPTION      EQU     'AiR-BOOT Boot Manager'
 ;~ bld_level_date_end    db  '      '
     ;~ db  BLDLVL_MACHINE
     ;~ db  '::'
-    ;~ ; Wasm can only process the reference to 'lang' in pass 2 because it comes
-    ;~ ; from an included file which it has not processed yet at pass 1.
+    ;~ ; Wasm can only process the reference to 'lang' in pass 2 because it
+    ;~ ;comes from an included file which it has not processed yet at pass 1.
     ;~ IFDEF   WASM
         ;~ IF2
             ;~ db  BLDLVL_LANGUAGE

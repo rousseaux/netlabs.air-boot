@@ -43,7 +43,7 @@
 ; Oh, why is this code here? Because of 2 friends of mine. Otherwise I wouldnt
 ;  have done it as well as fat16.asm.
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'LINUX',0
 ENDIF
 

@@ -21,7 +21,9 @@
 
 
 #define     IMAGE_SIZE      31744
-#define     MBRPROT_SIZE    1024
+//~ #define     MBRPROT_SIZE    1024
+#define     MBRPROT_SIZE    768
 #define     SECSIZE         512
+#define     PAGESIZE        256
 
 #endif

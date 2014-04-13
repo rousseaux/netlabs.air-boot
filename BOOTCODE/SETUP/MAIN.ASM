@@ -19,7 +19,7 @@
 ;                         AiR-BOOT SETUP / GENERIC & GENERAL SETUP ROUTINES
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'MAIN',0
 ENDIF
 
@@ -70,8 +70,6 @@ SETUP_SwitchToSelectedItem      EndP
 
 SETUP_CheckEnterSETUP           Proc Near
 
-
-
    ; Rousseau: added
    ;mov     SETUP_ExitEvent, 0
    ;xor     al, al                        ; -PARTITION SETUP PreDefines-
@@ -107,7 +105,10 @@ SETUP_Main                      Proc Near   Uses si es bp
    ; Setup PartitionPointers-Table...again (needed when re-entering setup)
    call    PART_CalculateStraightPartPointers
 
-   call    FX_StartScreen                 ; Start of new screen...
+    IFDEF   FX_ENABLED
+        call    FX_StartScreen                 ; Start of new screen...
+    ENDIF
+
    call    SETUP_DrawMenuBase
    mov     bp, offset SETUP_MainMenu
    call    SETUP_MenuTask                 ; calls Menu!
@@ -130,7 +131,11 @@ SETUP_MenuTask                  Proc Near   ; the main-menu routine
    mov     ax, ds:[bp+1]   ; Help Pointer
    cmp     ax, offset TXT_SETUPHELP_Main ; ask only in main-menu...
    jne     SMT_NotMainMenu
-   call    FX_EndScreenLeft              ; Do FX, if requested...
+
+    IFDEF   FX_ENABLED
+        call    FX_EndScreenLeft              ; Do FX, if requested...
+    ENDIF
+
    test    byte ptr [CFG_PasswordSetup], 1
    jz      SMT_NotMainMenu
    mov     ax, 0ABABh
@@ -146,6 +151,19 @@ SETUP_MenuTask                  Proc Near   ; the main-menu routine
          mov     ah, 0
          int     16h
       pop     dx
+
+;!
+;! DEBUG_PROBE
+;!
+IFDEF   AUX_DEBUGx
+    push    1234h
+    call    DEBUG_Probe
+    call    DEBUG_DumpIPT
+    call    DEBUG_DumpRegisters
+ENDIF
+
+
+
       cmp     ah, Keys_Up
       je      SMT_KeyUp
       cmp     ah, Keys_Down
@@ -279,10 +297,27 @@ SETUP_MenuTask                  Proc Near   ; the main-menu routine
    jmp     SMT_KeyBored
 
   SMT_SaveAndExitNOW:                    ; Direct HackIn
+
+;!
+;! DEBUG_PROBE
+;!
+IFDEF   AUX_DEBUGx
+    push    1235h
+    call    DEBUG_Probe
+ENDIF
+
    mov     ax, offset SETUP_EnterMenu_SaveAndExitSetup
    jmp     SMT_DirectExecute
 
   SMT_ExitWithoutSaving:                 ; Direct HackIn
+;!
+;! DEBUG_PROBE
+;!
+IFDEF   AUX_DEBUGx
+    push    1236h
+    call    DEBUG_Probe
+ENDIF
+
    mov     ax, offset SETUP_EnterMenu_ExitWithoutSaving
    jmp     SMT_DirectExecute
 SETUP_MenuTask                  EndP
@@ -388,7 +423,7 @@ SETUP_DrawItemOnScreen          Proc Near   Uses ax cx dx si es
    jz      SDIOS_Name_NoItemName
    call    VideoIO_Print                 ; ...and print it.
   SDIOS_Name_NoItemName:
-   mov     wptr TextColorFore, dx
+   mov     word ptr [TextColorFore], dx
    ret
 
    ; ------------------------------------------------------ Draw ITEMPACK
@@ -585,7 +620,7 @@ SETUP_DrawMenuBase              Proc Near
    mov     cx, 0700h
    call    VideoIO_Color
    call    VideoIO_Print                 ; white - 'contact via e-mail'...
-   mov     cx, 0800h
+   mov     cx, 0700h
    call    VideoIO_Color
    call    VideoIO_Print                 ; and finally the e-mail adress
    ret
@@ -1150,6 +1185,17 @@ SETUP_Warning_AreYouSure        EndP
 
 SETUPMAGIC_InternalCopyTillNUL  Proc Near Uses ax cx
   SMICTN_Loop:
+
+    ;!
+    ;! DEBUG_PROBE
+    ;!
+    IFDEF   AUX_DEBUGx
+        push    1239h
+        call    DEBUG_Probe
+        call    DEBUG_DumpRegisters
+        call    DEBUG_DumpIPT
+    ENDIF
+
       lodsb
       stosb
       inc     cl
@@ -1172,6 +1218,15 @@ SETUPMAGIC_InternalCopyTillNUL  EndP
 
 ; Cur Value in DL, Maximum Value in DH. Add/Sub in CL
 SETUPMAGIC_InternalCheckUp      Proc Near
+;!
+;! DEBUG_PROBE
+;!
+IFDEF   AUX_DEBUGx
+    push    1238h
+    call    DEBUG_Probe
+    call    DEBUG_DumpRegisters
+ENDIF
+
    or      cl, cl                        ; CL==0?    -> Decrease
    jz      SMICU_Substract               ; otherwise -> Increase
    inc     dl
@@ -1578,6 +1633,15 @@ SETUPMAGIC_ChangeFloppyDisplay  Proc Near   Uses cx dx si es di
 SETUPMAGIC_ChangeFloppyDisplay  EndP
 
 SETUPMAGIC_ChangeBIOSbootSeq    Proc Near   Uses ax bx cx dx si di
+;!
+;! DEBUG_PROBE
+;!
+IFDEF   AUX_DEBUGx
+    push    1237h
+    call    DEBUG_Probe
+    call    DEBUG_DumpRegisters
+ENDIF
+
    mov     di, si
    mov     dl, ds:[bx]                   ; Cur Timed-Key-Handling
    jc      SMCBBS_DoNotModify
@@ -1601,7 +1665,7 @@ SETUPMAGIC_ChangeBIOSbootSeq    Proc Near   Uses ax bx cx dx si di
    mov   bh,0
 
    shl     bx, 1
-   mov     si, wptr [ContinueBIOSbootTable+bx]
+   mov     si, word ptr [ContinueBIOSbootTable+bx]
   SMCBBS_CopyThiz:
    add     di, LocMENU_ItemPack          ; DI points to ItemPack...
    push    cs

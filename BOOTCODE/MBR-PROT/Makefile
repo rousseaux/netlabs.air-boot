@@ -53,7 +53,7 @@ MODULE=$(BASENAME)
 
 #
 # This is a list of the Targets to be built.
-# For MBR_PROT there is only one real target: MBR_PROT.BIN.
+# For MBR_PROT there is only one real target: MBR-PROT.BIN.
 #
 TARGET=$(MODULE).BIN
 
@@ -62,9 +62,9 @@ TARGET=$(MODULE).BIN
 #
 #ASM=masm
 #ASM=alp
-ASM=tasm
+#ASM=tasm
 #ASM=wasm
-#ASM=jwasm
+ASM=jwasm
 
 #
 # There are no masm or alp for Linux and the yasm tasm-mode is incompatible.

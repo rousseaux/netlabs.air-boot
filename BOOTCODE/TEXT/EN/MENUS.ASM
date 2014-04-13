@@ -52,6 +52,7 @@ TXT_SETUP_BootLastIfTimed      db 'Boot From Last If Timed', 0
 TXT_SETUP_RememberLastBoot     db 'Remember Last Boot', 0
 TXT_SETUP_RememberTimedBoot    db 'Remember Timed Boot', 0
 TXT_SETUP_IncludeFloppy        db 'Include Floppy Drive', 0
+TXT_SETUP_ShowLVMDriveLetters  db 'Show LVM Drive Letters',0
 TXT_SETUP_MbrProtection        db 'MBR Protection', 0
 TXT_SETUP_IgnoreMbrWrites      db '-> Ignore MBR Writes', 0
 TXT_SETUP_MakeSounds           db 'Make Sounds', 0
@@ -81,7 +82,7 @@ TXT_SETUP_ContinueBIOSboot     db 'Continue BIOS Boot Seq', 0
 ; This here may be larger than 23 chars...
 ;TXT_SETUP_DefLinuxCmd          db 'DEFINE COMMAND LINE FOR LINUX', 0
 TXT_SETUP_IgnoreLVM            db 'Ignore LVM information', 0
-TXT_SETUP_ForceLBAUsage        db 'Force BIOS-LBA Usage', 0
+;~ TXT_SETUP_ForceLBAUsage        db 'Force BIOS-LBA Usage', 0
 TXT_SETUP_ExtPartMShack        db 'Ext-Part MS Workaround', 0
 
 ; DYNAMIC LENGTH, maximum 11 chars excluding ending zero
@@ -211,6 +212,10 @@ TXT_SETUPHELP_IncludeFloppy    db 'AiR-BOOT will allow', 0
                                db 'booting from A: via', 0
                                db 'menu.', 0
                                db 0
+TXT_SETUPHELP_ShowLVMDriveLetters   db 'AiR-BOOT will show', 0
+                                    db 'LVM Drive Letters', 0
+                                    db 'in the menu.', 0
+                                    db 0
 TXT_SETUPHELP_MbrProtection    db 'Protects your MBR via', 0
                                db 'resident code. Needs', 0
                                db '1 KByte of base-memory', 0
@@ -300,11 +305,11 @@ TXT_SETUPHELP_IgnoreLVM        db 'If activated, AiR-BOOT', 0
                                db 'won''t even look for', 0
                                db 'LVM information.', 0
                                db 0
-TXT_SETUPHELP_ForceLBAUsage    db 'Forces the usage of', 0
-                               db 'BIOS LBA APIs instead', 0
-                               db 'of mixed usage of CHS', 0
-                               db 'and LBA.', 0
-                               db 0
+;~ TXT_SETUPHELP_ForceLBAUsage    db 'Forces the usage of', 0
+                               ;~ db 'BIOS LBA APIs instead', 0
+                               ;~ db 'of mixed usage of CHS', 0
+                               ;~ db 'and LBA.', 0
+                               ;~ db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Enables dynamic change', 0
                                db 'of the ext. partition', 0
                                db 'type id to standard or', 0

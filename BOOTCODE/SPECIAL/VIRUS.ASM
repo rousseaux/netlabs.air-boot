@@ -23,7 +23,7 @@
 ; system will get halted. On Non-Real-Mode this will only save Interrupt Vectors.
 ; Segment Registers preserved
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'VIRUS',0
 ENDIF
 

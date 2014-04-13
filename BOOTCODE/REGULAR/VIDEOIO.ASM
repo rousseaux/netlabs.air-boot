@@ -19,7 +19,7 @@
 ;                                                      AiR-BOOT / VIDEO I/O
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'VIDEOIO',0
 ENDIF
 
@@ -125,7 +125,7 @@ VideoIO_Internal_SetRegs        EndP
 
 ;        In: SI - String to Print (EOS is 0)
 ; Destroyed: SI
-VideoIO_Print                   Proc Near   Uses es di
+VideoIO_Print                   Proc Near   Uses ax es di
    call    VideoIO_Internal_SetRegs
      VIOP_Loop:
       lodsb
@@ -170,7 +170,7 @@ VideoIO_FixedPrint              Proc Near   Uses es di
       mov     es:[di], al
       mov     es:[di+1], ah
       add     di, 2
-      inc     TextPosX
+      inc     [TextPosX]
   dec      cl
   jnz      VIOFP_Loop
  VIOFP_NoString:
@@ -671,36 +671,37 @@ VideoIO_PrintBuildInfo  Proc    Near    Uses ax cx si di
         rep     stosb
 
         ; Copy assembler specification.
-IFDEF       JWASM
+    IFDEF       JWASM
         mov     al,'['
         stosb
         mov     si,offset jwasm_txt
-ELSEIFDEF   TASM
+    ELSEIFDEF   TASM
         mov     al,' '
         stosb
         mov     al,'['
         stosb
         mov     si,offset tasm_txt
 
-ELSEIFDEF   WASM
+    ELSEIFDEF   WASM
         mov     al,' '
         stosb
         mov     al,'['
         stosb
         mov     si,offset wasm_txt
-ELSEIFDEF   MASM
+    ELSEIFDEF   MASM
         mov     al,' '
         stosb
         mov     al,'['
         stosb
         mov     si,offset masm_txt
-ELSE
+    ELSE
         mov     al,' '
         stosb
         mov     al,'['
         stosb
         mov     si,offset unknown_txt
-ENDIF
+    ENDIF
+
     VideoIO_PrintBuildInfo_a1:
         lodsb
         test    al,al
@@ -757,150 +758,178 @@ VideoIO_PrintBuildInfo  EndP
 ; Disk number is in DL.
 VideoIO_DumpDiskInfo    Proc Near uses ax bx cx dx
 
-   VideoIO_DumpDiskInfo_next_disk:
-      push     dx
-      xor      ax,ax
-      mov      al,[TextPosY]
-      push     ax
+    VideoIO_DumpDiskInfo_next_disk:
+        push    dx
+        xor     ax,ax
+        mov     al,[TextPosY]
+        push    ax
 
-      mov      ax,21
-      mov      dh,dl
-      and      dh,01111111b
-      mul      dh
-      mov      dh,al
+        mov     ax,21
+        mov     dh,dl
+        and     dh,01111111b
+        mul     dh
+        mov     dh,al
 
-      mov      [TextPosX],dh
+        mov     [TextPosX],dh
 
-      mov   si, offset Disk
-      call  VideoIO_Print
-      mov   al,dl
+        mov     si, offset [Disk]
+        call    VideoIO_Print
+        mov     al,dl
 
-      ; NIET GOED, GAAT FOUT > 9, HEX PRINT GEBRUIKEN !!
-      shr      al,4
-      add      al,'0'
-      call     VideoIO_PrintSingleChar
-      mov      al,dl
-      and      al,01111111b
-      add      al,'0'
-      call     VideoIO_PrintSingleChar
-      mov      al,'h'
-      call     VideoIO_PrintSingleChar
+        ; NIET GOED, GAAT FOUT > 9, HEX PRINT GEBRUIKEN !!
+        shr     al,4
+        add     al,'0'
+        call    VideoIO_PrintSingleChar
+        mov     al,dl
+        and     al,01111111b
+        add     al,'0'
+        call    VideoIO_PrintSingleChar
+        mov     al,'h'
+        call    VideoIO_PrintSingleChar
 
-      inc      [TextPosY]
-      mov      [TextPosX],dh
+        inc     [TextPosY]
+        mov     [TextPosX],dh
 
-      mov      al,'-'
-      mov      cl,17
-      call     VideoIO_PrintSingleMultiChar
+        mov     al,'-'
+        mov     cl,17
+        call    VideoIO_PrintSingleMultiChar
 
-;      inc      [TextPosY]
-;      mov      [TextPosX],dh
-;      mov      si, offset BiosCyls
-;      call     VideoIO_Print
+        ;~ inc     [TextPosY]
+        ;~ mov     [TextPosX],dh
+        ;~ mov     si, offset BiosCyls
+        ;~ call    VideoIO_Print
 
-;      push     dx
-;      mov      bx,offset BIOS_Cyls
-;      xor      dh,dh
-;      and      dl,01111111b
-;      shl      dx,1
-;      shl      dx,1
-;      add      bx,dx
-;      mov      ax,[bx]
-;      mov      dx,[bx+02]
-;      call     VideoIO_PrintHexDWord
-;      pop      dx
+        ;~ push    dx
+        ;~ mov     bx,offset BIOS_Cyls
+        ;~ xor     dh,dh
+        ;~ and     dl,01111111b
+        ;~ shl     dx,1
+        ;~ shl     dx,1
+        ;~ add     bx,dx
+        ;~ mov     ax,[bx]
+        ;~ mov     dx,[bx+02]
+        ;~ call    VideoIO_PrintHexDWord
+        ;~ pop     dx
 
-      inc      [TextPosY]
-      mov      [TextPosX],dh
-      mov      si, offset BiosHeads
-      call     VideoIO_Print
+        inc     [TextPosY]
+        mov     [TextPosX],dh
+        mov     si, offset BiosHeads
+        call    VideoIO_Print
 
-      push     dx
-      mov      bx,offset BIOS_Heads
-      xor      dh,dh
-      and      dl,01111111b
-      shl      dx,1
-      shl      dx,1
-      add      bx,dx
-      mov      ax,[bx]
-      mov      dx,[bx+02]
-      call     VideoIO_PrintHexDWord
-      pop      dx
+        push    dx
+        mov     bx,offset BIOS_Heads
+        xor     dh,dh
+        and     dl,01111111b
+        shl     dx,1
+        shl     dx,1
+        add     bx,dx
+        mov     ax,[bx]
+        mov     dx,[bx+02]
+        call    VideoIO_PrintHexDWord
+        pop     dx
 
-      inc      [TextPosY]
-      mov      [TextPosX],dh
-      mov      si, offset BiosSecs
-      call     VideoIO_Print
+        inc     [TextPosY]
+        mov     [TextPosX],dh
+        mov     si, offset BiosSecs
+        call    VideoIO_Print
 
-      push     dx
-      mov      bx,offset BIOS_Secs
-      xor      dh,dh
-      and      dl,01111111b
-      shl      dx,1
-      shl      dx,1
-      add      bx,dx
-      mov      ax,[bx]
-      mov      dx,[bx+02]
-      call     VideoIO_PrintHexDWord
-      pop      dx
+        push    dx
+        mov     bx,offset BIOS_Secs
+        xor     dh,dh
+        and     dl,01111111b
+        shl     dx,1
+        shl     dx,1
+        add     bx,dx
+        mov     ax,[bx]
+        mov     dx,[bx+02]
+        call    VideoIO_PrintHexDWord
+        pop     dx
 
-      inc      [TextPosY]
-      mov      [TextPosX],dh
-      mov      si, offset LvmSecs
-      call     VideoIO_Print
+        inc     [TextPosY]
+        mov     [TextPosX],dh
+        mov     si, offset LvmSecs
+        call    VideoIO_Print
 
-      push     dx
-      ; Offset of array containing LVM SPT values for each disk found
-      mov      bx,offset TrueSecs
-      ; DX to index
-      xor      dh,dh
-      and      dl,01111111b
-      shl      dx,1
-      shl      dx,1
-      add      bx,dx
-      ; Get LVM SPT
-      mov      ax,[bx]
-      mov      dx,[bx+02]
-      call     VideoIO_PrintHexDWord
-      pop      dx
+        push    dx
+        ; Offset of array containing LVM SPT values for each disk found
+        mov     bx,offset TrueSecs
+        ; DX to index
+        xor     dh,dh
+        and     dl,01111111b
+        shl     dx,1
+        shl     dx,1
+        add     bx,dx
+        ; Get LVM SPT
+        mov     ax,[bx]
+        mov     dx,[bx+02]
+        call    VideoIO_PrintHexDWord
+        pop     dx
 
-      inc      [TextPosY]
-      mov      [TextPosX],dh
-      mov      si, offset BiosLBA
-      call     VideoIO_Print
+        inc     [TextPosY]
+        mov     [TextPosX],dh
+        mov     si, offset BiosLBA
+        call    VideoIO_Print
 
-      push     dx
-      mov      bx,offset BIOS_TotalSecs
-      xor      dh,dh
-      and      dl,01111111b
-      shl      dx,1
-      shl      dx,1
-      shl      dx,1
-      add      bx,dx
-      mov      ax,[bx]
-      mov      dx,[bx+02]
-      call     VideoIO_PrintHexDWord
-      pop      dx
+        push    dx
+        mov     bx,offset BIOS_TotalSecs
+        xor     dh,dh
+        and     dl,01111111b
+        shl     dx,1
+        shl     dx,1
+        shl     dx,1
+        add     bx,dx
+        mov     ax,[bx]
+        mov     dx,[bx+02]
+        call    VideoIO_PrintHexDWord
+        pop     dx
 
-      inc      [TextPosY]
-      mov      [TextPosX],dh
+        inc     [TextPosY]
+        mov     [TextPosX],dh
 
-      pop      ax
-      mov      [TextPosY],al
-      pop      dx
+        pop     ax
+        mov     [TextPosY],al
+        pop     dx
 
-      inc      dl
-      mov      al,dl
-      and      al,01111111b
-      cmp      al,[TotalHarddiscs]
-      jae      VideoIO_DumpDiskInfo_end
-      jmp      VideoIO_DumpDiskInfo_next_disk
+        inc     dl
+        mov     al,dl
+        and     al,01111111b
+        cmp     al,[TotalHarddiscs]
+        jae     VideoIO_DumpDiskInfo_end
+        jmp     VideoIO_DumpDiskInfo_next_disk
 
-   VideoIO_DumpDiskInfo_end:
-      mov      [TextPosX],0
-      add      [TextPosY],6
-      ret
+    VideoIO_DumpDiskInfo_end:
+        mov     [TextPosX],0
+        add     [TextPosY],6
+        ret
 VideoIO_DumpDiskInfo    EndP
+
+
+;
+; Set position to teletype cursor
+;
+VideoIO_ShowWaitDots    Proc
+        pusha
+        ; Color white on black
+        mov     ch,7
+        mov     cl,0
+        call    VideoIO_Color
+        ; Locate cursor for output of debug-info
+        mov     ch,8
+        mov     cl,1
+        call    VideoIO_Locate
+
+        ; Print dots with interval.
+        mov     cx,10
+    VideoIO_ShowWaitDots_next_dot:
+        mov     al,'.'
+        call    VideoIO_PrintSingleChar
+        ; Value 30 is about 1.5 seconds
+        mov     al,1
+        call    TIMER_WaitTicCount
+        loop    VideoIO_ShowWaitDots_next_dot
+        popa
+        ret
+VideoIO_ShowWaitDots    EndP
 
 
 
@@ -926,10 +955,10 @@ ShowMenu          db "Press TAB to return to the AiR-BOOT Menu",0
 
 Yes               db "YES",0
 No                db "NO",0
-On                db "ON",0
-Off               db "OFF",0
-None              db "NONE",0
-Active            db "ACTIVE",0
+;~ On                db "ON",0
+;~ Off               db "OFF",0
+;~ None              db "NONE",0
+;~ Active            db "ACTIVE",0
 NotActive         db "NOT ACTIVE",0
 
 ; New Line for use by MBR_Teletype

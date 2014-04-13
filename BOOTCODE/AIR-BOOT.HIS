@@ -20,18 +20,99 @@
 
 
 
-; ---------------------------------
-; Rousseau: Fixes and Enhancements
-; ---------------------------------
+; ------------------------------------------------
+; Rousseau: Fixes, Enhancements and fresh bugs :-)
+; ------------------------------------------------
 ;
-; v1.0.8-rc3-bld201205nn
+; v1.0.8-rc3-bld20120909
 ; ----------------------
+; # Added Show LVM Drive Letters in SETUP/BASIC #
+;   This will toggle the display of LVM drive-letters in the main menu.
+;   By default this option is enabled.
+;
+; # Reduced MBR Protection Image from 1024 bytes to 768 bytes #
+;   The fight for code-space continues...
+;   Luckily the MBR Protection Image code does not exceed 768 bytes,
+;   so that gives us another 256 bytes of precious code-space.
+;   Now the non-EN versions are happy again.
+;   Note that the alignment for the image changed from 512 to 256 bytes.
+;   MBR-PROT.ASM, FIXCODE.C, PARTMAIN.ASM and AIR-BOOT.ASM have been
+;   adjusted for this change.
+;
+; # Updating from v1.06 now also copies over drive-letters #
+;   When the user has forced drive-letters in v1.06 these will be copied over
+;   to the v1.0.8 configuration when upgrading.
+;   Because the drive-letter feature is broken in v1.07, the drive-letter
+;   table does not get copied over when upgrading from v1.07.
+;
+; # Fixed a minor bug with displaying LVM drive-letters #
+;   When more partitions that can be displayed were present, scrolling the
+;   menu would not scroll the drive-letter. Fixed.
+;
+; # Added DOCU directory for documentation #
+;   This contains the AiR-BOOT User Manual in Open Office .odt-format.
+;   To also have OS/2 INF format, a transformation script and sheet have been
+;   created to convert the .odt document to an ipf-source that can be compiled
+;   with Watcoms wipfc ipf compiler. (IBM ipfc does not work correctly)
+;   This makes it possible to write documentation in OOo Writer and export that
+;   to PDF and INF format.
+;
+; # Fixed a bug with regard to the drive-letter feature #
+;   When partitions were deleted, and some partitions above the deleted
+;   partition(s) had a drive-letter forced, these partitions would lose this
+;   assignment. This bug is also present in v1.06.
+;
+; # Implemented a very simple interactive debugger #
+;   Making use of the main menu-loop, pressing a digit or a letter activates
+;   some debugging routine. Mostly such a routine dumps a part of the internal
+;   state to the com-port. Other purposes are the interrogation of certain
+;   BIOS functions, as these can differ substantially between machines.
+;
+; # Made FX-code optional to compile in #
+;   The FX-code supplies the shifting screen-effects when 'Cooper Bars' is
+;   enabled in the setup. With the current enhancements made however,
+;   there is a continuous lack of code-space, especially when debug-code is
+;   included during development. The FX-code occupies some 1200 bytes, a space
+;   that can be put to better use. Therefore inclusion the FX-code has been
+;   made conditional to make room for either debugging or future new features.
+;
+; # Also write PBR to HPFS #
+;   Earlier, a fix was made to write a modified PBR back in case JFS was used.
+;   This was done to enable the drive-letter feature on JFS, since the PBR
+;   JFS-bootcode does not use the supplied PBR in memory.
+;   With the enhancements in the drive-letter feature, the HPFS PBR needs to
+;   be updated on disk also, to cope with zero drive-letters in the HPFS PBR.
+;
+; # Added drive-letters in display for LVM volumes #
+;   A populair request was to show drive-letter information in the menu.
+;   Drive-letters however, are OS specific and AiR-BOOT cannot accurately
+;   predict what drive-letter DOS would assign to what partition.
+;   eCS LVM drive-letters however are stored in the LVM-record and can thus
+;   be displayed. This has been implemented.
+;
+; # Enhanced drive-letter feature #
+;   Enable multiple eComStation installations using the same drive-letter
+;   This makes it possible to clone a system with XCOPY /h /e /s /t /r /v
+;   to another drive and have that boot from the same drive-letter.
+;   (Or installing to the same drive by hiding the other system)
+;
 ; # Removed Force LBA Usage from Setup #
 ;   When AiR-BOOT is installed on an USB-stick, there is a possibility that
 ;   the CHS-geometry varies between different machines where the stick is
-;   booted. This would invalidate any CHS-values that were stored in the IPT.
+;   booted. This would invalidate the CHS-values in the partition table
+;   and also the values that were stored in the AiR-BOOT's internal partition
+;   table, the IPT.
 ;   To prevent more nasty things like below from happening, LBA-addressing
-;   is now always used.
+;   is now always used and the setting has been removed from the setup-menu.
+;   While this may prevent AiR-BOOT from running on very old systems,
+;   the focus of AiR-BOOT development is geared towards the future.
+;   Such old systems can use v1.06.
+;
+; # Added extra MBR protection #
+;   When AiR-BOOT is active, it is only AiR-BOOT that writes to the MBR.
+;   To protect the MBR from programming errors, like the one below,
+;   any write to the MBR is now checked for validity.
+;   In essence this is protecting your MBR from bad programming done by me...
 ;
 ;!## Fixed a very very nasty bug that can destroy the MBR on multiple disks ##!
 ;   When Force BIOS-LBA usage is disabled (the default is enabled), and the
@@ -47,7 +128,7 @@
 ;   wrong index for the new partition. As a result the next partition
 ;   would be auto-booted instead of the newly installed system.
 ;   This has been fixed.
-;   This bug is also present in v1.07.
+;   This bug is also present in v1.07 and does not apply to previous versions.
 ;
 ; v1.0.8-rc2-bld20120423
 ; ----------------------

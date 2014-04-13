@@ -52,6 +52,7 @@ TXT_SETUP_BootLastIfTimed      db 'Грузить последнюю сист.', 0
 TXT_SETUP_RememberLastBoot     db 'Помнить последнюю сист.', 0
 TXT_SETUP_RememberTimedBoot    db 'Помнить в автозагрузке', 0
 TXT_SETUP_IncludeFloppy        db 'Добавить дисковод', 0
+TXT_SETUP_ShowLVMDriveLetters  db 'Show LVM Drive Letters',0
 TXT_SETUP_MbrProtection        db 'Защита MBR', 0
 TXT_SETUP_IgnoreMbrWrites      db '-> Не менять MBR', 0
 TXT_SETUP_MakeSounds           db 'Разрешить звуки', 0
@@ -81,7 +82,7 @@ TXT_SETUP_ContinueBIOSboot     db 'Загрузка через BIOS', 0
 ; This here may be larger than 23 chars...
 ;TXT_SETUP_DefLinuxCmd          db 'ЗАДАЙТЕ КОМАНДНУЮ СТРОКУ ДЛЯ LINUX', 0
 TXT_SETUP_IgnoreLVM            db 'Игнорировать данные LVM', 0
-TXT_SETUP_ForceLBAUsage        db 'Использовать BIOS-LBA', 0
+;~ TXT_SETUP_ForceLBAUsage        db 'Использовать BIOS-LBA', 0
 TXT_SETUP_ExtPartMShack        db 'Разделы для MS-систем', 0
 
 ; DYNAMIC LENGTH, maximum 11 chars excluding ending zero
@@ -212,6 +213,10 @@ TXT_SETUPHELP_IncludeFloppy    db 'AiR-BOOT разрешит', 0
                                db 'загрузку с диска A:', 0
                                db 'через меню.', 0
                                db 0
+TXT_SETUPHELP_ShowLVMDriveLetters   db 'AiR-BOOT will show', 0
+                                    db 'LVM Drive Letters', 0
+                                    db 'in the menu.', 0
+                                    db 0
 TXT_SETUPHELP_MbrProtection    db 'Защищает MBR через', 0
                                db 'резидентный код. Нужно', 0
                                db '1кб базовой памяти.', 0
@@ -298,11 +303,11 @@ TXT_SETUPHELP_IgnoreLVM        db 'При включении этой', 0
                                db 'будет искать', 0
                                db 'информацию LVM', 0
                                db 0
-TXT_SETUPHELP_ForceLBAUsage    db 'Требудет использование', 0
-                               db 'BIOS LBA API вместо', 0
-                               db 'комбинированного - CHS', 0
-                               db 'и LBA.', 0
-                               db 0
+;~ TXT_SETUPHELP_ForceLBAUsage    db 'Требудет использование', 0
+                               ;~ db 'BIOS LBA API вместо', 0
+                               ;~ db 'комбинированного - CHS', 0
+                               ;~ db 'и LBA.', 0
+                               ;~ db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Включает динамическую', 0
                                db 'смену типа расширенных', 0
                                db 'разделов в стандартный', 0

@@ -27,7 +27,7 @@
 ; Here is code to change Extended Partition to Type 05h or 0Fh depending
 ;  on the partition's P-flag including the overall M$hack-Enable Flag.
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'BILLSUXX',0
 ENDIF
 

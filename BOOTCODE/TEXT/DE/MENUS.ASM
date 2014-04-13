@@ -52,6 +52,7 @@ TXT_SETUP_BootLastIfTimed      db '-> Letzten wiederholen', 0
 TXT_SETUP_RememberLastBoot     db 'Boot-Partition merken', 0
 TXT_SETUP_RememberTimedBoot    db 'Zeit-Boot-Part. merken', 0
 TXT_SETUP_IncludeFloppy        db 'Disk-LW hinzufÅgen', 0
+TXT_SETUP_ShowLVMDriveLetters  db 'Show LVM Drive Letters',0
 TXT_SETUP_MbrProtection        db 'MBR Schutz', 0
 TXT_SETUP_IgnoreMbrWrites      db '-> Ignoriere Schreiben', 0
 TXT_SETUP_MakeSounds           db 'GerÑusche machen', 0
@@ -81,7 +82,7 @@ TXT_SETUP_ContinueBIOSboot     db 'BIOS Boot fortsetzen', 0
 ; This here may be larger than 23 chars...
 ;TXT_SETUP_DefLinuxCmd          db 'DEFINIERE LINUX KOMMANDOZEILE', 0
 TXT_SETUP_IgnoreLVM            db 'Ignoriere LVM Daten', 0
-TXT_SETUP_ForceLBAUsage        db 'Erzwinge BIOS-LBA', 0
+;~ TXT_SETUP_ForceLBAUsage        db 'Erzwinge BIOS-LBA', 0
 TXT_SETUP_ExtPartMShack        db 'Erw-Part MS Workaround', 0
 
 ; DYNAMIC LENGTH, maximum 11 chars excluding ending zero
@@ -210,6 +211,10 @@ TXT_SETUPHELP_RememberTimeBoot db 'Soll sich AiR-BOOT den', 0
 TXT_SETUPHELP_IncludeFloppy    db 'AiR-BOOT erlaubt das', 0
                                db 'Booten von Laufwerk A:', 0
                                db 0
+TXT_SETUPHELP_ShowLVMDriveLetters   db 'AiR-BOOT will show', 0
+                                    db 'LVM Drive Letters', 0
+                                    db 'in the menu.', 0
+                                    db 0
 TXT_SETUPHELP_MbrProtection    db 'BeschÅtzt Ihren MBR', 0
                                db 'durch residenten Code.', 0
                                db 'Benîtigt 1 KByte.', 0
@@ -298,11 +303,11 @@ TXT_SETUPHELP_IgnoreLVM        db 'AiR-BOOT sucht in', 0
                                db 'diesem Fall nicht nach', 0
                                db 'LVM Informationen.', 0
                                db 0
-TXT_SETUPHELP_ForceLBAUsage    db 'Erzwingt BenÅtzung der', 0
-                               db 'BIOS LBA APIs anstatt', 0
-                               db 'gemischter Verwendung', 0
-                               db 'von CHS und LBA.', 0
-                               db 0
+;~ TXT_SETUPHELP_ForceLBAUsage    db 'Erzwingt BenÅtzung der', 0
+                               ;~ db 'BIOS LBA APIs anstatt', 0
+                               ;~ db 'gemischter Verwendung', 0
+                               ;~ db 'von CHS und LBA.', 0
+                               ;~ db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Aktiviert dynamisches', 0
                                db 'Ñndern des erweiterten', 0
                                db 'Partitionstyp durch', 0

@@ -19,7 +19,7 @@
 ;                                                    AiR-BOOT / APM SUPPORT
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'APM',0
 ENDIF
 

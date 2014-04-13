@@ -1,5 +1,20 @@
-/* INSTALL.H */
-
+// AiR-BOOT (c) Copyright 1998-2009 M. Kiewitz
+//
+// This file is part of AiR-BOOT
+//
+// AiR-BOOT is free software: you can redistribute it and/or modify it under
+//  the terms of the GNU General Public License as published by the Free
+//  Software Foundation, either version 3 of the License, or (at your option)
+//  any later version.
+//
+// AiR-BOOT is distributed in the hope that it will be useful, but WITHOUT ANY
+//  WARRANTY: without even the implied warranty of MERCHANTABILITY or FITNESS
+//  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+//  details.
+//
+// You should have received a copy of the GNU General Public License along with
+//  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
+//
 
 
 /*
@@ -13,12 +28,12 @@
 #define     BLDLVL_MINOR_VERSION    "8"
 // Build date
 #define     BLDLVL_YEAR             "2012"
-#define     BLDLVL_MONTH            "04"
-#define     BLDLVL_DAY              "23"
+#define     BLDLVL_MONTH            "09"
+#define     BLDLVL_DAY              "09"
 // Build time
-#define     BLDLVL_HOURS            "19"
-#define     BLDLVL_MINUTES          "41"
-#define     BLDLVL_SECONDS          "00"
+#define     BLDLVL_HOURS            "09"
+#define     BLDLVL_MINUTES          "09"
+#define     BLDLVL_SECONDS          "09"
 // Build machine
 //#define     BLDLVL_MACHINE          "ecs-devbox"
 #define     BLDLVL_MACHINE          "*UNKNOWN*"

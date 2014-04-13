@@ -1055,6 +1055,28 @@ void Status_CheckConfig (void) {
             return;
         }
         Status_Config = STATUS_INSTALLEDMGU;
+
+        // Abort if unknown installed config version.
+        if ((Installed_ConfigVersion > 0x108)) {
+            if (!Option_CID) {
+                printf("\n");
+                printf("Configuration version of installed AiR-BOOT not supported by this installer !\n");
+                printf("\n");
+            }
+            exit(1);
+        }
+
+        // Abort if unknown to-install config version.
+        if ((Bootcode_ConfigVersion > 0x108)) {
+            if (!Option_CID) {
+                printf("\n");
+                printf("Configuration version of new AiR-BOOT.BIN not supported by this installer !\n");
+                printf("\n");
+            }
+            exit(1);
+        }
+
+
         // Those upgrades will copy useful configuration data to the image config
         //  If new configuration data was added, those spaces are not overwritten
         // Sector 60 (MBR-BackUp) *MUST BE* copied, otherwise it would be lost.
@@ -1114,30 +1136,49 @@ void Status_CheckConfig (void) {
 
         /*
         // Convert v1.06 hideparttable (30x30) to the v1.07 (30x45) format.
+        // Also copy drive-letters to either v1.07 or v1.0.8 location.
         */
         if ((Installed_ConfigVersion == 0x102) && (Bootcode_ConfigVersion >= 0x107)) {
             int     i,j;
             char    c;
             //printf("Converting 1.06 -> 1.07 hidepart");
+            // Copy old hide-part table to new location.
             memcpy(&Bootcode[0x7400], &Track0[0x7200], 900);
+            // Setup temporary table.
             memset(TempHidPartTable, 0xff, 45 * 34);
+            // Copy old hide-part table to temporary table.
             for (i=0; i<30; i++) {
                 for (j=0; j<30; j++) {
                     c = Bootcode[0x7400+i*30+j];
                     TempHidPartTable[i*45+j] = c;
                 }
             }
+            // Copy temporary table to final v1.07 location.
             memcpy(&Bootcode[0x7400], TempHidPartTable, 30 * 45);
+
+            // Clear drive-letters if version being installed is v1.07.
+            if (Bootcode_ConfigVersion == 0x107) {
+                memset(&Bootcode[0x7946], 0, 45);
+            }
+
+            // Copy over drive-letters from v1.06 location to v1.08 location.
+            if (Bootcode_ConfigVersion == 0x108) {
+                memset(&Bootcode[0x6cb0], 0, 45);
+                memcpy(&Bootcode[0x6cb0], &Track0[0x7584], 30);
+            }
         }
 
         /*
         // Convert v1.07 hideparttable (30x45) to a packed v1.0.8+ (45x45) format.
         */
-        if ((Installed_ConfigVersion < 0x108) && (Bootcode_ConfigVersion >= 0x108)) {
+        if ((Installed_ConfigVersion < 0x108) && (Bootcode_ConfigVersion == 0x108)) {
             int     i,j;
             char    c;
             //printf("Converting to 1.08 packed hidepart");
+            // Setup temporary table.
             memset(TempHidPartTable, 0xff, 45 * 34);
+
+            // Copy old hide-part table to temporary table.
             // Unpacked table is 30 rows with 45 columns per row.
             // Packed table is 45 rows with 45 columns per row packed in 34 bytes.
             for (i=0; i<30; i++) {
@@ -1146,7 +1187,10 @@ void Status_CheckConfig (void) {
                     c = set_bitfield(&TempHidPartTable[i*34], j, 6, c);     // Store 6-bit packed value
                 }
             }
+            // Copy temporary table to final v1.0.8 location (packed format)
             memcpy(&Bootcode[0x7400], TempHidPartTable, 45 * 34);
+            // Show LVM Drive Letters.
+            Bootcode[0x6c17] = 1;
         }
 
         return;

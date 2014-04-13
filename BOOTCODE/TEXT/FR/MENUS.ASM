@@ -52,6 +52,7 @@ TXT_SETUP_BootLastIfTimed      db 'Amorce Dern. si Tempo.', 0
 TXT_SETUP_RememberLastBoot     db 'MÇmoriser Dern. Amorce', 0
 TXT_SETUP_RememberTimedBoot    db 'MÇmoriser Amorce Tempo.', 0
 TXT_SETUP_IncludeFloppy        db 'Incl. Lecteur Disquette', 0
+TXT_SETUP_ShowLVMDriveLetters  db 'Show LVM Drive Letters',0
 TXT_SETUP_MbrProtection        db 'Protection MBR', 0
 TXT_SETUP_IgnoreMbrWrites      db '-> Ignorer êcriture MBR', 0
 TXT_SETUP_MakeSounds           db 'Activer Sons', 0
@@ -81,7 +82,7 @@ TXT_SETUP_ContinueBIOSboot     db 'Cont. SÇq Amorce BIOS', 0
 ; This here may be larger than 23 chars...
 ;TXT_SETUP_DefLinuxCmd          db 'DêFINIR LIGNE DE COMMANDE LINUX', 0
 TXT_SETUP_IgnoreLVM            db 'Ignorer Information LVM', 0
-TXT_SETUP_ForceLBAUsage        db 'Force usage du BIOS-LBA', 0
+;~ TXT_SETUP_ForceLBAUsage        db 'Force usage du BIOS-LBA', 0
 TXT_SETUP_ExtPartMShack        db 'êt-Part MS Workaround', 0
 
 ; DYNAMIC LENGTH, maximum 11 chars excluding ending zero
@@ -214,6 +215,10 @@ TXT_SETUPHELP_IncludeFloppy    db 'AiR-BOOT permettra un', 0
                                db 'amoráage de A: par', 0
                                db 'menu.', 0
                                db 0
+TXT_SETUPHELP_ShowLVMDriveLetters   db 'AiR-BOOT will show', 0
+                                    db 'LVM Drive Letters', 0
+                                    db 'in the menu.', 0
+                                    db 0
 TXT_SETUPHELP_MbrProtection    db 'Protäge MBR par code', 0
                                db 'rÇsidant. NÇcessite', 0
                                db '1 Ko de mÇmoire.', 0
@@ -306,11 +311,11 @@ TXT_SETUPHELP_IgnoreLVM        db 'Si activÇ, AiR-BOOT', 0
                                db 'ignorera l''information', 0
                                db 'LVM.', 0
                                db 0
-TXT_SETUPHELP_ForceLBAUsage    db 'Forcer l''usage de', 0
-                               db 'l''API BIOS LBA au lieu', 0
-                               db 'd''un amalgame de', 0
-                               db 'CHS et LBA.', 0
-                               db 0
+;~ TXT_SETUPHELP_ForceLBAUsage    db 'Forcer l''usage de', 0
+                               ;~ db 'l''API BIOS LBA au lieu', 0
+                               ;~ db 'd''un amalgame de', 0
+                               ;~ db 'CHS et LBA.', 0
+                               ;~ db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Changement dynamique', 0
                                db 'du type id (standard', 0
                                db 'ou MS-invention) de la', 0

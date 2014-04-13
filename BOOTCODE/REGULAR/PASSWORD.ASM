@@ -19,7 +19,7 @@
 ;                                                       AiR-BOOT / PASSWORD
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'PASSWORD',0
 ENDIF
 

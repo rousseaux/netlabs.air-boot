@@ -14,6 +14,7 @@
 
 #
 # This script is now obsolete.
+# Don't use since the MBR Protaction Image has moved !!
 #
 exit 1;
 

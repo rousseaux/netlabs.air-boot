@@ -19,7 +19,7 @@
 ;                                                     AiR-BOOT / F/X TABLES
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'FXTABLES',0
 ENDIF
 

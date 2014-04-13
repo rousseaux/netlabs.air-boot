@@ -28,7 +28,7 @@
 ; Lower byte is com-port, 0=disabled, 1=com1, etc.
 ; High byte is initialization; see below. (0e3h)
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'AUXIO',0
 ENDIF
 
@@ -92,38 +92,37 @@ AuxIO_PrintBuildInfo    Proc    Near    Uses ax cx si di
         rep     stosb
 
         ; Copy assembler specification.
-IFDEF   JWASM
+    IFDEF       JWASM
         mov     al,'['
         stosb
         mov     si,offset jwasm_txt
-ENDIF
-IFDEF   TASM
+    ELSEIFDEF   TASM
         mov     al,' '
         stosb
         mov     al,'['
         stosb
         mov     si,offset tasm_txt
-ENDIF
-IFDEF   WASM
+
+    ELSEIFDEF   WASM
         mov     al,' '
         stosb
         mov     al,'['
         stosb
         mov     si,offset wasm_txt
-ENDIF
-IFDEF   MASM
+    ELSEIFDEF   MASM
         mov     al,' '
         stosb
         mov     al,'['
         stosb
         mov     si,offset masm_txt
-ELSE
+    ELSE
         mov     al,' '
         stosb
         mov     al,'['
         stosb
         mov     si,offset unknown_txt
-ENDIF
+    ENDIF
+
     AuxIO_PrintBuildInfo_a1:
         lodsb
         test    al,al
@@ -142,12 +141,60 @@ ENDIF
         mov     si, offset Scratch
         call    AuxIO_Print
         call    AuxIO_TeletypeNL
+
+        ; OS/2 BLDLEVEL information.
+        mov     si, offset bld_level
+        call    AuxIO_Print
+        call    AuxIO_TeletypeNL
+
         ret
 AuxIO_PrintBuildInfo    EndP
 
 
 ; Print char to com-port (teletype style)
 AuxIO_Teletype  Proc     Near  Uses  ax dx
+
+
+    ;~ pusha
+    ;~ xor     dx,dx
+    ;~ mov     ah,03h
+    ;~ mov     al,00h
+    ;~ int     14h
+    ;~ mov     ah,al
+    ;~ shr     al,4
+    ;~ and     al,0fh
+    ;~ add     al,'0'
+    ;~ cmp     al,'9'
+    ;~ jbe     @F
+    ;~ add     al,7
+;~ @@: push    ax
+    ;~ xor     dx,dx
+    ;~ mov     ah,01h
+    ;~ int     14h
+    ;~ pop     ax
+    ;~ mov     al,ah
+    ;~ and     al,0fh
+    ;~ add     al,'0'
+    ;~ cmp     al,'9'
+    ;~ jbe     @F
+    ;~ add     al,7
+;~ @@: xor     dx,dx
+    ;~ mov     ah,01h
+    ;~ int     14h
+    ;~ popa
+
+        ;~ pusha
+;~ @@:
+        ;~ xor     dx,dx
+        ;~ mov     ah,03h
+        ;~ mov     al,00h
+        ;~ int     14h
+        ;~ and     al,20h
+        ;~ cmp     al,20h
+        ;~ jnz     @B
+        ;~ popa
+
+
         mov     dx,[BIOS_AuxParms]            ; get port and parameters
         xor     dh,dh                         ; we don't need the parameters
         test    dl,dl                         ; test if logging is enabled
@@ -167,6 +214,66 @@ AuxIO_TeletypeNL    Proc     Near  Uses  ax
         call    AuxIO_Teletype
         ret
 AuxIO_TeletypeNL    EndP
+
+
+; Print Bin-byte to com-port (teletype style)
+; This outputs 8 characters ('0' or '1' for each bit)
+; In:          AL - byte to send
+; Out:         AL - byte sent
+; Destroyed:   None
+AuxIO_TeletypeBinByte   Proc    Near Uses   ax cx
+        mov     ah,al
+        mov     cx,8
+    AuxIO_TeletypeBinByte_nextchar:
+        xor     al,al
+        rcl     ah,1
+        rcl     al,1
+        add     al,'0'
+        call    AuxIO_Teletype
+        loop    AuxIO_TeletypeBinByte_nextchar
+        ret
+AuxIO_TeletypeBinByte   EndP
+
+; Print Bin-word to com-port (teletype style)
+; This outputs 16 characters ('0' or '1' for each bit)
+; In:          AX - byte to send
+; Out:         AX - byte sent
+; Destroyed:   None
+AuxIO_TeletypeBinWord   Proc
+        xchg    al,ah                      ; High byte first
+        call    AuxIO_TeletypeBinByte      ; Output to com-port
+        xchg    al,ah                      ; low byte next
+        call    AuxIO_TeletypeBinByte      ; Output to com-port
+        ret
+AuxIO_TeletypeBinWord   EndP
+
+; Print Bin-dword to com-port (teletype style)
+; This outputs 32 characters ('0' or '1' for each bit)
+; In:          DX:AX - dword to send
+; Out:         DX:AX - dword sent
+; Destroyed:   None
+AuxIO_TeletypeBinDWord  Proc     Near
+        xchg    ax,dx
+        call    AuxIO_TeletypeBinWord      ; High word first
+        xchg    ax,dx
+        call    AuxIO_TeletypeBinWord      ; Low word next
+        ret
+AuxIO_TeletypeBinDWord  EndP
+
+; Print Bin-qword to com-port (teletype style)
+; This outputs 64 characters ('0' or '1' for each bit)
+; In:          BX:CX:DX:AX - qword to send
+; Out:         BX:CX:DX:AX - qword sent
+; Destroyed:   None
+AuxIO_TeletypeBinQWord  Proc     Near
+        xchg    dx,bx
+        xchg    ax,cx
+        call    AuxIO_TeletypeBinDWord     ; High dword first
+        xchg    dx,bx
+        xchg    ax,cx
+        call    AuxIO_TeletypeBinDWord     ; Low dword next
+        ret
+AuxIO_TeletypeBinQWord  EndP
 
 
 ; Print hex-byte to com-port (teletype style)
@@ -324,7 +431,7 @@ AuxIO_DumpParagraph     Proc  Near  Uses  ax cx dx si
 
     AuxIO_DumpParagraph_Next_2:
         mov     ah,'.'                              ; char to use ufnot printable
-        lodsb                                        ; load byte
+        lodsb                                       ; load byte
         call    CONV_ConvertToPrintable             ; use dot's if not printable
         call    AuxIO_Teletype                      ; print it
         loop    AuxIO_DumpParagraph_Next_2
@@ -336,7 +443,7 @@ AuxIO_DumpParagraph     EndP
 AuxIO_DumpSector    Proc  Near  Uses  cx si
         mov     cx,32                      ; Number of paragraphs in a sector
     AuxIO_DumpSector_Next:
-        call    AuxIO_DumpParagraph        ; Dump te paragraph
+        call    AuxIO_DumpParagraph        ; Dump the paragraph
         add     si,16                      ; Advance pointer
         call    AuxIO_TeletypeNL
         loop    AuxIO_DumpSector_Next
@@ -344,7 +451,6 @@ AuxIO_DumpSector    Proc  Near  Uses  cx si
 AuxIO_DumpSector    EndP
 
 
-AuxIOHello  db 'AiR-BOOT com-port debugging',10,0
-
+AuxIOHello  db 10,10,10,10,10,'AiR-BOOT com-port debugging',10,0
 
 

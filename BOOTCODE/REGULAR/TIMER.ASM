@@ -19,7 +19,7 @@
 ;                                                          AiR-BOOT / TIMER
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'TIMER',0
 ENDIF
 

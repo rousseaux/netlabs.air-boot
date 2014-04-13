@@ -82,8 +82,8 @@ char    FailedWriteCode[]   = "Write "OUT_FILE" failed\n";
 char    MBRProtectionSignature[]    = "AiR-BOOT MBR-Protection Image";
 
 /* File buffers */
-char    BootCode[IMAGE_SIZE];   // Buffer for boot-image
-char    MBRProtection[1024];    // Buffer for protection-image
+char    BootCode[IMAGE_SIZE];           // Buffer for boot-image
+char    MBRProtection[MBRPROT_SIZE];    // Buffer for protection-image
 
 
 
@@ -162,8 +162,9 @@ int     main(int argc, char* argv[]) {
     // Note that this signature must reside on a sector boundary in the
     // AIR-BOOT.COM image.
     */
-    for (i=0; i<55; i++) {
-        if (!memcmp(MBRProtectionSignature, &BootCode[i*SECSIZE], strlen(MBRProtectionSignature))) {
+    //~ for (i=0; i<55; i++) {
+    for (i=0; i<110; i++) {
+        if (!memcmp(MBRProtectionSignature, &BootCode[i*PAGESIZE], strlen(MBRProtectionSignature))) {
             found = 1;
             break;
         }
@@ -181,7 +182,8 @@ int     main(int argc, char* argv[]) {
     /*
     // Merge Protection Image.
     */
-    memcpy(&BootCode[i*SECSIZE], MBRProtection, MBRPROT_SIZE);
+    //~ memcpy(&BootCode[i*SECSIZE], MBRProtection, MBRPROT_SIZE);
+    memcpy(&BootCode[i*PAGESIZE], MBRProtection, MBRPROT_SIZE);
     printf("%s", Okay);
 
 

@@ -27,7 +27,7 @@
 ; Other math-stuff should be placed here.
 
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'MATH',0
 ENDIF
 

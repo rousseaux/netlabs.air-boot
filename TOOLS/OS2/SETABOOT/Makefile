@@ -288,6 +288,15 @@ clean:	.SYMBOLIC
 	@if exist *.ERR $(RM) *.ERR
 	@if exist *.o   $(RM) *.o
 
+# -----------------------------------------------------------------------------
+# DISTRIBUTE TO RELEASE SPACE
+# -----------------------------------------------------------------------------
+# This distributes all .BIN files to BOOTCODE.
+# Then it installs the English version to RELEASES as AIRBOOT.BIN.
+# -----------------------------------------------------------------------------
+dist:	.SYMBOLIC
+	@if exist *.EXE $(CP) *.EXE ..$(DS)..$(DS)..$(DS)RELEASE$(DS)OS2
+
 #
 # Help on using this Makefile.
 #

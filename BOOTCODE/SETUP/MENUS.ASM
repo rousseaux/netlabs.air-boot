@@ -54,7 +54,7 @@
 ;  if help is requested TXT_SETUPHELP_PartitionSetup will get shown.
 ;
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'MENUS',0
 ENDIF
 
@@ -84,6 +84,7 @@ SETUP_MainMenu:
                 dw      0, 0
                 dw      offset SETUP_EnterMenu_ExtendedOptions, 0
                 dw      offset TXT_SETUP_ExtOptions, offset TXT_SETUPHELP_ExtOptions
+
                 ; The Menu-Items of the right side start here...
                 dw      offset SETUP_EnterMenu_DefineMasterPassword, 0
                 dw      offset TXT_SETUP_DefMasterPwd, offset TXT_SETUPHELP_DefMasterPwd
@@ -131,8 +132,16 @@ SETUP_BasicOptions:
                 dw      offset SETUPMAGIC_ChangeFloppyDisplay, offset CFG_IncludeFloppy
                 dw      offset TXT_SETUP_IncludeFloppy, offset TXT_SETUPHELP_IncludeFloppy
                 dw      6 dup (0)
-                dw      0, 0
-                dw      0, 0
+
+                ; Show LVM Drive Letters or not
+                dw      offset SETUPMAGIC_EnableDisable, offset CFG_MiscFlags
+                dw      offset TXT_SETUP_ShowLVMDriveLetters, offset TXT_SETUPHELP_ShowLVMDriveLetters
+                dw      6 dup (0)
+
+                ;~ dw      0, 0
+                ;~ dw      0, 0
+
+
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_ProtectMBR
                 dw      offset TXT_SETUP_MbrProtection, offset TXT_SETUPHELP_MbrProtection
                 dw      6 dup (0)

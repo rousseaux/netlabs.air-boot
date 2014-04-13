@@ -19,7 +19,7 @@
 ;                                                           AiR-BOOT / TEXT
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'STD_TEXT',0
 ENDIF
 
@@ -49,36 +49,34 @@ CopyrightVersionLen   equ   6
 ; Masm found the above to be too complex, so we broke it up.
 ;
 Copyright:
-             db ' AiR-BOOT v'
-             db BLDLVL_MAJOR_VERSION,'.'
-             db BLDLVL_MIDDLE_VERSION,'.'
-             db BLDLVL_MINOR_VERSION,' - (c) '
-             db BLDLVL_YEAR
-             db ' M. Kiewitz  <<Internal Release 3e>> (bld: '
-             ;~ db ' M. Kiewitz  <<Release Candidate 2>> (bld: '
-             db BLDLVL_YEAR
-             db BLDLVL_MONTH
-             db BLDLVL_DAY,')'
-             db 0
+            db ' AiR-BOOT v'
+            db BLDLVL_MAJOR_VERSION,'.'
+            db BLDLVL_MIDDLE_VERSION,'.'
+            db BLDLVL_MINOR_VERSION,' - (c) '
+            db BLDLVL_YEAR
+            ;~ db ' M. Kiewitz  <<Internal Release 3o>> (bld: '
+            ;~ db ' M. Kiewitz  <<@ Interim Release @>> (bld: '
+            ;~ db ' M. Kiewitz  <<Release Candidate 2>> (bld: '
+            db ' M. Kiewitz  <<Release Candidate 3>> (bld: '
+            db BLDLVL_YEAR
+            db BLDLVL_MONTH
+            db BLDLVL_DAY,')'
+            db 0
+
+;
+; Normal copyright notice.
+;
+;~ Copyright   db ' AiR-BOOT v1.0.8 - (c) 1998-2012 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
 
 
-;Copyright             db ' AiR-BOOT v1.0.8 - (c) 1998-2012 M. Kiewitz, Dedicated to Gerd Kiewitz', 0
 
-; Message in case the user wants to edit the label of a type 0x35 partition
-TXT_SETUP_NoEditType35          db 'Labels of LVM-Data partitions cannot be changed.', 0
-; Message in case the user wants to make a type 0x35 partition bootable
-TXT_SETUP_NoBootType35          db 'LVM-Data partitions cannot be set bootable.', 0
+; License and source info.
+BootEndMsg      db 'This is GPLv3+ software, please visit: http://www.gnu.org/licenses/gpl.txt', 0
+BootEndMsg2     db 'To obtain the sources,   please visit: http://svn.netlabs.org/air-boot', 0
 
-;TXT_ERROR_TooManyPartitions     db 'Too many partitions! -- Proper operation not guaranteed!', 0
-
-; Rousseau: switch around
-BootEndMsg           db 'This is GPLv3+ software, please visit: http://www.gnu.org/licenses/gpl.txt', 0
-BootEndMsg2          db 'To obtain the sources,   please visit: http://svn.netlabs.org/air-boot', 0
-
-AuxInitMsg           db 'Initializing Serial Communications on COM',0
-
-CheckID_MBR          db 'AiRBOOT'
-BrokenHDD            db ' (HDDx)', 0
+; Bugger...
+CheckID_MBR     db 'AiRBOOT'
+BrokenHDD       db ' (HDDx)', 0
 
 ; Colors for special words hard-coded. Keep all 0s.
 TXT_SETUP_LowerMessage      db 'This software is released under ', 0, 'GPLv3+', 0
@@ -87,15 +85,32 @@ TXT_SETUP_LowerMessage      db 'This software is released under ', 0, 'GPLv3+', 
                             db 'http://svn.netlabs.org/air-boot', 0
                             db 'Contact via e-mail: ', 0, 'airboot@ecomstation.com', 0
 
-; Build Information string.
-build_info          db  'Build Date: ',0
-jwasm_txt           db  'JWasm',0
-masm_txt            db  'Masm',0
-wasm_txt            db  'Wasm',0
-tasm_txt            db  'Tasm',0
-unknown_txt         db  '????',0
+; Table that points to BIOS device names.
+ContinueBIOSbootTable   dw offset TXT_SETUP_MAGIC_CDROM
+                        dw offset TXT_SETUP_MAGIC_Network
+                        dw offset TXT_SETUP_MAGIC_ZIPLS
+                        dw     0
 
-ContinueBIOSbootTable dw offset TXT_SETUP_MAGIC_CDROM
-                      dw offset TXT_SETUP_MAGIC_Network
-                      dw offset TXT_SETUP_MAGIC_ZIPLS
-                      dw     0
+; Com-port debugging header.
+AuxInitMsg              db 'Initializing Serial Communications on COM',0
+
+; LVM protection messages; should be translated and moved to lang-files.
+TXT_SETUP_NoEditType35      db 'Labels of LVM-Data partitions cannot be changed', 0
+TXT_SETUP_NoBootType35      db 'LVM-Data partitions cannot be set bootable', 0
+TXT_BootMenuPowerOff        db 'DEL to Power Off', 0
+TXT_NoINT13XSupport         db  'This BIOS does not support Extended INT13h Functions', 0
+;~ TXT_ERROR_TooManyPartitions db 'Too many partitions! -- Proper operation not guaranteed!', 0
+
+; MBR protection; should also be translated and moved.
+NonMBRwrite     db  'AiR-BOOT TRIED TO WRITE A non-MBR TO DISK !!',0
+NonMBRwrite_rep db  'Please report this at airboot@ecomstation.com',0
+SystemHalted    db  'System Halted',0
+
+; Build Information string.
+build_info      db  'Build Date: ',0
+jwasm_txt       db  'JWasm',0
+masm_txt        db  'Masm',0
+wasm_txt        db  'Wasm',0
+tasm_txt        db  'Tasm',0
+unknown_txt     db  '????',0
+

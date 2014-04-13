@@ -52,6 +52,7 @@ TXT_SETUP_BootLastIfTimed      db 'Met wachttijd: ', 0
 TXT_SETUP_RememberLastBoot     db 'Vorige keuze', 0
 TXT_SETUP_RememberTimedBoot    db 'Vorige keuze/wachttijd', 0
 TXT_SETUP_IncludeFloppy        db 'Inclusief station A:', 0
+TXT_SETUP_ShowLVMDriveLetters  db 'Toon LVM Drive Letters',0
 TXT_SETUP_MbrProtection        db 'MBR beveiligen', 0
 TXT_SETUP_IgnoreMbrWrites      db '-> MBR niet beveiligen', 0
 TXT_SETUP_MakeSounds           db 'Geluidje laten horen', 0
@@ -81,7 +82,7 @@ TXT_SETUP_ContinueBIOSboot     db 'Opstarten van :', 0
 ; This here may be larger than 23 chars...
 ;TXT_SETUP_DefLinuxCmd          db 'Opdrachtenreeks voor Linux', 0
 TXT_SETUP_IgnoreLVM            db 'LVM-gegevens negeren', 0
-TXT_SETUP_ForceLBAUsage        db 'Enkel BIOS-LBA', 0
+;~ TXT_SETUP_ForceLBAUsage        db 'Enkel BIOS-LBA', 0
 TXT_SETUP_ExtPartMShack        db 'Ext-Part MS Workaround', 0
 ;----------------------------------|---------------------|------------------
 
@@ -216,9 +217,13 @@ TXT_SETUPHELP_RememberTimeBoot db 'Zoals hiervoor wordt', 0
                                db 'die bij het vorige op-', 0
                                db 'starten werd gekozen.' ,0
                                db 0
-TXT_SETUPHELP_IncludeFloppy    db 'U kan van A: opstarten', 0
+TXT_SETUPHELP_IncludeFloppy    db 'U kunt van A: opstarten', 0
                                db 'via het AiR-BOOTmenu.', 0
                                db 0
+TXT_SETUPHELP_ShowLVMDriveLetters   db 'AiR-BOOT will show', 0
+                                    db 'LVM Drive Letters', 0
+                                    db 'in the menu.', 0
+                                    db 0
 TXT_SETUPHELP_MbrProtection    db 'Beveiligt het MBR via', 0
                                db 'een residente code.', 0
                                db '1 Kb geheugen vereist.', 0
@@ -317,12 +322,12 @@ TXT_SETUPHELP_IgnoreLVM        db 'Werd deze optie', 0
                                db 'LVM-gegevens als', 0
                                db 'onbestaande beschouwd.', 0
                                db 0
-TXT_SETUPHELP_ForceLBAUsage    db 'Uitschakelen van de', 0
-                               db 'combinatie van LBA', 0
-                               db 'en CHS. Er wordt dan', 0
-                               db 'ENKEL gebruik gemaakt', 0
-                               db 'van de BIOS LBA API''s.', 0
-                               db 0
+;~ TXT_SETUPHELP_ForceLBAUsage    db 'Uitschakelen van de', 0
+                               ;~ db 'combinatie van LBA', 0
+                               ;~ db 'en CHS. Er wordt dan', 0
+                               ;~ db 'ENKEL gebruik gemaakt', 0
+                               ;~ db 'van de BIOS LBA API''s.', 0
+                               ;~ db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Schakelt dynamische', 0
                                db 'wijziging van ext.', 0
                                db 'part. type id naar', 0

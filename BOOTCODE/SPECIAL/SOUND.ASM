@@ -19,7 +19,7 @@
 ;                                                  AiR-BOOT / SOUND SUPPORT
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'SOUND',0
 ENDIF
 

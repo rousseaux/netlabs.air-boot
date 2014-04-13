@@ -61,7 +61,9 @@ CHARSET_IncludeCyrillic        Proc Near  Uses si di bp
       add    di, 768                     ; Skip 3x16 char blocks
       jmp    DecodeLoop
   DecodeDone:
-   call   FX_WaitRetrace                 ; Wait for retrace to reduce flickering
+    IFDEF   FX_ENABLED
+        call   FX_WaitRetrace                 ; Wait for retrace to reduce flickering
+    ENDIF
    mov    ax, 1110h
    mov    bh, 16
    xor    bl, bl

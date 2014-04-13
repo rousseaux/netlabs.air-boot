@@ -178,8 +178,13 @@ MBRP_Line3      db      'ิอออดAiR-BOOT (c) Copyright by M. Kiewitz 1999-2012รออพ
 
 xxx:
 
-org             1023
-                db 0
+;~ org             1019
+org             763
+
+                ;
+                ; MBR-PROT signature at end.
+                ;
+                db  'MBRPI'
 
 CODE_SEG        ENDS
                 end

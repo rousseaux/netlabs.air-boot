@@ -27,7 +27,7 @@
 ; Some have to do with bin to ascii, others with translation.
 
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'CONV',0
 ENDIF
 

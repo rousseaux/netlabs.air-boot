@@ -19,7 +19,7 @@
 ;                                                 AiR-BOOT / OTHER ROUTINES
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'OTHER',0
 ENDIF
 
@@ -81,17 +81,50 @@ GetLenOfStrings     Proc Near   Uses bx dx si
         ret
 GetLenOfStrings     EndP
 
+
+
+
+;
+; DO PREPARING STUFF.
+;
 PRECRAP_Main    Proc Near
         ; First initialize Variable-Area (everything with NUL)
         ; We use the start instead of the variables because they could be 'orged'
         ; to an offset. We want everything after the code to be nullified.
         mov     di, offset sobss
-        mov     cx, offset EndOfVariables-offset BeginOfVariables
+        mov     cx, offset EndOfVariables - offset sobss
         xor     ax, ax
         shr     cx, 1
         inc     cx
         rep     stosw
 
+
+    ;
+    ; Tasm needs .386 to handle 32-bit constants so we push the current
+    ; operating state and switch temporarily to handle
+    ; InitialFreeDriveletterMap.
+    ;
+    IFDEF   TASM
+        pushstate
+        .386
+    ENDIF
+        ; Initialize the FreeDriveletterMap.
+        ; This is used by driveletter reassignment functions.
+        mov     di, offset [FreeDriveletterMap]
+        mov     ax, InitialFreeDriveletterMap AND 0ffffh
+        cld
+        stosw
+        mov     ax, InitialFreeDriveletterMap SHR 16
+        stosw
+    ;
+    ; Restore Tasm operating state.
+    ;
+    IFDEF   TASM
+        popstate
+    ENDIF
+
+
+        ; Use video page 0 for screen output
         mov     word ptr [VideoIO_Segment], VideoIO_Page0
 
         ; Don't use blinking attribute
@@ -133,21 +166,29 @@ PRECRAP_Main    Proc Near
         call    MBR_TeletypeNL
 
 
-        ; This sets [CurIO_UseExtension] flag
+        ; This sets [CurIO_UseExtension] flag.
         call    PRECRAP_CheckFor13extensions
         mov     al,[CurIO_UseExtension]
         test    al,al
-        jnz     INT13X_Present
+        jnz     INT13X_Supported
 
-;
-; Change this to a popup.
-;
-INT13X_Missing db '!! NO INT13X !!',0
-        mov     si, offset INT13X_Missing
-        call    MBR_Teletype
-        jmp     MBR_HaltSystem
+        ;
+        ; Show Message that BIOS INT13X is not supported
+        ; and Halt the System.
+        ;
+        mov     cx, 0C04h
+        mov     si, offset TXT_NoINT13XSupport
+        call    SETUP_ShowErrorBox
 
-INT13X_Present:
+        ; Halt the system.
+        jmp     HaltSystem
+
+
+    ;
+    ; INT13X Supported so continue.
+    ;
+    INT13X_Supported:
+
         xor     cx,cx
     PRECRAP_Main_next_disk:
 
@@ -159,7 +200,7 @@ INT13X_Present:
         ;
         call     DriveIO_GatherDiskInfo              ; Also used to fill the geo, should be separate function
 
-        mov      bx,offset HugeDisk
+        mov      bx,offset [HugeDisk]
         add      bx,cx
         mov      [bx], al
 
@@ -177,7 +218,7 @@ INT13X_Present:
         ;~ mov     al,'#'
         ;~ call    VideoIO_PrintSingleChar
 
-        mov      bx, offset TrueSecs
+        mov      bx, offset [TrueSecs]
         add      bx,cx
         add      bx,cx
         add      bx,cx
@@ -189,7 +230,7 @@ INT13X_Present:
         jnc      NoValidMasterLVM
 
         ; ?? 3f bij disk 80h maar 0 bij disk 81h
-        mov     si,offset LVMSector
+        mov     si,offset [LVMSector]
         mov     ax,[si+LocLVM_Secs]
 
         ;~ pusha
@@ -208,7 +249,7 @@ INT13X_Present:
 
     NoValidMasterLVM:
         push    bx                   ; push truesecs pointer
-        mov     bx, offset BIOS_Secs
+        mov     bx, offset [BIOS_Secs]
         add     bx,cx
         add     bx,cx
         add     bx,cx
@@ -226,7 +267,7 @@ INT13X_Present:
 
 
 
-    IFDEF AUX_DEBUG
+    IFDEF   AUX_DEBUG
         ; Write some debug-info to the com-port
         call     DEBUG_Dump1
     ENDIF
@@ -252,13 +293,13 @@ INT13X_Present:
 
 
         ; Huge Disk indicator
-        mov     si, offset HugeBootDisk
+        mov     si, offset [HugeBootDisk]
         call    MBR_Teletype
         mov     al,[HugeDisk]
-        mov     si, offset No
+        mov     si, offset [No]
         test    al,al
         jz      MBR_HugeDriveIndicator
-        mov     si, offset Yes
+        mov     si, offset [Yes]
 
     MBR_HugeDriveIndicator:
         call    MBR_Teletype
@@ -269,7 +310,7 @@ INT13X_Present:
         ;
         ; Phase 1 Indicator
         ;
-        mov     si, offset Phase1
+        mov     si, offset [Phase1]
         call    MBR_Teletype
 
         mov     si, offset eCS_InstallVolume
@@ -285,7 +326,9 @@ INT13X_Present:
 
 
         ; Calculate Cooper-Bar Tables
+    IFDEF   FX_ENABLED
         call    FX_CalculateTables
+    ENDIF
 
         ; Calculate LVM-CRC-Table
         call    LVM_InitCRCTable
@@ -311,7 +354,10 @@ INT13X_Present:
     ENDIF
 
 
-    call    PRECRAP_CheckConfiguration
+        ;
+        ; Check valididy of the AiR-BOOT Configuration.
+        ;
+        call    PRECRAP_CheckConfiguration
 
 
         ; =======================================
@@ -366,6 +412,9 @@ INT13X_Present:
         ret
 PRECRAP_Main    EndP
 
+
+
+
 AFTERCRAP_Main  Proc Near
         ; ===================================================
         ;  Now get volume label of FloppyDrive, if wanted...
@@ -380,6 +429,9 @@ AFTERCRAP_Main  Proc Near
     ACM_NoFloppyGetName:
         ret
 AFTERCRAP_Main  EndP
+
+
+
 
 PRECRAP_CheckFor13extensions    Proc Near
         mov     ah, 41h

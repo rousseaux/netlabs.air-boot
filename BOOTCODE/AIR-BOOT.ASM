@@ -18,30 +18,38 @@
 ;
 
 
-;------------------------------------------------------------------------------
+
+
+
+
+
+;##############################################################################
 ;                                                       AiR-BOOT / DEFINITIONS
-;------------------------------------------------------------------------------
-;
+;##############################################################################
 
 ;
 ; Include AiR-BOOT Version Information.
+; This version-info is defined using simpel EQU's so it can serve as a
+; single source for other formats. The AiR-BOOT signature and the
+; OS/2 BLDLEVEL use this basic version information.
 ;
 Include VERSION.INC
 
 ;
 ; Include OS/2 BLDLEVEL Information.
+; It uses the version-information in VERSION.INC to build it's signature.
 ;
 Include BLDLEVEL.INC
 
+;
+; Include some macro's.
+; This file contains the ORIGIN macro that is used to detect overlaps.
+;
+Include ../INCLUDE/ASM.INC
 
-; -------------------------
-; Rousseau: JUMPS disabled
-; -------------------------
+
 ; We actually don't want to use this directive because it generates extra
 ; NOP instructions that we can do without.
-; Relative conditional jumps that are out-of-range are manually reworked by
-; skipping an unconditional jump to the target on base of complementary
-; condition logic and temporary labels.
 ; TASM also has a bug in that when the .ERR2 directive is used when
 ; the .386 directive is in effect, the JUMPS directive is also active
 ; and cannot be turned off.
@@ -53,34 +61,49 @@ IFDEF   TASM
     ;~ JUMPS
 ENDIF
 
+
 ;
 ; If defined then each module is prefixed with it's name.
-; This is used for debugging purposes.
+; This is used for debugging purposes but it also increases code space.
 ; It should be off in release code.
 ;
-;ModuleNames             equ     1
-
-
-;
-; The first harddisk is BIOS coded 80h.
-; This makes a total of 128 disk could be supported using this coding.
-; This value is used to store disk-information and this info is allocated
-; in the BSS.
-;
-MaxDisks                equ     64
+;~ MODULE_NAMES    EQU
 
 
 
+; -----------------------------------------------------------------------------
+;                                                                        DEBUG
+; -----------------------------------------------------------------------------
 
 ;
-; Include Debug Modules and enable COM-port debugging.
+; Enable this to include Debug Modules and enable COM-port debugging.
+; To have room for the debug-code, the FX-code can only be enabled
+; when AUX_DEBUG is not defined.
 ;
 ;~ AUX_DEBUG       EQU
 
+;
+; To have FX enabled, make sure FX_ENABLE is defined.
+; There is no need (for now) to remove Cooper Bars from the setup-menu
+; because AiR-BOOT does not crash when enabling Cooper Bars while FX
+; is not compiled in. Only TAB to post-screen does not work.
+; Way to go Martin !
+;
+IFNDEF  AUX_DEBUG
+FX_ENABLED      EQU
+ENDIF
+
+;
+; If ReleaseCode is not defined, it will produce debug-able code...
+; Rousseau: This is currently *not* functional so don't use it !
+;           It was used to debug AiR-BOOT as a .COM file.
+;
+ReleaseCode             equ     -1
 
 
-
-
+; -----------------------------------------------------------------------------
+;                                                                          AUX
+; -----------------------------------------------------------------------------
 ;
 ; bits 7-5 = datarate
 ;  (000=110,001=150,010=300,011=600,100=1200,101=2400,110=4800,111=9600 bps)
@@ -105,15 +128,14 @@ BIOS_AUXPARMS_DEFAULT   EQU     (AUX_INIT_PARMS SHL 8) OR BIOS_COM_PORT
 
 
 
-;
-; If ReleaseCode is not defined, it will produce debug-able code...
-;
-ReleaseCode             equ     -1
-
-
-;
-; All Special Equ's for this project
-;
+; -----------------------------------------------------------------------------
+;                                                                       LABELS
+; -----------------------------------------------------------------------------
+; Address labels after code-move
+BootBaseSeg                 equ     08000h   ; Pre-boot, in the low 640K
+BootBasePtr                 equ         0h   ; We put our MBR to this location
+BootBaseExec                equ     BootBasePtr+offset MBR_RealStart
+StackSeg                    equ     07000h   ; Put the stack below the code
 
 ; Use different addresses depending on whether in pre-boot
 ; or debug (dos) environment.
@@ -128,21 +150,17 @@ ELSE
     StartBasePtr    equ     00100h  ; We are a .COM file, DOS is active
 ENDIF
 
-; Address labels after code-move
-BootBaseSeg                 equ     08000h   ; Pre-boot, in the low 640K
-BootBasePtr                 equ         0h   ; We put our MBR to this location
-BootBaseExec                equ     BootBasePtr+offset MBR_RealStart
-StackSeg                    equ     07000h   ; Put the stack below the code
 
+
+; -----------------------------------------------------------------------------
+;                                                                        VIDEO
+; -----------------------------------------------------------------------------
 ; Video pages, no INT 10h is used for menu-drawing etc.
 VideoIO_Page0               equ     0B800h
 VideoIO_Page1               equ     0B900h
 VideoIO_Page2               equ     0BA00h
 VideoIO_Page4               equ     0BC00h
 VideoIO_FXSegment           equ     0A000h
-
-; Include some macro's
-Include ../INCLUDE/ASM.INC
 
 ; Special line-drawing characters
 TextChar_WinLineRight       equ     0C4h ; 'Ä'
@@ -154,24 +172,32 @@ TextChar_WinRep4            equ     0B5h ; 'µ'
 TextChar_WinRep5            equ     0C6h ; 'Æ'
 TextChar_WinRep6            equ     0D8h ; 'Ø'
 
-; Offsets for Partition-Entries in MBR/EPRs
+
+
+; -----------------------------------------------------------------------------
+;                                                              PARTITION TABLE
+; -----------------------------------------------------------------------------
+; Offsets for Partition-Entries in MBR/EBRs
 LocBRPT_LenOfEntry          equ     16  ; Length of a standard MBR or EPR entry
 LocBRPT_Flags               equ     0   ; Bootable, Hidden, etc.
-LocBRPT_BeginCHS            equ     1   ; Combined 10-bits cyl with 6 bits
-LocBRPT_BeginHead           equ     1   ; Start head      (0<=H<255)    255 is invalid !
-LocBRPT_BeginSector         equ     2   ; Start sector    (1<=S<=255)
-LocBRPT_BeginCylinder       equ     3   ; Start cylinder  (0<=C<[1024,16384,65536,n])
+LocBRPT_BeginCHS            equ     1   ; Packed CHS value
+LocBRPT_BeginHead           equ     1   ; Start head, usually < 16
+LocBRPT_BeginSector         equ     2   ; Start sector, max 63 + cyl high bits
+LocBRPT_BeginCylinder       equ     3   ; Start cylinder 8+2 bits, max 1023
 LocBRPT_SystemID            equ     4   ; Type of system using the partition
-LocBRPT_EndCHS              equ     5   ; Same for end of partition
-LocBRPT_EndHead             equ     5
-LocBRPT_EndSector           equ     6
-LocBRPT_EndCylinder         equ     7
-LocBRPT_RelativeBegin       equ     8
-LocBRPT_AbsoluteLength      equ     12
+LocBRPT_EndCHS              equ     5   ; Packed CHS value
+LocBRPT_EndHead             equ     5   ; End head, usually < 16
+LocBRPT_EndSector           equ     6   ; End sector, max 63 + cyl high bits
+LocBRPT_EndCylinder         equ     7   ; End cylinder 8+2 bits, max 1023
+LocBRPT_RelativeBegin       equ     8   ; LBA32 address of partition
+LocBRPT_AbsoluteLength      equ     12  ; 32-bit length of partition
 
-LocBR_Magic                 equ     510
+; Signature relative to start of MBR/EBR
+LocBR_Magic                 equ     510 ; Offset of 0AA55h signature
 
-
+; -----------------------------------------------------------------------------
+;                                                                   LVM RECORD
+; -----------------------------------------------------------------------------
 ; Used as a quick compare in LVM.ASM
 LocLVM_SignatureByte0       equ     02h
 
@@ -192,16 +218,21 @@ LocLVM_LenOfEntry           equ     3ch ; Length of an LVM-entry
 ; LVM info-sector.
 LocLVM_MaxEntries           equ     4   ; Max entries in an LVM-sector
 
+
+; -----------------------------------------------------------------------------
+;                                                                    LVM ENTRY
+; -----------------------------------------------------------------------------
 ; Offsets for LVM entry.
 ; These are relative to the start of the entry.
-LocLVM_VolumeID             equ     00h ; is DWORD
-LocLVM_PartitionID          equ     04h ; is DWORD
-LocLVM_PartitionSize        equ     08h ; is DWORD
-LocLVM_PartitionStart       equ     0ch ; is DWORD
+LocLVM_VolumeID             equ     00h ; DWORD
+LocLVM_PartitionID          equ     04h ; DWORD
+LocLVM_PartitionSize        equ     08h ; DWORD
+LocLVM_PartitionStart       equ     0ch ; DWORD
 LocLVM_OnBootMenu           equ     10h ; is on IBM BM Bootmenu
 LocLVM_Startable            equ     11h ; is Startable (newly installed system)
-LocLVM_VolumeLetter         equ     12h ; is Drive Letter for partition (C-Z or 0)
-LocLVM_Unknown              equ     13h ; unknown BYTE
+LocLVM_VolumeLetter         equ     12h ; Drive Letter for partition (C-Z or 0)
+LocLVM_Unknown              equ     13h ; unknown BYTE (can be used ?)
+LocLVM_InstallLetter        equ     13h ; unknown BYTE (can be used ?)
 
 ; Truncated to 11 chars when  displayed in menu.
 ; MiniLVM sets both to the same value.
@@ -212,37 +243,34 @@ LocLVM_VolumeName           equ     14h ; 20 bytes
 LocLVM_PartitionName        equ     28h ; 20 bytes (Used in menu)
 
 ; LVM constants.
-LocLVM_LabelLen             equ     14h ; Length of an LVM Label (Disk/Part/Vol)
-LocLVM_DiskNameLen          equ     14h ; Length of an LVM DiskName
-LocLVM_VolumeNameLen        equ     14h ; Length of an LVM VolumeName
-LocLVM_PartitionNameLen     equ     14h ; Length of an LVM PartitionName
+LocLVM_LabelLen             equ     14h ; Length of LVM Label (Disk/Part/Vol)
+LocLVM_DiskNameLen          equ     14h ; Length of LVM DiskName
+LocLVM_VolumeNameLen        equ     14h ; Length of LVM VolumeName
+LocLVM_PartitionNameLen     equ     14h ; Length of LVM PartitionName
 
 
-
+; -----------------------------------------------------------------------------
+;                                                                 AiR-BOOT IPT
+; -----------------------------------------------------------------------------
 ; Offsets for IPT (Internal Partition Table)
-LocIPT_MaxPartitions        equ     partition_count ; 45 in v1.07
+LocIPT_MaxPartitions        equ     max_partitions  ; 45 in v1.07+
 LocIPT_LenOfSizeElement     equ     6   ; Size of one Size-Element
 LocIPT_LenOfIPT             equ     34  ; Length of an IPT-entry
 LocIPT_Serial               equ     0   ; Serial from MBR ?
 LocIPT_Name                 equ     4   ; Name from FS or LVM  (part/vol)
 LocIPT_Drive                equ     15  ; Drive-ID             (80h,81h)
 LocIPT_SystemID             equ     16  ; Partition-Type       (06,07,etc)
-LocIPT_Flags                equ     17  ; AiR-BOOT Flags for partition (see below)
+LocIPT_Flags                equ     17  ; AiR-BOOT Flags for part (see below)
 LocIPT_BootRecordCRC        equ     18  ; CRC of Boot-Record
 LocIPT_LocationBegin        equ     20  ; Begin of Partition
 LocIPT_LocationPartTable    equ     23  ; PartitionTable of Partition
 LocIPT_AbsoluteBegin        equ     26  ; Absolute Sector of Begin
 LocIPT_AbsolutePartTable    equ     30  ; Absolute Sector of PartTable
 
-; Hidden Partition Table
-;~ LocHPT_LenOfHPT             equ     30  ; Length of an HPT-entry
-; Length of an HPT-entry ((45 * 6 bits-per-part) / 8) * 45
-; Packed table !
-LocHPT_LenOfHPT             equ     34
 
 ; AiR-BOOT IPT-Flags
 LocIPT_DefaultFlags         equ     00000011b   ; Don't know if boot-able :)
-LocIPT_DefaultNonBootFlags  equ     00000010b   ; ...VIBR Detection is always on
+LocIPT_DefaultNonBootFlags  equ     00000010b   ; VIBR Detection is always on
 
 Flags_Bootable              equ     00000001b
 Flags_VIBR_Detection        equ     00000010b
@@ -258,6 +286,20 @@ FileSysFlags_FAT32          equ     00010000b   ; FAT 32 specific name getting
 FileSysFlags_NoName         equ     00100000b   ; No Name - use PartitionName
 FileSysFlags_DriveLetter    equ     01000000b   ; DriveLetter Feature possible
 
+
+; -----------------------------------------------------------------------------
+;                                                                 AiR-BOOT HPT
+; -----------------------------------------------------------------------------
+; Hidden Partition Table
+; Length of an HPT-entry ((45 * 6 bits-per-part) / 8) * 45
+; 33.75 = 34 bytes for HPT-entry, coincidently same as length of IPT-entry.
+; Packed table !
+LocHPT_LenOfHPT             equ     34
+
+
+; -----------------------------------------------------------------------------
+;                                                              NAVIGATION KEYS
+; -----------------------------------------------------------------------------
 ; Navigation keys
 Keys_Up                     equ     48h
 Keys_Down                   equ     50h
@@ -273,7 +315,7 @@ Keys_ENTER                  equ     1Ch
 Keys_ESC                    equ     1h
 Keys_F1                     equ     3Bh
 Keys_F10                    equ     44h
-Keys_C                      equ     2Eh     ; Add. Check auf Ctrl!
+Keys_C                      equ     2Eh     ; Add. Check for Ctrl!
 Keys_Y                      equ     2Ch
 Keys_Z                      equ     15h
 Keys_N                      equ     31h
@@ -285,46 +327,67 @@ Keys_Space                  equ     20h
 Keys_Flags_EnterSetup       equ     1100b   ; Strg+Alt (AL)
 
 
+; -----------------------------------------------------------------------------
+;                                                                         MISC
+; -----------------------------------------------------------------------------
+; Initial value for the FreeDriveletterMap
+; Meaning A,B not free; C-Z free, rest unused. (right to left)
+; Each partition with an assigned drive-letter clears a bit in this map.
+; (Not implemented yet)
+InitialFreeDriveletterMap   equ     00000011111111111111111111111100b
+
+;
+; The first harddisk is BIOS coded 80h.
+; This makes a total of 128 disks that could be supported using this coding.
+; This value is used to store disk-information and this info is allocated
+; in the BSS. 64 disks ought to be enough for everybody :-)
+;
+MaxDisks                    equ     64
 
 
 
 
-;------------------------------------------------------------------------------
+
+
+;##############################################################################
 ;                                                         AiR-BOOT / MAIN-CODE
-;------------------------------------------------------------------------------
+;##############################################################################
 
-; ------------------------------------------
-; Rousseau: # Changed this from .386 to .286
-; ------------------------------------------
+;
 ; Because of the TASM-bug the processor had to be changed to turn JUMPS
 ; off. Existing movzx instructions were replaced with 286 equivalent code.
 ; Out of range relative jumps have been recoded.
-; TASM still generates an extra NOP after test [mem],1
-; instructions.
-; JWasm produces tighter code.
-; JWasm:
-; With segment overrides, the address is expanded to the bit-width.
-; So, .386 will generate a 32-bit address, even in a USE16 segment.
+;
+; Since version 1.0.8, JWasm is the preferred assembler and Tasm will be
+; dropped. Also, the chances of AiR-BOOT being used on a 286-machine are
+; very slim, so a future version will revert back to .386 and also incorporate
+; 32-bit code. This will enable some enhanced constructs such as scaled
+; indexing, bit-instructions, 32-bit registers and what not.
+;
 .286
 
-; This influences the uses directive and other stuff,
-; like calling-style and local variables.
-; The model itself,large, has no effect because we generate
-; a binairy image and not a segmented executable.
-
-; Tasm needs a memory model for USES on PROC to work.
+;
+; For Tasm, MODEL is needed for the USES directive to work.
+; So always use a model when assembling with Tasm otherwise registers on
+; function calls that use USES are not saved and restored.
+; The model itself, has no real effect because we generate a binary image
+; and not a segmented executable.
+; For the other assemblers we define no model to get rid of the default C/C++
+; segments for future object-linked versions of AiR-BOOT.
+;
 IFDEF   TASM
     ;~ .model large, basic
     .model  tiny,c
 ENDIF
 
 ;
-; This is used to switch between the original 1-segment (code_seg) and the
-; 2-segment (code_seg and bss_data).
+; The below is used to switch between the original 1-segment (code_seg) layout
+; and the new 2-segment (code_seg and bss_data) layout.
+; It will be removed in future versions.
 ; The 2-segment layout was needed for JWasm because it does not treat
-; db ? in a code segment as bss-data, even if at the end of the code segment.
+; db ? at the end of a code segment as bss-data.
 ; Therefore, a true BSS segment is now used.
-; Both the code_seg and the bss_data are grouped to the logical airboot
+; Both the code_seg and the bss_data are grouped to the logical AIRBOOT
 ; segment.
 ; Note that this influences the offsets in the BSS in the list-file and
 ; the wdis disassembly file (.WDA).
@@ -333,126 +396,182 @@ ENDIF
 ;
 SEGMENTED   EQU
 
-IFDEF   SEGMENTED
-    AIRBOOT     GROUP   LDRIMAGE,VOLATILE
-ENDIF
+    IFDEF   SEGMENTED
+        AIRBOOT     GROUP   LDRIMAGE,VOLATILE
+    ENDIF
 
-; Our code-segment starts here.
-LDRIMAGE    SEGMENT     USE16   PUBLIC  'CODE'
+    ; Our code-segment starts here.
+    LDRIMAGE    SEGMENT     USE16   PUBLIC  'CODE'
 
-IFDEF   SEGMENTED
-    ASSUME  CS:AIRBOOT, DS:AIRBOOT, ES:nothing, SS:nothing
-ELSE
-    ASSUME  CS:LDRIMAGE,DS:LDRIMAGE,ES:nothing, SS:nothing
-ENDIF
+    IFDEF   SEGMENTED
+        ASSUME  CS:AIRBOOT, DS:AIRBOOT, ES:nothing, SS:nothing
+    ELSE
+        ASSUME  CS:LDRIMAGE,DS:LDRIMAGE,ES:nothing, SS:nothing
+    ENDIF
+
+
 
 ;==============================================================================
-                                                                    ; Sector 1
+;                                                                     Sector 1
+;==============================================================================
 
-;##############################################################################
+;------------------------------------------------------------------------------
                 ; We are not a .COM file at 100h but a BINARY image
                 ; of which only the 1st sector gets loaded at 0000:07c00h
                 ; by the BIOS. The code in this 1st sector is position
                 ; independent and moves itself to a new location at 8000:0000h.
                 ; Then it jumps to a new entry-point and loads the rest of
                 ; the image to the new location.
-                org 00000h                          ; Sector 1
-;##############################################################################
+                org 00000h
+;------------------------------------------------------------------------------
 
 
 ;
-; Start of sector 1
-; This is the MBR.
-; Note the AiRBOOT signature, it's date, version and language.
-; Version 1.07 was intruduced in 2011, version 1.0.8 in 2012.
-; These new versions fix issues with huge drives, lvm and more.
-; For a detailed description see AIR-BOOT.HIS.
+; Since AiR-BOOT is a boot-loader residing in track0, the first 512 bytes
+; have the layout of a Master Boot Record (MBR). When AiR-BOOT get's installed,
+; the first 512 bytes of this code get's merged with the Partition Table.
+; The rest is installed in the remaining sectors with sector 62 (LBA 61)
+; being the last sector used by AiR-BOOT. Sector 63 is reserved for IBM LVM.
+; The last sector used by AiR-BOOT is a copy of the MBR that AiR-BOOT makes
+; every time a system gets booted.
 ;
 
 ;
-; ---------------------------------------------
-; Rousseau: # Combined letter and jump offset #
-; ---------------------------------------------
+; Due to the addition of an extra 'I13X' sugnature and code to preserve the
+; values of the registers on entry, the MBR-code has become a bit messy.
+; This will be cleaned-up in future versions.
+;
+
+;
 ; Martin had a short jump followed by the AiRBOOT signature at first.
 ; Then he encountered strange behaviour by some M$ operating-systems
 ; if the the first insruction was not a CLI.
 ; But there was no room to insert the CLI and of course he did not want to
-; change the location of the AiRBOOT signature.
+; change the location of the AiR-BOOT signature.
 ; He solved this by inserting the M$ needed CLI at offset 0 followed by a short
-; jump that uses the 'A' of the AiRBOOT signature as the jump displacement.
+; jump that uses the 'A' of the AiR-BOOT signature as the jump displacement.
 ;
 
 
-;------------------------------------------------------------------------------
+; -----------------------------------------------------------------------------
+;                                                            FIRST ENTRY-POINT
+; -----------------------------------------------------------------------------
+; ######################################################
+; # ENTRY-POINT WHERE THE BIOS TRANSFERS CONTROL TO US #
+; ######################################################
 AiR_BOOT:
+                ; Some M$ operating systems need a CLI
+                ; here otherwise they will go beserk
+                ; and will do funny things during
+                ; boot phase, it's laughable!
+    MBR_1stOpc: cli
 
-        ; Some M$ operating systems need a CLI
-        ; here otherwise they will go beserk
-        ; and will do funny things during
-        ; boot phase, it's laughable!
-        cli
+                ; JMP-Short -> MBR_Start
+                ; Uses the 'A' from the signature as the displacement !
+    MBR_JmpOpc  db      0EBh
 
-        ; JMP-Short -> MBR_Start
-        ; Uses the 'A' from the signature as the displacement !
-        db      0EBh
+                ; ID String, Date (DD,MM,CC,YY), Version Number, Language ID
+                ;~ db      'AiRBOOT',24h,02h,20h,12h,01h,08h,TXT_LanguageID
+    MBR_ABSig:  InsertAirbootSignature  TXT_LanguageID
 
-        ; ID String, Date (DD,MM,CC,YY), Version Number, Language ID
-        ;~ db      'AiRBOOT', 24h, 02h, 20h, 12h, 01h, 08h, TXT_LanguageID
-        InsertAirbootSignature  TXT_LanguageID
+                    ; Total Code Sectors Count.
+                    ; Actual value will be inserted by FIXCODE.
+    MBR_CodeSecs    db      1
 
-        ; Total Sectors Count.
-        ; Will get overwritten by FIXCODE.
-        db      1
+                    ; Total Code Sectors Count, dynamically calculated.
+                    ;~ db      (code_end-$)/512
 
-        ; Total Sectors Count,
-        ; Dynamic calculation.
-        ;~ db      (code_end-$)/512
+                    ; Check-Sum for Code
+    MBR_CheckCode   dw      0
 
 
-MBR_CheckCode   dw      0               ; Check-Sum for Code
 
+; -----------------------------------------------------------------------------
+;                                                            THIRD ENTRY-POINT
+; -----------------------------------------------------------------------------
 ;
 ; No single instruction below should be changed, added or removed in the code
 ; below as this will cause the jump-link to go haywire.
 ;
 MBR_Start:
-                sti                     ;    This opcode is dedicated to:
-                cld                     ;    =MICROSOFT JUMP DEPARTMENT=
+                ;
+                ; When we arrive here, no registers have been used yet.
+                ; So, they still contain the values the BIOS left in them.
+                ; We want to preserve those value's for later inspection
+                ; by putting them on the stack.
+                ;
 
+                ; No space for this instruction here.
+                ; We'll enable interrupts later.
+                ;sti            ; This opcode is dedicated to:
+                                ; =MICROSOFT JUMP DEPARTMENT=
+
+
+                ; Push all registers with values provided by the BIOS
+                ; on the stack.
+                pusha
+                ; Temporary save SS and SP so we still have access to this
+                ; stack after we have setup our own.
+                mov     dx,ss
+                mov     bx,sp
+
+                ;
                 ; Setup some base stuff
                 ; AX got loaded wrongly for debug, changed the instructions
                 ; without modifying the number of bytes.
-                ; Don't comment-out the redundant instruction below because this
+                ; Don't comment-out the redundant instruction below because it
                 ; *will* change the number of bytes and break the jump-chain.
-                mov     ax, StartBaseSeg    ; The segment we are moving ourself from (NOT USED)
+                ;
+
+                ; The segment we are moving ourself from (NOT USED)
+                ;mov     ax, StartBaseSeg
                 ;mov     ds, ax
+
+                ; Make sure DS points to CS.
                 push    cs
                 pop     ds
-                mov     si, StartBasePtr    ; The offset we are moving ourself from
-                mov     ax, BootBaseSeg     ; The target segment we are moving ourself to
-                mov     es, ax
-                mov     di, BootBasePtr     ; The target offset we are moving ourself to
 
-            ; Depending on pre-boot or debug,
-            ; only move first 512 bytes or the whole she-bang++ (65400 bytes)
+                ; Setup the source and destination for the code move.
+                mov     si, StartBasePtr    ; The offset we move ourself from
+                mov     ax, BootBaseSeg     ; The target segment we move to
+                mov     es, ax
+                ;mov     di, BootBasePtr    ; The target offset we move to
+                ; Changed the instruction to make room.
+                ; So, BootBasePtr is not used !
+                ; The offset in the target segment is assumed to be 0000
+                ; anyway.
+                xor     di,di
+                ;sti
+
+            ; Depending on pre-boot or debug.
+            ; Note that ReleaseCode is obsolete, so we will always move
+            ; 256 words; aka this sector, the MBR.
             IFDEF ReleaseCode
                 mov     cx, 256          ; Pre-boot environment
             ELSE
-                mov     cx, 32700        ; Debug environment (move ~64kB)
+                mov     cx, 32700        ; Old Debug environment (move ~64kB)
             ENDIF
 
                 ;
-                ; LET's MOVE OURSELVES !
+                ; This moves this 512-byte sector, loaded by the BIOS at
+                ; 0000:7c00 to 8000:0000.
                 ;
+                cld
                 rep     movsw
 
-                ; Code an intersegment jump to the new location
+                ; Code an intersegment jump to the new location.
+                ; jmp    BootBaseSeg:BootBaseExec
+                ; Note that DX:BX containts the old SS:SP.
                 db      0EAh
                 dw      BootBaseExec    ; This is MBR_RealStart + BootBasePtr
                 dw      BootBaseSeg     ; This is 08000h
-                ;jmp     far ptr BootBaseSeg:BootBaseExec
 
 
+
+
+; -----------------------------------------------------------------------------
+;                                                         SIMPLE MBR FUNCTIONS
+; -----------------------------------------------------------------------------
 ;
 ; Some MBR-functions to provide absolute minimum functionality.
 ;
@@ -468,8 +587,6 @@ MBR_HaltSystem:
 MBR_HaltSys:
                 cli
                 jmp     MBR_HaltSys
-;db 100 dup (0)
-
 
 
                 ;
@@ -477,29 +594,36 @@ MBR_HaltSys:
                 ;
                 ORIGIN  0003Ch
 
-; Comport settings
-; It had to be moved to create room for the double I13X
-; signature.
+; Comport settings.
+; It had to be moved to create room for the double I13X signature.
 ; It cannot be in the config-area (sector 55)
 ; because that area is crc-protected and would not allow 'poking'.
 BIOS_AuxParms   dw      BIOS_AUXPARMS_DEFAULT
 
+
+IFDEF   AUX_DEBUG
 reserved        db      6   dup('X')
+ELSE
+reserved        db      6   dup(0)
+ENDIF
 
 
+
+
+; -----------------------------------------------------------------------------
+;                                                           SECOND ENTRY-POINT
+; -----------------------------------------------------------------------------
                 ;
                 ; We arrive here after the first jump using the 'A' of the
-                ; AiR-BOOT signature.
-                ; So we ensure the jump is always at this offset.
-                ; We jump here, because Martin needed to
-                ; insert a CLI on start and did not
-                ; want to change the AiR-BOOT signature
-                ; because of Microsoft inventions...
+                ; AiR-BOOT signature. So we ensure the jump is always at
+                ; this offset. We jump here, because Martin needed to
+                ; insert a CLI on start and did not want to change the
+                ; AiR-BOOT signature because of Microsoft inventions...
                 ;
                 ORIGIN  00044h
 
                 ; Jump again...
-                ; This time to the setup-code.
+                ; This time to the code that relocates to 8000:0000.
                 jmp     MBR_Start
 
 ;
@@ -572,18 +696,35 @@ MBR_GetCheckOfSector    EndP
 
 
 
+; -----------------------------------------------------------------------------
+;                                                    ENTRY-POINT OF MOVED CODE
+; -----------------------------------------------------------------------------
+
 ;
-; This is where the rest of AiR-BOOT gets loaded.
+; When we arrive here we are running at 8000:0000.
+; DX:BX contains the SS:SP of the old stack.
+;
+
+;
+; This is where the rest of AiR-BOOT gets loaded from track0.
 ;
 
 ;------------------------------------------------------------------------------
 MBR_RealStart:
+                ;
+                ; Setup new stack and other segment registers.
+                ;
                 mov     ax, StackSeg    ; 07000h, below the moved code
                 mov     ss, ax
-                ;mov     sp, 7FFFh      ; Odd stack-pointer ??
                 mov     sp, 7FFEh       ; Even is better
-                mov     ax, es          ; ES holds segment where we moved to
-                mov     ds, ax          ; Set DS==ES to Code Segment
+                push    es              ; ES holds segment where we moved to
+                pop     ds              ; Set DS==ES to Code Segment
+
+                ;
+                ; Push the old SS:SP which was saved in DX:BX on the new stack.
+                ;
+                push    dx      ; Old SS
+                push    bx      ; Old SP
 
 
             ; If we are in debug-mode, all code is moved already,
@@ -591,43 +732,39 @@ MBR_RealStart:
             ; One difference is that in debug-mode, the whole .com image is
             ; loaded by dos while when air-boot is active from the MBR it
             ; does the loading itself.
+            ; (This debug environment is obsolete and dis-fuctional)
             IFNDEF ReleaseCode
                 jmp     AiR_BOOT_Start
             ENDIF
 
-
-                ; Load missing parts from harddrive...
-                ;mov     ax, cs          ; actually obsolete
-                ;mov     es, ax          ; actually obsolete
-
                 ; Load the configuration-sectors from disk.
+                ; These are the main configuration sector and the various
+                ; tables that follow it upto but not including the MBR backup.
                 mov     bx, offset Configuration
-                mov     dx, 0080h       ; First harddrive, Sector 55
-                mov     cx, 0037h       ; Is 55d is config-sector
+                mov     dx, 0080h       ; First harddrive
+                mov     cx, 0037h       ; Config sector is at 55d (CHS)
 
                 ; Call the i/o-part
                 call    MBR_LoadConfig
-
                 jnc     MBR_ConfigCopy_NoError
 
                 ; Some error occured
     MBR_ConfigCopy_LoadError:
-                call    MBR_LoadError   ; Will Abort BootUp
+                call    MBR_LoadError               ; Will Abort BootUp
 
                 ; Load the code sectors
     MBR_ConfigCopy_NoError:
-                mov     bx, offset FurtherMoreLoad
-                mov     dx, 0080h       ; First harddrive
-                mov     cx, 0002h       ; Second sector
-                mov     ah, 02h
+                mov     bx, offset FurtherMoreLoad  ; Directly after MBR in mem
+                mov     dx, 0080h                   ; First harddrive
+                mov     cx, 0002h                   ; Start at second sector
+                mov     ah, 02h                     ; Read sectors
 
-                ; This location is in the code-segment.
-                ; When segment overrides are applied, the address is
-                ; expanded to the bit-with.
-                ; So the .286 or .386 directive influences the length
-                ; of the instruction, even with a USE16 segment.
-                mov     al, ds:[10h]    ; Number of code sectors
-                int     13h
+                ; This location is in the MBR.
+                ; It is filled in by the FIXCODE helper that post processes
+                ; the AIRBOOT loader image after it has been built.
+                ; FIXCODE also embeds the MBR protection-image.
+                mov     al, ds:[10h]                ; Number of code sectors
+                int     13h                         ; Call BIOS service
                 jnc     MBR_RealStart_NoError
                 jmp     MBR_ConfigCopy_LoadError
 
@@ -644,8 +781,8 @@ MBR_RealStart:
                 ;
                 ; Update: These are actually MOV EAX,'X31I' instructions
                 ; in the eCS LVM MBR-code. They are at different places in
-                ; the v1.x and v2.x LVM code.
-                ; Let's protect their location.
+                ; the v1.x and v2.x LVM MBR-code. Other code might depend on
+                ; their presence. Let's protect their location.
                 ORIGIN  000d0h
                 db      'I13X',0,'I13X',0
 
@@ -658,6 +795,7 @@ MBR_RealStart:
                 mov     cl, ds:[10h]
                 mov     ch,0
 
+                ; Claculate checksum
                 xor     bx, bx
     MBR_RealStart_CheckCodeLoop:
                 call    MBR_GetCheckOfSector
@@ -674,6 +812,13 @@ MBR_RealStart:
                 mov     si, offset TXT_ERROR_CheckFailed
                 call    MBR_Teletype
                 jmp     MBR_HaltSystem
+
+
+                ;
+                ; OK, all loading went fine so the rest of the code
+                ; is present now, so we jump to it.
+                ; The old SS:SP is still on the stack.
+                ;
     MBR_RealStart_CheckSuccess:
                 jmp     AiR_BOOT_Start
 
@@ -682,7 +827,7 @@ MBR_RealStart:
 
 
 ;------------------------------------------------------------------------------
-   Include TEXT/TXTMBR.ASM                     ; All translateable Text in MBR
+Include TEXT/TXTMBR.ASM                        ; All translateable Text in MBR
 ;------------------------------------------------------------------------------
 
 
@@ -710,12 +855,12 @@ MBR_LoadConfig  EndP
                 ORIGIN  001B8h
 
                 ; AiR-BOOT will merge the field from the MBR it replaces.
-                db      'DSIG'
+    MBR_DrvSig  db      'DSIG'
 
                 ; Unused word at 01BCh.
                 ; An LVM 2.x MBR puts 0CC33h here.
                 ; AiR-BOOT will merge the field from the MBR it replaces.
-                dw      '$$'
+    MBR_Spare   dw      '$$'
 
 
                 ;
@@ -725,26 +870,30 @@ MBR_LoadConfig  EndP
 
                 ; The 4 entries just for show.
                 ; AiR-BOOT will merge them from the MBR it replaces.
+    MBR_PartTable:
                 db      16  dup('0')
                 db      16  dup('1')
                 db      16  dup('2')
                 db      16  dup('3')
 
                 ; Boot Sigbature
-                dw      0aa55h
+    MBR_Sig     dw      0aa55h
 
-; End of sector 1
+
 
 
 
 
 
 ;==============================================================================
-                                                                    ; Sector 2
+;                                                                     Sector 2
+;==============================================================================
 
-                ;
-                ; Here starts the second sector, sector 2
-                ;
+; -----------------------------------------------------------------------------
+;                                                           FILE-SYSTEM TABLES
+; -----------------------------------------------------------------------------
+
+
                 ORIGIN  00200h
 
 ;
@@ -758,7 +907,7 @@ FurtherMoreLoad:
 ;
 
                 ; first Normal-Partition-ID, Hidden-Partition-ID
-                ;  and Default-Partition-Flags.
+                ; and Default-Partition-Flags.
                 ; 01h -> Boot-Able
                 ; 10h -> FAT32 - Name Getting Scheme
                 ; 20h -> No Name To Get (use Partition Name from IPT)
@@ -794,25 +943,40 @@ FileSysNames    db  'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
 
 
 
+
+
 ;==============================================================================
-                                                                    ; Sector 3
-                ;
-                ; Sector 3
-                ;
+;                                                                     Sector 3
+;==============================================================================
+
+; -----------------------------------------------------------------------------
+;                               ENTRY-POINT AFTER LOADING THE REST OF THE CODE
+; -----------------------------------------------------------------------------
+
                 ORIGIN  00400h
 
 
-                ; ##############################################
-                ; ## ENTRY-POINT AFTER ALL THE INITIAL HASSLE ##
-                ; ##############################################
-
-
-
-
+; ############################################
+; # ENTRY-POINT AFTER ALL THE INITIAL HASSLE #
+; ############################################
 AiR_BOOT_Start:
 
 
+        ;
+        ; Enable interrupts.
+        ;
+        sti
 
+        ;
+        ; Pop the old SS:SP from the stack and save it in the BSS.
+        ;
+        pop     [OldSP]
+        pop     [OldSS]
+
+
+; -----------------------------------------------------------------------------
+;                                                      IBM-BM BOOT PREPARATION
+; -----------------------------------------------------------------------------
         ;
         ; Since v1.0.8, AiR-BOOT is able to chainload IBM-BM.
         ; When IBM-BM resides above the 1024-cylinder limit, the 'I13X'
@@ -825,7 +989,7 @@ AiR_BOOT_Start:
         ; So, now is a good time to copy the MBR of the first disk to
         ; 0000:7E00 in case the partition that will be started is IBM-BM.
         ; This copy is located at 8000:0000 and DS already points to this
-        ; segment.
+        ; segment. The 'I13X' signature and FS will be setup later.
         ;
         pusha                           ; Save all the general purpose regs
         push    es                      ; We need ES too, so save its value
@@ -840,38 +1004,136 @@ AiR_BOOT_Start:
         popa                            ; Restore all the general purpose regs
 
 
-                ;~ nop
-                ;~ mov     ax, offset sobss
-                ;~ mov     ax,offset BeginOfVariables
-                ;~ mov     ax,offset [TrueSecs]
-                ;~ lea     ax, [TrueSecs]  ; Tasm generates mov here
-                ;~ mov     ax,word ptr [TrueSecs]
-                ;~ mov     ax,offset EndOfVariables
-                ;~ mov     ax, offset eobss
-                ;~ nop
+; -----------------------------------------------------------------------------
+;                                                                      PRECRAP
+; -----------------------------------------------------------------------------
 
-
-
-                ;jmp skip
-
-                mov     al, byte ptr [CFG_Partitions]
-                mov     byte ptr [OldPartitionCount], al
-
-                ; Initialize Variable-Tables, Detections, etc.
+                ;
+                ; First it clears the BSS area.
+                ; Note that the old SS:SP is stored outside this area so ti
+                ; does not get lost.
+                ; Then initialize various runtime variables and structures.
+                ;
                 call    PRECRAP_Main
+                ; Number of harddisks and other system-info is now known.
 
-                ; Number of harddisks is now known
+            ;!
+            ;! DEBUG_BLOCK
+            ;! Let's see what the BIOS supplied us with...
+            ;! Uncomment below to activate.
+            ;!
+            __DUMP_BIOS_REGS__  EQU
+            IFDEF   AUX_DEBUG
+                IFDEF   __DUMP_BIOS_REGS__
+                    pushf
+                    pusha
+                    ; Print title.
+                    mov     si,offset [bios_reg]
+                    call    AuxIO_Print
+                    ; Save the current stack (SS:SP).
+                    mov     ax,ss
+                    mov     [CurrentSS],ax
+                    mov     [CurrentSP],sp
 
-IFDEF   AUX_DEBUG
+                    ; Restore the old stack.
+                    mov     ss,[OldSS]
+                    mov     sp,[OldSP]
+
+                    ; Pop the registers with the BIOS values.
+                    popa
+                    ; Push them back for AiR-BOOT restart (debug mode).
+                    pusha
+                    ; Dump them to the serial-port.
+                    call    DEBUG_DumpRegisters
+                    ; Restore the current stack.
+                    mov     ax,[CurrentSS]
+                    mov     ss,ax
+                    mov     sp,[CurrentSP]
+
+                    ; Restore registers.
+                    popa
+                    popf
+                ENDIF
+            ENDIF
+
+
+
+
+            ;!
+            ;! DEBUG_BLOCK
+            ;! Dump the registers at this point.
+            ;! Uncomment below to activate.
+            ;!
+            IFDEF   AUX_DEBUG
+                ;~ call    DEBUG_DumpRegisters
+                ; Dump drive-letters of dl-feature before partitions are
+                ; scanned and processed.
+                call    DEBUG_DumpDriveLetters
+                call    DEBUG_DumpVolumeLetters
+                call    DEBUG_DumpPartitionXref
+            ENDIF
+
+; -----------------------------------------------------------------------------
+;                                                               PARTITION SCAN
+; -----------------------------------------------------------------------------
+                ;
+                ; Scan all partitions
+                ;
+                call    PARTSCAN_ScanForPartitions
+                ; Internal Partition Table is now populated.
+
+            ;!
+            ;! DEBUG_BLOCK
+            ;! Dump various tables.
+            ;! Uncomment below to activate.
+            ;!
+            IFDEF   AUX_DEBUG
                 ;~ call    DEBUG_DumpIPT
                 ;~ call    DEBUG_DumpPartitionPointers
-                ;~ call    DEBUG_DumpPartitionXref
                 ;~ call    DEBUG_DumpNewPartTable
                 ;~ call    DEBUG_DumpDriveLetters
-ENDIF
+                call    DEBUG_DumpDriveLetters
+                call    DEBUG_DumpVolumeLetters
+                call    DEBUG_DumpPartitionXref
+            ENDIF
 
-                ; Scan all partitions
-                call    PARTSCAN_ScanForPartitions
+
+; -----------------------------------------------------------------------------
+;                                 RESTORE FORCED DRIVELETTER CORRELATION [LVM]
+; -----------------------------------------------------------------------------
+
+                ;
+                ; Reconnect forced drive-letters to their corresponding
+                ; partitions.
+                ;
+                call    PARTSCAN_UpdateDriveLetters
+                ; Driveletter <-> Partition correlation is now restored.
+
+
+
+            ;!
+            ;! DEBUG_BLOCK
+            ;! Dump various tables.
+            ;! Uncomment below to activate.
+            ;!
+            IFDEF   AUX_DEBUG
+                ;~ call    DEBUG_DumpIPT
+                ;~ call    DEBUG_DumpPartitionPointers
+                ;~ call    DEBUG_DumpNewPartTable
+                ;~ call    DEBUG_DumpDriveLetters
+                call    DEBUG_DumpDriveLetters
+                call    DEBUG_DumpVolumeLetters
+                call    DEBUG_DumpPartitionXref
+            ENDIF
+
+
+; -----------------------------------------------------------------------------
+;                                                            SHOW WE ARE ALIVE
+; -----------------------------------------------------------------------------
+
+                ;
+                ; Put some info about AiR-BOOT and the system on the screen.
+                ;
 
                 ; Display number of physical disks found
                 mov     si, offset DisksFound
@@ -898,19 +1160,19 @@ ENDIF
                 call    VideoIO_DumpDiskInfo
 
 
-IFDEF   AUX_DEBUG
-                ;~ call    DEBUG_DumpIPT
-                ;~ call    DEBUG_DumpPartitionPointers
-                ;~ call    DEBUG_DumpPartitionXref
-                ;~ call    DEBUG_DumpNewPartTable
-ENDIF
 
 
-                ; ======================
-                ; == eCS PHASE1 check ==
-                ; ======================
 
-                ; If the firt byte if name of the Install Volume is not 0
+; -----------------------------------------------------------------------------
+;                                                     eComStation PHASE1 CHECK
+; -----------------------------------------------------------------------------
+
+                ;
+                ; Here we check if eComStation v2.1 is being installed.
+                ; If so, we forgo the menu and directly boot it.
+                ;
+
+                ; If the first byte of the name of the Install Volume is not 0
                 ; then we potentially have a phase1 boot.
                 test    byte ptr [eCS_InstallVolume],0ffh
                 ; Nope, so continue normally.
@@ -925,102 +1187,121 @@ ENDIF
                 jnc     MBR_Main_ContinueBoot
 
 
+                ;
                 ; == Install Volume Found ==
+                ;
 
-                ; Because the old IPT read from disk differs from the new
-                ; IPT, we need to rescan all partitions.
-                ; This causes the PartitionXref table to be filled with
-                ; correct values so the auto-boot from the new partition
-                ; works correctly.
+
+            ;!
+            ;! DEBUG_BLOCK
+            ;! Dump various tables.
+            ;! Uncomment below to activate.
+            ;!
+            IFDEF   AUX_DEBUG
+                ;~ call    DEBUG_DumpIPT
+                ;~ call    DEBUG_DumpPartitionPointers
+                ;~ call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpNewPartTable
+                ;~ call    DEBUG_DumpDriveLetters
+            ENDIF
+
+
+                ; Because one or more partitions are possibly added, the
+                ; PartitionXref table is not 'in sync' and could cause the
+                ; wrong system to be automatically booted.
+                ; So we rescan all partitions causing the PartitionXref
+                ; table to be filled with correct values so the auto-boot
+                ; from the new partition will work correctly.
                 call    PARTSCAN_ScanForPartitions
+
+
+            ;!
+            ;! DEBUG_BLOCK
+            ;! Dump various tables.
+            ;! Uncomment below to activate.
+            ;!
+            IFDEF   AUX_DEBUG
+                ;~ call    DEBUG_DumpIPT
+                ;~ call    DEBUG_DumpPartitionPointers
+                ;~ call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpNewPartTable
+                ;~ call    DEBUG_DumpDriveLetters
+            ENDIF
 
                 ; Setup automatic boot to forgo the Menu.
                 ; PART_SetupPhase1 has filled in the other variables.
                 mov     byte ptr [CFG_AutomaticBoot],1
 
-
-IFDEF   AUX_DEBUG
-                ;~ call    DEBUG_DumpIPT
-                ;~ call    DEBUG_DumpPartitionPointers
-                ;~ call    DEBUG_DumpPartitionXref
-                ;~ call    DEBUG_DumpNewPartTable
-ENDIF
-
-
+                ;
+                ; At this point the AiR-BOOT configuration has been altered
+                ; to automatically boot the newly installed system without
+                ; displaying the menu.
+                ; Code further down the road will take care of that.
+                ;
                 jmp     MBR_Main_ContinueBoot
 
 
 
 
-
+    ;
+    ; Wether a new system is being installed or not,
+    ; booting continues here.
+    ;
     MBR_Main_ContinueBoot:
+
+                ;
+                ; Inform user how to switch between post-screen and menu
+                ; by putting this info on the screen.
+                ;
                 xor     si,si
                 call    MBR_TeletypeNL
                 xor     si,si
                 call    MBR_TeletypeNL
-
-
                 call    MBR_TeletypeSyncPos
-
                 xor     si,si
                 call    MBR_TeletypeNL
                 call    MBR_TeletypeNL
-
-
-
                 mov     si, offset ShowMenu
                 call    MBR_TeletypeBold
 
 
-
-
-
+                ;
+                ; Debug stop.
+                ;
 
                 ;
                 ; ####################### WAIT FOR KEY ########################
                 ;
 
-
-                ; Rousseau:
                 ; Wait for key so we can see debug log if ab-menu hangs.
                 ;~ xor     ax, ax
                 ;~ int     16h
-
                 ;call     SOUND_Beep
 
-                ; Rousseau: delayed save of video-page
 
+                ; Copy BIOS POST to Second Page
                 mov     ax, VideoIO_Page1
-                call    VideoIO_BackUpTo    ; Copy BIOS POST to Second Page
+                call    VideoIO_BackUpTo
 
                 ;call     SOUND_Beep
-
-
-                ;
-                ; COM-PORT DEBUG
-                ;
-                ;call    AuxIO_TeletypeNL
-                ;mov     si, offset PartitionTable
-                ;call    AuxIO_DumpSector
-                ;call    AuxIO_TeletypeNL
 
 
                 ; Save configuration so phase1 boot-through is disabled
                 ; on next boot.
-                mov     byte ptr [eCS_InstallVolume], 0  ; disable phase 1 for next boot
+                mov     byte ptr [eCS_InstallVolume], 0
                 call    DriveIO_SaveConfiguration
 
 
 
                 ;
-                ; RE-ENTER SETUP
+                ; See if setup needs to be entered.
                 ;
     MBR_Main_ReEnterSetup:
                 call    SETUP_CheckEnterSETUP
 
-                ;call    SOUND_Beep
-
-                ; Rousseau: Every time I see "AfterCrap" I have to laugh :-)
+                ;
+                ; Do some post processing.
+                ;
                 call    AFTERCRAP_Main
 
                 ; [Linux support removed since v1.02]
@@ -1033,7 +1314,6 @@ ENDIF
 
 
     MBR_Main_ReEnterBootMenuPre:
-
                 ; SetUp PartitionPointers for BootMenu (filter non-bootable)
                 call    PART_CalculateMenuPartPointers
 
@@ -1089,37 +1369,46 @@ ENDIF
 
     MBR_Main_GotBootMenu:
                 ; ------------------------------------------ BOOT-MENU VISUALS
-                call    FX_StartScreen
 
-                ;call    SOUND_Beep
+
+            IFDEF   FX_ENABLED
+                call    FX_StartScreen
+            ENDIF
 
                 call    BOOTMENU_BuildBackground
                 call    BOOTMENU_BuildMain
+
+            IFDEF   FX_ENABLED
                 call    FX_EndScreenRight
+            ENDIF
+
                 call    PASSWORD_AskSystemPwd
                 call    BOOTMENU_ResetTimedBoot
 
-                ;call    SOUND_Beep
-
                 call    BOOTMENU_Execute
-
-                ;call    SOUND_Beep
 
                 jc      MBR_Main_ReEnterSetup
                 call    BOOTMENU_SetVarsAfterMenu
 
-                ;call    SOUND_Beep
-
                 ; ---------------------------------------------------- BOOTING
     MBR_Main_NoBootMenu:
+
+            IFDEF   FX_ENABLED
                 call    FX_StartScreen
+            ENDIF
+
                 call    BOOTMENU_BuildGoodBye
+
+            IFDEF   FX_ENABLED
                 call    FX_EndScreenRight
+            ENDIF
+
                 call    PASSWORD_AskChangeBootPwd
 
             IFNDEF ReleaseCode
                 ; Debug Code to terminate DOS .COM program - used for
                 ;  testing AiR-BOOT
+                ; Obsolete.
                 int     3
                 mov     ax, 6200h
                 int     21h
@@ -1135,30 +1424,80 @@ ENDIF
                 ; See below for the adjustment.
                 mov     dl, byte ptr [Menu_EntrySelected]
 
+
+                ;
+                ; Prepare to start the partition.
+                ;
                 jmp     MBR_Main_StartPartition
 
 
 
+; -----------------------------------------------------------------------------
+;                                                              START PARTITION
+; -----------------------------------------------------------------------------
+
     MBR_Main_StartPartition:
 
-IFDEF   AUX_DEBUG
+            IFDEF   AUX_DEBUG
                 ;~ call    DEBUG_DumpIPT
                 ;~ call    DEBUG_DumpPartitionPointers
                 ;~ call    DEBUG_DumpPartitionXref
                 ;~ call    DEBUG_DumpNewPartTable
-ENDIF
+            ENDIF
 
 
                 ; -------------------------------------------- START PARTITION
+                ; THIS DOES NOT RETURN !
                 call    PART_StartPartition
 
 
 
+
+;
+; This entry-point restarts AiR-BOOT almost from scratch.
+; It skips the movement of the MBR but otherwise it is a functional restart.
+; The old BIOS SS:SP where the registers on entry are stored is passed along.
+;
+AirbootRestart:
+        mov     bx, [OldSP]     ; Old SP when BIOS transferred control to AB
+        mov     dx, [OldSS]     ; Old SS when BIOS transferred control to AB
+        jmp     MBR_RealStart
+
+
+;
+; This entry-point displays a popup that the system is halted
+; and then halts the system.
+; It is entered on severe error conditions.
+;
+HaltSystem:
+        call    VideoIO_ClearScreen
+        mov     ax,0ababh
+        mov     cx, 0C04h
+        mov     si, offset SystemHalted
+        call    SETUP_ShowErrorBox
+        ; Halt the system.
+        jmp     MBR_HaltSystem
+
+
+
+
+
+
+                ;
+                ; The following section includes various assembler
+                ; modules. These contain functionality for a multitude of
+                ; categories like disk-access, video-io, lvm, debugging, etc.
+                ;
+
+
+; -----------------------------------------------------------------------------
+;                                                        INCLUDED FILE SECTION
+; -----------------------------------------------------------------------------
+
 ;
 ; Include other code-modules here.
-; Because TASM is a multiple pass assembler, forward references
-; are possible.
 ;
+
 b_std_txt:
 Include REGULAR/STD_TEXT.ASM    ; Standard (non-translateable text)
 size_std_txt = $-b_std_txt
@@ -1203,68 +1542,9 @@ b_main:
 Include SETUP/MAIN.ASM          ; The whole AiR-BOOT SETUP
 size_main = $-b_main
 
-
-
-IFDEF TXT_IncludeCyrillic
-b_ccharset:
-   Include SPECIAL/CHARSET.ASM  ; Charset Support (e.g. Cyrillic)
-size_ccharset = $-b_ccharset
-ENDIF
-
-
 b_math:
 Include REGULAR/MATH.ASM        ; Math functions (like 32-bit multiply)
 size_math = $-b_math
-
-
-
-
-; Various debugging routines, uses AUXIO and CONV
-IFDEF AUX_DEBUG
-b_debug:
-Include REGULAR/DEBUG.ASM       ; Debug module
-size_debug = $-b_debug
-b_auxio:
-Include REGULAR/AUXIO.ASM       ; Com-port support for debugging
-size_auxio = $-b_auxio
-ENDIF
-
-
-
-
-;==============================================================================
-
-                ;
-                ; Moved up.
-                ;
-
-                ;
-                ; This is the AiR-BOOT MBR-Protection Image.
-                ; 04600 / 200h = 23h = 35d sectors are before this point.
-                ; The stuff generated here gets overwritten when the
-                ; MBR_PROT.ASM module, which is assembled separately,
-                ; gets merged.
-                ; So you won't find the string below in the generated binary.
-                ;
-                ; MOVED TO 6800h to create space and have a continuous
-                ; code block.
-                ; This makes the RU version buildable again with Tasm.
-                ;
-                ;org     04600h                                  ; Sector 36-37
-
-
-                ; Rousseau: It needed a sector alignment, so moved it up to
-                ;           have as much space as possible for the modules
-                ;           included here.
-
-
-;==============================================================================
-                                                                 ; Sector 38-x
-                ;
-                ; This section contains translatable texts.
-                ;
-                ;org     04A00h
-
 
 b_txtother:
 Include TEXT/TXTOTHER.ASM       ; All translateable Text-Strings
@@ -1285,30 +1565,15 @@ size_conv = $-b_conv
 b_virus:
 Include SPECIAL/VIRUS.ASM       ; Virus Detection / Anti-Virus
 size_virus = $-b_virus
+
 ; [Linux support removed since v1.02]
 ;Include SPECIAL/FAT16.ASM       ; FAT-16 Support
 ;Include SPECIAL/LINUX.ASM       ; Linux Kernel Support
+
 b_billsuxx:
 Include SPECIAL/F00K/BILLSUXX.ASM   ; Extended Partition - Microsoft-Hack
 size_billsuxx = $-b_billsuxx
 
-
-
-                ;
-                ; Critical end of code marker.
-                ; Should always be in the image, otherwise something
-                ; is very wrong.
-                ;
-                db      'DEAD'
-                db      'FACE'
-
-;
-; Keep these modules here at the end of the code section.
-; When debugging, extra code space is used and code will move up towards
-; the protection image that is 'orged' and will thus overlay.
-; The effects are turned off in debug mode, so it does not matter much that
-; this code get's lost.
-;
 b_sound:
 Include SPECIAL/SOUND.ASM       ; Sound
 size_sound = $-b_sound
@@ -1317,24 +1582,80 @@ b_apm:
 Include SPECIAL/APM.ASM         ; Power Managment Support
 size_apm = $-b_apm
 
+
+
+;
+; Cyrillic support.
+;
+IFDEF   TXT_IncludeCyrillic
+b_ccharset:
+   Include SPECIAL/CHARSET.ASM  ; Charset Support (e.g. Cyrillic)
+size_ccharset = $-b_ccharset
+ENDIF
+
+; Various debugging routines, uses AUXIO and CONV
+IFDEF   AUX_DEBUG
+b_debug:
+Include REGULAR/DEBUG.ASM       ; Debug module
+size_debug = $-b_debug
+b_auxio:
+Include REGULAR/AUXIO.ASM       ; Com-port support for debugging
+size_auxio = $-b_auxio
+ENDIF
+
+;
+; We only include this if FX_ENABLED is defined.
+; FX is disabled when debugging to have more room for debug-code.
+; The module compiles to 50eh = 1294 bytes, so that is a lot.
+;
+IFDEF   FX_ENABLED
 b_fx:
 Include SPECIAL/FX.ASM          ; l33t Cooper-Bars/Scrolling <bg>
 size_fx = $-b_fx
-
-
-; If we are debugging, we overwrite the FX code.
-; As long as FX is disabled this will do no harm.
-IFDEF   AUX_DEBUG
-                ORG     06780h
 ENDIF
+
+
+                ;
+                ; End of code marker.
+                ;
+                db      'BABE'
+                db      'FACE'
+
+
+; -----------------------------------------------------------------------------
+;                                                                  END OF CODE
+; -----------------------------------------------------------------------------
+code_end:
+
+
+
+
+
+
+
+
+
+
+; -----------------------------------------------------------------------------
+;                                                         BLDLEVEL INFORMATION
+; -----------------------------------------------------------------------------
+
+                ORIGIN  068A0h
+
+;
+; The space between this offset and code_end is the space
+; available for code.
+;
+zzz_code_space = $ - code_end
 
 
 bld_level:
                 ;
                 ; Here we insert the OS/2 BLDLEVEL Information.
                 ; It is composed of the AiR-BOOT version-info and other
-                ; information.
-                ; It is unique for each release of AiR-BOOT.
+                ; information. It is unique for each release of AiR-BOOT.
+                ;
+
                 ;
                 ; ?? When AUX_DEBUG is enabled and the above org is active,
                 ; the BLDLEVEL gets corrupted eventhough it gets inserted here
@@ -1345,55 +1666,79 @@ bld_level:
                 ;
                 InsertBuildLevel
 
-                ;bliep <>
+
+
+
+
+;==============================================================================
+;                                                                    Sector 53
+;==============================================================================
 
                 ;
-                ; End of code marker.
-                ; If this one vanishes in the image, the FX code will not
-                ; be operational.
-                ; Will happen with debugging enabled.
+                ; From here on, the layout of the image consists of:
+                ; - AiR-BOOT Protection Image
+                ; - AiR-BOOT Configuration
+                ; - DriveLetters
+                ; - Install Volume
+                ; - Floppy/CDROM/BIOS BOOT ENTRIES
+                ; - Internal Partition Table (IPT)
+                ; - Hidden Partition Table (HPT)
+                ; - MBR Backup
                 ;
-                db      'BABE'
-                db      'FACE'
-
-code_end:
-
 
                 ;
-                ; AiR-BOOT Protection Image.
-                ; Moved from below to have it not break the included modules
-                ; with it's sector alignment requirement.
+                ; After that, the BSS follows with several runtime
+                ; variables and structures.
+                ; The BSS is not part of the image on disk of course.
                 ;
-                ORIGIN  06800h
 
-zzz_code_space = $ - code_end
+; -----------------------------------------------------------------------------
+;                                                             PROTECTION IMAGE
+; -----------------------------------------------------------------------------
+
                 ;
                 ; This is the AiR-BOOT MBR-Protection Image.
-                ; 06800 / 200h = 34h = 52d sectors are before this point.
                 ; The stuff generated here gets overwritten when the
-                ; MBR_PROT.ASM module, which is assembled separately,
-                ; gets merged.
+                ; MBR_PROT module, which is assembled separately,
+                ; gets binary merged.
                 ; So you won't find the string below in the generated binary.
                 ;
+                ORIGIN  06900h
 
-                ; 06800-068FF
-                ; 06900-069FF
-                ; 06A00-06AFF
-                ; 06B00-06BFF
+
+
 
 ;
-; Hardcoded to 1k (1024 bytes) (MBR_PROT.ASM)
+; Hardcoded to 768 bytes (MBR_PROT.ASM)
 ; The string below is searched for by the FIXCODE helper and *must* be
-; sector (512-bytes) aligned.
+; page (256 bytes) aligned.
+;
+; It seems to be possible to shrink the protection-image to 768 bytes.
+; That gives us an additional 256 bytes of code-space.
+; MBR-PROT.ASM,FIXCODE.C,PARTMAIN.ASM and AIR-BOOT.ASM need to be adjusted for that.
+; Also the granularity needs to change from 512 bytes to 256 bytes since
+; 6900h is not a 512-byte boundary.
+;
+; 20120908 - Done.
 ;
 MBR_Protection  db 'AiR-BOOT MBR-Protection Image'
 
                 ; Just fill.
-                db  1024-($-MBR_Protection)  dup('M')
+                ;~ db  1024-($-MBR_Protection)  dup('M')
+                db  768-($-MBR_Protection)  dup('M')
+
+
+
+
+
 
 
 ;==============================================================================
-                                                                   ; Sector 55
+;                                                                    Sector 55
+;==============================================================================
+; -----------------------------------------------------------------------------
+;                                                       AiR-BOOT CONFIGURATION
+; -----------------------------------------------------------------------------
 
                 ;
                 ; This section contains the AiR-BOOT configuration.
@@ -1411,7 +1756,7 @@ Configuration:
                 ; string. When this character get's deleted,
                 ; AiR-BOOT will not function because it cannot
                 ; find the config-signature which includes this
-                ; invisible character. The code of the char is: 0x0ad.
+                ; invisible character. The code of the char is: 0adh.
                 db  'AiRCFG-TABLE­'
                 db  01h, 08h, 'U' ; "Compressed" ID String
                 ; Version 1.02 was for code 1.06, 1.03 was internal
@@ -1437,7 +1782,7 @@ CFG_LastTimeEditHi      dw  0   ; second 16 bit part...
 CFG_CheckConfig         dw  0   ; Check-Sum for Configuration
 
 CFG_Partitions          db  0   ; Count of partitions in IPT
-                        db  0   ; Was BootParts - Removed since v0.28b
+CFG_MiscFlags           db  1   ; Miscellaneous Flags (See EQUates)
 CFG_PartDefault         db  0   ; Default-Partition (Base=0)
 
 CFG_PartLast            db  0   ; Which Partition was booted last time ? (Base=0)
@@ -1477,7 +1822,7 @@ CFG_TimedKeyHandling    db  0   ; Timed Key Handling (for Timed Boot)
                                     ; 2 - Stop Time
 CFG_MakeSound           db  0   ; Should be clear ;)
 CFG_FloppyBootGetTimer  db  0   ; Floppy Name will get updated every 2 secs
-CFG_ResumeBIOSbootSeq   db  0   ; If BIOS Boot Sequence should be resumed
+CFG_ResumeBIOSbootSeq   db  1   ; If BIOS Boot Sequence should be resumed
                                     ; 0 - Disabled
                                     ; 1 - CD-ROM
                                     ; 2 - Network
@@ -1505,14 +1850,25 @@ CFG_IgnoreLVM           db  0   ; Ignores any LVM-Information
                 ORIGIN  06CB0h
 
 
+; -----------------------------------------------------------------------------
+;                                                                DRIVE LETTERS
+; -----------------------------------------------------------------------------
+
 ;
 ; Moved here to make room for packed hiddenparttable.
+; This gets filled when drive-letters that are assigned using the dl-feature.
 ;
 DriveLetters            db  LocIPT_MaxPartitions dup (0)
                         ; Format is:
                         ;============
                         ; Drive-Letter : BYTE (80h-C:, 81h-D:)
                         ; --------------------> 1 Byte * 45
+
+
+
+; -----------------------------------------------------------------------------
+;                                                               INSTALL VOLUME
+; -----------------------------------------------------------------------------
 
                 ;
                 ; Allways have the name of the installation volume
@@ -1529,12 +1885,17 @@ DriveLetters            db  LocIPT_MaxPartitions dup (0)
 ;eCS_InstallVolume       db  'ECS-MIDDLE',0,0
 ;eCS_InstallVolume       db  'ECS-HIGH',0,0,0,0
 ;eCS_InstallVolume       db  'ECS-HIGH',0,'NO',0
-eCS_InstallVolume       db  'KANWEG2',0
-;eCS_InstallVolume       db  0,'NOPHASEONE' ,0
+;eCS_InstallVolume       db  'KANWEG2',0
+eCS_InstallVolume       db  0,'NOPHASEONE' ,0
 
 ;
 ; THERE IS ROOM RESERVED HERE FOR MORE VARIABLES
 ;
+
+
+; -----------------------------------------------------------------------------
+;                                               FLOPPY/CDROM/BIOS BOOT ENTRIES
+; -----------------------------------------------------------------------------
 
                 ;
                 ; 06DABh - 06C00h = 01ABh = 427 bytes.
@@ -1583,9 +1944,12 @@ FloppyIPTentry          db  0, 0, 0, 0, 'FloppyDrive'
                         db  0, 1, 0
                         db  0, 1, 0     ; Location of Partition/Boot Record
                         dd  0, 0
-;------------------------------------------------------------------------------
 
-                ;org 06E00h                                     ; Sector 56-57
+
+
+; -----------------------------------------------------------------------------
+;                                               INTERNAL PARTITION TABLE (IPT)
+; -----------------------------------------------------------------------------
 
                 ;
                 ; AiR-BOOT Internal Partition Table (IPT)
@@ -1596,8 +1960,6 @@ FloppyIPTentry          db  0, 0, 0, 0, 'FloppyDrive'
 ;
 ; Rousseau: This is the start of the AiR-BOOT IPT
 ;
-
-
 PartitionTable  db  (LocIPT_MaxPartitions * LocIPT_LenOfIPT) dup (0)
 ; no-partitions detected... :]
 ;                             db    1, 0, 0, 0, 'Harddisc  1'
@@ -1631,9 +1993,10 @@ PartitionTable  db  (LocIPT_MaxPartitions * LocIPT_LenOfIPT) dup (0)
                 db 'AiRBOOTPAR' ; 1K internal partition table
 
 
-;------------------------------------------------------------------------------
-                            ;org 07400h                            ; Sector 58
 
+; -----------------------------------------------------------------------------
+;                                                 HIDDEN PARTITION TABLE (HPT)
+; -----------------------------------------------------------------------------
 
                 ;
                 ; Hidden Partition Table (6-bit packed as of v1.0.8)
@@ -1664,9 +2027,12 @@ HidePartitionTable      db  (LocIPT_MaxPartitions * LocHPT_LenOfHPT) dup (0FFh)
 
 
 
-;------------------------------------------------------------------------------
-                ;org 07A00h
-                                                                ; Sector 60
+;==============================================================================
+;                                                                    Sector 62
+;==============================================================================
+; -----------------------------------------------------------------------------
+;                                                                   MBR BACKUP
+; -----------------------------------------------------------------------------
 
                 ;
                 ; AiR-BOOT MBR Backup.
@@ -1692,20 +2058,31 @@ AirBootRocks            db  'AiR-BOOT Rocks!',0
                 ORIGIN  % (image_size)
 
 
+
+;
+; Terminate LDRIMAGE segment.
+;
 IFDEF   SEGMENTED
-;
-; End of AiR-BOOT code and data.
-;
-
 LDRIMAGE    ENDS
+ENDIF
 
-;DATA_SEG    ENDS
+
+
+
+
+
+
+;##############################################################################
+;                                                                  BSS SEGMENT
+;##############################################################################
+
+
 
 ;
-; Uninitialized Data (BSS)
+; Open BSS segment.
 ;
+IFDEF   SEGMENTED
 VOLATILE        SEGMENT     USE16   PUBLIC  'BSS'
-
 ENDIF
 
 
@@ -1738,45 +2115,84 @@ ELSE
 ENDIF
 
 
+; -----------------------------------------------------------------------------
+;                                                            START OF BSS DATA
+; -----------------------------------------------------------------------------
+
 ; This space actually gets initialized in PreCrap to NUL (till EndOfVariables)
 BeginOfVariables:
+
+
+; -----------------------------------------------------------------------------
+;                                                               SECTOR BUFFERS
+; -----------------------------------------------------------------------------
 PartitionSector     db  512 dup (?) ; Temporary Sector for Partition
-JfsPBR              db  512 dup (?) ; Temporary Sector for JFS PBR writeback
+PBRSector           db  512 dup (?) ; Temporary Sector for JFS/HPFS writeback
 LVMSector           db  512 dup (?) ; Temporary Sector for LVM
 TmpSector           db  512 dup (?) ; Temporary Sector
 Scratch             db  256 dup (?) ; Scratch buffer
 
+; -----------------------------------------------------------------------------
+;                                                          NEW PARTITION TABLE
+; -----------------------------------------------------------------------------
 ; Everything used to build a new IPT and reference it to the old one
-; IETS OVERSCHRIJFT DIT !!
 NewPartTable                db  1536 dup (?)    ; New Partition Table
 
+
+; -----------------------------------------------------------------------------
+;                                                     NEW HIDE PARTITION TABLE
+; -----------------------------------------------------------------------------
 ; New Hide-Partition Table
-NewHidePartTable            db  partition_count * LocHPT_LenOfHPT dup (?)
+NewHidePartTable            db  LocIPT_MaxPartitions * LocHPT_LenOfHPT dup (?)
 
+    ;~ even
+
+; -----------------------------------------------------------------------------
+;                                                            NEW DRIVE LETTERS
+; -----------------------------------------------------------------------------
 ; Logical Drive-Letters
-NewDriveLetters             db  partition_count dup (?)
+NewDriveLetters             db  LocIPT_MaxPartitions dup (?)
 
+    ;~ even
+
+; -----------------------------------------------------------------------------
+;                                                         PARTITION SIZE TABLE
+; -----------------------------------------------------------------------------
 ; Size-Table (6 bytes per partition)
-PartitionSizeTable          db  partition_count * 6 dup (?)
+PartitionSizeTable          db  LocIPT_MaxPartitions * 6 dup (?)
 
+
+; -----------------------------------------------------------------------------
+;                                                           PARTITION POINTERS
+; -----------------------------------------------------------------------------
 ; Maximum is 52 word entries till now
 PartitionPointers           dw  52 dup (?)
 
 ; Count of total Partition Pointers
 PartitionPointerCount       db  ?
 
+; -----------------------------------------------------------------------------
+;                                                                   XREF TABLE
+; -----------------------------------------------------------------------------
+
 ; X-Reference Table (holds new partnr, index is old part nr)
-PartitionXref               db  partition_count dup (?)
+PartitionXref               db  LocIPT_MaxPartitions dup (?)
+
+; -----------------------------------------------------------------------------
+;                                                               VOLUME LETTERS
+; -----------------------------------------------------------------------------
 
 ; Volume-Letters
 ; 0 - no LVM support
 ; 1 - LVM support, but no letter
 ; 'C'-'Z' - assigned drive letter
-PartitionVolumeLetters      db  partition_count dup (?)
+PartitionVolumeLetters      db  LocIPT_MaxPartitions dup (?)
 
 
 
-
+; -----------------------------------------------------------------------------
+;                                                          MISC VARS AND FLAGS
+; -----------------------------------------------------------------------------
 TotalHarddiscs          db  ?           ; Total harddrives (by POST)
 LBASwitchTable          db  128 dup (?) ; Bit 25-18 for CHS/LBA Switching
 NewPartitions           db  ?           ; Freshly found partitions
@@ -1797,6 +2213,10 @@ CurIO_Scanning          db  ?           ; 1-AiR-BOOT is scanning partitions
 ; [Linux support removed since v1.02]
 ;GotLinux                     db     ?    ; 1-Linux found
 
+
+; -----------------------------------------------------------------------------
+;                                                            MENU RELATED VARS
+; -----------------------------------------------------------------------------
 Menu_EntrySelected  db  ?   ; Which partition we boot this time...
 Menu_UpperPart      db  ?   ; Which number (Base=0) is the partition upper pos
 Menu_AbsoluteX      db  ?   ; Pos where Menu stuff starts
@@ -1807,12 +2227,18 @@ Menu_EntryLast      db  ?   ; LastBooted Entry in filtered View
 Menu_EntryAutomatic db  ?   ; Automatic Entry in filtered View
                                          ;  - All adjusted to menu locations
 
+; -----------------------------------------------------------------------------
+;                                                       PARTITION RELATED VARS
+; -----------------------------------------------------------------------------
 PartSetup_UpperPart     db  ?   ; Partition-Setup (like Menu_UpperPart)
 PartSetup_ActivePart    db  ?   ; Active Partition
 PartSetup_HiddenUpper   db  ?   ; (like Menu_UpperPart)
 PartSetup_HiddenX       db  ?   ; Pos for Hidden-Setup
 PartSetup_HiddenAdd     db  ?   ; Adjust for Hidden-Setup
 
+; -----------------------------------------------------------------------------
+;                                                   TIMER / SETUP RELATED VARS
+; -----------------------------------------------------------------------------
 TimedBootEnable     db  ?   ; Local Enable/Disable for timed boot
 TimedTimeOut        dd  ?   ; TimeOut Timer for TimedBoot (too much time here;)
 TimedSecondLeft     db  ?   ; How many seconds are left till boom ?
@@ -1829,6 +2255,10 @@ StartSoundPlayed    db  ?
 ChangePartNameSave  db  ?   ; Save label after user-edit ?
 SyncLvmLabels       db  ?   ; Sync LVM labels after user-edit ?
 
+
+; -----------------------------------------------------------------------------
+;                                                              FX RELATED VARS
+; -----------------------------------------------------------------------------
 FX_UseCount                 dw  ?
 FX_OverallTimer             dw  ?
 FX_WideScrollerTimer        dw  ?
@@ -1839,6 +2269,23 @@ FX_WideScrollerDirection    db  ?
 FX_WideScrollerAbsDirection db  ?
 FX_WideScrollerBounceSpeed  db  ?
 FX_CooperBarsTimer          dw  ?
+
+; Dynamically Generated Tables - do not need to get initialized with NUL
+FX_CooperColors     db   672 dup (?) ; 7 cooper bars*96 - runtime calculated
+FX_CooperState      db     7 dup (?)
+FX_SinusPos         db     7 dup (?)
+FX_CooperPos        dw     7 dup (?)
+
+
+; -----------------------------------------------------------------------------
+;                                                               CHARSET BUFFER
+; -----------------------------------------------------------------------------
+CharsetTempBuffer   db  4096 dup (?) ; Uninitialized Charset buffer
+
+; -----------------------------------------------------------------------------
+;                                                                LVM CRC TABLE
+; -----------------------------------------------------------------------------
+LVM_CRCTable        dd   256 dup (?) ; LVM-CRC (->SPECiAL\LVM.asm)
 
 ;~ ; [Linux support removed since v1.02]
 ;~ FAT16_Drive             db     ?    ; FAT-16: Drive of FAT16-partition
@@ -1855,24 +2302,20 @@ FX_CooperBarsTimer          dw  ?
 ;~ LINUX_KernelNo          db     ?         ; Total of Kernels in KernelEntries
 ;~ LINUX_KernelSizeTable   db   120 dup (?) ; Size-Table (6 bytes per kernel)
 
-; Dynamically Generated Tables - do not need to get initialized with NUL
-FX_CooperColors     db   672 dup (?) ; 7 cooper bars*96 - runtime calculated
-FX_CooperState      db     7 dup (?)
-FX_SinusPos         db     7 dup (?)
-FX_CooperPos        dw     7 dup (?)
-CharsetTempBuffer   db  4096 dup (?) ; Uninitialized Charset buffer
-LVM_CRCTable        dd   256 dup (?) ; LVM-CRC (->SPECiAL\LVM.asm)
-
-
-
 
 ;
 ; Rousseau: added some stuff.
 ;
-
+; -----------------------------------------------------------------------------
+;                                                           ECS PHASE1 RELATED
+; -----------------------------------------------------------------------------
 Phase1Active                db      ?
 OldPartitionCount           db      ?
 
+
+; -----------------------------------------------------------------------------
+;                                                              DISK PARAMETERS
+; -----------------------------------------------------------------------------
                               ;EVEN
 HugeDisk                    db      MaxDisks  dup(?)
 TrueSecs                    dd      MaxDisks  dup(?)
@@ -1902,10 +2345,18 @@ LOG_Secs                    dd      MaxDisks  dup(?)
 LOG_Bytes                   dw      MaxDisks  dup(?)
 LOG_TotalSecs               dq      MaxDisks  dup(?)
 
-; End of transient variables.
-EndOfVariables:
+; Get's initialized at startup to: 00000011111111111111111111111100b
+; Meaning A,B not free; C-Z free, rest unused. (right to left)
+; Each partition with an assigned drive-letter clears a bit in this map.
+FreeDriveletterMap          dd      ?
+
+; LBA address of master LVM sector, zero if non-existant
+MasterLVMLBA                dd      ?
 
 
+; -----------------------------------------------------------------------------
+;                                                                  I13X BUFFER
+; -----------------------------------------------------------------------------
 ;
 ; Temporary buffer for 48h INT13X bios call.
 ;
@@ -1925,8 +2376,51 @@ i13xbuf     dw  1   dup (?)
             ; Some debug area.
 ott         db  512 dup(?)
 
+
+; End of transient variables.
+EndOfVariables:
+
+
+
+
+; -----------------------------------------------------------------------------
+;                                                           OLD AND NEW STACKS
+; -----------------------------------------------------------------------------
+
+;
+; These need to be outside the variable section because AiR-BOOT can restart
+; itself in debug-mode. If the OldSP and OldSS would be in the variable area,
+; they would be cleared on AiR-BOOT restart.
+;
+
+; The variable section is cleared word-wise, so it could clear one byte extra
+; depending on the alignment and size. This DD prevents the OldSP and OldSS
+; to be partly overwritten by the clearing routine.
+                            dd      ?
+
+; SS:SP from before our relocation.
+; The registers values when the BIOS transferred control to us were pushed
+; on this stack.
+
+OldSP                       dw      ?
+OldSS                       dw      ?
+
+; SS:SP currently in use.
+; They are temporarily dumped here so we can pop the resgisters from
+; the old stack to display them in debug mode.
+CurrentSP                   dw      ?
+CurrentSS                   dw      ?
+
+
+
+;
+; End of BSS segment.
+;
 eobss:
 
+;
+; Close BSS segment.
+;
 IFDEF   SEGMENTED
     VOLATILE    ENDS
 ELSE

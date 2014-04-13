@@ -19,7 +19,7 @@
 ;                                                      AiR-BOOT / BOOT-MENU
 ;---------------------------------------------------------------------------
 
-IFDEF ModuleNames
+IFDEF   MODULE_NAMES
 DB 'BOOTMENU',0
 ENDIF
 
@@ -225,6 +225,20 @@ CLR_F10_SETUP_BM        = 0901h
 
    mov     cx, CLR_F10_SETUP_BM                            ; background F10 enter Setup
    call    VideoIO_Color
+
+   ; Additional message how to power off system
+   mov     si, offset TXT_BootMenuPowerOff
+   call    GetLenOfString
+   mov     dx, 1902h
+   ;~ sub     dl, cl
+   mov     cx, dx
+   call    VideoIO_Locate
+   mov     al, TextChar_WinRep4
+   call    VideoIO_PrintSingleChar
+   call    VideoIO_Print
+   mov     al, TextChar_WinRep5
+   call    VideoIO_PrintSingleChar
+
 
    ; Additional message how to enter setup
    mov     si, offset TXT_BootMenuEnterSetup
@@ -506,12 +520,129 @@ CLR_LABEL_BM   = 0f01h
 CLR_FS_NAME_CLASSIC  =  0c01h
 CLR_FS_NAME_BM =  0701h
 
+; Color for drive-letter
+CLR_DL_BM   = 0f01h
+
    mov     cx, CLR_FS_NAME_BM
    call    VideoIO_Color                 ; Hrot, Blau
    mov     cl, 8
    call    VideoIO_FixedPrint
+
+
+
+DRIVELETTERS_ENABLE     EQU
+
+    IFDEF   DRIVELETTERS_ENABLE
+
+        ;
+        ; THIS IS WHERE WE CAN SHOW DRIVE-LETTERS !
+        ;
+
+        pusha
+
+        mov     al,[CFG_MiscFlags]
+        and     al,00000001b
+        jz      skip_show_dl
+
+
+        ; Dirty hack to clear remaining line when menu is scrolled.
+        ; Padd with spaces.
+        ; Should be implemented in scrolling routine.
+        push    word ptr [TextPosX]
+        mov     si, offset spaces
+        mov     cl,24
+        call    VideoIO_FixedPrint
+        pop     word ptr [TextPosX]
+
+        mov     si, [PartPointer]
+        mov     ah, [si+LocIPT_SystemID]
+
+    IFDEF   AUX_DEBUG
+        mov     al, ' '
+        call    VideoIO_PrintSingleChar
+        mov     al, ah
+        call    VideoIO_PrintHexByte
+        mov     al, ' '
+        call    VideoIO_PrintSingleChar
+    ENDIF
+
+        mov     al, ah
+
+        cmp     al, 07h
+        je      show_dl
+        cmp     al, 0fch
+        je      show_dl
+
+        jmp     skip_show_dl
+
+    show_dl:
+
+        ;~ mov     al, ' '
+        ;~ call    VideoIO_PrintSingleChar
+
+        mov     dl, byte ptr [si+LocIPT_Drive]
+        mov     cx, [si+LocIPT_AbsoluteBegin+00h]
+        mov     bx, [si+LocIPT_AbsoluteBegin+02h]
+
+        mov     si, offset [TmpSector]
+        mov     di,ds
+        call    DriveIO_LoadSectorLBA
+        mov     al, [si+25h]
+
+    IFDEF   AUX_DEBUG
+        call    VideoIO_PrintHexByte
+    ENDIF
+
+        mov     dh,al
+        sub     dh,3dh
+
+        call    LVM_GetDriveLetter
+
+        test    al,al
+        jnz     show_dl2
+
+
+
+        mov     si, offset [dl_hidden]
+        mov     cx, CLR_DL_BM
+        call    VideoIO_Color
+        call    VideoIO_Print
+
+        mov     cx, 0701h
+        call    VideoIO_Color
+
+        mov     al, dh
+        call    VideoIO_PrintSingleChar
+        mov     al, ':'
+        call    VideoIO_PrintSingleChar
+
+        jmp     skip_show_dl
+
+    show_dl2:
+
+        mov     si, offset [dl_text]
+
+        call    VideoIO_Print
+
+        mov     cx, CLR_DL_BM
+        call    VideoIO_Color
+
+        call    VideoIO_PrintSingleChar
+        mov     al,':'
+        call    VideoIO_PrintSingleChar
+
+    skip_show_dl:
+        popa
+
+    ENDIF
+
+
    ret
 BOOTMENU_BuildPartitionText     EndP
+
+dl_text     db  '   on drive ',0
+dl_hidden   db  '   hidden   ',0
+spaces      db  '                        ',0
 
 ;        In: DL - Active Partition
 ;            DH - New Active Partition (may not be correct number)
@@ -824,9 +955,9 @@ BOOTMENU_Execute    Proc Near   Uses es di
         push    ax
         push    dx
         call    TIMER_GetTicCount
-        cmp     dx, wptr [FloppyGetNameTimer+2]
+        cmp     dx, word ptr [FloppyGetNameTimer+2]
         ja      BME_ExpiredGetFloppy
-        cmp     ax, wptr [FloppyGetNameTimer+0]
+        cmp     ax, word ptr [FloppyGetNameTimer+0]
         jb      BME_NoFloppyNameExpired
     BME_ExpiredGetFloppy:
         call    BOOTMENU_ResetGetFloppy
@@ -861,7 +992,16 @@ BOOTMENU_Execute    Proc Near   Uses es di
         mov     ah, 0
         int     16h
         pop     dx
-        cmp     ah, Keys_ENTER
+
+    ;!
+    ;! DEBUG_BLOCK
+    ;! Handle keys to activate debugging routines.
+    ;!
+    IFDEF   AUX_DEBUG
+        call    DEBUG_HandleKeypress
+    ENDIF
+
+      cmp     ah, Keys_ENTER
         je      BME_KeyEnter
         cmp     ah, Keys_F10
         je      BME_KeyF10
@@ -949,14 +1089,22 @@ BOOTMENU_Execute    Proc Near   Uses es di
         mov     bx, VideoIO_Page0
         mov     dx, 160
         xor     di, di
+
+    IFDEF   FX_ENABLED
         call    FX_InterleaveCopy
         call    FX_ScrollScreenLeft
+    ENDIF
+
         mov     ah, 0
         int     16h                        ; Wait for any key
         call    BOOTMENU_ResetTimedBoot     ; Reset Timer
         call    BOOTMENU_BuildTimedBootText ; Refresh TimedBootText
+
+    IFDEF   FX_ENABLED
         call    FX_ScrollScreenRight
         call    FX_EndScreenInternalCleanUp
+    ENDIF
+
         call    BOOTMENU_ResetTimedBoot    ; Reset Timer again...
         popa
         pop     dx
@@ -982,3 +1130,6 @@ BOOTMENU_ResetGetFloppy     Proc Near   Uses ax
         mov     word ptr [FloppyGetNameTimer+2], dx
         ret
 BOOTMENU_ResetGetFloppy     EndP
+
+
+

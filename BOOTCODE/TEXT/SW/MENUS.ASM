@@ -52,6 +52,7 @@ TXT_SETUP_BootLastIfTimed      db 'Boota fr.Senast Om Tids', 0
 TXT_SETUP_RememberLastBoot     db 'Kom Ih†g Senaste Boot', 0
 TXT_SETUP_RememberTimedBoot    db 'Kom Ih†g Tids Boot', 0
 TXT_SETUP_IncludeFloppy        db 'Inkludera Diskettenhet', 0
+TXT_SETUP_ShowLVMDriveLetters  db 'Show LVM Drive Letters',0
 TXT_SETUP_MbrProtection        db 'MBR Skydd', 0
 TXT_SETUP_IgnoreMbrWrites      db '-> Ignorera MBR Skriv', 0
 TXT_SETUP_MakeSounds           db 'Anv„nd Ljud', 0
@@ -82,7 +83,7 @@ TXT_SETUP_ContinueBIOSboot     db 'Forts„tt BIOS Boot Sekv', 0
 ;TXT_SETUP_DefLinuxCmd          db 'DEFINIERA KOMMANDORAD F™R LINUX', 0
 TXT_SETUP_IgnoreLVM            db 'Ignore LVM information', 0
 ; ###
-TXT_SETUP_ForceLBAUsage        db 'Forc BIOS-LBA Anv„ndn.', 0
+;~ TXT_SETUP_ForceLBAUsage        db 'Forc BIOS-LBA Anv„ndn.', 0
 TXT_SETUP_ExtPartMShack        db 'Ext-Part MS Workaround', 0
 
 ; DYNAMIC LENGTH, maximum 11 chars excluding ending zero
@@ -226,6 +227,10 @@ TXT_SETUPHELP_IncludeFloppy    db 'AiR-BOOT kommer att', 0
                                db 'till†ta booting', 0
                                db 'fr†n A: via menyn.', 0
                                db 0
+TXT_SETUPHELP_ShowLVMDriveLetters   db 'AiR-BOOT will show', 0
+                                    db 'LVM Drive Letters', 0
+                                    db 'in the menu.', 0
+                                    db 0
 TXT_SETUPHELP_MbrProtection    db 'Skydda din MBR via', 0
                                db 'resident kod. Beh”ver', 0
                                db '1 KByte av bas-minne', 0
@@ -324,11 +329,11 @@ TXT_SETUPHELP_IgnoreLVM        db 'If activated, AiR-BOOT', 0
                                db 'LVM information.', 0
                                db 0
 ; ###
-TXT_SETUPHELP_ForceLBAUsage    db 'Forc. anv„ndning av', 0
-                               db 'BIOS LBA APIs', 0
-                               db 'ist„llet f”r mixad anv.', 0
-                               db 'av CHS och LBA.', 0
-                               db 0
+;~ TXT_SETUPHELP_ForceLBAUsage    db 'Forc. anv„ndning av', 0
+                               ;~ db 'BIOS LBA APIs', 0
+                               ;~ db 'ist„llet f”r mixad anv.', 0
+                               ;~ db 'av CHS och LBA.', 0
+                               ;~ db 0
 TXT_SETUPHELP_ExtPartMShack    db 'Aktiverar dyn. „ndring', 0
                                db 'av den ut”kade part.,', 0
                                db 'skriv id f”r standard', 0

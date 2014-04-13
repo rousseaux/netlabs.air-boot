@@ -118,7 +118,11 @@ ORIGIN  MACRO   loc
 
     ; Use this value to fill the gap between the new origin and the last
     ; emitted code or data.
-    fillchar = '0'
+    IFDEF   AUX_DEBUG
+        fillchar = '#'
+    ELSE
+        fillchar = 0
+    ENDIF
 
     ; Mark the location of the last emitted code or data.
     z_&loc&_1before:
@@ -141,7 +145,7 @@ ORIGIN  MACRO   loc
 
     ; Masm can also do db 0 dup (0), and it does calculate correctly
     ; but cannot find the after label.
-    ; Same issue as with JWasm but the db construct does not solve it for masm.
+    ; Same issue as with JWasm but the db construct does not solve it for Masm.
     ; The label-values show-up to be correct in the listing though.
     ; Currently overlap-checking is disabled when assembling with Masm !
     ; FIXME: Find a solution for Masm.
@@ -198,8 +202,8 @@ sector_count                     equ   image_size / sector_size
 
 IF image_size EQ image_size_60secs
     ; Maximum number of partitions supported in pre v1.07.
-   partition_count               equ   30
+   max_partitions                equ   30
 ELSE
     ; Maximum number of partitions supported in post v1.06.
-   partition_count               equ   45
+   max_partitions                equ   45
 ENDIF
