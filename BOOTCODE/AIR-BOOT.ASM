@@ -456,6 +456,7 @@ SEGMENTED   EQU
 ; -----------------------------------------------------------------------------
 ;                                                            FIRST ENTRY-POINT
 ; -----------------------------------------------------------------------------
+; BOOKMARK: FIRST ENTRY-POINT (Invoked by BIOS)
 ; ######################################################
 ; # ENTRY-POINT WHERE THE BIOS TRANSFERS CONTROL TO US #
 ; ######################################################
@@ -489,6 +490,7 @@ AiR_BOOT:
 ; -----------------------------------------------------------------------------
 ;                                                            THIRD ENTRY-POINT
 ; -----------------------------------------------------------------------------
+; BOOKMARK: THIRD ENTRY-POINT (Relocate code)
 ;
 ; No single instruction below should be changed, added or removed in the code
 ; below as this will cause the jump-link to go haywire.
@@ -577,6 +579,7 @@ MBR_Start:
 ;
 
 ;
+; BOOKMARK: Halt System
 ; Entry-point for halting the system.
 ;
 MBR_HaltSystem:
@@ -624,6 +627,7 @@ ENDIF
 
                 ; Jump again...
                 ; This time to the code that relocates to 8000:0000.
+                ; BOOKMARK: SECOND ENTRY_POINT (Skipped over AB signature)
                 jmp     MBR_Start
 
 ;
@@ -674,8 +678,9 @@ MBR_Teletype    EndP
 ; Rousseau: DO NOT ADD CODE TO THIS SECTION !
 ;
 
-;        In: BX - Base Check, DS:SI - Pointer to 512-byte-area to be included
-;       Out: BX - Base Check Result
+;        In: BX     - Base Check
+;            DS:SI  - Pointer to 512-byte-area to be included
+;       Out: BX     - Base Check Result
 ; Destroyed: SI will get updated (+512)
 MBR_GetCheckOfSector    Proc Near   Uses ax cx
         mov     cx, 256
@@ -708,7 +713,7 @@ MBR_GetCheckOfSector    EndP
 ;
 ; This is where the rest of AiR-BOOT gets loaded from track0.
 ;
-
+; BOOKMARK: Running at relocated position (Load additional sectors)
 ;------------------------------------------------------------------------------
 MBR_RealStart:
                 ;
@@ -718,7 +723,7 @@ MBR_RealStart:
                 mov     ss, ax
                 mov     sp, 7FFEh       ; Even is better
                 push    es              ; ES holds segment where we moved to
-                pop     ds              ; Set DS==ES to Code Segment
+                pop     ds              ; Set DS=ES to Code Segment
 
                 ;
                 ; Push the old SS:SP which was saved in DX:BX on the new stack.
@@ -854,12 +859,14 @@ MBR_LoadConfig  EndP
                 ; on the second harddisk.
                 ORIGIN  001B8h
 
-                ; AiR-BOOT will merge the field from the MBR it replaces.
+                ; AiR-BOOT installer will merge the field
+                ; from the MBR it replaces.
     MBR_DrvSig  db      'DSIG'
 
                 ; Unused word at 01BCh.
                 ; An LVM 2.x MBR puts 0CC33h here.
-                ; AiR-BOOT will merge the field from the MBR it replaces.
+                ; AiR-BOOT installer will merge the field
+                ; from the MBR it replaces.
     MBR_Spare   dw      '$$'
 
 
@@ -869,7 +876,7 @@ MBR_LoadConfig  EndP
                 ORIGIN  001BEh
 
                 ; The 4 entries just for show.
-                ; AiR-BOOT will merge them from the MBR it replaces.
+                ; AiR-BOOT installer will merge them from the MBR it replaces.
     MBR_PartTable:
                 db      16  dup('0')
                 db      16  dup('1')
@@ -959,6 +966,7 @@ FileSysNames    db  'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
 ; ############################################
 ; # ENTRY-POINT AFTER ALL THE INITIAL HASSLE #
 ; ############################################
+; BOOKMARK: AiR_BOOT_Start (AiR-BOOT now completely loaded)
 AiR_BOOT_Start:
 
 
@@ -969,6 +977,9 @@ AiR_BOOT_Start:
 
         ;
         ; Pop the old SS:SP from the stack and save it in the BSS.
+        ; Note that this is outside the normal variable area that gets cleared.
+        ; This allows AiR-BOOT to restart itself when debugging and come-up
+        ; with access to the original values of registers the BIOS passed.
         ;
         pop     [OldSP]
         pop     [OldSS]
@@ -1010,10 +1021,11 @@ AiR_BOOT_Start:
 
                 ;
                 ; First it clears the BSS area.
-                ; Note that the old SS:SP is stored outside this area so ti
+                ; Note that the old SS:SP is stored outside this area so this
                 ; does not get lost.
                 ; Then initialize various runtime variables and structures.
                 ;
+                ; BOOKMARK: Pre Crap
                 call    PRECRAP_Main
                 ; Number of harddisks and other system-info is now known.
 
@@ -1077,7 +1089,7 @@ AiR_BOOT_Start:
 ;                                                               PARTITION SCAN
 ; -----------------------------------------------------------------------------
                 ;
-                ; Scan all partitions
+                ; BOOKMARK: Scan all partitions
                 ;
                 call    PARTSCAN_ScanForPartitions
                 ; Internal Partition Table is now populated.
@@ -1106,6 +1118,7 @@ AiR_BOOT_Start:
                 ; Reconnect forced drive-letters to their corresponding
                 ; partitions.
                 ;
+                ; BOOKMARK: Update Driveletters so they are in-sync again
                 call    PARTSCAN_UpdateDriveLetters
                 ; Driveletter <-> Partition correlation is now restored.
 
@@ -1168,7 +1181,8 @@ AiR_BOOT_Start:
 ; -----------------------------------------------------------------------------
 
                 ;
-                ; Here we check if eComStation v2.1 is being installed.
+                ; BOOKMARK: Check for eCS being installed
+                ; Here we check if eComStation v2.1+ is being installed.
                 ; If so, we forgo the menu and directly boot it.
                 ;
 
@@ -1206,6 +1220,7 @@ AiR_BOOT_Start:
             ENDIF
 
 
+                ; BOOKMARK: Scan for Partitions (Only if eCS install going on)
                 ; Because one or more partitions are possibly added, the
                 ; PartitionXref table is not 'in sync' and could cause the
                 ; wrong system to be automatically booted.
@@ -1286,6 +1301,7 @@ AiR_BOOT_Start:
                 ;call     SOUND_Beep
 
 
+                ; BOOKMARK: Save Configuration
                 ; Save configuration so phase1 boot-through is disabled
                 ; on next boot.
                 mov     byte ptr [eCS_InstallVolume], 0
@@ -1302,6 +1318,7 @@ AiR_BOOT_Start:
                 ;
                 ; Do some post processing.
                 ;
+                ; BOOKMARK: After Crap
                 call    AFTERCRAP_Main
 
                 ; [Linux support removed since v1.02]
@@ -1375,6 +1392,7 @@ AiR_BOOT_Start:
                 call    FX_StartScreen
             ENDIF
 
+                ; BOOKMARK: Build Main Menu
                 call    BOOTMENU_BuildBackground
                 call    BOOTMENU_BuildMain
 
@@ -1385,6 +1403,7 @@ AiR_BOOT_Start:
                 call    PASSWORD_AskSystemPwd
                 call    BOOTMENU_ResetTimedBoot
 
+                ; BOOKMARK: Display Main Menu
                 call    BOOTMENU_Execute
 
                 jc      MBR_Main_ReEnterSetup
@@ -1397,6 +1416,7 @@ AiR_BOOT_Start:
                 call    FX_StartScreen
             ENDIF
 
+                ; BOOKMARK: Display bye-screen and start selected partition
                 call    BOOTMENU_BuildGoodBye
 
             IFDEF   FX_ENABLED
@@ -1457,7 +1477,9 @@ AiR_BOOT_Start:
 ; This entry-point restarts AiR-BOOT almost from scratch.
 ; It skips the movement of the MBR but otherwise it is a functional restart.
 ; The old BIOS SS:SP where the registers on entry are stored is passed along.
+; This entry-point is used for debugging purposes.
 ;
+; BOOKMARK: AiR-BOOT Restart (used for debugging)
 AirbootRestart:
         mov     bx, [OldSP]     ; Old SP when BIOS transferred control to AB
         mov     dx, [OldSS]     ; Old SS when BIOS transferred control to AB
@@ -1469,6 +1491,7 @@ AirbootRestart:
 ; and then halts the system.
 ; It is entered on severe error conditions.
 ;
+; BOOKMARK: Halt System
 HaltSystem:
         call    VideoIO_ClearScreen
         mov     ax,0ababh
@@ -1484,15 +1507,20 @@ HaltSystem:
 
 
                 ;
-                ; The following section includes various assembler
-                ; modules. These contain functionality for a multitude of
-                ; categories like disk-access, video-io, lvm, debugging, etc.
+                ; The following section includes various assembler modules
+                ; at the source level. These contain functionality for a
+                ; multitude of categories like disk-access, video-io, lvm,
+                ; debugging, etc. Later versions of AiR-BOOT will use such
+                ; modules at the object-file level so they can be shared
+                ; more easily.
                 ;
 
 
 ; -----------------------------------------------------------------------------
 ;                                                        INCLUDED FILE SECTION
 ; -----------------------------------------------------------------------------
+
+; BOOKMARK: Include Section
 
 ;
 ; Include other code-modules here.
@@ -1618,6 +1646,7 @@ ENDIF
                 ;
                 ; End of code marker.
                 ;
+                ; BOOKMARK: END OF CODE
                 db      'BABE'
                 db      'FACE'
 
@@ -1640,6 +1669,7 @@ code_end:
 ;                                                         BLDLEVEL INFORMATION
 ; -----------------------------------------------------------------------------
 
+                ; BOOKMARK: BLDLEVEL Information
                 ORIGIN  068A0h
 
 ;
@@ -1697,12 +1727,13 @@ bld_level:
 ; -----------------------------------------------------------------------------
 
                 ;
-                ; This is the AiR-BOOT MBR-Protection Image.
+                ; This is the AiR-BOOT MBR Protection Image.
                 ; The stuff generated here gets overwritten when the
                 ; MBR_PROT module, which is assembled separately,
                 ; gets binary merged.
                 ; So you won't find the string below in the generated binary.
                 ;
+                ; BOOKMARK: AiR-BOOT MBR Protection Image
                 ORIGIN  06900h
 
 
@@ -1747,6 +1778,7 @@ MBR_Protection  db 'AiR-BOOT MBR-Protection Image'
                 ; Also add stuff to the end so that offsets of other
                 ; variables remain vaild.
                 ;
+                ; BOOKMARK: AiR-BOOT Configuration Sector
                 ORIGIN  06C00h
 
 Configuration:
@@ -1847,6 +1879,7 @@ CFG_IgnoreLVM           db  0   ; Ignores any LVM-Information
                 ;
                 ; Drive Letters.
                 ;
+                ; BOOKMARK: Stored Drive Letters
                 ORIGIN  06CB0h
 
 
@@ -1875,6 +1908,7 @@ DriveLetters            db  LocIPT_MaxPartitions dup (0)
                 ; at this offset.
                 ; So future config changes will not break auto-install.
                 ;
+                ; BOOKMARK: Name of eCS Installation Volume
                 ORIGIN  06D00h
 
 ; SET(A)BOOT stores the volume name of the eCS system being installed here.
@@ -1901,6 +1935,7 @@ eCS_InstallVolume       db  0,'NOPHASEONE' ,0
                 ; 06DABh - 06C00h = 01ABh = 427 bytes.
                 ; Entries allocated down from 06E00 boundary.
                 ;
+                ; BOOKMARK: Floppy/CD-ROM/BIOS Boot Entries
                 ORIGIN  06DABh                                  ; 427 Boundry
 
 ; (432 - 5 = 427)
@@ -1954,6 +1989,7 @@ FloppyIPTentry          db  0, 0, 0, 0, 'FloppyDrive'
                 ;
                 ; AiR-BOOT Internal Partition Table (IPT)
                 ;
+                ; BOOKMARK: Internal Partition Table
                 ORIGIN  % (image_size - 0a00h - (image_size - image_size_60secs))
 
 
@@ -2001,6 +2037,7 @@ PartitionTable  db  (LocIPT_MaxPartitions * LocIPT_LenOfIPT) dup (0)
                 ;
                 ; Hidden Partition Table (6-bit packed as of v1.0.8)
                 ;
+                ; BOOKMARK: Hidden Partition Table (packed)
                 ORIGIN  % (image_size - 600h - (image_size - image_size_60secs) / 2)
 
 HidePartitionTable      db  (LocIPT_MaxPartitions * LocHPT_LenOfHPT) dup (0FFh)
@@ -2037,6 +2074,7 @@ HidePartitionTable      db  (LocIPT_MaxPartitions * LocHPT_LenOfHPT) dup (0FFh)
                 ;
                 ; AiR-BOOT MBR Backup.
                 ;
+                ; BOOKMARK: MBR Backup
                 ORIGIN  % (image_size - 200h)
 
 
@@ -2076,7 +2114,7 @@ ENDIF
 ;                                                                  BSS SEGMENT
 ;##############################################################################
 
-
+; BOOKMARK: BSS Segment
 
 ;
 ; Open BSS segment.
@@ -2126,6 +2164,7 @@ BeginOfVariables:
 ; -----------------------------------------------------------------------------
 ;                                                               SECTOR BUFFERS
 ; -----------------------------------------------------------------------------
+; BOOKMARK: Sector Buffers
 PartitionSector     db  512 dup (?) ; Temporary Sector for Partition
 PBRSector           db  512 dup (?) ; Temporary Sector for JFS/HPFS writeback
 LVMSector           db  512 dup (?) ; Temporary Sector for LVM
@@ -2136,13 +2175,14 @@ Scratch             db  256 dup (?) ; Scratch buffer
 ;                                                          NEW PARTITION TABLE
 ; -----------------------------------------------------------------------------
 ; Everything used to build a new IPT and reference it to the old one
+; BOOKMARK: New Partition Table
 NewPartTable                db  1536 dup (?)    ; New Partition Table
 
 
 ; -----------------------------------------------------------------------------
 ;                                                     NEW HIDE PARTITION TABLE
 ; -----------------------------------------------------------------------------
-; New Hide-Partition Table
+; BOOKMARK: New Hide-Partition Table
 NewHidePartTable            db  LocIPT_MaxPartitions * LocHPT_LenOfHPT dup (?)
 
     ;~ even
@@ -2150,7 +2190,7 @@ NewHidePartTable            db  LocIPT_MaxPartitions * LocHPT_LenOfHPT dup (?)
 ; -----------------------------------------------------------------------------
 ;                                                            NEW DRIVE LETTERS
 ; -----------------------------------------------------------------------------
-; Logical Drive-Letters
+; BOOKMARK: Logical Drive-Letters
 NewDriveLetters             db  LocIPT_MaxPartitions dup (?)
 
     ;~ even
@@ -2159,6 +2199,7 @@ NewDriveLetters             db  LocIPT_MaxPartitions dup (?)
 ;                                                         PARTITION SIZE TABLE
 ; -----------------------------------------------------------------------------
 ; Size-Table (6 bytes per partition)
+; BOOKMARK: Partition Size Table
 PartitionSizeTable          db  LocIPT_MaxPartitions * 6 dup (?)
 
 
@@ -2166,6 +2207,7 @@ PartitionSizeTable          db  LocIPT_MaxPartitions * 6 dup (?)
 ;                                                           PARTITION POINTERS
 ; -----------------------------------------------------------------------------
 ; Maximum is 52 word entries till now
+; BOOKMARK: Partition Pointers
 PartitionPointers           dw  52 dup (?)
 
 ; Count of total Partition Pointers
@@ -2176,6 +2218,7 @@ PartitionPointerCount       db  ?
 ; -----------------------------------------------------------------------------
 
 ; X-Reference Table (holds new partnr, index is old part nr)
+; BOOKMARK: Xref Table
 PartitionXref               db  LocIPT_MaxPartitions dup (?)
 
 ; -----------------------------------------------------------------------------
@@ -2186,6 +2229,7 @@ PartitionXref               db  LocIPT_MaxPartitions dup (?)
 ; 0 - no LVM support
 ; 1 - LVM support, but no letter
 ; 'C'-'Z' - assigned drive letter
+; BOOKMARK: Volume Drive Letters
 PartitionVolumeLetters      db  LocIPT_MaxPartitions dup (?)
 
 
@@ -2193,6 +2237,7 @@ PartitionVolumeLetters      db  LocIPT_MaxPartitions dup (?)
 ; -----------------------------------------------------------------------------
 ;                                                          MISC VARS AND FLAGS
 ; -----------------------------------------------------------------------------
+; BOOKMARK: Misc Vars and Flags
 TotalHarddiscs          db  ?           ; Total harddrives (by POST)
 LBASwitchTable          db  128 dup (?) ; Bit 25-18 for CHS/LBA Switching
 NewPartitions           db  ?           ; Freshly found partitions
@@ -2358,7 +2403,7 @@ MasterLVMLBA                dd      ?
 ;                                                                  I13X BUFFER
 ; -----------------------------------------------------------------------------
 ;
-; Temporary buffer for 48h INT13X bios call.
+; BOOKMARK: Temporary buffer for 48h INT13X bios call.
 ;
 
             ; Size of the buffer.
@@ -2386,7 +2431,7 @@ EndOfVariables:
 ; -----------------------------------------------------------------------------
 ;                                                           OLD AND NEW STACKS
 ; -----------------------------------------------------------------------------
-
+; BOOKMARK: Storage for Old and New Stack Pointers
 ;
 ; These need to be outside the variable section because AiR-BOOT can restart
 ; itself in debug-mode. If the OldSP and OldSS would be in the variable area,
@@ -2427,5 +2472,6 @@ ELSE
     LDRIMAGE    ENDS
 ENDIF
 
+            ; BOOKMARK: End of Module
             END     AiR_BOOT
 

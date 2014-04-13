@@ -34,14 +34,14 @@ AB_MIDDLE_VERSION   EQU     0
 AB_MINOR_VERSION    EQU     8
 
 ; The Year, Month and Day in BCD so we can easily extract nibbles.
-AB_YEAR             EQU     2012h
-AB_MONTH            EQU     09h
-AB_DAY              EQU     09h
+AB_YEAR             EQU     2013h
+AB_MONTH            EQU     02h
+AB_DAY              EQU     24h
 
 ; The Hours, Minutes and Seconds, again in BCD for easy manipulation.
-AB_HOURS            EQU     09h
-AB_MINUTES          EQU     09h
-AB_SECONDS          EQU     09h
+AB_HOURS            EQU     21h
+AB_MINUTES          EQU     16h
+AB_SECONDS          EQU     00h
 
 ; The AiR-BOOT signature uses big-endian so we shuffle some bits around.
 AB_SIG_VERSION      EQU     (((AB_MIDDLE_VERSION SHL 4) OR AB_MINOR_VERSION) SHL 8) OR AB_MAJOR_VERSION

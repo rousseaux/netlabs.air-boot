@@ -133,19 +133,20 @@ PART_FixUpSelectionNumber       EndP
 ; ============================================================================
 ;        In: DS:SI - IPT-Entry of partition
 ;            DS:PartitionSector - Actual Boot-Record of partition
-;       Out: *none* (BootRecordCRD updated)
+;       Out: *none* (BootRecordCRC updated)
+; CHECKME: Verify the change (BX points to sector to CRC) is working OK
 PART_UpdateBootRecordCRC        Proc Near Uses bx
-        mov     si, offset PartitionSector
+        push    si
+        ;~ mov     si, offset PartitionSector
+        mov     si, bx
         mov     bx, 4B4Dh            ; Magic: 'MK'
         call    MBR_GetCheckOfSector
+        pop     si
         mov     [si+LocIPT_BootRecordCRC], bx
         ret
 PART_UpdateBootRecordCRC        EndP
 
 
-;
-; What happens here ?
-;
 
 ; Rousseau:
 ; ---------
@@ -166,8 +167,7 @@ PART_UpdateBootRecordCRC        EndP
 ; is kinda static and luck has it that the word preceding ContinueBIOSbootTable
 ; presumably pointed to an area where a null byte was near.
 ;
-; Fix:
-; Test BX for zero and if so, skip the
+; BOOKMARK: The nasty pointer bug
 
 
 ; Copies the device-name to the Resume-BIOS IPT entry
@@ -780,7 +780,7 @@ PART_CheckForValidPartName      Proc Near   Uses ax cx dx si
 PART_CheckForValidPartName      EndP
 
 
-; Rousseau: added
+
 ; Compare a volume-label in the IPT to the install-volume
 ; SI holds pointer to entry in IPT
 ; CY set if this entry is also the install-volume
@@ -857,8 +857,9 @@ PART_IsInstallVolume            EndP
 
 
 
-; Setup Phase1
+
 ; If found CY=1, AL=partnum, else CY=0, AL=0FFH
+; BOOKMARK: Setup Phase1
 PART_SetupPhase1    Proc    Uses bx cx dx si di
 
         ;
@@ -1141,6 +1142,7 @@ ENDIF
     ;
     ; This loads the MBR in case of PRI or the EBR in case of LOG partitions.
     ;
+    ; BOOKMARK: PBR/EBR loading
     call    DriveIO_LoadPartition         ; Load Table...                [LOAD]
 
 
@@ -1234,7 +1236,7 @@ ENDIF
     jb      PSP_NoI13X
 
     ;
-    ; Setup 'I13X' signature.
+    ; BOOKMARK: Setup 'I13X' signature.
     ;
     PSP_ForceI13X:
         push    es
@@ -1491,7 +1493,9 @@ ENDIF
         test    byte ptr [si+LocIPT_Flags], Flags_VIBR_Detection
         jz      PSP_NoVIBR
 
+
         ; ----------------------------------------------------- CHECKS FOR VIBR
+        ; BOOKMARK: Check for virus in PBR
         push    si
             mov     si, offset PartitionSector
             mov     bx, 4B4Dh               ; Magic: 'MK'
@@ -1698,9 +1702,7 @@ ENDIF
         ; This fixing is done by OS/2 BM as well, according to Martin.
         ;
 
-        ;
-        ; Fix hidden sectors field
-        ;
+        ; BOOKMARK: Fix hidden sectors field
         mov     ax,[si+LocIPT_AbsoluteBegin]
         mov     es:[di+1ch], ax     ; Low word of 32-bits "hidden sectors"
 
@@ -1725,13 +1727,14 @@ ENDIF
         mov     al,0
 
 
-        ; FIXME:
+        ;
         ; The PBR is already loaded, no need to load it again in the
         ; calls below.
         ;
         ; Better use the already done discovery to determine the system.
         ;
-
+        ; FIXME: PBR Already loaded
+        
         ; When FAT12/FAT16/HPFS/JFS then boot-drive-letter can be tested
         ; or adjusted.
         call    PART_IsJFS
@@ -1954,9 +1957,8 @@ ENDIF
         ; HERE SHOULD COME AN ERROR POP-UP ABOUT NO BOOT-DRIVE OR NO LVM-INFO.
         ; WE CONTINUE BOOTING BUT OS/2 - eCS WILL MOST PROBABLY FAIL TO BOOT.
 
-        ; FIXME:
-        ; ISSUE SOME KIND OF WARNING...
-
+        ; FIXME: Issue some kind of warning
+        
         ;mov     ah,07h
         ;mov     si,offset CheckID_MBR
         ;call    VideoIO_Print
@@ -2034,6 +2036,13 @@ ENDIF
         ; Restore IPT pointer
         pop     si
 
+        
+        ; BOOKMARK: Update the CRC of the Partition Boot Record.
+        ; FIXME:    Update CRC on PBR
+        ;~ mov     bx, offset [PBRSector]
+        ;~ call    PART_UpdateBootRecordCRC
+
+        
         ; Setup the registers for the partition location.
         mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
         mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
@@ -2041,18 +2050,13 @@ ENDIF
         mov     dh, [si+LocIPT_LocationBegin+0]
         mov     dl, [si+LocIPT_Drive]
 
-        ; Write the adjusted JFS PBR to disk.
+        
+        ; BOOKMARK: Write the adjusted HPFS/JFS PBR to disk.
         mov     si, offset [PBRSector]
         call    DriveIO_SaveSector
 
     no_jfs_pbr:
         popa
-
-
-        ;xor     ax,ax
-        ;int     16h
-
-
 
 
 
@@ -2089,8 +2093,11 @@ ENDIF
     ;
     boot_from_floppy:
 
+
+    
+
         ;
-        ; Here we copy the prepared partition boot-record to 0000:7C00h
+        ; Here we copy the prepared boot-record to 0000:7C00h
         ; to give it control later on.
         ;
         push    es
@@ -2196,7 +2203,7 @@ StartPBR:
         mov     dl, cs:[si+LocIPT_Drive]      ; Drive Physical No
 
 
-
+        ; BOOKMARK: JUMP TO PBR CODE
         ; ###############################
         ; # JUMP TO THE PBR LOADER CODE #
         ; ###############################

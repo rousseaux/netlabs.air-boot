@@ -57,7 +57,7 @@ Copyright:
             ;~ db ' M. Kiewitz  <<Internal Release 3o>> (bld: '
             ;~ db ' M. Kiewitz  <<@ Interim Release @>> (bld: '
             ;~ db ' M. Kiewitz  <<Release Candidate 2>> (bld: '
-            db ' M. Kiewitz  <<Release Candidate 3>> (bld: '
+            db ' M. Kiewitz  <<Release Candidate 4>> (bld: '
             db BLDLVL_YEAR
             db BLDLVL_MONTH
             db BLDLVL_DAY,')'

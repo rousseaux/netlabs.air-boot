@@ -619,101 +619,106 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
    cmp     byte ptr [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
    je      PSCPN_NotLVMSupported
 
-   ; ------------------------------------------------------------[LVM CHECK]---
-   ; Load LVM-Sector here and seek to PartitionName
-   ; Set CurPartition_Location information of destination partition
-   mov     ax, [si+LocIPT_AbsolutePartTable]
-   mov     [CurPartition_Location+0], ax
-   mov     ax, [si+LocIPT_AbsolutePartTable+2]
-   mov     [CurPartition_Location+2], ax
-   mov     ah, byte ptr [si+LocIPT_LocationPartTable+0]
-   mov     al, byte ptr [si+LocIPT_Drive]
-   mov     [CurPartition_Location+4], ax
-   mov     ax, [si+LocIPT_LocationPartTable+1]
-   mov     [CurPartition_Location+6], ax
-   mov     di, si                        ; Put SI into DI
-   call    DriveIO_LoadLVMSector
-   jnc     PSCPN_LVMGotError             ; Security again, if problem -> halt
-   push    dx
+    ;
+    ; BOOKMARK: LVM Label Manipulations
+    ;
+    
+    ; ------------------------------------------------------------[LVM CHECK]---
+    ; Load LVM-Sector here and seek to PartitionName
+    ; Set CurPartition_Location information of destination partition
+    mov     ax, [si+LocIPT_AbsolutePartTable]
+    mov     [CurPartition_Location+0], ax
+    mov     ax, [si+LocIPT_AbsolutePartTable+2]
+    mov     [CurPartition_Location+2], ax
+    mov     ah, byte ptr [si+LocIPT_LocationPartTable+0]
+    mov     al, byte ptr [si+LocIPT_Drive]
+    mov     [CurPartition_Location+4], ax
+    mov     ax, [si+LocIPT_LocationPartTable+1]
+    mov     [CurPartition_Location+6], ax
+    mov     di, si                        ; Put SI into DI
+    call    DriveIO_LoadLVMSector
+    jnc     PSCPN_LVMGotError             ; Security again, if problem -> halt
+    push    dx
       mov     ax, [di+LocIPT_AbsoluteBegin]
       mov     dx, [di+LocIPT_AbsoluteBegin+2]
       call    LVM_SearchForPartition
-   pop     dx
-   jnc     PSCPN_LVMGotError             ; Not Found? -> display error and halt
+    pop     dx
+    jnc     PSCPN_LVMGotError             ; Not Found? -> display error and halt
 
 
     ; Point to LVM VolumeName
-   add     si, LocLVM_VolumeName
+    add     si, LocLVM_VolumeName
 
 
-   xchg    si, di                        ; SI-IPTEntry, DI-LVM PartName
-   jmp     PSCPN_CheckPartName           ; Check, if match...
-
-
-
-  PSCPN_LVMGotError:
-   jmp     MBR_LoadError
+    xchg    si, di                        ; SI-IPTEntry, DI-LVM PartName
+    jmp     PSCPN_CheckPartName           ; Check, if match...
 
 
 
-;   mov     si, di                        ; Restore SI and bootrecord fall-back
-  PSCPN_NotLVMSupported:
-   ; ----------------------------------------------------[BOOT-RECORD CHECK]---
-   ; Load Boot-Record...
-   push    dx
+    PSCPN_LVMGotError:
+    jmp     MBR_LoadError
+
+
+
+    ;   mov     si, di                        ; Restore SI and bootrecord fall-back
+    PSCPN_NotLVMSupported:
+    ; ----------------------------------------------------[BOOT-RECORD CHECK]---
+    ; Load Boot-Record...
+    ; BOOKMARK: Load Boot Record
+    push    dx
       mov     ax, [si+LocIPT_AbsoluteBegin+0]
       mov     bx, [si+LocIPT_AbsoluteBegin+2]
       mov     cx, [si+LocIPT_LocationBegin+1]
       mov     dh, [si+LocIPT_LocationBegin+0]
       mov     dl, [si+LocIPT_Drive]
       call    DriveIO_LoadPartition
-   pop     dx
+    pop     dx
 
-   ; We seek to Partition Label within boot-record here
-   mov     di, offset PartitionSector
+    ; We seek to Partition Label within boot-record here
+    mov     di, offset PartitionSector
 
-   push    si
+    push    si
       mov     al, [si+LocIPT_SystemID]
       call    PART_SearchFileSysName
       ; Replies AH - FileSysFlags, AL - UnhiddenID, SI - FileSysNamePtr
-   pop     si
+    pop     si
 
-   test    ah, FileSysFlags_NoName       ; If NoName by FileSysFlag
-   jnz     PSCPN_LetUserEditPartName     ;  -> don't put it into BR at anytime
-   test    ah, FileSysFlags_FAT32        ; FAT32 specific name getting
-   jz      PSCPN_ResumeNormal
-   add     di, 1Ch                       ; Fix for FAT 32, shit
-  PSCPN_ResumeNormal:
-   add     di, 2Bh                       ; ES:DI - Name of Partition
-
-
+    test    ah, FileSysFlags_NoName       ; If NoName by FileSysFlag
+    jnz     PSCPN_LetUserEditPartName     ;  -> don't put it into BR at anytime
+    test    ah, FileSysFlags_FAT32        ; FAT32 specific name getting
+    jz      PSCPN_ResumeNormal
+    add     di, 1Ch                       ; Fix for FAT 32, shit
+    PSCPN_ResumeNormal:
+    add     di, 2Bh                       ; ES:DI - Name of Partition
 
 
 
-   ; This code is used for BR and LVM checking
-   ; Rousseau: Because AiR-BOOT v1.0.8 uses the LVM_VolumeName, which is copied
-   ; to the IPT, this compare fails when the LVM_PartitionName is not
-   ; the same as the LVM_VolumeName. In that case, only the LVM_VolumeName
-   ; is updated. If they are the same, both are upated so they are the same
-   ; again after the edit.
 
-  PSCPN_CheckPartName:
+
+    ; This code is used for BR and LVM checking
+    ; Rousseau: Because AiR-BOOT v1.0.8 uses the LVM_VolumeName, which is copied
+    ; to the IPT, this compare fails when the LVM_PartitionName is not
+    ; the same as the LVM_VolumeName. In that case, only the LVM_VolumeName
+    ; is updated. If they are the same, both are upated so they are the same
+    ; again after the edit.
+
+    PSCPN_CheckPartName:
 
     ; Do no synchronization initially.
     mov     byte ptr [SyncLvmLabels],0
 
-  ; SI = IPT_Enty, DI points to LVM VolumeName.
+    ; SI = IPT_Enty, DI points to LVM VolumeName.
 
         ; If the partition is an LVM partition then disable editing completely.
         cmp     byte ptr [si+LocIPT_SystemID], 035h
         jnz     no_type_35h
 
-   ; Cannot boot LVM-Data partitions
-   pusha
-   mov     cx, 0C04h
-   mov     si, offset TXT_SETUP_NoEditType35
-   call    SETUP_ShowErrorBox
-   popa
+    ; Cannot boot LVM-Data partitions
+    pusha
+    mov     cx, 0C04h
+    mov     si, offset TXT_SETUP_NoEditType35
+    call    SETUP_ShowErrorBox
+    popa
 
 
         jmp     PSCPN_AllDone
@@ -739,40 +744,40 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
         pop     si
 
 
-   mov     cx, 11                        ; Partition-Name-Length = 11 Bytes
-   push    si
-   push    di
+    mov     cx, 11                        ; Partition-Name-Length = 11 Bytes
+    push    si
+    push    di
       add     si, LocIPT_Name            ; DS:SI -> Partition-Name
       repz    cmpsb
-   pop     di
-   pop     si
-   jne     PSCPN_LetUserEditPartName     ; -> No BR/LVM Changing/Saving
+    pop     di
+    pop     si
+    jne     PSCPN_LetUserEditPartName     ; -> No BR/LVM Changing/Saving
 
-   mov     byte ptr [ChangePartNameSave], 1         ; Remember, so we will save to BR
+    mov     byte ptr [ChangePartNameSave], 1         ; Remember, so we will save to BR
 
-  ; SI = IPT_Enty, DI points to LVM PartitionName.
-  PSCPN_LetUserEditPartName:
-   ; User will now edit the volume label...
-   mov     cx, 11
-   add     si, LocIPT_Name               ; DS:SI -> Partition-Name
-   call    VideoIO_LetUserEditString     ; -> does actual editing
-   jnc     PSCPN_AllDone                 ; Did user abort ?
+    ; SI = IPT_Enty, DI points to LVM PartitionName.
+    PSCPN_LetUserEditPartName:
+    ; User will now edit the volume label...
+    mov     cx, 11
+    add     si, LocIPT_Name               ; DS:SI -> Partition-Name
+    call    VideoIO_LetUserEditString     ; -> does actual editing
+    jnc     PSCPN_AllDone                 ; Did user abort ?
 
-   test    byte ptr [ChangePartNameSave], 1
-   jz      PSCPN_AllDone                 ; Actually we just skip BR/LVM-Save
+    test    byte ptr [ChangePartNameSave], 1
+    jz      PSCPN_AllDone                 ; Actually we just skip BR/LVM-Save
 
-   ; Check, where to save 2nd destination to...
+    ; Check, where to save 2nd destination to...
 
-   ;movzx   bx, dl
-   mov   bl,dl
-   mov   bh,0
+    ;movzx   bx, dl
+    mov   bl,dl
+    mov   bh,0
 
-   cmp     byte ptr [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
-   je      PSCPN_SaveBootRecord
+    cmp     byte ptr [PartitionVolumeLetters+bx], 0 ; ==0 means not supported by LVM
+    je      PSCPN_SaveBootRecord
 
 
-   ; Make DI point to LVM VolumeName in LVM-entry
-   ;~ sub     di,20
+    ; Make DI point to LVM VolumeName in LVM-entry
+    ;~ sub     di,20
 
         ; Points to LVM VolumeName.
         push    di
@@ -830,37 +835,39 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
 
 
     LVM_no_sync_labels:
+        ; Update LVM-CRC now...
+        mov     si, offset LVMSector
+        call    LVM_UpdateSectorCRC
+        IFDEF ReleaseCode
+          call    DriveIO_SaveLVMSector      ; Save sector
+        ENDIF
+        jmp     PSCPN_AllDone
 
-   ; Update LVM-CRC now...
-   mov     si, offset LVMSector
-   call    LVM_UpdateSectorCRC
-   IFDEF ReleaseCode
-      call    DriveIO_SaveLVMSector      ; Save sector
-   ENDIF
-   jmp     PSCPN_AllDone
+    ; -----------------------------------------------------[BOOT-RECORD SAVE]---
+    ; BOOKMARK: Save Boot Record (After change from Setup Menu)
+    PSCPN_SaveBootRecord:
+        ; Copy 11 bytes from IPT to Boot-Record
+        mov     cx, 11
+        push    si
+          rep     movsb                      ; Copy IPT-name to Boot-Record
+        pop     si
+        IFDEF ReleaseCode
+          call    DriveIO_SavePartition      ; Saves Boot-Record
+        ENDIF
 
-   ; -----------------------------------------------------[BOOT-RECORD SAVE]---
-  PSCPN_SaveBootRecord:
-   ; Copy 11 bytes from IPT to Boot-Record
-   mov     cx, 11
-   push    si
-      rep     movsb                      ; Copy IPT-name to Boot-Record
-   pop     si
-   IFDEF ReleaseCode
-      call    DriveIO_SavePartition      ; Saves Boot-Record
-   ENDIF
+    ; And reset VIBR-CRC, otherwise virus-warning and system-halt
+    ; BOOKMARK: Update CRC on Partition Sector
+    sub     si, LocIPT_Name               ; Now pointer points to base again...
+    mov     bx, offset [PartitionSector]
+    call    PART_UpdateBootRecordCRC
 
-   ; And reset VIBR-CRC, otherwise virus-warning and system-halt
-   sub     si, LocIPT_Name               ; Now pointer points to base again...
-   call    PART_UpdateBootRecordCRC
-
-  PSCPN_AllDone:
-   ; This here is done for safety, because we misused CurPartition_Location
-   xor     ax, ax
-   mov     di, offset CurPartition_Location
-   mov     cx, 4
-   rep     stosw                         ; NUL out CurPartition_Location
-   ret
+    PSCPN_AllDone:
+        ; This here is done for safety, because we misused CurPartition_Location
+        xor     ax, ax
+        mov     di, offset CurPartition_Location
+        mov     cx, 4
+        rep     stosw                         ; NUL out CurPartition_Location
+    ret
 PARTSETUP_ChangePartitionName   EndP
 
 ; =============================================================================
