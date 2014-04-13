@@ -2038,9 +2038,9 @@ ENDIF
 
         
         ; BOOKMARK: Update the CRC of the Partition Boot Record.
-        ; FIXME:    Update CRC on PBR
-        ;~ mov     bx, offset [PBRSector]
-        ;~ call    PART_UpdateBootRecordCRC
+        mov     bx, offset [PBRSector]
+        call    PART_UpdateBootRecordCRC
+        call    DriveIO_SaveConfiguration
 
         
         ; Setup the registers for the partition location.
