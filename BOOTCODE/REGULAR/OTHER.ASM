@@ -132,6 +132,22 @@ PRECRAP_Main    Proc Near
         xor     si,si
         call    MBR_TeletypeNL
 
+
+        ; This sets [CurIO_UseExtension] flag
+        call    PRECRAP_CheckFor13extensions
+        mov     al,[CurIO_UseExtension]
+        test    al,al
+        jnz     INT13X_Present
+
+;
+; Change this to a popup.
+;
+INT13X_Missing db '!! NO INT13X !!',0
+        mov     si, offset INT13X_Missing
+        call    MBR_Teletype
+        jmp     MBR_HaltSystem
+
+INT13X_Present:
         xor     cx,cx
     PRECRAP_Main_next_disk:
 
@@ -289,8 +305,6 @@ PRECRAP_Main    Proc Near
     ENDIF
 
 
-        ; This sets [CurIO_UseExtension] flag.
-        call    PRECRAP_CheckFor13extensions
 
     IFNDEF ReleaseCode
         ret

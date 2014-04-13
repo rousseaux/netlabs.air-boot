@@ -323,6 +323,7 @@ LVM_DoLetterReassignment        Proc Near   Uses bx cx dx si di
    mov     cl, CFG_Partitions
    or      cl, cl
    jz      LVMDLR_SkipRemove
+
   LVMDLR_RemoveLoop:
       cmp     bptr [PartitionVolumeLetters+bx], ch
       jne     LVMDLR_NextPartition
@@ -348,6 +349,7 @@ LVM_DoLetterReassignment        Proc Near   Uses bx cx dx si di
       inc     bx
    dec     cl
    jnz     LVMDLR_RemoveLoop
+
   LVMDLR_SkipRemove:
    ; Set CurPartition_Location information of destination partition
    mov     ax, wptr [di+LocIPT_AbsolutePartTable]

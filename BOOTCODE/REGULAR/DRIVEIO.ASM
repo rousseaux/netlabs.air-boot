@@ -606,7 +606,17 @@ DriveIO_SaveLVMSector   Proc Near  Uses ax bx cx dx
         mov     cx, wptr cs:[CurPartition_Location+6] ; Gets cur. partition location
         call    LVM_CheckSectorSignature
         jnc     DIOSLVMS_SevereError                  ; LVM Signature must be there
+
+IFDEF   AUX_DEBUG
+        ;~ call    DEBUG_DumpRegisters
+ENDIF
+
         call    DriveIO_LVMAdjustToInfoSector
+
+IFDEF   AUX_DEBUG
+        ;~ call    DEBUG_DumpRegisters
+ENDIF
+
         mov     si, offset LVMSector
         call    DriveIO_SaveSector
     DIOSLVMS_SevereError:
@@ -787,11 +797,20 @@ DriveIO_LoadSectorLBA       EndP
 ; Preserve: all registers
 ; #########################################################################
 DriveIO_SaveSector              Proc Near  Uses ax bx cx ds si es di
+
+IFDEF   AUX_DEBUG
+        call    DEBUG_DumpRegisters
+        call    AuxIO_DumpSector
+        call    AuxIO_TeletypeNL
+ENDIF
+
         test    byte ptr cs:[CurIO_UseExtension], 1
         jz      DIOSS_UseNormal
         ; Are we forced do use LBA via Setting?
-        test    byte ptr cs:[CFG_ForceLBAUsage], 1
-        jnz     DIOSS_UseExtension
+        ; Always use INT13X on v1.0.8.
+        ;~ test    byte ptr cs:[CFG_ForceLBAUsage], 1
+        ;~ jnz     DIOSS_UseExtension
+        jmp     DIOSS_UseExtension
         ; Is the drive not a harddrive?
         cmp     dl, 80h
         jb      DIOSS_UseNormal
@@ -931,9 +950,9 @@ DriveIO_LoadMasterLVMSector     Proc  Near
         ;~ pop     ax
 
 IFDEF AUX_DEBUG
-      ; Dump the value
-      ;call     AuxIO_TeletypeHexByte
-      ;call     AuxIO_TeletypeNL
+        ; Dump the value
+        ;~ call     AuxIO_TeletypeHexByte
+        ;~ call     AuxIO_TeletypeNL
 ENDIF
 
         ; Setup the requested LBA sector number

@@ -48,17 +48,17 @@ PARTSCAN_ScanForPartitions      Proc Near
         mov     byte ptr [CurIO_Scanning], 0             ; Reset flag due scanning complete
 
 IFDEF   AUX_DEBUG
-        pusha
-        call    DEBUG_DumpHidePartTables
-        popa
+        ;~ pusha
+        ;~ call    DEBUG_DumpHidePartTables
+        ;~ popa
 ENDIF
         ; Use X-Reference to sync NewPartitionTable with Hide-Config
         call    PARTSCAN_SyncHideConfigWithXref
 
 IFDEF   AUX_DEBUG
-        pusha
-        call    DEBUG_DumpHidePartTables
-        popa
+        ;~ pusha
+        ;~ call    DEBUG_DumpHidePartTables
+        ;~ popa
 ENDIF
 
         ; Now we copy the new IPT over the old one...

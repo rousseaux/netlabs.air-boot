@@ -234,6 +234,71 @@ DEBUG_DumpPartitionXref     Proc
         ret
 DEBUG_DumpPartitionXref     EndP
 
+
+
+DEBUG_DumpDriveLetters      Proc
+        pushf
+        pusha
+
+        call    AuxIO_TeletypeNL
+
+        mov     si,offset [DriveLetters]
+        mov     cx,2
+
+    DEBUG_DumpDriveLetters_next:
+        call    AuxIO_DumpParagraph
+        add     si,16
+        call    AuxIO_TeletypeNL
+        loop    DEBUG_DumpDriveLetters_next
+
+        popa
+        popf
+        ret
+DEBUG_DumpDriveLetters      EndP
+
+
+DEBUG_DumpRegisters     Proc
+        pushf
+        pusha
+
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+
+        mov     ax,bx
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+
+        mov     ax,cx
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+
+        mov     ax,dx
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+
+        mov     ax,si
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+
+        mov     ax,di
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+
+        mov     ax,ds
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+
+        mov     ax,es
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+
+        call    AuxIO_TeletypeNL
+
+        popa
+        popf
+        ret
+DEBUG_DumpRegisters     EndP
+
 ;
 ; Dump information before the menu is displayed.
 ;

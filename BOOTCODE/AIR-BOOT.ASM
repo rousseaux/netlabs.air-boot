@@ -863,10 +863,11 @@ AiR_BOOT_Start:
                 ; Number of harddisks is now known
 
 IFDEF   AUX_DEBUG
-                call    DEBUG_DumpIPT
+                ;~ call    DEBUG_DumpIPT
                 ;~ call    DEBUG_DumpPartitionPointers
-                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpPartitionXref
                 ;~ call    DEBUG_DumpNewPartTable
+                ;~ call    DEBUG_DumpDriveLetters
 ENDIF
 
                 ; Scan all partitions
@@ -898,9 +899,9 @@ ENDIF
 
 
 IFDEF   AUX_DEBUG
-                call    DEBUG_DumpIPT
+                ;~ call    DEBUG_DumpIPT
                 ;~ call    DEBUG_DumpPartitionPointers
-                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpPartitionXref
                 ;~ call    DEBUG_DumpNewPartTable
 ENDIF
 
@@ -939,9 +940,9 @@ ENDIF
 
 
 IFDEF   AUX_DEBUG
-                call    DEBUG_DumpIPT
+                ;~ call    DEBUG_DumpIPT
                 ;~ call    DEBUG_DumpPartitionPointers
-                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpPartitionXref
                 ;~ call    DEBUG_DumpNewPartTable
 ENDIF
 
@@ -1143,7 +1144,7 @@ ENDIF
 IFDEF   AUX_DEBUG
                 ;~ call    DEBUG_DumpIPT
                 ;~ call    DEBUG_DumpPartitionPointers
-                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpPartitionXref
                 ;~ call    DEBUG_DumpNewPartTable
 ENDIF
 

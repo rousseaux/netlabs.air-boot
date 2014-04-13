@@ -26,6 +26,21 @@
 ;
 ; v1.0.8-rc3-bld201205nn
 ; ----------------------
+; # Removed Force LBA Usage from Setup #
+;   When AiR-BOOT is installed on an USB-stick, there is a possibility that
+;   the CHS-geometry varies between different machines where the stick is
+;   booted. This would invalidate any CHS-values that were stored in the IPT.
+;   To prevent more nasty things like below from happening, LBA-addressing
+;   is now always used.
+;
+;!## Fixed a very very nasty bug that can destroy the MBR on multiple disks ##!
+;   When Force BIOS-LBA usage is disabled (the default is enabled), and the
+;   the driveletter feature is being set, and valid LVM information is present,
+;   then the MBR of the disk containing the partition of which the driveletter
+;   is changed will be overwritten with the LVM sector !
+;   In addition, if the driveletter was already in use by another partition
+;   on another disk, the MBR of that disk will be overwritten too !!
+;
 ; # Fixed a nasty bug when eCS phase1 is active #
 ;   When creating a partition in a free space between partitions for
 ;   eCS installation, the phase1 boot-through code would calculate the

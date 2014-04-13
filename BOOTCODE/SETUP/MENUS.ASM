@@ -212,12 +212,20 @@ SETUP_ExtendedBootOptions:
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_IgnoreLVM
                 dw      offset TXT_SETUP_IgnoreLVM, offset TXT_SETUPHELP_IgnoreLVM
                 dw      6 dup (0)
-                dw      offset SETUPMAGIC_EnableDisable, offset CFG_ForceLBAUsage            ; Rousseau: LBA
-                dw      offset TXT_SETUP_ForceLBAUsage, offset TXT_SETUPHELP_ForceLBAUsage
-                dw      6 dup (0)
+
+                ;~ dw      offset SETUPMAGIC_EnableDisable, offset CFG_ForceLBAUsage
+                ;~ dw      offset TXT_SETUP_ForceLBAUsage, offset TXT_SETUPHELP_ForceLBAUsage
+                ;~ dw      6 dup (0)
+
+                dw      0, 0    ; added for removal of force-lba
+                dw      0, 0    ; added for removal of force-lba
+
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_ExtPartitionMShack
                 dw      offset TXT_SETUP_ExtPartMShack, offset TXT_SETUPHELP_ExtPartMShack
                 dw      6 dup (0)
+
+
+
                 dw      0, 0
                 dw      0, 0
                 dw      0, 0

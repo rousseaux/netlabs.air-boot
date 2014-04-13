@@ -1023,7 +1023,9 @@ PART_StartPartition             Proc Near   Uses ax dx es di
    ; BX:AX -> Absolute End-Position of Partition
 
    test    byte ptr [CFG_ForceLBAUsage], 1
-   jnz     PSP_ForceI13X
+    ;~ jnz     PSP_ForceI13X
+    jmp     PSP_ForceI13X
+
    ; LBA-boundary at 16450560 (FB0400h) (16320x16x63)
    cmp     bx, 00FBh
    jb      PSP_NoI13X
@@ -1759,6 +1761,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 IFDEF AUX_DEBUG
    call     DEBUG_Dump2
    ;~ call     DEBUG_DumpBSSSectors
+   ;~ call     DEBUG_DumpDriveLetters
 ENDIF
 
 
