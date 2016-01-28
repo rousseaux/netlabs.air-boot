@@ -1406,9 +1406,6 @@ void Install_WriteConfig (void) {
     }
 #endif
 
-    // Always enable LBA
-    *(PCHAR)&Bootcode[54 * BYTES_PER_SECTOR + 0x0AC] = 1;
-
     // Delete current checksum
     *(PUSHORT)&Bootcode[54 * BYTES_PER_SECTOR + 20] = 0;
 

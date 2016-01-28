@@ -64,6 +64,11 @@
 # This is used to compensate for the differences between the target platforms.
 !include	../INCLUDE/MAKEFILE.MIF
 
+# On my system, JWasm takes forever to generate a list-file when on a network
+# drive. Connecting the drive using the legacy LANMAN or the new Samba EVFS
+# makes no difference. If you experience the same, then put a '#' in front of
+# the variable below to keep JWasm from generating a list-file.
+#JWASM_LIST_FILE=-Fl=$^&.LST
 
 # Specifies the level of debugging.
 # Level 0 is no debugging (release) and each higher level may use other
@@ -173,14 +178,16 @@ ASM=jwasm
 # -Cp	= case sensitive symbols
 # -zcw	= no _ prefix on symbols (C model)
 # -Zm	= Masm51 compat -- don't use ! (Will generate incorrect offsets)
-ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W0 -Cp -zcw -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
-ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
-ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
+# -Zd	= line number debug info
+# -Zi	= symbolic debug info
+ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W0 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.ERR
+ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Zd -Zi -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.ERR
+ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Zd -Zi -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.ERR
 
 # WASM
 !elseif "$(ASM)"=="wasm"
 # -w0	= suppress warnings (wasm is nice to check for missing size qualifiers)
-ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -w0 -fo=$^. -fr=$^&.ERR
+ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -w4 -fo=$^. -fr=$^&.ERR
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -w4 -d1 -fo=$^. -fr=$^&.ERR
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -w4 -d1 -fo=$^. -fr=$^&.ERR
 
@@ -207,6 +214,8 @@ ASM_FLAGS_D2=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ALP
 !else
 !error Unknown Assembler specified ! *$(ASM)*
 !endif
+
+# Resulting Assembler Flags.
 ASM_FLAGS=$(ASM_FLAGS_D$(DEBUG_LEVEL))
 
 
@@ -284,7 +293,7 @@ DEPTARGETS=MBR-PROT ..$(DS)TOOLS$(DS)INTERNAL
 # Use wmake dev to do development; that will generate one image and leave
 # the intermediate files intact.
 # -----------------------------------------------------------------------------
-all:	.SYMBOLIC Makefile.bu mbrprot $(BLD_LANGUAGES) footer
+all:	.SYMBOLIC Makefile.bu $(BLD_LANGUAGES) footer
 #	@echo ALL !!
 #	@#MAKE $(BLD_LANGUAGES)
 #	@for %%i in ($(BLD_LANGUAGES)) do @%MAKE AB-%%i
@@ -429,7 +438,7 @@ mbrprot:	.symbolic
 	@echo @ Building MBR Protection Image and FixCode first @
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	cd MBR-PROT
-	wmake -h
+	$(MAKE) -h
 	cd ..
 	@%MAKE fixcode
 	@echo ______________________________________________________________________________
@@ -439,7 +448,7 @@ mbrprot:	.symbolic
 #
 fixcode:	.procedure
 	cd ..$(DS)TOOLS$(DS)INTERNAL
-	wmake -h
+	$(MAKE) -h
 	cd ..$(DS)..$(DS)BOOTCODE
 
 
@@ -533,20 +542,29 @@ $(BASENAME).OBJ:	.MULTIPLE $(BASENAME).ASM
 dev:	.SYMBOLIC
 	@%MAKE rmbin
 	@%MAKE mbrprot
+	@%MAKE fixcode
 	SET AB_DEV=TRUE
 #	@%MAKE $(DEV_BLD_LANG)
 # We need to recurse here because the environment is used to pass AB_DEV and
 # the testing on it does not seem to work when using @%MAKE syntax. (bug ?)
 # We also don't want .MULTIPLE which we won't get if we build just one target.
-	@$(MAKE) $(DEV_BLD_LANG)
+	@$(MAKE) -h $(DEV_BLD_LANG)
 # Display the BLDLEVEL information if we are building on OS/2.
 !ifdef	__OS2__
 	@echo.
 	@bldlevel $(TARGET)
+	@echo.
+	-@type AIRBOOT.MD5 2> nul
+	@md5sum $(TARGET) > AIRBOOT.MD5
+	@type AIRBOOT.MD5
 !endif
 !ifdef	__LINUX__
 	@echo.
 	@if exist AIR-BOOT.LST @grep ^zzz_code_space AIR-BOOT.LST
+	@echo.
+	@cat AIRBOOT.MD5
+	@md5sum $(TARGET) > AIRBOOT.MD5
+	@cat AIRBOOT.MD5
 	@echo.
 !endif
 
@@ -573,7 +591,7 @@ clean:	.SYMBOLIC .MULTIPLE
 	@if exist *.LST $(RM) *.LST
 	@if exist *.ERR $(RM) *.ERR
 	@if exist *.o   $(RM) *.o
-
+	@%MAKE rmbin
 
 # -----------------------------------------------------------------------------
 # REMOVE ALL RESIDUAL .BIN FILES (old builds)
@@ -594,12 +612,6 @@ dist:	.SYMBOLIC
 	@if exist AIRBT-EN.BIN $(CP) AIRBT-EN.BIN ..$(DS)RELEASE$(DS)WINNT$(DS)$(TARGET)
 	@if exist AIRBT-EN.BIN $(CP) AIRBT-EN.BIN ..$(DS)RELEASE$(DS)OS2$(DS)$(TARGET)
 	@if exist AIRBT-EN.BIN $(CP) AIRBT-EN.BIN ..$(DS)RELEASE$(DS)LINUX$(DS)$(TARGET)
-	@cd ..
-	@cd INSTALL$(DS)C
-	@$(MAKE) dist
-	@cd ..$(DS)..
-	@cd TOOLS$(DS)OS2$(DS)SETABOOT
-	@$(MAKE) dist
 
 
 # -----------------------------------------------------------------------------

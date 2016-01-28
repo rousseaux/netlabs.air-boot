@@ -53,9 +53,8 @@ BLDLVL_DAY              EQU     (AB_DAY SHR 4)+'0',(AB_DAY AND 0Fh)+'0'
 BLDLVL_HOURS            EQU     (AB_HOURS SHR 4)+'0',(AB_HOURS AND 0Fh)+'0'
 BLDLVL_MINUTES          EQU     (AB_MINUTES SHR 4)+'0',(AB_MINUTES AND 0Fh)+'0'
 BLDLVL_SECONDS          EQU     (AB_SECONDS SHR 4)+'0',(AB_SECONDS AND 0Fh)+'0'
-; Build machine (16 chars max ?)
-;BLDLVL_MACHINE          EQU     'ecs-devbox'
-BLDLVL_MACHINE          EQU     '*UNKNOWN*'
+; Build machine
+BLDLVL_MACHINE          EQU     '*UNKNOWN*'    ; 16 chars max.
 ; Build language
 IFDEF   WASM
     ; Wasm can only process the reference to 'lang' in pass 2 because it comes

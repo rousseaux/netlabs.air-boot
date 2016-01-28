@@ -165,30 +165,6 @@ PRECRAP_Main    Proc Near
         xor     si,si
         call    MBR_TeletypeNL
 
-
-        ; This sets [CurIO_UseExtension] flag.
-        call    PRECRAP_CheckFor13extensions
-        mov     al,[CurIO_UseExtension]
-        test    al,al
-        jnz     INT13X_Supported
-
-        ;
-        ; Show Message that BIOS INT13X is not supported
-        ; and Halt the System.
-        ;
-        mov     cx, 0C04h
-        mov     si, offset TXT_NoINT13XSupport
-        call    SETUP_ShowErrorBox
-
-        ; Halt the system.
-        jmp     HaltSystem
-
-
-    ;
-    ; INT13X Supported so continue.
-    ;
-    INT13X_Supported:
-
         xor     cx,cx
     PRECRAP_Main_next_disk:
 
@@ -348,6 +324,28 @@ PRECRAP_Main    Proc Near
     ENDIF
 
 
+        ; This sets [CurIO_UseExtension] flag.
+        call    PRECRAP_CheckFor13extensions
+        mov     al,[CurIO_UseExtension]
+        test    al,al
+        jnz     INT13X_Supported
+
+        ;
+        ; Show Message that BIOS INT13X is not supported
+        ; and Halt the System.
+        ;
+        mov     cx, 0C04h
+        mov     si, offset TXT_NoINT13XSupport
+        call    SETUP_ShowErrorBox
+
+        ; Halt the system.
+        jmp     HaltSystem
+
+
+    ;
+    ; INT13X Supported so continue.
+    ;
+    INT13X_Supported:
 
     IFNDEF ReleaseCode
         ret

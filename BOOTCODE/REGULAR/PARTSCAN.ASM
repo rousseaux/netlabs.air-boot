@@ -300,9 +300,13 @@ PARTSCAN_ScanPartition          Proc Near  Uses ax si
         popa
 
     PSSP_IgnorePartition:
-        ; L”scht das Boot-Able Flag...
-        ; CHECKME: About clearing the active flags, TRACK ticket #6
-        and     byte ptr [si+LocBRPT_Flags], 7Fh ; Reset the Active-Flag
+        ; Only clear the boot-flag on the boot-disk.
+        ; Clearing the boot-flags on other disks would prevent booting them
+        ; from the BIOS. (TRAC ticket #6)
+        cmp     dl, 080h                            ; See if this is boot-disk 
+        jne     PSSP_Skip_Clear_BootFlag            ; Nope, skip clear flag
+        and     byte ptr [si+LocBRPT_Flags], 7Fh    ; Reset the Active-Flag
+    PSSP_Skip_Clear_BootFlag:
         add     si, LocBRPT_LenOfEntry     ; 16 Bytes per partition entry
         cmp     si, 500+offset PartitionSector
         jb      PSSP_ScanLoop

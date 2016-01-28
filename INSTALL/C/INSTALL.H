@@ -24,18 +24,17 @@
 #define     BLDLVL_VENDOR           "KIEWITZ"
 // Version
 #define     BLDLVL_MAJOR_VERSION    "1"
-#define     BLDLVL_MIDDLE_VERSION   "0"
-#define     BLDLVL_MINOR_VERSION    "8"
+#define     BLDLVL_MIDDLE_VERSION   "1"
+#define     BLDLVL_MINOR_VERSION    "0"
 // Build date
 #define     BLDLVL_YEAR             "2013"
 #define     BLDLVL_MONTH            "04"
 #define     BLDLVL_DAY              "05"
 // Build time
 #define     BLDLVL_HOURS            "01"
-#define     BLDLVL_MINUTES          "00"
-#define     BLDLVL_SECONDS          "08"
+#define     BLDLVL_MINUTES          "01"
+#define     BLDLVL_SECONDS          "00"
 // Build machine
-//#define     BLDLVL_MACHINE          "ecs-devbox"
 #define     BLDLVL_MACHINE          "*UNKNOWN*"
 // Build language
 #define     BLDLVL_LANGUAGE         "EN"

@@ -1,1 +1,1 @@
-@wmake dist
+@wmake -h dist

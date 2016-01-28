@@ -1,1 +1,1 @@
-@wmake clean rmbin
+@wmake -h clean

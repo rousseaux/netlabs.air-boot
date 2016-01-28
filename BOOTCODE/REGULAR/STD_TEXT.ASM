@@ -54,13 +54,11 @@ Copyright:
             db BLDLVL_MIDDLE_VERSION,'.'
             db BLDLVL_MINOR_VERSION,' - (c) 1998-'
             db BLDLVL_YEAR
-            ;~ db ' Martin Kiewitz, Dedicated to Gerd Kiewitz'
-            db ' M. Kiewitz  <<  v1.1.0-pre  >> (bld: '
-            ;~ db ' M. Kiewitz  << Test Version >> (bld: '
-            ;~ db ' Rousseau    << Test Version >> (bld:'
-            db BLDLVL_YEAR
-            db BLDLVL_MONTH
-            db BLDLVL_DAY,')'
+            ;~ db ' M. Kiewitz  <<Release Candidate 4>> (bld: '
+            db ' Martin Kiewitz, Dedicated to Gerd Kiewitz'
+            ;~ db BLDLVL_YEAR
+            ;~ db BLDLVL_MONTH
+            ;~ db BLDLVL_DAY,')'
             db 0
 
 ;

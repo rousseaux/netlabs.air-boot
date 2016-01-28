@@ -296,7 +296,7 @@ clean:	.SYMBOLIC
 # -----------------------------------------------------------------------------
 dist:	.SYMBOLIC
 	@if exist *.EXE $(CP) *.EXE ..$(DS)..$(DS)..$(DS)RELEASE$(DS)OS2
-	@if exist *.EXE $(CP) *.EXE ..$(DS)..$(DS)..$(DS)RELEASE$(DS)BOOTCODE
+#	@if exist *.EXE $(CP) *.EXE ..$(DS)..$(DS)..$(DS)RELEASE$(DS)BOOTCODE
 #
 # Help on using this Makefile.
 #

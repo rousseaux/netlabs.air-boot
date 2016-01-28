@@ -258,7 +258,10 @@ Makefile.bu:	Makefile
 # DOS 16-bits (MZ)
 ###############################################################################
 $(MODULE)D.EXE:	$(MODULE)D.OBJ
+#	@cat $^&.MD5
 	$(LNK) $(LNK_FLAGS) op stack=8192 file $^&.OBJ name $^. sys dos
+#	@md5sum $^. > $^&.MD5
+#	@cat $^&.MD5
 	@wdump $^. > $^&.WDU
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
@@ -337,9 +340,10 @@ $(MODULE)L.OBJ:	$(BASENAME).C $(BASENAME).H
 # Then it installs the English version to RELEASES as AIRBOOT.BIN.
 # -----------------------------------------------------------------------------
 dist:	.SYMBOLIC
-	@if exist *.EXE $(CP) *.EXE ..$(DS)..$(DS)RELEASE$(DS)BOOTCODE
-	@if exist *.ELF $(CP) *.ELF ..$(DS)..$(DS)RELEASE$(DS)BOOTCODE
-
+	@if exist AIRBOOT2.EXE $(CP) AIRBOOT2.EXE ..$(DS)..$(DS)RELEASE$(DS)OS2
+	@if exist AIRBOOTD.EXE $(CP) AIRBOOTD.EXE ..$(DS)..$(DS)RELEASE$(DS)DOS
+	@if exist AIRBOOTL.ELF $(CP) AIRBOOTL.ELF ..$(DS)..$(DS)RELEASE$(DS)LINUX
+	@if exist AIRBOOTW.EXE $(CP) AIRBOOTW.EXE ..$(DS)..$(DS)RELEASE$(DS)WINNT
 
 #
 # Rebuild all targets.

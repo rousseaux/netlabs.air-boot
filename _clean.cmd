@@ -1,1 +1,1 @@
-@wmake clean
+@wmake -h clean

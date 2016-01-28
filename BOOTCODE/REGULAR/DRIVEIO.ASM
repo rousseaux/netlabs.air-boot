@@ -205,7 +205,7 @@ DriveIO_InitLBASwitchTable  EndP
 
 
 
-
+;FIXME: Only LBA gets updated, need to update CHS too !!!!!!!
 
 ; Adjusts BX:AX / CX:DX to meet LVM sector location
 ; BX:AX / CX:DX point to MBR or EBR !

@@ -1,3 +1,3 @@
 @SET ASM=jwasm
-@wmake dev
-@wmake dist
+@wmake -h dev
+@wmake -h dist

@@ -24,21 +24,34 @@
 ; Rousseau: Fixes, Enhancements and fresh bugs :-)
 ; ------------------------------------------------
 ;
-; v1.1.0-pre
-; ----------
-; # Updated textual version information from v1.0.8 to v1.1.0
-;   This does not include the version identifiers.
+; v1.1.0-final
+; ============
+; # Bumped Version Number
 ;   During v1.0.8 is was decided that odd minor versions will be test-versions.
 ;   Since v1.0.8 was a test-version all the way, the final stuff has been
 ;   bumped to v1.1.0, including the version of the configuration.
 ;   v1.1.1 will be any following test-version, with build-dates separating
 ;   test-releases. Version 1.1.2 would be a next release.
 ;
+; # Updated version numbers
+;   All version identifiers updated from v1.0.8 to v1.1.0
+;   AIRBOOT.BIN, INSTALL[D2WL].EXE and SETABOOT.EXE.
+;
 ; # Fixed Virus Regression
 ;   Using the enhanced drive-letter feature to boot eCS installations using
 ;   the same drive-letter caused the PBR-virus protection to activate.
 ;   This was caused by a missing update to the PBR CRC in the AB configuration.
 ;   This has been fixed.
+;
+; # Only clear bootable flag on boot-drive
+;  This interferred with booting other drives, not containing AiR-BOOT,
+;  directly from the BIOS. Now AiR-BOOT only clears the bootable-flag on the
+;  boot-drive, which is the one where AiR-BOOT got activated from.
+;
+; # Check for INT13X extensions before using them
+;   Now the availability of INT13X is checked and a popup is displayed and the
+;   system halted when they are not available. INT13X is a requirement for
+;   this and higher versions of AiR-BOOT.
 ;
 ; v1.0.8-rc3-bld20120909
 ; ----------------------

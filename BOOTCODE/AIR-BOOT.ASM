@@ -1790,7 +1790,7 @@ Configuration:
                 ; find the config-signature which includes this
                 ; invisible character. The code of the char is: 0adh.
                 db  'AiRCFG-TABLE­'
-                db  01h, 08h, 'U' ; "Compressed" ID String
+                db  01h, 10h, 'U' ; "Compressed" ID String
                 ; Version 1.02 was for code 1.06, 1.03 was internal
                 ; and 1.04,1.05 and 1.06 do not exist.
                 ;

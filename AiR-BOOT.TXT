@@ -1,6 +1,15 @@
-======================
-AiR-BOOT version 1.1.0                                                 apr 2013
-======================
+==============================
+AiR-BOOT version 1.1.0-RELEASE                                         apr 2013
+==============================
+
+This is the version as included on the eCS v2.2-beta CD's.
+It was technically a pre-v1.1.0 release, with the final v1.1.0, including some
+minor patches, to be included with eCS v2.2-GA. Because this version is now
+known to be v1.1.0, we'll keep it that way. The minor patches and meanwhile
+done fixes will soon appear as v1.1.1 test-version commits to be consolidated
+to a v1.1.2 release. Issues regarding removable media are planned for the
+v1.1.4 release as this requires removal of obsolete code and optimizing
+existing code to create space in the ~32K block (track0) the loader resides in.
 
 With this version of AiR-BOOT, the display of the version number has changed
 to be compatible with the WarpIN versioning system.
@@ -8,28 +17,20 @@ So all digits are now separated by a dot.
 This change is only visual and tools relying on the way AiR-BOOT stores it's
 version numer internally are not affected.
 
-During v1.0.8 it was decided that odd minor numbers will be
-test-versions. Since v1.0.8 was actually a test-version with several
-test-releases but with an even minor number, it was decided to bump the
-final release to v1.1.0.
 
-Thus, v1.1.1 will be the next test-version after the upcoming official
-v1.1.0 release. When such test-versions are published, for instance to
-get feedback, or solve a particular issue, the build-date and BLDLEVEL
-information will identify such a test-release. This information can be
-viewed by pressing the TAB-key while the Main Menu is displayed. Such
-test-releases will also have a slightly different visual appearance to
-distinguish them from official releases.
+The following has been fixed:
 
-Because all test-versions between official releases identify themselves
-with the same version number, upgrading from one test-release to another
-requires the /forcecode option on the Installer.
+- AiR-BOOT cleared the bootable flag on all drives (TRAC ticket #6)
+  -----------------------------------------------------------------
+  This interferred with booting other drives, not containing AiR-BOOT,
+  directly from the BIOS. Now AiR-BOOT only clears the bootable-flag on the
+  boot-drive, which is the one where AiR-BOOT got activated from.
 
-
-The following summation of fixes.
-For more details see AIRBOOT.HIS in the BOOTCODE directory.
-
-
+  AiR-BOOT would use INT13X extensions before checking their availability
+  -----------------------------------------------------------------------
+  Now the availability of INT13X is checked and a popup is displayed and the
+  system halted when they are not available. INT13X is a requirement for
+  this and higher versions of AiR-BOOT.
 
 - AiR-BOOT does not remember drive-letters (issue #2987)
   ------------------------------------------------------
@@ -44,18 +45,43 @@ For more details see AIRBOOT.HIS in the BOOTCODE directory.
   to indicate which drive-letter to use. (issues #3067 and #3119)
   A SYSINSTX would solve such a problem, as did the dl-feature in AB v1.06.
 
-  With this 1.1.0 version, this feature has become almost obsolete, except
-  when installing multiple eComStation systems using the same drive-letter.
-  In that case, each such an installation needs to have it's drive forced
-  to the letter of it's boot-drive.
+  With this 1.1.0 version, this feature has become almost obsolete.
+  If the information is missing from the HPFS partition, AB recreates it
+  from the LVM information related to that partition.
+  It only does that in memory, just before booting the system and thus does not
+  alter/fix the HPFS partition on disk. The user can do that by regenerating
+  the system using SYSINSTX.
 
-  This feature feature can still be of value is when restoring a pre-LVM
-  system from archive to an HPFS partition.
+  When using multiple eComStation systems installed on the same drive-letter,
+  the drive-letter feature is still needed to force the correct letter on the
+  system being booted and hide the others. See the documentation on how to
+  install multiple eCS systems using the same drive-letter.
+
+  Another case where the drive-letter feature can still be of value is when
+  restoring a pre-LVM system from archive to an HPFS partition.
   In this case there will be no LVM information AiR-BOOT can use, so the
   user can use the dl-feature to force the proper boot-drive.
   After booting the pre-LVM system, it's advised to do a SYSINSTX to
   permanently fix the HPFS partition. After that, the dl-feature can be
   turned off since now the proper information is present.
+
+  Yet another situation might occur when the ordering of primary partitions
+  is changed. There are situations when partitioning an empty harddisk,
+  the LVM subsystem creates so called cross-linked entries.
+  This means that the first pointer in the partition table does not point to
+  the first partition on disk. This can happen when creating multiple
+  partitions in MiniLVM and saving them all at once.
+  Good practice is to create-save-create-save...
+
+  Having primary partitions cross-linked is normally not a problem,
+  but if the user corrects the ordering, i.e. with Linux fdisk (not advised!),
+  the relation between those primaries and their LVM information
+  might get mixed up. (The LVM-info is still in the old order)
+  In this case the AiR-BOOT drive-letter feature could be used to force
+  the correct drive-letter. The user should recreate the LVM-info with
+  MiniLVM by unssigning and reassigning the drive-letters for the primary
+  partitions to regenerate the LVM information. After this,
+  the partition should boot and the dl-feature can be turned off.
 
   * Please note that the dl-feature should be used with caution *
   Supplying incorrect information can cause system boot failure !
@@ -143,9 +169,9 @@ It will report a broken configuration while this is not the case.
 
 
 -------------------------------------------------------------------------------
-=====================
-AiR-BOOT version 1.07                                                  may 2011
-=====================
+=============================
+AiR-BOOT version 1.07-RELEASE                                          may 2011
+=============================
 
 With eComStation v2.1, as released in may 2011, AiR-BOOT replaces the familiar
 but aging IBM Boot Manager. While it is still possible to use IBM-BM,

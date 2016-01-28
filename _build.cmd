@@ -1,2 +1,2 @@
-@wmake
+@wmake -h
 

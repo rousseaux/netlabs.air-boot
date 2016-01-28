@@ -66,8 +66,18 @@ COMPONENTS=&
 	TOOLS$(DS)INTERNAL&
 	BOOTCODE&
 	INSTALL$(DS)C&
-	INSTALL$(DS)DOS&
 	TOOLS$(DS)OS2$(DS)SETABOOT&
+
+
+# Components to distribute to the RELEASE directories.
+# These are the bootloader is several languages,
+# the installer for several platforms,
+# and the OS/2 setboot replacement (setaboot).
+COMPONENTS2DIST=&
+	BOOTCODE&
+	INSTALL$(DS)C&
+	TOOLS$(DS)OS2$(DS)SETABOOT&
+
 
 
 
@@ -88,7 +98,7 @@ all:	.SYMBOLIC Makefile.bu
 
 
 # -----------------------------------------------------------------------------
-# BUILD EVERYTHING
+# BUILD AND DISTRIBUTE EVERYTHING
 # -----------------------------------------------------------------------------
 # Here we iterate over all AiR-BOOT components that have a Makefile.
 # To be able to influence the 'action' we pass that using the Environment.
@@ -99,14 +109,31 @@ all:	.SYMBOLIC Makefile.bu
 build:	.SYMBOLIC
 	@SET ACTION=BUILD
 	@for %%i in ($(COMPONENTS)) do @$(MAKE) -h %%i
+	@%MAKE dist
 	@echo.
-	@echo ** Success !! **
-	@echo All AiR-BOOT stuff has been built.
-	@echo Look in the RELEASE directory for the distribution files
-	@echo for each platform.
-	@echo The PACKAGES directory contains packages for each supported
-	@echo platform.
+	@echo ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+	@echo :: !! Success !!                                                  ::
+	@echo :: All AiR-BOOT stuff has been built.                             ::
+	@echo :: Look in the RELEASE directory for the distribution files       ::
+	@echo :: for each platform and the bootloader for each language.        ::
+#	@echo :: The PACKAGES directory contains packages for each supported    ::
+#	@echo :: platform.                                                      ::
+	@echo ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 	@echo.
+
+
+
+# -----------------------------------------------------------------------------
+# DISTRIBUTE RELEVANT TARGETS TO RELEASE DIRECTORY
+# -----------------------------------------------------------------------------
+# This target is invoked by build to distribute the relevant targets to the
+# distribution directory.
+# -----------------------------------------------------------------------------
+dist:	.SYMBOLIC
+	@SET ACTION=DIST
+	@for %%i in ($(COMPONENTS2DIST)) do @$(MAKE) -h %%i
+	@echo.
+
 
 
 # -----------------------------------------------------------------------------
@@ -119,11 +146,15 @@ build:	.SYMBOLIC
 # when parsing the Makefile. It needs to be a command related to the target.
 # -----------------------------------------------------------------------------
 clean:	.SYMBOLIC
+	@cd RELEASE
+	@$(MAKE) -h clean
+	@cd ..
 	@SET ACTION=CLEAN
 	@for %%i in ($(COMPONENTS)) do @$(MAKE) -h %%i
 	@echo.
 	@echo Done.
 	@echo.
+
 
 
 # -----------------------------------------------------------------------------
@@ -142,10 +173,6 @@ help:	.SYMBOLIC
 	@echo		wmake dist	to populate the dist directories
 	@echo		wmake help 	for this information
 	@echo.
-
-
-
-
 
 
 
@@ -183,20 +210,26 @@ $(COMPONENTS):	.SYMBOLIC
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	@echo @@ BUILDING $@
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	@echo.
 	@cd $@
+	@cd
 	@$(MAKE) -h
+!elseif "$(%ACTION)"=="DIST"
+	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@echo @@ DISTRIBUTING $@
+	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@cd $@
+	@cd
+	@$(MAKE) -h dist
 !elseif "$(%ACTION)"=="CLEAN"
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	@echo @@ CLEANING $@
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	@echo.
 	@cd $@
+	@cd
 	@$(MAKE) -h clean
+	@if exist Makefile.bu del Makefile.bu
 !else
 	@echo.
 	@echo !! Undefined Action !!
 	@echo.
 !endif
-
-
