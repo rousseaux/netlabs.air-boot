@@ -1,5 +1,5 @@
 ###############################################################################
-# MAKEFRWD.MIF :: Make Include -- Forwards GNU Make to other Make Utilities.  #
+# makefrwd.mif :: Make Include -- Forwards GNU Make to other Make Utilities.  #
 ###############################################################################
 
 #
@@ -75,4 +75,4 @@ default:
 #
 %:
 	@echo $(HEADER) with target: $(LQ)$@$(RQ)
-	@$(OTHER_MAKE) $@
+	@$(OTHER_MAKE) -h $@

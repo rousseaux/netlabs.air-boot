@@ -4,7 +4,7 @@
 
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
-!include	../INCLUDE/MAKEFILE.MIF
+!include	../include/makefile.mif
 
 default:	.SYMBOLIC
 	@echo.
@@ -16,33 +16,33 @@ clean:		.SYMBOLIC
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	@echo @@ CLEANING RELEASE DIRECTORIES
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	@cd BOOTCODE
+	@cd bootcode
 	@cd
-	@if exist *.BIN $(RM) *.BIN
-	@if exist *.EXE $(RM) *.EXE
-	@if exist *.ELF $(RM) *.ELF
+	@if exist *.bin $(RM) *.bin
+	@if exist *.exe $(RM) *.exe
+	@if exist *.elf $(RM) *.elf
 	@cd ..
-	@cd DOS
+	@cd dos
 	@cd
-	@if exist *.BIN $(RM) *.BIN
-	@if exist *.EXE $(RM) *.EXE
-	@if exist *.ELF $(RM) *.ELF
+	@if exist *.bin $(RM) *.bin
+	@if exist *.exe $(RM) *.exe
+	@if exist *.elf $(RM) *.elf
 	@cd ..
-	@cd LINUX
+	@cd linux
 	@cd
-	@if exist *.BIN $(RM) *.BIN
-	@if exist *.EXE $(RM) *.EXE
-	@if exist *.ELF $(RM) *.ELF
+	@if exist *.bin $(RM) *.bin
+	@if exist *.exe $(RM) *.exe
+	@if exist *.elf $(RM) *.elf
 	@cd ..
-	@cd OS2
+	@cd os2
 	@cd
-	@if exist *.BIN $(RM) *.BIN
-	@if exist *.EXE $(RM) *.EXE
-	@if exist *.ELF $(RM) *.ELF
+	@if exist *.bin $(RM) *.bin
+	@if exist *.exe $(RM) *.exe
+	@if exist *.elf $(RM) *.elf
 	@cd ..
-	@cd WINNT
+	@cd winnt
 	@cd
-	@if exist *.BIN $(RM) *.BIN
-	@if exist *.EXE $(RM) *.EXE
-	@if exist *.ELF $(RM) *.ELF
+	@if exist *.bin $(RM) *.bin
+	@if exist *.exe $(RM) *.exe
+	@if exist *.elf $(RM) *.elf
 	@cd ..

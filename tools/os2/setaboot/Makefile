@@ -1,22 +1,18 @@
 ###############################################################################
-# Makefile :: Builds the SET(A)BOOT Helper for several platforms.     [wmake] #
+# Makefile :: Builds the 'set(a)boot' 'setboot' replacement for OS/2  [wmake] #
 ###############################################################################
 # rousseau@ecomstation.com
-#
-# Derived from the INSTALL Makefile.
-#
+
 
 #
-# This Makefile builds the SET(A)BOOT Helper for DOS, Windows, OS/2 and Linux.
-# Like FIXCODE, each platform version has a letter appended it:
-# 'D' for DOS, 'W' for Windows, '2' for OS/2 and 'L' for Linux.
+# This Makefile builds the 'set(a)boot' 'setboot' replacement for OS/2.
 #
 
 #
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
 #
-!include	../../../INCLUDE/MAKEFILE.MIF
+!include	../../../include/makefile.mif
 
 
 
@@ -45,7 +41,7 @@ MAX_DEBUG_LEVEL=2
 #
 # Base Name of Source Program to compile.
 #
-BASENAME=SETABOOT
+BASENAME=setaboot
 
 #
 # Base Name of Executable Module to build.
@@ -57,8 +53,8 @@ MODULE=$(BASENAME)
 #
 # This is a list of the Targets to be built.
 #
-#TARGETS=$(MODULE)D.EXE $(MODULE)W.EXE $(MODULE)2.EXE $(MODULE)L.ELF
-TARGETS=$(MODULE).EXE
+#TARGETS=$(MODULE)d.exe $(MODULE)w.exe $(MODULE)2.exe $(MODULE)l.elf
+TARGETS=$(MODULE).exe
 
 #
 # Assembler Tools.
@@ -82,21 +78,21 @@ ASM=jwasm
 !if "$(ASM)"=="jwasm"
 # -Cp	= case sensitive symbols
 # -zcw	= no _ prefix on symbols (C model)
-ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Fo$^. -Fl=$^&.LST -Fw$^&.ERR
-ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
-ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
+ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Fo$^. -Fl=$^&.lst -Fw$^&.err
+ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
+ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
 !elseif "$(ASM)"=="wasm"
-ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -fo=$^. -fr=$^&.ERR
-ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.ERR
-ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.ERR
+ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -fo=$^. -fr=$^&.err
+ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.err
+ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.err
 !elseif "$(ASM)"=="tasm"
 # -ml	= case sensitive symbols
 ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -ml -l
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -ml -z -zi -c -la
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -ml -z -zi -c -la
 !elseif "$(ASM)"=="alp"
-ASM_FLAGS_D0=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Feo:OBJ +Fl +Fel:LST +Fm +Fem:ERR
-ASM_FLAGS_D1=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Od:MS16 +Feo:OBJ +Fl +Fel:LST +Fm +Fem:ERR
+ASM_FLAGS_D0=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Feo:obj +Fl +Fel:lst +Fm +Fem:err
+ASM_FLAGS_D1=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Od:MS16 +Feo:obj +Fl +Fel:lst +Fm +Fem:err
 ASM_FLAGS_D2=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP
 !else
 !error Unknown Assembler specified !
@@ -108,9 +104,9 @@ ASM_FLAGS=$(ASM_FLAGS_D$(DEBUG_LEVEL))
 #
 MM16=-ml
 CC16=wcc
-CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -w4 -e25 -zq -otexan -fo=$^. -fr=$^&.ERR
-CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.ERR
-CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -d3 -w4 -e25 -zq -od -fo=$^. -fr=$^&.ERR
+CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -w4 -e25 -zq -otexan -fo=$^. -fr=$^&.err
+CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.err
+CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -d3 -w4 -e25 -zq -od -fo=$^. -fr=$^&.err
 CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
 
 #
@@ -118,9 +114,9 @@ CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
 #
 MM32=-mf
 CC32=wcc386
-CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -w4 -e25 -zq -otexan -6r -fo=$^. -fr=$^&.ERR
-CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.ERR
-CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d3 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.ERR
+CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -w4 -e25 -zq -otexan -6r -fo=$^. -fr=$^&.err
+CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.err
+CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d3 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.err
 CC32_FLAGS=$(CC32_FLAGS_D$(DEBUG_LEVEL))
 
 #
@@ -132,13 +128,13 @@ LNK=wlink
 # @ Cannot be escaped like with \x40 and it is still processed in quotes.
 # WLink/2 can use the '\x40' variant.
 #
-#~ LNK_FLAGS_D0=op q op v op map=$^&.MAP op de '\x40\x23KIEWITZ:1.18\x23\x40\x41iR-BOOT Installer by Kiewitz'
-LNK_FLAGS_D0=op q op v op map=$^&.MAP
+#~ LNK_FLAGS_D0=op q op v op map=$^&.map op de '\x40\x23KIEWITZ:1.18\x23\x40\x41iR-BOOT Installer by Kiewitz'
+LNK_FLAGS_D0=op q op v op map=$^&.map
 #~ LNK_FLAGS_D1=op q op v d all &
 	#~ order clname CODE clname FAR_CONST clname FAR_DATA clnam BEGDATA clname DATA clname BSS clname STACK clname BLAP NOE &
-	#~ op map=$^&.MAP
-LNK_FLAGS_D1=op q op v d all op map=$^&.MAP
-LNK_FLAGS_D2=op q op v d all op map=$^&.MAP
+	#~ op map=$^&.map
+LNK_FLAGS_D1=op q op v d all op map=$^&.map
+LNK_FLAGS_D2=op q op v d all op map=$^&.map
 LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 
 
@@ -187,7 +183,7 @@ all:	.SYMBOLIC Makefile.bu header $(TARGETS) footer
 header:	.SYMBOLIC
 	@echo.
 	@echo =====================================================================
-	@echo = PROGRAM: SETABOOT Multi Platform   [DOS, Win32, OS/2 and Linux] =
+	@echo = PROGRAM: 'setaboot', setboot replacement for OS/2          [OS/2] =
 	@echo =====================================================================
 #	@echo.
 
@@ -250,17 +246,17 @@ Makefile.bu:	Makefile
 ###############################################################################
 # OS/2 32-bits (LX)
 ###############################################################################
-$(MODULE).EXE:	$(MODULE).OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys os2v2
+$(MODULE).exe:	$(MODULE).obj
+	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys os2v2
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
 	#~ wstrip $^.
 
-$(MODULE).OBJ:	$(BASENAME).C $(BASENAME).H
+$(MODULE).obj:	$(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.EXE	[OS/2 32-bits Executable]
-	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=os2 $(BASENAME).C
-	@wdis -fi $^. > $^&.WDA
+	@echo TARGET: $^&.exe	[OS/2 32-bits Executable]
+	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=os2 $(BASENAME).c
+	@wdis -fi $^. > $^&.wda
 
 
 
@@ -280,23 +276,21 @@ rebuild:	.SYMBOLIC
 #
 clean:	.SYMBOLIC
 	@for %%i in ($(TARGETS)) do @if exist %%i $(RM) %%i
-	@if exist *.OBJ $(RM) *.OBJ
-	@if exist *.WDA $(RM) *.WDA
-	@if exist *.NDA $(RM) *.NDA
-	@if exist *.MAP $(RM) *.MAP
-	@if exist *.LST $(RM) *.LST
-	@if exist *.ERR $(RM) *.ERR
+	@if exist *.obj $(RM) *.obj
+	@if exist *.wda $(RM) *.wda
+	@if exist *.nda $(RM) *.nda
+	@if exist *.map $(RM) *.map
+	@if exist *.lst $(RM) *.lst
+	@if exist *.err $(RM) *.err
 	@if exist *.o   $(RM) *.o
 
 # -----------------------------------------------------------------------------
 # DISTRIBUTE TO RELEASE SPACE
 # -----------------------------------------------------------------------------
-# This distributes all .BIN files to BOOTCODE.
-# Then it installs the English version to RELEASES as AIRBOOT.BIN.
+# This distributes 'setaboot' 'release'.
 # -----------------------------------------------------------------------------
 dist:	.SYMBOLIC
-	@if exist *.EXE $(CP) *.EXE ..$(DS)..$(DS)..$(DS)RELEASE$(DS)OS2
-#	@if exist *.EXE $(CP) *.EXE ..$(DS)..$(DS)..$(DS)RELEASE$(DS)BOOTCODE
+	@if exist *.exe $(CP) *.exe ..$(DS)..$(DS)..$(DS)release$(DS)os2
 #
 # Help on using this Makefile.
 #

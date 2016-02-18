@@ -31,8 +31,8 @@ ENDIF
 
 SETUP_UpperFixString          db 'SETUP ',0 ; AddOn for "AiR-BOOT SETUP vX.XX"
 
-Include SETUP/MENUS.ASM                  ; Menu structures
-Include SETUP/PART_SET.ASM               ; Partition Setup (in extra file)
+include setup/menus.asm                  ; Menu structures
+include setup/part_set.asm               ; Partition Setup (in extra file)
 
 ;            CH - Current Item Number
 ;       Out: SI - Pointer to Item Location

@@ -5,4 +5,4 @@
 #
 # Include the forwarder.
 #
-include		../INCLUDE/MAKEFRWD.MIF
+include		../include/makefrwd.mif

@@ -1,10 +1,10 @@
 ###############################################################################
-# Makefile :: Builds FIXCODE program for several platforms.           [wmake] #
+# Makefile :: Builds 'fixcode' program for several platforms.         [wmake] #
 ###############################################################################
 
 #
-# This Makefile builds the FIXCODE program for DOS, Windows, OS/2 and Linux.
-# FIXCODE is used to embed the anti-virus code into the AiR-BOOT image.
+# This Makefile builds the 'fixcode' program for DOS, Windows, OS/2 and Linux.
+# It is used to embed the anti-virus code into the AiR-BOOT image.
 # This anti-virus code protects the MBR and is installed as a TSR by the
 # loader. That's why it cannot be included at the source level.
 #
@@ -13,7 +13,7 @@
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
 #
-!include	../../INCLUDE/MAKEFILE.MIF
+!include	../../include/makefile.mif
 
 
 
@@ -45,15 +45,15 @@ MAX_DEBUG_LEVEL=2
 # D=DOS, W=Windows, 2=OS2, L=Linux.
 # The DOS COM-version has no suffix.
 #
-BASENAME=FIXCODE
+BASENAME=fixcode
 
 #
 # This is a list of the Targets to be built.
 #
-#TARGETS=$(BASENAME)D.EXE
-#TARGETS=$(BASENAME).COM
-#TARGETS=$(BASENAME).COM $(BASENAME)D.EXE $(BASENAME)W.EXE $(BASENAME)2.EXE $(BASENAME)L.ELF
-TARGETS=$(BASENAME)D.EXE $(BASENAME)W.EXE $(BASENAME)2.EXE $(BASENAME)L.ELF
+#TARGETS=$(BASENAME)d.exe
+#TARGETS=$(BASENAME).com
+#TARGETS=$(BASENAME).com $(BASENAME)d.exe $(BASENAME)w.exe $(BASENAME)2.exe $(BASENAME)l.elf
+TARGETS=$(BASENAME)d.exe $(BASENAME)w.exe $(BASENAME)2.exe $(BASENAME)l.elf
 
 #
 # Assembler Tools.
@@ -77,21 +77,21 @@ ASM=jwasm
 !if "$(ASM)"=="jwasm"
 # -Cp	= case sensitive symbols
 # -zcw	= no _ prefix on symbols (C model)
-ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Fo$^. -Fl=$^&.LST -Fw$^&.ERR
-ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
-ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
+ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Fo$^. -Fl=$^&.lst -Fw$^&.err
+ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
+ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
 !elseif "$(ASM)"=="wasm"
-ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -fo=$^. -fr=$^&.ERR
-ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.ERR
-ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.ERR
+ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -fo=$^. -fr=$^&.err
+ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.err
+ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.err
 !elseif "$(ASM)"=="tasm"
 # -ml	= case sensitive symbols
 ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -l
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -z -zi -c -la
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -z -zi -c -la
 !elseif "$(ASM)"=="alp"
-ASM_FLAGS_D0=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Feo:OBJ +Fl +Fel:LST +Fm +Fem:ERR
-ASM_FLAGS_D1=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Od:MS16 +Feo:OBJ +Fl +Fel:LST +Fm +Fem:ERR
+ASM_FLAGS_D0=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Feo:obj +Fl +Fel:lst +Fm +Fem:err
+ASM_FLAGS_D1=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Od:MS16 +Feo:obj +Fl +Fel:lst +Fm +Fem:err
 ASM_FLAGS_D2=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP
 !else
 !error Unknown Assembler specified !
@@ -103,9 +103,9 @@ ASM_FLAGS=$(ASM_FLAGS_D$(DEBUG_LEVEL))
 #
 CC16=wcc
 MM16=-ml
-CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -w4 -e25 -zq -otexan -fo=$^. -fr=$^&.ERR
-CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.ERR
-CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.ERR
+CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -w4 -e25 -zq -otexan -fo=$^. -fr=$^&.err
+CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.err
+CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.err
 CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
 
 #
@@ -113,9 +113,9 @@ CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
 #
 MM32=-mf
 CC32=wcc386
-CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -w4 -e25 -zq -otexan -6r -fo=$^. -fr=$^&.ERR
-CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.ERR
-CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.ERR
+CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -w4 -e25 -zq -otexan -6r -fo=$^. -fr=$^&.err
+CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.err
+CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.err
 CC32_FLAGS_R=-w4 -e25 -zq -od -6r -mf -fo=$^.
 CC32_FLAGS=$(CC32_FLAGS_D$(DEBUG_LEVEL))
 
@@ -123,9 +123,9 @@ CC32_FLAGS=$(CC32_FLAGS_D$(DEBUG_LEVEL))
 # Linker
 #
 LNK=wlink
-LNK_FLAGS_D0=op q op v op map=$^&.MAP
-LNK_FLAGS_D1=op q op v d all op map=$^&.MAP
-LNK_FLAGS_D2=op q op v d all op map=$^&.MAP
+LNK_FLAGS_D0=op q op v op map=$^&.map
+LNK_FLAGS_D1=op q op v d all op map=$^&.map
+LNK_FLAGS_D2=op q op v d all op map=$^&.map
 LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 
 
@@ -174,7 +174,7 @@ all:	.SYMBOLIC Makefile.bu header $(TARGETS) footer
 header:	.SYMBOLIC
 	@echo.
 	@echo =====================================================================
-	@echo = PROGRAM: FIXCODE Multi Platform      [DOS, Win32, OS/2 and Linux] =
+	@echo = PROGRAM: 'fixcode' Multi Platform    [DOS, Win32, OS/2 and Linux] =
 	@echo =====================================================================
 #	@echo.
 
@@ -221,77 +221,77 @@ Makefile.bu:	Makefile
 ###############################################################################
 # DOS 16-bits (COM)
 ###############################################################################
-$(BASENAME).COM:	$(BASENAME).OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys dos com
+$(BASENAME).com:	$(BASENAME).obj
+	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys dos com
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
 
-$(BASENAME).OBJ:	$(BASENAME).ASM
+$(BASENAME).obj:	$(BASENAME).asm
 #	@echo.
-	@echo TARGET: $^&.COM	[DOS 16-bits COM-file]
-	$(ASM) $(ASM_FLAGS) $(BASENAME).ASM
-	@wdis -fi $^. > $^&.WDA
+	@echo TARGET: $^&.com	[DOS 16-bits COM-file]
+	$(ASM) $(ASM_FLAGS) $(BASENAME).asm
+	@wdis -fi $^. > $^&.wda
 
 
 ###############################################################################
 # DOS 16-bits (MZ)
 ###############################################################################
-$(BASENAME)D.EXE:	$(BASENAME)D.OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys dos
+$(BASENAME)d.exe:	$(BASENAME)d.obj
+	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys dos
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
 
-$(BASENAME)D.OBJ:	$(BASENAME).C $(BASENAME).H
+$(BASENAME)d.obj:	$(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.EXE	[DOS 16-bits Executable]
-	$(CC16) $(CC16_FLAGS) -bt=dos $(BASENAME).C
-	@wdis -fi $^. > $^&.WDA
+	@echo TARGET: $^&.exe	[DOS 16-bits Executable]
+	$(CC16) $(CC16_FLAGS) -bt=dos $(BASENAME).c
+	@wdis -fi $^. > $^&.wda
 
 
 ###############################################################################
 # NT 32-bits (PE)
 ###############################################################################
-$(BASENAME)W.EXE:	$(BASENAME)W.OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys nt
+$(BASENAME)w.exe:	$(BASENAME)w.obj
+	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys nt
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
 
-$(BASENAME)W.OBJ:	$(BASENAME).C $(BASENAME).H
+$(BASENAME)w.obj:	$(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.EXE	[NT 32-bits Executable]
-	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)nt -bt=nt $(BASENAME).C
-	@wdis -fi $^. > $^&.WDA
+	@echo TARGET: $^&.exe	[NT 32-bits Executable]
+	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)nt -bt=nt $(BASENAME).c
+	@wdis -fi $^. > $^&.wda
 
 
 ###############################################################################
 # OS/2 32-bits (LX)
 ###############################################################################
-$(BASENAME)2.EXE:	$(BASENAME)2.OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys os2v2
+$(BASENAME)2.exe:	$(BASENAME)2.obj
+	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys os2v2
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
 
-$(BASENAME)2.OBJ:	$(BASENAME).C $(BASENAME).H
+$(BASENAME)2.obj:	$(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.EXE	[OS/2 32-bits Executable]
-	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=os2 $(BASENAME).C
-	@wdis -fi $^. > $^&.WDA
+	@echo TARGET: $^&.exe	[OS/2 32-bits Executable]
+	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=os2 $(BASENAME).c
+	@wdis -fi $^. > $^&.wda
 
 
 ###############################################################################
 # Linux 32-bits (ELF)
 ###############################################################################
-$(BASENAME)L.ELF:	$(BASENAME)L.OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^&.ELF sys linux
-#	$(MV) $^&.ELF $^.
+$(BASENAME)l.elf:	$(BASENAME)l.obj
+	$(LNK) $(LNK_FLAGS) file $^&.obj name $^&.elf sys linux
+#	$(MV) $^&.elf $^.
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
 
-$(BASENAME)L.OBJ:	$(BASENAME).C $(BASENAME).H
+$(BASENAME)l.obj:	$(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.ELF	[Linux 32-bits Executable]
-	$(CC32) $(CC32_FLAGS) -bt=linux $(BASENAME).C
-	@wdis -fi $^. > $^&.WDA
+	@echo TARGET: $^&.elf	[Linux 32-bits Executable]
+	$(CC32) $(CC32_FLAGS) -bt=linux $(BASENAME).c
+	@wdis -fi $^. > $^&.wda
 
 
 
@@ -314,12 +314,12 @@ rebuild:	.SYMBOLIC
 #
 clean:	.SYMBOLIC
 	@for %%i in ($(TARGETS)) do @if exist %%i $(RM) %%i
-	@if exist *.OBJ $(RM) *.OBJ
-	@if exist *.WDA $(RM) *.WDA
-	@if exist *.NDA $(RM) *.NDA
-	@if exist *.MAP $(RM) *.MAP
-	@if exist *.LST $(RM) *.LST
-	@if exist *.ERR $(RM) *.ERR
+	@if exist *.obj $(RM) *.obj
+	@if exist *.wda $(RM) *.wda
+	@if exist *.nda $(RM) *.nda
+	@if exist *.map $(RM) *.map
+	@if exist *.lst $(RM) *.lst
+	@if exist *.err $(RM) *.err
 	@if exist *.o   $(RM) *.o
 
 #

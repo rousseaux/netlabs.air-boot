@@ -32,7 +32,7 @@ IFDEF ReleaseCode
 ENDIF
 StackSeg        equ     7000h
 
-Include ../../INCLUDE/ASM.INC
+include ../../include/asm.inc
 
 		.386p
                 model large, basic
@@ -121,7 +121,7 @@ APIReadKeyboard:xor     ah, ah
 
 APILockVolume:  retn
 
-                Include ../INST_X86/INSTALL.INC ; Execute generic code
+                include ../inst_x86/install.inc ; Execute generic code
 COM_EndOfSegment:
 
 code_seg	ends

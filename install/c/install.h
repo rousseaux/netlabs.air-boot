@@ -111,7 +111,7 @@ char    bldlevel[]  =   "@#"\
 #define     STATUS_IMPOSSIBLE       4 // Unable/Not willing to install
 
 /* Rousseau: added */
-#define     IMAGE_NAME              "AIRBOOT.BIN"
+#define     IMAGE_NAME              "airboot.bin"
 #define     GPT                     0xEE                                // GPT Disk, AiR-BOOT will abort
 #define     BYTES_PER_SECTOR        512                                 // This could be higher in the future
 #define     IMAGE_SIZE_60SECS       30720                               // Normal image-size    (max. 30 partitions)

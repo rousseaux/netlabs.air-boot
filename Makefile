@@ -7,9 +7,9 @@
 # This is the Master Makefile and it builds the whole AiR-BOOT she-bang:
 # - The AiR-BOOT Loader Code for all supported languages.
 # - The MBR Protection Image that get's embedded in the loader.
-# - The FIXCODE program that embeds the MBR Protection Image.
+# - The 'fixcode' program that embeds the MBR Protection Image.
 # - The Installers for all supported platforms.
-# - The SET(A)BOOT program for all supported platforms. (currently only OS/2)
+# - The 'set(a)boot' program for all supported platforms. (currently only OS/2)
 
 
 # Note:
@@ -24,7 +24,7 @@
 # While WMake does it's job, running it on Linux requires a bit of extra effort
 # with regard to case sensitivity, directory separators, escape characters
 # and other platform differences.
-# This is handled in MAKEFILE.MIF.
+# This is handled in makefile.mif.
 
 
 
@@ -44,7 +44,7 @@
 
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
-!include	INCLUDE/MAKEFILE.MIF
+!include	include/makefile.mif
 
 
 # These are the Build Directories (Components) that produce
@@ -54,19 +54,18 @@
 # to influence build behavior of the individual Makefiles.
 # The order of these Build Directories matters !
 #
-# - MBR-PROT		; MBR Protection Image later to be embedded.
-# - INTERNAL		; FIXBOOT program to embed the Protection Image.
-# - BOOTCODE		; AiR-BOOT Boot Manager itself.
-# - INSTALL/C		; Installer for multiple platforms.
-# - INSTALL/DOS		; Old DOS installer -- will be removed when converted to C.
-# - SETABOOT		; SETABOOT Manager for OS/2 -- other platforms not yet.
+# - mbr-prot		; MBR Protection Image later to be embedded.     (mbr-prot)
+# - internal		; Helper program to embed the MBR PI. (fixboot[d][2][w][l])
+# - bootcode		; AiR-BOOT Boot Manager itself.               (airboot.bin)
+# - install/c		; Installer for multiple platforms.   (install[d][2][w][l])
+# - setaboot		; The AiR-BOOT setboot replacement for OS/2.     (setaboot)
 #
 COMPONENTS=&
-	BOOTCODE$(DS)MBR-PROT&
-	TOOLS$(DS)INTERNAL&
-	BOOTCODE&
-	INSTALL$(DS)C&
-	TOOLS$(DS)OS2$(DS)SETABOOT&
+	bootcode$(DS)mbr-prot&
+	tools$(DS)internal&
+	bootcode&
+	install$(DS)c&
+	tools$(DS)os2$(DS)setaboot&
 
 
 # Components to distribute to the RELEASE directories.
@@ -74,9 +73,9 @@ COMPONENTS=&
 # the installer for several platforms,
 # and the OS/2 setboot replacement (setaboot).
 COMPONENTS2DIST=&
-	BOOTCODE&
-	INSTALL$(DS)C&
-	TOOLS$(DS)OS2$(DS)SETABOOT&
+	bootcode&
+	install$(DS)c&
+	tools$(DS)os2$(DS)setaboot&
 
 
 
@@ -113,7 +112,7 @@ build:	.SYMBOLIC
 	@echo.
 
 	@echo Cleaning up bootcode directory
-	@cd BOOTCODE
+	@cd bootcode
 	@wmake -h clean
 	@cd ..
 	@echo Done.
@@ -125,7 +124,7 @@ build:	.SYMBOLIC
 	@echo :: All AiR-BOOT stuff has been built.                             ::
 	@echo :: Look in the RELEASE directory for the distribution files       ::
 	@echo :: for each platform and the bootloader for each language.        ::
-#	@echo :: The PACKAGES directory contains packages for each supported    ::
+#	@echo :: The packages directory contains packages for each supported    ::
 #	@echo :: platform.                                                      ::
 	@echo ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 	@echo.
@@ -155,7 +154,7 @@ dist:	.SYMBOLIC
 # when parsing the Makefile. It needs to be a command related to the target.
 # -----------------------------------------------------------------------------
 clean:	.SYMBOLIC
-	@cd RELEASE
+	@cd release
 	@$(MAKE) -h clean
 	@cd ..
 	@SET ACTION=CLEAN

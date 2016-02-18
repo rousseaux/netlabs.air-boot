@@ -33,19 +33,19 @@
 ; single source for other formats. The AiR-BOOT signature and the
 ; OS/2 BLDLEVEL use this basic version information.
 ;
-Include VERSION.INC
+include version.inc
 
 ;
 ; Include OS/2 BLDLEVEL Information.
 ; It uses the version-information in VERSION.INC to build it's signature.
 ;
-Include BLDLEVEL.INC
+include bldlevel.inc
 
 ;
 ; Include some macro's.
 ; This file contains the ORIGIN macro that is used to detect overlaps.
 ;
-Include ../INCLUDE/ASM.INC
+include ../include/asm.inc
 
 
 ; We actually don't want to use this directive because it generates extra
@@ -832,7 +832,7 @@ MBR_RealStart:
 
 
 ;------------------------------------------------------------------------------
-Include TEXT/TXTMBR.ASM                        ; All translateable Text in MBR
+include text/txtmbr.asm                        ; All translateable Text in MBR
 ;------------------------------------------------------------------------------
 
 
@@ -1527,87 +1527,87 @@ HaltSystem:
 ;
 
 b_std_txt:
-Include REGULAR/STD_TEXT.ASM    ; Standard (non-translateable text)
+include regular/std_text.asm    ; Standard (non-translateable text)
 size_std_txt = $-b_std_txt
 
 b_driveio:
-Include REGULAR/DRIVEIO.ASM     ; Drive I/O, Config Load/Save
+include regular/driveio.asm     ; Drive I/O, Config Load/Save
 size_driveio = $-b_driveio
 
 b_lvm:
-Include SPECIAL/LVM.ASM         ; LVM-specific code
+include special/lvm.asm         ; LVM-specific code
 size_lvm = $-b_lvm
 
 b_videoio:
-Include REGULAR/VIDEOIO.ASM     ; Video I/O
+include regular/videoio.asm     ; Video I/O
 size_videoio = $-b_videoio
 
 b_timer:
-Include REGULAR/TIMER.ASM       ; Timer
+include regular/timer.asm       ; Timer
 size_timer = $-b_timer
 
 b_partmain:
-Include REGULAR/PARTMAIN.ASM    ; Regular Partition Routines
+include regular/partmain.asm    ; Regular Partition Routines
 size_partmain = $-b_partmain
 
 b_partscan:
-Include REGULAR/PARTSCAN.ASM    ; Partition Scanning
+include regular/partscan.asm    ; Partition Scanning
 size_partscan = $-b_partscan
 
 b_bootmenu:
-Include REGULAR/BOOTMENU.ASM    ; Boot-Menu
+include regular/bootmenu.asm    ; Boot-Menu
 size_bootmenu = $-b_bootmenu
 
 b_password:
-Include REGULAR/PASSWORD.ASM    ; Password related
+include regular/password.asm    ; Password related
 size_password = $-b_password
 
 b_other:
-Include REGULAR/OTHER.ASM       ; Other Routines
+include regular/other.asm       ; Other Routines
 size_other = $-b_other
 
 b_main:
-Include SETUP/MAIN.ASM          ; The whole AiR-BOOT SETUP
+include setup/main.asm          ; The whole AiR-BOOT SETUP
 size_main = $-b_main
 
 b_math:
-Include REGULAR/MATH.ASM        ; Math functions (like 32-bit multiply)
+include regular/math.asm        ; Math functions (like 32-bit multiply)
 size_math = $-b_math
 
 b_txtother:
-Include TEXT/TXTOTHER.ASM       ; All translateable Text-Strings
+include text/txtother.asm       ; All translateable Text-Strings
 size_txtother = $-b_txtother
 
 b_txtmenus:
-Include TEXT/TXTMENUS.ASM       ; All translateable Menu-text
+include text/txtmenus.asm       ; All translateable Menu-text
 size_txtmenus = $-b_txtmenus
 
 b_charset:
-Include TEXT/CHARSET.ASM        ; Special Video Charsets (if needed)
+include text/charset.asm        ; Special Video Charsets (if needed)
 size_charset = $-b_charset
 
 b_conv:
-Include REGULAR/CONV.ASM        ; Various conversion routines
+include regular/conv.asm        ; Various conversion routines
 size_conv = $-b_conv
 
 b_virus:
-Include SPECIAL/VIRUS.ASM       ; Virus Detection / Anti-Virus
+include special/virus.asm       ; Virus Detection / Anti-Virus
 size_virus = $-b_virus
 
 ; [Linux support removed since v1.02]
-;Include SPECIAL/FAT16.ASM       ; FAT-16 Support
-;Include SPECIAL/LINUX.ASM       ; Linux Kernel Support
+;include special/fat16.asm       ; FAT-16 Support
+;include special/linux.asm       ; Linux Kernel Support
 
 b_billsuxx:
-Include SPECIAL/F00K/BILLSUXX.ASM   ; Extended Partition - Microsoft-Hack
+include special/f00k/billsuxx.asm   ; Extended Partition - Microsoft-Hack
 size_billsuxx = $-b_billsuxx
 
 b_sound:
-Include SPECIAL/SOUND.ASM       ; Sound
+include special/sound.asm       ; Sound
 size_sound = $-b_sound
 
 b_apm:
-Include SPECIAL/APM.ASM         ; Power Managment Support
+include special/apm.asm         ; Power Managment Support
 size_apm = $-b_apm
 
 
@@ -1617,17 +1617,17 @@ size_apm = $-b_apm
 ;
 IFDEF   TXT_IncludeCyrillic
 b_ccharset:
-   Include SPECIAL/CHARSET.ASM  ; Charset Support (e.g. Cyrillic)
+   include special/charset.asm  ; Charset Support (e.g. Cyrillic)
 size_ccharset = $-b_ccharset
 ENDIF
 
 ; Various debugging routines, uses AUXIO and CONV
 IFDEF   AUX_DEBUG
 b_debug:
-Include REGULAR/DEBUG.ASM       ; Debug module
+include regular/debug.asm       ; Debug module
 size_debug = $-b_debug
 b_auxio:
-Include REGULAR/AUXIO.ASM       ; Com-port support for debugging
+include regular/auxio.asm       ; Com-port support for debugging
 size_auxio = $-b_auxio
 ENDIF
 
@@ -1638,7 +1638,7 @@ ENDIF
 ;
 IFDEF   FX_ENABLED
 b_fx:
-Include SPECIAL/FX.ASM          ; l33t Cooper-Bars/Scrolling <bg>
+include special/fx.asm          ; l33t Cooper-Bars/Scrolling <bg>
 size_fx = $-b_fx
 ENDIF
 
@@ -1804,7 +1804,7 @@ Configuration:
                 ;
                 ; It has been decided that uneven minor numbers will be
                 ; test-versions. Therefore v1.0.8 has been bumbed to v1.1.0.
-                ; 
+                ;
                 ; It is not required for the config to have the
                 ; same version as the code, so in the future
                 ; the code version might be higher than the

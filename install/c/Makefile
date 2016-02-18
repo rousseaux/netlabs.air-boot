@@ -2,13 +2,10 @@
 # Makefile :: Builds the Installer for several platforms.             [wmake] #
 ###############################################################################
 # rousseau@ecomstation.com
-#
-# Derived from the FIXCODE Makefile.
-#
 
 #
 # This Makefile builds the Installer for DOS, Windows, OS/2 and Linux.
-# Like FIXCODE, each platform version has a letter appended it:
+# Like 'fixcode', each platform version has a letter appended it:
 # 'D' for DOS, 'W' for Windows, '2' for OS/2 and 'L' for Linux.
 #
 
@@ -16,7 +13,7 @@
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
 #
-!include	../../INCLUDE/MAKEFILE.MIF
+!include	../../include/makefile.mif
 
 
 
@@ -51,19 +48,19 @@ DEBUG_LEVEL=$(RELEASE_CODE)
 #
 # Base Name of Source Program to compile.
 #
-BASENAME=INSTALL
+BASENAME=install
 
 #
 # Base Name of Executable Module to build.
 # A letter is appended for each platform version:
 # D=DOS, W=Windows, 2=OS2, L=Linux.
 #
-MODULE=AIRBOOT
+MODULE=airboot
 
 #
 # This is a list of the Targets to be built.
 #
-TARGETS=$(MODULE)D.EXE $(MODULE)W.EXE $(MODULE)2.EXE $(MODULE)L.ELF
+TARGETS=$(MODULE)d.exe $(MODULE)w.exe $(MODULE)2.exe $(MODULE)l.elf
 
 
 #
@@ -88,22 +85,22 @@ ASM=jwasm
 !if "$(ASM)"=="jwasm"
 # -Cp	= case sensitive symbols
 # -zcw	= no _ prefix on symbols (C model)
-ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Fo$^. -Fl=$^&.LST -Fw$^&.ERR
-ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
-ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.LST -Fw$^&.ERR
+ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Fo$^. -Fl=$^&.lst -Fw$^&.err
+ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
+ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
 !elseif "$(ASM)"=="wasm"
-ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -fo=$^. -fr=$^&.ERR
-ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.ERR
-ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.ERR
+ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -fo=$^. -fr=$^&.err
+ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.err
+ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.err
 !elseif "$(ASM)"=="tasm"
 # -ml	= case sensitive symbols
 ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -l
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -z -zi -c -la
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -z -zi -c -la
 !elseif "$(ASM)"=="alp"
-ASM_FLAGS_D0=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Feo:OBJ +Fl +Fel:LST +Fm +Fem:ERR
-ASM_FLAGS_D1=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Od:MS16 +Feo:OBJ +Fl +Fel:LST +Fm +Fem:ERR
-ASM_FLAGS_D2=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Od:MS16 +Feo:OBJ +Fl +Fel:LST +Fm +Fem:ERR
+ASM_FLAGS_D0=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Feo:obj +Fl +Fel:lst +Fm +Fem:err
+ASM_FLAGS_D1=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Od:MS16 +Feo:obj +Fl +Fel:lst +Fm +Fem:err
+ASM_FLAGS_D2=-D:DEBUG_LEVEL=$(DEBUG_LEVEL) -D:ASSEMBLER=ALP -Mb +Od:MS16 +Feo:obj +Fl +Fel:lst +Fm +Fem:err
 !else
 !error Unknown Assembler specified !
 !endif
@@ -115,9 +112,9 @@ ASM_FLAGS=$(ASM_FLAGS_D$(DEBUG_LEVEL))
 MM16=-mc
 CPU=-2
 CC16=wcc
-CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(CPU) $(MM16) -w4 -e25 -zq -osexan -fo=$^. -fr=$^&.ERR
-CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(CPU) $(MM16) -d2 -w4 -e25 -zq -on -fo=$^. -fr=$^&.ERR
-CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(CPU) $(MM16) -d3 -w4 -e25 -zq -od -fo=$^. -fr=$^&.ERR
+CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(CPU) $(MM16) -w4 -e25 -zq -osexan -fo=$^. -fr=$^&.err
+CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(CPU) $(MM16) -d2 -w4 -e25 -zq -on -fo=$^. -fr=$^&.err
+CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(CPU) $(MM16) -d3 -w4 -e25 -zq -od -fo=$^. -fr=$^&.err
 CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
 
 #
@@ -125,9 +122,9 @@ CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
 #
 MM32=-mf
 CC32=wcc386
-CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -w4 -e25 -zq -osexan -6r -fo=$^. -fr=$^&.ERR
-CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d2 -w4 -e25 -zq -on -6r -fo=$^. -fr=$^&.ERR
-CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d3 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.ERR
+CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -w4 -e25 -zq -osexan -6r -fo=$^. -fr=$^&.err
+CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d2 -w4 -e25 -zq -on -6r -fo=$^. -fr=$^&.err
+CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) -d3 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.err
 CC32_FLAGS=$(CC32_FLAGS_D$(DEBUG_LEVEL))
 
 #
@@ -140,12 +137,12 @@ LNK=wlink
 # WLink/2 can use the '\x40' variant.
 #
 #~ LNK_FLAGS_D0=op q op v op map=$^&.MAP op de '\x40\x23KIEWITZ:1.18\x23\x40\x41iR-BOOT Installer by Kiewitz'
-LNK_FLAGS_D0=op q op v op map=$^&.MAP
+LNK_FLAGS_D0=op q op v op map=$^&.map
 #~ LNK_FLAGS_D1=op q op v d all &
 	#~ order clname CODE clname FAR_CONST clname FAR_DATA clnam BEGDATA clname DATA clname BSS clname STACK clname BLAP NOE &
 	#~ op map=$^&.MAP
-LNK_FLAGS_D1=op q op v d all op map=$^&.MAP
-LNK_FLAGS_D2=op q op v d all op map=$^&.MAP
+LNK_FLAGS_D1=op q op v d all op map=$^&.map
+LNK_FLAGS_D2=op q op v d all op map=$^&.map
 LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 
 
@@ -194,7 +191,7 @@ all:	.SYMBOLIC Makefile.bu header $(TARGETS) footer
 header:	.SYMBOLIC
 	@echo.
 	@echo =====================================================================
-	@echo = PROGRAM: INSTALL Multi Platform      [DOS, Win32, OS/2 and Linux] =
+	@echo = PROGRAM: 'install' Multi Platform    [DOS, Win32, OS/2 and Linux] =
 	@echo =====================================================================
 #	@echo.
 
@@ -257,71 +254,71 @@ Makefile.bu:	Makefile
 ###############################################################################
 # DOS 16-bits (MZ)
 ###############################################################################
-$(MODULE)D.EXE:	$(MODULE)D.OBJ
+$(MODULE)d.exe:	$(MODULE)d.obj
 #	@cat $^&.MD5
-	$(LNK) $(LNK_FLAGS) op stack=8192 file $^&.OBJ name $^. sys dos
-#	@md5sum $^. > $^&.MD5
-#	@cat $^&.MD5
-	@wdump $^. > $^&.WDU
+	$(LNK) $(LNK_FLAGS) op stack=8192 file $^&.obj name $^. sys dos
+#	@md5sum $^. > $^&.md5
+#	@cat $^&.md5
+	@wdump $^. > $^&.wdu
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
 	#~ wstrip $^.
 
-$(MODULE)D.OBJ:	$(BASENAME).C $(BASENAME).H
+$(MODULE)d.obj:	$(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.EXE	[DOS 16-bits Executable]
-	$(CC16) $(CC16_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os21x -bt=dos $(BASENAME).C
-	@wdis -fi $^. > $^&.WDA
+	@echo TARGET: $^&.exe	[DOS 16-bits Executable]
+	$(CC16) $(CC16_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os21x -bt=dos $(BASENAME).c
+	@wdis -fi $^. > $^&.wda
 
 
 ###############################################################################
 # NT 32-bits (PE)
 ###############################################################################
-$(MODULE)W.EXE:	$(MODULE)W.OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys nt
-	@wdump $^. > $^&.WDU
+$(MODULE)w.exe:	$(MODULE)w.obj
+	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys nt
+	@wdump $^. > $^&.wdu
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
 
-$(MODULE)W.OBJ:	$(BASENAME).C $(BASENAME).H
+$(MODULE)w.obj:	$(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.EXE	[NT 32-bits Executable]
-	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)nt -bt=nt $(BASENAME).C
-	@wdis -fi $^. > $^&.WDA
+	@echo TARGET: $^&.exe	[NT 32-bits Executable]
+	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)nt -bt=nt $(BASENAME).c
+	@wdis -fi $^. > $^&.wda
 
 
 ###############################################################################
 # OS/2 32-bits (LX)
 ###############################################################################
-$(MODULE)2.EXE:	$(MODULE)2.OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^. sys os2v2
-	@wdump $^. > $^&.WDU
+$(MODULE)2.exe:	$(MODULE)2.obj
+	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys os2v2
+	@wdump $^. > $^&.wdu
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
 	#~ wstrip $^.
 
-$(MODULE)2.OBJ:	$(BASENAME).C $(BASENAME).H
+$(MODULE)2.obj:	$(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.EXE	[OS/2 32-bits Executable]
-	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=os2 $(BASENAME).C
-	@wdis -fi $^. > $^&.WDA
+	@echo TARGET: $^&.exe	[OS/2 32-bits Executable]
+	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=os2 $(BASENAME).c
+	@wdis -fi $^. > $^&.wda
 
 
 ###############################################################################
 # Linux 32-bits (ELF)
 ###############################################################################
-$(MODULE)L.ELF:	$(MODULE)L.OBJ
-	$(LNK) $(LNK_FLAGS) file $^&.OBJ name $^&.ELF sys linux
-	@wdump $^. > $^&.WDU
-#	$(MV) $^&.ELF $^.
+$(MODULE)l.elf:	$(MODULE)l.obj
+	$(LNK) $(LNK_FLAGS) file $^&.obj name $^&.elf sys linux
+	@wdump $^. > $^&.wdu
+#	$(MV) $^&.elf $^.
 	@if exist $^. @echo		$^. $(MSG_SUCCESS)
 	@echo.
 
-$(MODULE)L.OBJ:	$(BASENAME).C $(BASENAME).H
+$(MODULE)l.obj:	$(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.ELF	[Linux 32-bits Executable]
-	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=linux $(BASENAME).C
-	@wdis -fi $^. > $^&.WDA
+	@echo TARGET: $^&.elf	[Linux 32-bits Executable]
+	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=linux $(BASENAME).c
+	@wdis -fi $^. > $^&.wda
 
 
 
@@ -336,14 +333,14 @@ $(MODULE)L.OBJ:	$(BASENAME).C $(BASENAME).H
 # -----------------------------------------------------------------------------
 # DISTRIBUTE TO RELEASE SPACE
 # -----------------------------------------------------------------------------
-# This distributes all .BIN files to BOOTCODE.
-# Then it installs the English version to RELEASES as AIRBOOT.BIN.
+# This distributes all '.bin' files to 'bootcode'.
+# Then it installs the English version to 'releases' as 'airboot.bin'.
 # -----------------------------------------------------------------------------
 dist:	.SYMBOLIC
-	@if exist AIRBOOT2.EXE $(CP) AIRBOOT2.EXE ..$(DS)..$(DS)RELEASE$(DS)OS2
-	@if exist AIRBOOTD.EXE $(CP) AIRBOOTD.EXE ..$(DS)..$(DS)RELEASE$(DS)DOS
-	@if exist AIRBOOTL.ELF $(CP) AIRBOOTL.ELF ..$(DS)..$(DS)RELEASE$(DS)LINUX
-	@if exist AIRBOOTW.EXE $(CP) AIRBOOTW.EXE ..$(DS)..$(DS)RELEASE$(DS)WINNT
+	@if exist airboot2.exe $(CP) airboot2.exe ..$(DS)..$(DS)release$(DS)os2
+	@if exist airbootd.exe $(CP) airbootd.exe ..$(DS)..$(DS)release$(DS)dos
+	@if exist airbootl.elf $(CP) airbootl.elf ..$(DS)..$(DS)release$(DS)linux
+	@if exist airbootw.exe $(CP) airbootw.exe ..$(DS)..$(DS)release$(DS)winnt
 
 #
 # Rebuild all targets.
@@ -357,13 +354,13 @@ rebuild:	.SYMBOLIC
 #
 clean:	.SYMBOLIC
 	@for %%i in ($(TARGETS)) do @if exist %%i $(RM) %%i
-	@if exist *.OBJ $(RM) *.OBJ
-	@if exist *.WDA $(RM) *.WDA
-	@if exist *.WDU $(RM) *.WDU
-	@if exist *.NDA $(RM) *.NDA
-	@if exist *.MAP $(RM) *.MAP
-	@if exist *.LST $(RM) *.LST
-	@if exist *.ERR $(RM) *.ERR
+	@if exist *.obj $(RM) *.obj
+	@if exist *.wda $(RM) *.wda
+	@if exist *.wdu $(RM) *.wdu
+	@if exist *.nda $(RM) *.nda
+	@if exist *.map $(RM) *.map
+	@if exist *.lst $(RM) *.lst
+	@if exist *.err $(RM) *.err
 	@if exist *.o   $(RM) *.o
 
 #

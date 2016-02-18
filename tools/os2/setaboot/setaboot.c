@@ -23,7 +23,7 @@
 */
 
 
-#include    "SETABOOT.H"
+#include    "setaboot.h"
 
 
 #define INCL_BASE
@@ -39,7 +39,7 @@
 #include <conio.h>
 #include <string.h>
 
-#include "MSGHELP.C"
+#include "msghelp.c"
 
 // Msg-IDs from OSO001.msg
 #define TXT_QUERY_TimeLimit_None          860

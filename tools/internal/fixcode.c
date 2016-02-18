@@ -18,16 +18,16 @@
 
 /*
 // FIXCODE.C -- Fix the AiR-BOOT image; include the code-size and MBR prot-img.
-//  This reads AIR-BOOT.COM, merges MBR-PROT.BIN and writes AIRBOOT.BIN.
+//  This reads 'air-boot.com', merges 'mbr-prot.bin' and writes 'airboot.bin'.
 //  It is a quick-and-dirty translation of the original DOS-only ASM file.
 //  Of course it's not as small but it's much easier to maintain across
 //  multiple platforms. A small change with regard to the old ASM version is
-//  that it directly writes AIRBOOT.BIN instead of writing AIR-BOOT.COM.
+//  that it directly writes 'airboot.bin' instead of writing 'air-boot.com'.
 //  This way the pre and post situations are kept valid.
 */
 
 
-#include    "FIXCODE.H"
+#include    "fixcode.h"
 
 
 #ifdef PLATFORM_DOS
@@ -48,13 +48,13 @@
 
 
 /* File names */
-#define     IN_FILE     "AIR-BOOT.COM"              // Target from assembly.
+#define     IN_FILE     "air-boot.com"              // Target from assembly.
 #ifdef      PLATFORM_LINUX
-#define     MERGE_FILE  "MBR-PROT/MBR-PROT.BIN"     // MBR Protection Image.
+#define     MERGE_FILE  "mbr-prot/mbr-prot.bin"     // MBR Protection Image.
 #else
-#define     MERGE_FILE  "MBR-PROT\\MBR-PROT.BIN"    // MBR Protection Image.
+#define     MERGE_FILE  "mbr-prot\\mbr-prot.bin"    // MBR Protection Image.
 #endif
-#define     OUT_FILE    "AIRBOOT.BIN"               // Generated loader image.
+#define     OUT_FILE    "airboot.bin"               // Generated loader image.
 
 
 /* Copyright message */
@@ -199,7 +199,7 @@ int     main(int argc, char* argv[]) {
     printf("%s", Okay);
 
     /*
-    // Write AIRBOOT.BIN
+    // Write 'airboot.bin'
     */
     printf("%s", WriteCode);
     ofile = fopen(OUT_FILE, "wb");

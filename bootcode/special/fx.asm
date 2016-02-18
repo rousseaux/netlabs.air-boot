@@ -26,7 +26,7 @@ ENDIF
 ; There you go. Some nice old-school demo coder effects :)
 ;  If you rip this code, I will ./ your ass. =]
 
-Include SPECIAL/FXTABLES.ASM
+include special/fxtables.asm
 
 FX_MaxScanLine                equ 384
 FX_TotalCooperBars            equ   7

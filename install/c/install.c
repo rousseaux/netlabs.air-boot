@@ -18,7 +18,7 @@
 
 
 
-#include    "INSTALL.H"
+#include    "install.h"
 
 
 
@@ -1566,7 +1566,7 @@ int main (int argc, char **argv) {
     }
 
 
-    // Allocate buffers for Track0 and AIRBOOT.BIN.
+    // Allocate buffers for Track0 and 'airboot.bin'.
     Track0 = malloc(SECTOR_COUNT * BYTES_PER_SECTOR);
     Bootcode = malloc(SECTOR_COUNT * BYTES_PER_SECTOR);
 

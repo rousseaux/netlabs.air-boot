@@ -1,1 +1,1 @@
-Include TEXT/EN/MENUS.ASM		
+include text/en/menus.asm
