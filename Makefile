@@ -111,6 +111,15 @@ build:	.SYMBOLIC
 	@for %%i in ($(COMPONENTS)) do @$(MAKE) -h %%i
 	@%MAKE dist
 	@echo.
+
+	@echo Cleaning up bootcode directory
+	@cd BOOTCODE
+	@wmake -h clean
+	@cd ..
+	@echo Done.
+
+	@echo.
+	@echo.
 	@echo ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 	@echo :: !! Success !!                                                  ::
 	@echo :: All AiR-BOOT stuff has been built.                             ::
@@ -227,7 +236,7 @@ $(COMPONENTS):	.SYMBOLIC
 	@cd $@
 	@cd
 	@$(MAKE) -h clean
-	@if exist Makefile.bu del Makefile.bu
+	@if exist Makefile.bu $(RM) Makefile.bu
 !else
 	@echo.
 	@echo !! Undefined Action !!

@@ -1,6 +1,23 @@
-==============================
+-------------------------------------------------------------------------------
+AiR-BOOT-v1.1.1-testing                                                feb 2016
+-------------------------------------------------------------------------------
+
+This v1.1.1-testing cycle will be relatively short with the main purpose of
+integrating some patches and fixes from the local dev-queue. After things look
+good enough a v1.1.2-RELEASE will be done.
+
+Once on v1.1.3-testing, the plan is to also integrate the building of the INF
+and PDF documentation into this project. That part will require LFNs, but the
+building of core AiR-BOOT files, like the installers and of course the
+bootloader itself will remain doable on 8.3 FAT systems.
+
+
+
+
+
+===============================================================================
 AiR-BOOT version 1.1.0-RELEASE                                         apr 2013
-==============================
+===============================================================================
 
 This is the version as included on the eCS v2.2-beta CD's.
 It was technically a pre-v1.1.0 release, with the final v1.1.0, including some
