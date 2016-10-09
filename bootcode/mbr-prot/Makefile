@@ -1,20 +1,20 @@
 ###############################################################################
 # Makefile :: Builds the 'mbr-prot.bin' 16-bits RAW Protection Image          #
+# --------------------------------------------------------------------------- #
+#                                                                             #
+# This Makefile builds the 'mbr_prot.bin' image.                              #
+# This image is embedded in 'airboot.bin' to provide virus protection.        #
+# The 'fixcode' program embeds this image in 'airboot.bin'.                   #
+#                                                                             #
 ###############################################################################
-# rousseau@ecomstation.com
 
-#
-# This Makefile builds the 'mbr_prot.bin' image.
-# This image is embedded in the 'airboot.bin' image to provide virus protection.
-# The 'fixcode' program embeds this image in 'airboot.bin'.
-#
 
 
 #
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
 #
-!include	../../include/makefile.mif
+!include ../../include/makefile.mif
 
 #
 # Specifies the level of debugging.
@@ -68,15 +68,15 @@ ASM=jwasm
 # So we override to jwasm when a non-jwasm assembler is specified and
 # we are building on Linux.
 #
-!ifdef	__LINUX__
+!ifdef __LINUX__
 !if "$(ASM)"=="masm" | "$(ASM)"=="tasm" | "$(ASM)"=="alp"
 ASM=jwasm
 !endif
 !endif
 
 !if "$(ASM)"=="jwasm"
-# -Cp	= case sensitive symbols
-# -zcw	= no _ prefix on symbols (C model)
+# -Cp   = case sensitive symbols
+# -zcw  = no _ prefix on symbols (C model)
 ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -Cp -zcw -Fo$^&.obj -Sa -Fl=$^&.lst -Fw$^&.err
 ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -Cp -zcw -Zd -Zi -Fo$^&.obj -Sa -Fl=$^&.lst -Fw$^&.err
 ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -Cp -zcw -Zd -Zi -Fo$^&.obj -Sa -Fl=$^&.lst -Fw$^&.err
@@ -89,7 +89,7 @@ ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -fo=$^&.obj -fr=$^&.err
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -d1 -fo=$^&.obj -fr=$^&.err
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -d1 -fo=$^&.obj -fr=$^&.err
 !elseif "$(ASM)"=="tasm"
-# -ml	= case sensitive symbols
+# -ml   = case sensitive symbols
 ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -ml -m9 -l
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -ml -m9 -z -zi -c -la
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -ml -m9 -z -zi -c -la
@@ -123,7 +123,7 @@ LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 #
 .AFTER
 #	@echo == AFTER ==
-!ifdef	__MSDOS__
+!ifdef __MSDOS__
 	@echo $(WARN_DOS_BLD_ENV)
 !endif
 
@@ -132,13 +132,13 @@ LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 # This builds the target using normal dependency rules.
 # If this Makefile was modified, all targets are forcefully rebuilt.
 #
-all:	.SYMBOLIC Makefile.bu header $(TARGET) footer
+all: .SYMBOLIC Makefile.bu header $(TARGET) footer
 
 
 #
 # Show the header.
 #
-header:	.SYMBOLIC
+header: .SYMBOLIC
 	@echo.
 	@echo =====================================================================
 	@echo = MODULE: $(TARGET)               [16-bits Raw Protection Image] =
@@ -149,7 +149,7 @@ header:	.SYMBOLIC
 #
 # Show the footer.
 #
-footer:	.SYMBOLIC
+footer: .SYMBOLIC
 #	$(RM) $(TARGET)
 	@echo All targets up to date !
 	@echo.
@@ -161,7 +161,7 @@ footer:	.SYMBOLIC
 # So, when changing i.e. the DEBUG_LEVEL, all targets are rebuilt
 # using the new level.
 #
-Makefile.bu:	Makefile
+Makefile.bu: Makefile
 	@echo.
 	@echo Makefile modified, forcing rebuild of all targets !
 	@echo.
@@ -190,19 +190,19 @@ Makefile.bu:	Makefile
 ###############################################################################
 # 16-bits RAW :: MBR virus protection to be embedded in the 'airboot.bin' image
 ###############################################################################
-$(TARGET):	$(BASENAME).asm
-	@echo TARGET: $^.	[DOS 16-bits Raw Image]
+$(TARGET): $(BASENAME).asm
+	@echo TARGET: $^. [DOS 16-bits Raw Image]
 	$(ASM) $(ASM_FLAGS) $(BASENAME).asm
 	@wdis -fi $^&.obj > $^&.wda
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys dos com
 #	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. form raw
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@ndisasm -k9,0 $^. > $^&.nda
 #	@echo.
 
-#$(BASENAME).obj:	$(BASENAME).asm
+#$(BASENAME).obj: $(BASENAME).asm
 #	@echo.
-#	@echo TARGET: $^.	[DOS 16-bits Raw Image]
+#	@echo TARGET: $^. [DOS 16-bits Raw Image]
 #	$(ASM) $(ASM_FLAGS) $(BASENAME).asm
 #	@wdis -fi $^. > $^&.wda
 
@@ -216,14 +216,14 @@ $(TARGET):	$(BASENAME).asm
 #
 # Rebuild all targets.
 #
-rebuild:	.SYMBOLIC
+rebuild: .SYMBOLIC
 	@%MAKE clean
 	@%MAKE all
 
 #
 # Remove all generated files.
 #
-clean:	.SYMBOLIC
+clean: .SYMBOLIC
 #	@echo CLEANING UP
 #	@for %%i in ($(TARGET)) do @if exist %%i $(RM) %%i
 	@if exist *.com $(RM) *.com
@@ -239,22 +239,22 @@ clean:	.SYMBOLIC
 #
 # Remove all residual .BIN files.
 #
-rmbin:	.SYMBOLIC
+rmbin: .SYMBOLIC
 	@if exist *.bin $(RM) *.bin
 
 
 #
 # Help on using this Makefile.
 #
-help:	.SYMBOLIC
+help: .SYMBOLIC
 	@echo.
-	@echo		The following actions are available:
-	@echo		wmake 		to build all targets and all languages
-	@echo		wmake list	to show the list of buildable targets
-	@echo		wmake clean 	to remove almost all generated files
-	@echo		wmake rmbin 	to remove all residual BIN files
-	@echo		wmake rebuild	to rebuild all targets
-	@echo		wmake help 	for this information
+	@echo The following actions are available:
+	@echo wmake         to build all targets and all languages
+	@echo wmake list    to show the list of buildable targets
+	@echo wmake clean   to remove almost all generated files
+	@echo wmake rmbin   to remove all residual BIN files
+	@echo wmake rebuild to rebuild all targets
+	@echo wmake help    to show this information
 	@echo.
 
 #
@@ -262,11 +262,11 @@ help:	.SYMBOLIC
 #
 show:	.SYMBOLIC
 	@echo.
-	@echo		The following [case sensitive] targets can be built:
-	@for %%i in ($(TARGET)) do @echo 	%%i
+	@echo The following [case sensitive] targets can be built:
+	@for %%i in ($(TARGET)) do @echo %%i
 	@echo.
 # Alias for show
-list:	.SYMBOLIC
+list: .SYMBOLIC
 	@%MAKE show
 
 #
@@ -274,10 +274,10 @@ list:	.SYMBOLIC
 #
 .ERROR
 	@echo.
-	@echo		Oops!
-	@echo		Some error occured in this build session.
-	@echo		If it's a linker problem, it could be
-	@echo		the result of out-of-sync object files.
-	@echo		Doing a wmake rebuild might solve the problem.
+	@echo Oops!
+	@echo Some error occured in this build session.
+	@echo If it's a linker problem, it could be
+	@echo the result of out-of-sync object files.
+	@echo Doing a wmake rebuild might solve the problem.
 	@%MAKE help
 	@echo.

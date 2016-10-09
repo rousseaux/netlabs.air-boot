@@ -1,34 +1,33 @@
 ###############################################################################
-# Makefile :: Builds complete AiR-BOOT; all supported Languages and Platforms #
+# Makefile :: Builds complete AiR-BOOT -- all platforms and languages (WMake) #
+# --------------------------------------------------------------------------- #
+#                                                                             #
+# This is the Master Makefile and it builds the whole AiR-BOOT she-bang:      #
+# - The AiR-BOOT Loader Code for all supported languages.                     #
+# - The MBR Protection Image that get's embedded in the loader.               #
+# - The 'fixcode' program that embeds the MBR Protection Image.               #
+# - The Installers for all supported platforms.                               #
+# - The 'set(a)boot' program for all supported platforms. (OS/2 only)         #
+#                                                                             #
+# Note:                                                                       #
+# AiR-BOOT and it's helpers are relatively small to build.                    #
+# So, although Makefiles are being used to build the lot, there's no explicit #
+# separation between assembling/compiling from source or just only linking.   #
+# In fact, because of multiple languages for the Loader and cross-platform    #
+# support for the Helpers, any target will almost always be built from source #
+# everytime.                                                                  #
+#                                                                             #
+# Also:                                                                       #
+# While WMake does it's job, running it on Linux takes a bit of extra effort  #
+# with regard to case sensitivity, directory separators, escape characters    #
+# and other platform differences.                                             #
+# This is handled in makefile.mif.                                            #
+#                                                                             #
 ###############################################################################
-# rousseau@ecomstation.com
-#
-
-# This is the Master Makefile and it builds the whole AiR-BOOT she-bang:
-# - The AiR-BOOT Loader Code for all supported languages.
-# - The MBR Protection Image that get's embedded in the loader.
-# - The 'fixcode' program that embeds the MBR Protection Image.
-# - The Installers for all supported platforms.
-# - The 'set(a)boot' program for all supported platforms. (currently only OS/2)
-
-
-# Note:
-# AiR-BOOT and it's helpers are relatively small to build.
-# So, although Makefiles are being used to build the lot, there is no explicit
-# separation between assembling/compiling from source or just only linking.
-# In fact, because of multiple languages for the Loader and cross-platform
-# support for the Helpers, any target will almost always be built from source
-# everytime.
-
-# Also:
-# While WMake does it's job, running it on Linux requires a bit of extra effort
-# with regard to case sensitivity, directory separators, escape characters
-# and other platform differences.
-# This is handled in makefile.mif.
 
 
 
-# 							DEFINITIONS AND STUFF
+#                           DEFINITIONS AND STUFF
 # _____________________________________________________________________________
 
 # This one is defined in the Environment so that all 'called' WMake invocations
@@ -44,7 +43,7 @@
 
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
-!include	include/makefile.mif
+!include include/makefile.mif
 
 
 # These are the Build Directories (Components) that produce
@@ -54,18 +53,18 @@
 # to influence build behavior of the individual Makefiles.
 # The order of these Build Directories matters !
 #
-# - mbr-prot		; MBR Protection Image later to be embedded.     (mbr-prot)
-# - internal		; Helper program to embed the MBR PI. (fixboot[d][2][w][l])
-# - bootcode		; AiR-BOOT Boot Manager itself.               (airboot.bin)
-# - install/c		; Installer for multiple platforms.   (install[d][2][w][l])
-# - setaboot		; The AiR-BOOT setboot replacement for OS/2.     (setaboot)
+# - mbr-prot        ; MBR Protection Image later to be embedded.     (mbr-prot)
+# - internal        ; Helper program to embed the MBR PI. (fixboot[d][2][w][l])
+# - bootcode        ; AiR-BOOT Boot Manager itself.               (airboot.bin)
+# - install/c       ; Installer for multiple platforms.   (install[d][2][w][l])
+# - setaboot        ; The AiR-BOOT setboot replacement for OS/2.     (setaboot)
 #
 COMPONENTS=&
-	bootcode$(DS)mbr-prot&
-	tools$(DS)internal&
-	bootcode&
-	install$(DS)c&
-	tools$(DS)os2$(DS)setaboot&
+ bootcode$(DS)mbr-prot&
+ tools$(DS)internal&
+ bootcode&
+ install$(DS)c&
+ tools$(DS)os2$(DS)setaboot&
 
 
 # Components to distribute to the RELEASE directories.
@@ -73,15 +72,15 @@ COMPONENTS=&
 # the installer for several platforms,
 # and the OS/2 setboot replacement (setaboot).
 COMPONENTS2DIST=&
-	bootcode&
-	install$(DS)c&
-	tools$(DS)os2$(DS)setaboot&
+ bootcode&
+ install$(DS)c&
+ tools$(DS)os2$(DS)setaboot&
 
 
 
 
 
-# 								MAIN ACTIONS
+#                               MAIN ACTIONS
 # _____________________________________________________________________________
 
 
@@ -91,7 +90,7 @@ COMPONENTS2DIST=&
 # Unless another target is specified, a 'build' is the default action.
 # Using wmake build would be equivalent.
 # -----------------------------------------------------------------------------
-all:	.SYMBOLIC Makefile.bu
+all: .SYMBOLIC Makefile.bu
 	@%MAKE build
 
 
@@ -105,7 +104,7 @@ all:	.SYMBOLIC Makefile.bu
 # Note that we don't use %ACTION=, because that would be evaluated by WMake
 # when parsing the Makefile. It needs to be a command related to the target.
 # -----------------------------------------------------------------------------
-build:	.SYMBOLIC
+build: .SYMBOLIC
 	@SET ACTION=BUILD
 	@for %%i in ($(COMPONENTS)) do @$(MAKE) -h %%i
 	@%MAKE dist
@@ -137,7 +136,7 @@ build:	.SYMBOLIC
 # This target is invoked by build to distribute the relevant targets to the
 # distribution directory.
 # -----------------------------------------------------------------------------
-dist:	.SYMBOLIC
+dist: .SYMBOLIC
 	@SET ACTION=DIST
 	@for %%i in ($(COMPONENTS2DIST)) do @$(MAKE) -h %%i
 	@echo.
@@ -153,7 +152,7 @@ dist:	.SYMBOLIC
 # Note that we don't use %ACTION=, because that would be evaluated by WMake
 # when parsing the Makefile. It needs to be a command related to the target.
 # -----------------------------------------------------------------------------
-clean:	.SYMBOLIC
+clean: .SYMBOLIC
 	@cd release
 	@$(MAKE) -h clean
 	@cd ..
@@ -168,18 +167,18 @@ clean:	.SYMBOLIC
 # -----------------------------------------------------------------------------
 # SHOW HELP ON USING THIS MAKEFILE
 # -----------------------------------------------------------------------------
-help:	.SYMBOLIC
+help: .SYMBOLIC
 	@echo.
-	@echo		The following actions are available:
-	@echo		wmake 		to build all targets and all languages
-	@echo		wmake dev	to build a develoopment target
-	@echo		wmake [LANG]	to build EN,DE,NL,FR,IT or RU versions
-	@echo		wmake list	to show the list of buildable targets
-	@echo		wmake clean 	to remove almost all generated files
-	@echo		wmake rmbin 	to remove all residual BIN files
-	@echo		wmake rebuild	to rebuild all targets
-	@echo		wmake dist	to populate the dist directories
-	@echo		wmake help 	for this information
+	@echo The following actions are available:
+	@echo wmake         to build all targets and all languages
+	@echo wmake dev     to build a develoopment target
+	@echo wmake [LANG]  to build EN,DE,NL,FR,IT or RU versions
+	@echo wmake list    to show the list of buildable targets
+	@echo wmake clean   to remove almost all generated files
+	@echo wmake rmbin   to remove all residual BIN files
+	@echo wmake rebuild to rebuild all targets
+	@echo wmake dist    to populate the dist directories
+	@echo wmake help    to show this information
 	@echo.
 
 
@@ -190,7 +189,7 @@ help:	.SYMBOLIC
 # Create a backup of the Makefile when it is modified.
 # This also forces a rebuild of all targets.
 # -----------------------------------------------------------------------------
-Makefile.bu:	Makefile
+Makefile.bu: Makefile
 	@echo.
 	@echo Makefile modified, forcing rebuild of all targets !
 	@echo.
@@ -199,7 +198,7 @@ Makefile.bu:	Makefile
 
 
 
-# 								GENERIC HANDLERS
+#                               GENERIC HANDLERS
 # _____________________________________________________________________________
 
 
@@ -210,7 +209,7 @@ Makefile.bu:	Makefile
 # The action to undertake is set in the Environment.
 # It functions like a "switch".
 # -----------------------------------------------------------------------------
-$(COMPONENTS):	.SYMBOLIC
+$(COMPONENTS): .SYMBOLIC
 	@echo.
 	@echo.
 	@echo.

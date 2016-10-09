@@ -1,0 +1,28 @@
+#
+# Simple Build Menu
+#
+
+B:	Build Development Version [EN]
+	wmake -h dev
+M:	Build Development Version [??]
+{
+1:	English
+	wmake -h dev DEV_BLD_LANG=en
+2:	German
+	wmake -h dev DEV_BLD_LANG=de
+3:	Dutch
+	wmake -h dev DEV_BLD_LANG=nl
+4:	French
+	wmake -h dev DEV_BLD_LANG=fr
+5:	Italian
+	wmake -h dev DEV_BLD_LANG=it
+6:	Swedish
+	wmake -h dev DEV_BLD_LANG=sw
+7:	Russian
+	wmake -h dev DEV_BLD_LANG=ru
+}
+C:	Clean
+	wmake -h clean
+-:	--------------------------------
+I:	Install (/forcecode)
+	airboot2.exe /forcecode

@@ -1,61 +1,53 @@
 ###############################################################################
-# Makefile :: Builds the 'airboot.bin' 16-bits RAW Loader Image               #
+# Makefile :: Builds the 'airboot.bin' 16-bits RAW Loader Image       (WMake) #
+# --------------------------------------------------------------------------- #
+#                                                                             #
+# This Makefile builds the 'airboot.bin' program.                             #
+# This is the actual AiR-BOOT that you see when starting your system.         #
+# It operates at the BIOS level and thus without any operating-system         #
+# being active. It's first 512 bytes get loaded by the BIOS at address        #
+# 0000:7C00 and then control is transferred. This first 512 bytes constitute  #
+# the AiR-BOOT MBR-code, and this code loads the rest of the AiR-BOOT image.  #
+#                                                                             #
+# AiR-BOOT, as designed by Martin Kiewitz, boosts a lot of powerful features  #
+# in a tiny space (just over 31kB). One of this features is detecting         #
+# possible virusses. This detection code is "hooked" into the interrupt-chain #
+# and therefore has it's own relocations which are not related to the main    #
+# loader image. For this reason, when the main source 'air-boot.asm' is       #
+# assembled to a RAW image, this virus-protection code is "embedded" as the   #
+# last step. You could compare this to binding a resource-file to an OS/2     #
+# executable.                                                                 #
+#                                                                             #
+# When AiR-BOOT gets control, this virus-protection code is copied elsewhere  #
+# and hooked into the interrupt-system. So it functions kinda like a DOS TSR. #
+#                                                                             #
+# This embedding proccess consists of three parts:                            #
+# - Assembling the virus-detection code, 'mbrprot.asm', which always results  #
+#   in a 1024 bytes image.                                                    #
+# - Compiling the 'fixcode' program that does the actual embedding.           #
+# - Running the 'fixcode' program against 'air-boot.com' creating the         #
+#	final 'airboot.bin' image.                                                #
+#                                                                             #
+# After these operations have been completed, the 'airboot.bin' image         #
+# is ready to be installed.                                                   #
+#                                                                             #
 ###############################################################################
-# rousseau@ecomstation.com
-
-#
-# This Makefile builds the 'airboot.bin' program.
-# This is the actual AiR-BOOT that you see when starting your system.
-# It operates at the BIOS level and thus without any operating-system
-# being active. It's first 512 bytes get loaded by the BIOS at address
-# 0000:7C00 and then control is transferred. This first 512 bytes constitute
-# the AiR-BOOT MBR-code, and this code loads the rest of the AiR-BOOT image.
-#
-
-#
-# AiR-BOOT, as designed by Martin Kiewitz, boosts a lot of powerful features
-# in a tiny space (just over 31kB). One of this features is detecting
-# possible virusses. This detection code is "hooked" into the interrupt-chain
-# and therefore has it's own relocations which are not related to the main
-# loader image. For this reason, when the main source 'air-boot.asm' is
-# assembled to a RAW image, this virus-protection code is "embedded" as the
-# last step. You could compare this to binding a resource-file to an OS/2
-# executable.
-#
-# When AiR-BOOT gets control, this virus-protection code is copied elsewhere
-# and hooked into the interrupt-system. So it functions kinda like a DOS TSR.
-#
-
-#
-# This embedding proccess consists of three parts:
-# - Assembling the virus-detection code, 'mbrprot.asm', which always results
-#   in a 1024 bytes image.
-# - Compiling the 'fixcode' program that does the actual embedding.
-# - Running the 'fixcode' program against 'air-boot.com' creating the
-#	final 'airboot.bin' image.
-#
-
-#
-# After these operations have been completed, the 'airboot.bin' image
-# is ready to be installed.
-#
 
 
 
-
-# 							DEFINITIONS AND STUFF
+#                           DEFINITIONS AND STUFF
 # _____________________________________________________________________________
 
 
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
-!include	../include/makefile.mif
+!include ../include/makefile.mif
 
 # On my system, JWasm takes forever to generate a list-file when on a network
 # drive. Connecting the drive using the legacy LANMAN or the new Samba EVFS
 # makes no difference. If you experience the same, then put a '#' in front of
 # the variable below to keep JWasm from generating a list-file.
-JWASM_LIST_FILE=-Fl=$^&.lst
+#~ JWASM_LIST_FILE=-Fl=$^&.lst
 
 # Specifies the level of debugging.
 # Level 0 is no debugging (release) and each higher level may use other
@@ -135,7 +127,7 @@ ASM=$(%ASM)
 !endif
 
 # If no assembler is specified then default to JWasm.
-!ifndef	ASM
+!ifndef ASM
 ASM=jwasm
 !endif
 
@@ -143,14 +135,14 @@ ASM=jwasm
 # To run JWasmD in an OS/2 VDM, change DPMI from AUTO to ENABLED and
 # set the XMS memory limit to 0.
 # JWasmR will probably run out of memory and cannot be used.
-!ifdef	__MSDOS__
+!ifdef __MSDOS__
 ASM=tasm
 !endif
 
 # There are no masm or alp for Linux and the yasm tasm-mode is incompatible.
 # So we override to jwasm when a non-jwasm assembler is specified and
 # we are building on Linux.
-!ifdef	__LINUX__
+!ifdef __LINUX__
 !if "$(ASM)"=="masm" | "$(ASM)"=="tasm" | "$(ASM)"=="alp"
 ASM=jwasm
 !endif
@@ -162,25 +154,30 @@ ASM=jwasm
 
 # JWASM
 !if "$(ASM)"=="jwasm"
-# -Cp	= case sensitive symbols
-# -zcw	= no _ prefix on symbols (C model)
-# -Zm	= Masm51 compat -- don't use ! (Will generate incorrect offsets)
-# -Zd	= line number debug info
-# -Zi	= symbolic debug info
+# -Cp   = case sensitive symbols
+# -zcw  = no _ prefix on symbols (C model)
+# -Zm   = Masm51 compat -- don't use ! (Will generate incorrect offsets)
+# -Zd   = line number debug info
+# -Zi   = symbolic debug info
 ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W0 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
 ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Zd -Zi -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
 ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Zd -Zi -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+# Workaround for JWasm list-file generation.
+# Generate the list-file on a local drive so JWasm doen't take forever.
+# This is done in the recipe.
+JWASM_LIST_FILE_LOC=$(%TEMP)\
+JWASM_LIST_FILE=-Fl=$(JWASM_LIST_FILE_LOC)$^&.lst
 
 # WASM
 !elseif "$(ASM)"=="wasm"
-# -w0	= suppress warnings (wasm is nice to check for missing size qualifiers)
+# -w0   = suppress warnings (wasm is nice to check for missing size qualifiers)
 ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -w4 -fo=$^. -fr=$^&.err
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -w4 -d1 -fo=$^. -fr=$^&.err
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dWASM -zq -w4 -d1 -fo=$^. -fr=$^&.err
 
 # TASM
 !elseif "$(ASM)"=="tasm"
-# -ml	= case sensitive symbols
+# -ml   = case sensitive symbols
 ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -ml -m9 -l
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -ml -m9 -z -zi -c -la
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dTASM -t -ml -m9 -z -zi -c -la
@@ -241,7 +238,7 @@ DEPTARGETS=mbr-prot ..$(DS)tools$(DS)internal
 
 
 
-# 							BEFORE AND AFTER TARGETS
+#                           BEFORE AND AFTER TARGETS
 # _____________________________________________________________________________
 
 
@@ -256,8 +253,8 @@ DEPTARGETS=mbr-prot ..$(DS)tools$(DS)internal
 # ANY PROCESSING AFTERWARDS
 # -----------------------------------------------------------------------------
 .AFTER
-#	@echo == AFTER ==
-!ifdef	__MSDOS__
+# @echo == AFTER ==
+!ifdef __MSDOS__
 	@echo $(WARN_DOS_BLD_ENV)
 !endif
 !if "$(ASM)"=="wasm" | "$(ASM)"=="masm"
@@ -267,7 +264,7 @@ DEPTARGETS=mbr-prot ..$(DS)tools$(DS)internal
 
 
 
-# 						PSEUDO TARGETS FOR PREPARATION
+#                       PSEUDO TARGETS FOR PREPARATION
 # _____________________________________________________________________________
 
 
@@ -280,7 +277,7 @@ DEPTARGETS=mbr-prot ..$(DS)tools$(DS)internal
 # Use wmake dev to do development; that will generate one image and leave
 # the intermediate files intact.
 # -----------------------------------------------------------------------------
-all:	.SYMBOLIC Makefile.bu $(BLD_LANGUAGES) footer
+all: .SYMBOLIC Makefile.bu $(BLD_LANGUAGES) footer
 #	@echo ALL !!
 #	@#MAKE $(BLD_LANGUAGES)
 #	@for %%i in ($(BLD_LANGUAGES)) do @%MAKE AB-%%i
@@ -295,7 +292,7 @@ all:	.SYMBOLIC Makefile.bu $(BLD_LANGUAGES) footer
 # This is done by generating include-files for the specified language.
 # This is a 'pre-action' before assembling the AiR-BOOT.ASM source.
 # -----------------------------------------------------------------------------
-langsetup:	.SYMBOLIC .MULTIPLE
+langsetup: .SYMBOLIC .MULTIPLE
 # Default to development language is none defined.
 !if "$(%BLD_LANG)"==""
 %BLD_LANG=DEV_BLD_LANG
@@ -304,9 +301,9 @@ langsetup:	.SYMBOLIC .MULTIPLE
 # After this, the Assembly sources are setup for the specified language.
 # Note that this target is not used as a 'dependency' but 'called' explicitly
 # by the $(BLD_LANGUAGES) target.
-	@echo include text/$(%BLD_LANG)/mbr.asm 		> text$(DS)txtmbr.asm
-	@echo include text/$(%BLD_LANG)/menus.asm		> text$(DS)txtmenus.asm
-	@echo include text/$(%BLD_LANG)/other.asm 		> text$(DS)txtother.asm
+	@echo include text/$(%BLD_LANG)/mbr.asm>   text$(DS)txtmbr.asm
+	@echo include text/$(%BLD_LANG)/menus.asm> text$(DS)txtmenus.asm
+	@echo include text/$(%BLD_LANG)/other.asm> text$(DS)txtother.asm
 
 
 # -----------------------------------------------------------------------------
@@ -317,7 +314,7 @@ langsetup:	.SYMBOLIC .MULTIPLE
 # If functions as an iteration (for-next loop) because the 'all:' target
 # depends on it.
 # -----------------------------------------------------------------------------
-$(BLD_LANGUAGES):	.SYMBOLIC
+$(BLD_LANGUAGES): .SYMBOLIC
 	@SET BLD_LANG=$@
 	@%MAKE header
 	@%MAKE clean
@@ -329,7 +326,7 @@ $(BLD_LANGUAGES):	.SYMBOLIC
 # Bug ?
 #	@echo $(%AB_DEV)
 # Do not rename for dev-build
-!if	"$(%AB_DEV)"!="TRUE"
+!if "$(%AB_DEV)"!="TRUE"
 #~ !ifndef %AB_DEV
 	@echo.
 	@echo 	** Renaming Target **
@@ -352,7 +349,7 @@ $(BLD_LANGUAGES):	.SYMBOLIC
 # -----------------------------------------------------------------------------
 # SHOW THE HEADER FOR THE TARGET BEING BUILT
 # -----------------------------------------------------------------------------
-header:	.SYMBOLIC .MULTIPLE
+header: .SYMBOLIC .MULTIPLE
 	@echo.
 	@echo =====================================================================
 	@echo = MODULE: $(TARGET)    [$(%BLD_LANG)]           [16-bits Raw Binary Loader] =
@@ -363,7 +360,7 @@ header:	.SYMBOLIC .MULTIPLE
 # -----------------------------------------------------------------------------
 # SHOW THE FOOTER
 # -----------------------------------------------------------------------------
-footer:	.SYMBOLIC
+footer: .SYMBOLIC
 #	$(RM) $(TARGET)
 	@echo All targets up to date !
 	@echo.
@@ -377,7 +374,7 @@ footer:	.SYMBOLIC
 # So, when changing i.e. the DEBUG_LEVEL, all targets are rebuilt
 # using the new level.
 # -----------------------------------------------------------------------------
-Makefile.bu:	Makefile
+Makefile.bu: Makefile
 	@echo.
 	@echo Makefile modified, forcing rebuild of all targets !
 	@echo.
@@ -420,7 +417,7 @@ Makefile.bu:	Makefile
 # This builds the MBR Protection Image.
 # It will be embedded into the final AiR-BOOT binary. (airboot.bin)
 #
-mbrprot:	.symbolic
+mbrprot: .symbolic
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	@echo @ Building MBR Protection Image and FixCode first @
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -433,13 +430,20 @@ mbrprot:	.symbolic
 #
 # FixCode embeds the MBR Protection Image into the final AiR-BOOT binary.
 #
-fixcode:	.procedure
+fixcode: .procedure
 	cd ..$(DS)tools$(DS)internal
 	$(MAKE) -h
 	cd ..$(DS)..$(DS)bootcode
 
+#
+# Installer installs the loader to disk
+#
+installer2: .procedure
+	cd ..$(DS)install$(DS)c
+	$(MAKE) -h airboot2.exe
+	cd ..$(DS)..$(DS)bootcode
 
-# 								MAIN TARGETS
+#                               MAIN TARGETS
 # _____________________________________________________________________________
 
 
@@ -453,30 +457,30 @@ fixcode:	.procedure
 # Also, the intermediate .COM and final .BIN targets are disassembled back
 # with NDISASM for cross reference.
 # -----------------------------------------------------------------------------
-$(TARGET):	.MULTIPLE Makefile.bu $(BASENAME).com
+$(TARGET): .MULTIPLE Makefile.bu $(BASENAME).com
 	@echo $^.:	[Final 16-bits raw Binary Image]
-!ifdef	__MSDOS__
+!ifdef __MSDOS__
 	..$(DS)tools$(DS)internal$(DS)fixcoded.exe
 !endif
-!ifdef	__OS2__
+!ifdef __OS2__
 	..$(DS)tools$(DS)internal$(DS)fixcode2.exe
 !endif
-!ifdef	__NT__
+!ifdef __NT__
 	..$(DS)tools$(DS)internal$(DS)fixcodew.exe
 !endif
-!ifdef	__LINUX__
+!ifdef __LINUX__
 #	..$(DS)tools$(DS)internal$(DS)fixcode
 	@chmod +x ..$(DS)tools$(DS)internal$(DS)fixcodel.elf
 	..$(DS)tools$(DS)internal$(DS)fixcodel.elf
 	@chmod +x $^.
 !endif
 	@echo.
-!ifndef	__MSDOS__
+!ifndef __MSDOS__
 	ndisasm $(BASENAME).com > $(BASENAME).com.nda
 	ndisasm $(TARGET) > $(TARGET).nda
 !endif
 	@echo.
-	@if exist $^. @echo		** $^. $(MSG_SUCCESS) - [$(%BLD_LANG) version] **
+	@if exist $^. @echo ** $^. $(MSG_SUCCESS) - [$(%BLD_LANG) version] **
 
 
 # -----------------------------------------------------------------------------
@@ -490,8 +494,8 @@ $(TARGET):	.MULTIPLE Makefile.bu $(BASENAME).com
 # not exceed the upper 64kB limit while RAW just wraps it's fixups.
 # So we use DOS COM linkage to proteced us from overflow incorrect fixups.
 # -----------------------------------------------------------------------------
-$(BASENAME).com:	.MULTIPLE $(BASENAME).obj
-	@echo $^.:	[16-bits non-100h Intermediate Image]
+$(BASENAME).com: .MULTIPLE $(BASENAME).obj
+	@echo $^.: [16-bits non-100h Intermediate Image]
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys dos com
 #	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. form raw
 
@@ -504,17 +508,27 @@ $(BASENAME).com:	.MULTIPLE $(BASENAME).obj
 # - once as an (almost) assemblable source-file
 # - once as a disassembly with opcodes in it
 # -----------------------------------------------------------------------------
-$(BASENAME).obj:	.MULTIPLE $(BASENAME).asm
-	@echo $^.:	[16-bits OMF Object File]
+$(BASENAME).obj: .MULTIPLE $(BASENAME).asm
+	@echo $^.: [16-bits OMF Object File]
 	$(ASM) $(ASM_FLAGS) $(BASENAME).asm
-!ifndef	__MSDOS__
+!if "$(%AB_DEV)"=="TRUE"
+	@copy ..\install\c\airboot2.exe .
+!endif
+!if "$(ASM)"=="jwasm"
+# Workaround for generating JWasm list-files.
+# Command 'move' does not work across drives.
+# So we do a 'copy' then 'del' instead.
+	@if not exist $^&.lst copy $(JWASM_LIST_FILE_LOC)$^&.lst .
+	@if exist $(JWASM_LIST_FILE_LOC)$^&.lst del $(JWASM_LIST_FILE_LOC)$^&.lst
+!endif
+!ifndef __MSDOS__
 	@wdis -fi $^. > $^..wda
 !endif
 	@wdis -a -p -fi $^. > $^&.wda
 
 
 
-# 								MAIN ACTIONS
+#                               MAIN ACTIONS
 # _____________________________________________________________________________
 
 
@@ -526,10 +540,11 @@ $(BASENAME).obj:	.MULTIPLE $(BASENAME).asm
 # it can directly be used by the installer.
 # This is the main target when developing.
 # -----------------------------------------------------------------------------
-dev:	.SYMBOLIC
+dev: .SYMBOLIC
 	@%MAKE rmbin
 	@%MAKE mbrprot
 	@%MAKE fixcode
+	@%MAKE installer2
 	SET AB_DEV=TRUE
 #	@%MAKE $(DEV_BLD_LANG)
 # We need to recurse here because the environment is used to pass AB_DEV and
@@ -537,7 +552,7 @@ dev:	.SYMBOLIC
 # We also don't want .MULTIPLE which we won't get if we build just one target.
 	@$(MAKE) -h $(DEV_BLD_LANG)
 # Display the BLDLEVEL information if we are building on OS/2.
-!ifdef	__OS2__
+!ifdef __OS2__
 	@echo.
 	@bldlevel $(TARGET)
 	@echo.
@@ -545,7 +560,7 @@ dev:	.SYMBOLIC
 	@md5sum $(TARGET) > airboot.md5
 	@type airboot.md5
 !endif
-!ifdef	__LINUX__
+!ifdef __LINUX__
 	@echo.
 	@if exist air-boot.lst @grep ^zzz_code_space air-boot.lst
 	@echo.
@@ -558,7 +573,7 @@ dev:	.SYMBOLIC
 # -----------------------------------------------------------------------------
 # REBUILD ALL TARGETS
 # -----------------------------------------------------------------------------
-rebuild:	.SYMBOLIC
+rebuild: .SYMBOLIC
 	@%MAKE clean
 	@%MAKE all
 
@@ -566,11 +581,11 @@ rebuild:	.SYMBOLIC
 # -----------------------------------------------------------------------------
 # CLEANUP (intermediate files)
 # -----------------------------------------------------------------------------
-clean:	.SYMBOLIC .MULTIPLE
+clean: .SYMBOLIC .MULTIPLE
 #	@echo CLEANING UP
 	@for %%i in ($(TARGET)) do @if exist %%i $(RM) %%i
 	@if exist *.com $(RM) *.com
-	@if exist *.com $(RM) *.exe
+	@if exist *.exe $(RM) *.exe
 	@if exist *.obj $(RM) *.obj
 	@if exist *.wda $(RM) *.wda
 	@if exist *.nda $(RM) *.nda
@@ -583,7 +598,7 @@ clean:	.SYMBOLIC .MULTIPLE
 # -----------------------------------------------------------------------------
 # REMOVE ALL RESIDUAL .bin FILES (old builds)
 # -----------------------------------------------------------------------------
-rmbin:	.SYMBOLIC
+rmbin: .SYMBOLIC
 	@if exist *.bin $(RM) *.bin
 
 
@@ -593,7 +608,7 @@ rmbin:	.SYMBOLIC
 # This distributes all .bin files to bootcode.
 # Then it installs the English version to 'release' as 'airboot.bin'.
 # -----------------------------------------------------------------------------
-dist:	.SYMBOLIC
+dist: .SYMBOLIC
 	@if exist *.bin $(CP) *.bin ..$(DS)release$(DS)bootcode
 	@if exist airbt-en.bin $(CP) airbt-en.bin ..$(DS)release$(DS)dos$(DS)$(TARGET)
 	@if exist airbt-en.bin $(CP) airbt-en.bin ..$(DS)release$(DS)winnt$(DS)$(TARGET)
@@ -604,31 +619,31 @@ dist:	.SYMBOLIC
 # -----------------------------------------------------------------------------
 # SHOW HELP ON USING THIS MAKEFILE
 # -----------------------------------------------------------------------------
-help:	.SYMBOLIC
+help: .SYMBOLIC
 	@echo.
-	@echo		The following actions are available:
-	@echo		wmake 		to build all targets and all languages
-	@echo		wmake dev	to build a develoopment target
-	@echo		wmake [LANG]	to build EN,DE,NL,FR,IT or RU versions
-	@echo		wmake list	to show the list of buildable targets
-	@echo		wmake clean 	to remove almost all generated files
-	@echo		wmake rmbin 	to remove all residual 'bin' files
-	@echo		wmake rebuild	to rebuild all targets
-	@echo		wmake dist	to populate the dist directories
-	@echo		wmake help 	for this information
+	@echo The following actions are available:
+	@echo wmake         to build all targets and all languages
+	@echo wmake dev     to build a develoopment target
+	@echo wmake [LANG]  to build EN,DE,NL,FR,IT or RU versions
+	@echo wmake list    to show the list of buildable targets
+	@echo wmake clean   to remove almost all generated files
+	@echo wmake rmbin   to remove all residual 'bin' files
+	@echo wmake rebuild to rebuild all targets
+	@echo wmake dist    to populate the dist directories
+	@echo wmake help    to show this information
 	@echo.
 
 
 # -----------------------------------------------------------------------------
 # SHOW LIST OF BUILDABLE TARGETS
 # -----------------------------------------------------------------------------
-show:	.SYMBOLIC
+show: .SYMBOLIC
 	@echo.
-	@echo		The following [case sensitive] targets can be built:
+	@echo The following [case sensitive] targets can be built:
 	@for %%i in ($(TARGET)) do @echo 	%%i
 	@echo.
 # Alias for show
-list:	.SYMBOLIC
+list: .SYMBOLIC
 	@%MAKE show
 
 
@@ -637,20 +652,13 @@ list:	.SYMBOLIC
 # -----------------------------------------------------------------------------
 .ERROR
 	@echo.
-	@echo		Oops!
-	@echo		Some error occured in this build session.
-	@echo		If you see stuff about "positive count"
-	@echo		you have a section overlap.
-	@echo		Check the z_* values at the end of the list-file
-	@echo		and look for a negative gap.
-	@echo		Type 'wmake help' in the target dir for a list of actions.
+	@echo Oops!
+	@echo Some error occured in this build session.
+	@echo If you see stuff about "positive count"
+	@echo you have a section overlap.
+	@echo Check the z_* values at the end of the list-file
+	@echo and look for a negative gap.
+	@echo Type 'wmake help' in the target dir for a list of actions.
 #	@%MAKE help
 	@echo.
 
-
-# -----------------------------------------------------------------------------
-# How the hell can we use more than one command in the for-loop ??
-# -----------------------------------------------------------------------------
-ttt:	.SYMBOLIC
-# This does not work...
-#	@for %%i in ($(BLD_LANGUAGES)) do %%i=X; $%WMAKE;

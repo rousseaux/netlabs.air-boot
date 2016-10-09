@@ -38,5 +38,3 @@ releases&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: [http://github.com/rousseaux
 Periodically, the above AirBoot GitHub repos will be synced to: [AirBoot at Netlabs](http://trac.netlabs.org/air-boot).<br>
 
 After the v1.1.1-testing traject, <b>AirBoot v1.1.2</b> will be released.<br>
-
-The <b>AirBoot Project</b> is part of <b>[Bens Bits](http://www.bensbits.nl)</b> OS/2 Development.<br>

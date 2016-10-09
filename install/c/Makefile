@@ -1,19 +1,19 @@
 ###############################################################################
-# Makefile :: Builds the Installer for several platforms.             [wmake] #
+# Makefile :: Builds the Installer for several platforms              [WMake] #
+# --------------------------------------------------------------------------- #
+#                                                                             #
+# This Makefile builds the Installer for DOS, Windows, OS/2 and Linux.        #
+# Like 'fixcode', each platform version has a letter appended it:             #
+# 'D' for DOS, 'W' for Windows, '2' for OS/2 and 'L' for Linux.               #
+#                                                                             #
 ###############################################################################
-# rousseau@ecomstation.com
 
-#
-# This Makefile builds the Installer for DOS, Windows, OS/2 and Linux.
-# Like 'fixcode', each platform version has a letter appended it:
-# 'D' for DOS, 'W' for Windows, '2' for OS/2 and 'L' for Linux.
-#
 
 #
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
 #
-!include	../../include/makefile.mif
+!include ../../include/makefile.mif
 
 
 
@@ -76,15 +76,15 @@ ASM=jwasm
 # So we override to jwasm when a non-jwasm assembler is specified and
 # we are building on Linux.
 #
-!ifdef	__LINUX__
+!ifdef __LINUX__
 !if "$(ASM)"=="masm" | "$(ASM)"=="tasm" | "$(ASM)"=="alp"
 ASM=jwasm
 !endif
 !endif
 
 !if "$(ASM)"=="jwasm"
-# -Cp	= case sensitive symbols
-# -zcw	= no _ prefix on symbols (C model)
+# -Cp   = case sensitive symbols
+# -zcw = no _ prefix on symbols (C model)
 ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Fo$^. -Fl=$^&.lst -Fw$^&.err
 ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
 ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
@@ -139,8 +139,8 @@ LNK=wlink
 #~ LNK_FLAGS_D0=op q op v op map=$^&.MAP op de '\x40\x23KIEWITZ:1.18\x23\x40\x41iR-BOOT Installer by Kiewitz'
 LNK_FLAGS_D0=op q op v op map=$^&.map
 #~ LNK_FLAGS_D1=op q op v d all &
-	#~ order clname CODE clname FAR_CONST clname FAR_DATA clnam BEGDATA clname DATA clname BSS clname STACK clname BLAP NOE &
-	#~ op map=$^&.MAP
+#~ order clname CODE clname FAR_CONST clname FAR_DATA clnam BEGDATA clname DATA clname BSS clname STACK clname BLAP NOE &
+#~ op map=$^&.MAP
 LNK_FLAGS_D1=op q op v d all op map=$^&.map
 LNK_FLAGS_D2=op q op v d all op map=$^&.map
 LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
@@ -157,7 +157,7 @@ LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 #
 .AFTER
 #	@echo == AFTER ==
-!ifdef	__MSDOS__
+!ifdef __MSDOS__
 	@echo $(WARN_DOS_BLD_ENV)
 !endif
 
@@ -166,7 +166,7 @@ LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 # This builds all targets by using normal dependency rules.
 # If this Makefile was modified, all targets are forcefully rebuilt.
 #
-all:	.SYMBOLIC Makefile.bu header $(TARGETS) footer
+all: .SYMBOLIC Makefile.bu header $(TARGETS) footer
 
 
 #
@@ -188,7 +188,7 @@ all:	.SYMBOLIC Makefile.bu header $(TARGETS) footer
 #
 # Show the header.
 #
-header:	.SYMBOLIC
+header: .SYMBOLIC
 	@echo.
 	@echo =====================================================================
 	@echo = PROGRAM: 'install' Multi Platform    [DOS, Win32, OS/2 and Linux] =
@@ -199,7 +199,7 @@ header:	.SYMBOLIC
 #
 # Show the footer.
 #
-footer:	.SYMBOLIC
+footer: .SYMBOLIC
 	@echo All targets up to date !
 	@echo.
 
@@ -210,7 +210,7 @@ footer:	.SYMBOLIC
 # So, when changing i.e. the DEBUG_LEVEL, all targets are rebuilt
 # using the new level.
 #
-Makefile.bu:	Makefile
+Makefile.bu: Makefile
 	@echo.
 	@echo Makefile modified, forcing rebuild of all targets !
 	@echo.
@@ -254,19 +254,19 @@ Makefile.bu:	Makefile
 ###############################################################################
 # DOS 16-bits (MZ)
 ###############################################################################
-$(MODULE)d.exe:	$(MODULE)d.obj
+$(MODULE)d.exe: $(MODULE)d.obj
 #	@cat $^&.MD5
 	$(LNK) $(LNK_FLAGS) op stack=8192 file $^&.obj name $^. sys dos
 #	@md5sum $^. > $^&.md5
 #	@cat $^&.md5
 	@wdump $^. > $^&.wdu
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@echo.
 	#~ wstrip $^.
 
-$(MODULE)d.obj:	$(BASENAME).c $(BASENAME).h
+$(MODULE)d.obj: $(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.exe	[DOS 16-bits Executable]
+	@echo TARGET: $^&.exe [DOS 16-bits Executable]
 	$(CC16) $(CC16_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os21x -bt=dos $(BASENAME).c
 	@wdis -fi $^. > $^&.wda
 
@@ -274,15 +274,15 @@ $(MODULE)d.obj:	$(BASENAME).c $(BASENAME).h
 ###############################################################################
 # NT 32-bits (PE)
 ###############################################################################
-$(MODULE)w.exe:	$(MODULE)w.obj
+$(MODULE)w.exe: $(MODULE)w.obj
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys nt
 	@wdump $^. > $^&.wdu
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@echo.
 
-$(MODULE)w.obj:	$(BASENAME).c $(BASENAME).h
+$(MODULE)w.obj: $(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.exe	[NT 32-bits Executable]
+	@echo TARGET: $^&.exe [NT 32-bits Executable]
 	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)nt -bt=nt $(BASENAME).c
 	@wdis -fi $^. > $^&.wda
 
@@ -290,16 +290,16 @@ $(MODULE)w.obj:	$(BASENAME).c $(BASENAME).h
 ###############################################################################
 # OS/2 32-bits (LX)
 ###############################################################################
-$(MODULE)2.exe:	$(MODULE)2.obj
+$(MODULE)2.exe: $(MODULE)2.obj
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys os2v2
 	@wdump $^. > $^&.wdu
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@echo.
 	#~ wstrip $^.
 
-$(MODULE)2.obj:	$(BASENAME).c $(BASENAME).h
+$(MODULE)2.obj: $(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.exe	[OS/2 32-bits Executable]
+	@echo TARGET: $^&.exe [OS/2 32-bits Executable]
 	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=os2 $(BASENAME).c
 	@wdis -fi $^. > $^&.wda
 
@@ -307,16 +307,16 @@ $(MODULE)2.obj:	$(BASENAME).c $(BASENAME).h
 ###############################################################################
 # Linux 32-bits (ELF)
 ###############################################################################
-$(MODULE)l.elf:	$(MODULE)l.obj
+$(MODULE)l.elf: $(MODULE)l.obj
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^&.elf sys linux
 	@wdump $^. > $^&.wdu
 #	$(MV) $^&.elf $^.
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@echo.
 
-$(MODULE)l.obj:	$(BASENAME).c $(BASENAME).h
+$(MODULE)l.obj: $(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.elf	[Linux 32-bits Executable]
+	@echo TARGET: $^&.elf [Linux 32-bits Executable]
 	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=linux $(BASENAME).c
 	@wdis -fi $^. > $^&.wda
 
@@ -336,7 +336,7 @@ $(MODULE)l.obj:	$(BASENAME).c $(BASENAME).h
 # This distributes all '.bin' files to 'bootcode'.
 # Then it installs the English version to 'releases' as 'airboot.bin'.
 # -----------------------------------------------------------------------------
-dist:	.SYMBOLIC
+dist: .SYMBOLIC
 	@if exist airboot2.exe $(CP) airboot2.exe ..$(DS)..$(DS)release$(DS)os2
 	@if exist airbootd.exe $(CP) airbootd.exe ..$(DS)..$(DS)release$(DS)dos
 	@if exist airbootl.elf $(CP) airbootl.elf ..$(DS)..$(DS)release$(DS)linux
@@ -345,14 +345,14 @@ dist:	.SYMBOLIC
 #
 # Rebuild all targets.
 #
-rebuild:	.SYMBOLIC
+rebuild: .SYMBOLIC
 	@%MAKE clean
 	@%MAKE all
 
 #
 # Remove all generated files.
 #
-clean:	.SYMBOLIC
+clean: .SYMBOLIC
 	@for %%i in ($(TARGETS)) do @if exist %%i $(RM) %%i
 	@if exist *.obj $(RM) *.obj
 	@if exist *.wda $(RM) *.wda
@@ -366,26 +366,26 @@ clean:	.SYMBOLIC
 #
 # Help on using this Makefile.
 #
-help:	.SYMBOLIC
+help: .SYMBOLIC
 	@echo.
-	@echo		The following actions are available:
-	@echo		wmake 		to build all targets
-	@echo		wmake show	to show the list of buildable targets
-	@echo		wmake clean 	to remove all generated files
-	@echo		wmake rebuild	to rebuild all targets
-	@echo		wmake help 	for this information
+	@echo The following actions are available:
+	@echo wmake         to build all targets
+	@echo wmake show    to show the list of buildable targets
+	@echo wmake clean   to remove all generated files
+	@echo wmake rebuild to rebuild all targets
+	@echo wmake help    to show this information
 	@echo.
 
 #
 # Show the list of buildable targets.
 #
-show:	.SYMBOLIC
+show: .SYMBOLIC
 	@echo.
-	@echo		The following [case sensitive] targets can be built:
-	@for %%i in ($(TARGETS)) do @echo 	%%i
+	@echo The following [case sensitive] targets can be built:
+	@for %%i in ($(TARGETS)) do @echo %%i
 	@echo.
 # Alias for show
-list:	.SYMBOLIC
+list: .SYMBOLIC
 	@%MAKE show
 
 #
@@ -393,12 +393,10 @@ list:	.SYMBOLIC
 #
 .ERROR
 	@echo.
-	@echo		Oops!
-	@echo		Some error occured in this build session.
-	@echo		If it's a linker problem, it could be
-	@echo		the result of out-of-sync object files.
-	@echo		Doing a wmake rebuild might resolve the problem.
+	@echo Oops!
+	@echo Some error occured in this build session.
+	@echo If it's a linker problem, it could be
+	@echo the result of out-of-sync object files.
+	@echo Doing a wmake rebuild might resolve the problem.
 	@%MAKE help
 	@echo.
-
-

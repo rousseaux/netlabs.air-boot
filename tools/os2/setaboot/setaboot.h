@@ -7,20 +7,26 @@ extern  "C" {
 // OS/2 BLDLEVEL Information.
 */
 // Vendor
-#define     BLDLVL_VENDOR           "KIEWITZ"
+//~ #define     BLDLVL_VENDOR           "KIEWITZ"
+//~ #define     BLDLVL_VENDOR           "RDPe"
+#define     BLDLVL_VENDOR           "*UNKNOWN*"
 // Version
 #define     BLDLVL_MAJOR_VERSION    "1"
 #define     BLDLVL_MIDDLE_VERSION   "1"
-#define     BLDLVL_MINOR_VERSION    "0"
+#define     BLDLVL_MINOR_VERSION    "1"
 // Build date
-#define     BLDLVL_YEAR             "2013"
-#define     BLDLVL_MONTH            "04"
-#define     BLDLVL_DAY              "05"
+#define     BLDLVL_YEAR             "2016"
+#define     BLDLVL_MONTH            "10"
+#define     BLDLVL_DAY              "09"
 // Build time
-#define     BLDLVL_HOURS            "01"
-#define     BLDLVL_MINUTES          "01"
-#define     BLDLVL_SECONDS          "00"
+//~ #define     BLDLVL_HOURS            "01"
+//~ #define     BLDLVL_MINUTES          "01"
+//~ #define     BLDLVL_SECONDS          "00"
+#define     BLDLVL_HOURS            "99"
+#define     BLDLVL_MINUTES          "99"
+#define     BLDLVL_SECONDS          "99"
 // Build machine
+//~ #define     BLDLVL_MACHINE          "OS2BLDBOX"
 #define     BLDLVL_MACHINE          "*UNKNOWN*"
 // Build language
 #define     BLDLVL_LANGUAGE         "EN"
@@ -41,8 +47,6 @@ char    bldlevel[]  =   "@#"\
                         BLDLVL_LANGUAGE"::"\
                         BLDLVL_MINOR_VERSION"::@@"\
                         "SETBOOT Replacement to manage the AiR-BOOT Boot Manager";
-
-
 
 
 #ifdef  __cplusplus

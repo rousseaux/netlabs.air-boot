@@ -40,7 +40,9 @@
 ;
 
 ; Vendor
-BLDLVL_VENDOR           EQU     'KIEWITZ'
+;~ BLDLVL_VENDOR           TEXTEQU <'KIEWITZ'>
+;~ BLDLVL_VENDOR           TEXTEQU <'RDPe'>
+BLDLVL_VENDOR           TEXTEQU <'*UNKNOWN*'>
 ; Version
 BLDLVL_MAJOR_VERSION    EQU     AB_MAJOR_VERSION    + '0'
 BLDLVL_MIDDLE_VERSION   EQU     AB_MIDDLE_VERSION   + '0'
@@ -54,6 +56,7 @@ BLDLVL_HOURS            EQU     (AB_HOURS SHR 4)+'0',(AB_HOURS AND 0Fh)+'0'
 BLDLVL_MINUTES          EQU     (AB_MINUTES SHR 4)+'0',(AB_MINUTES AND 0Fh)+'0'
 BLDLVL_SECONDS          EQU     (AB_SECONDS SHR 4)+'0',(AB_SECONDS AND 0Fh)+'0'
 ; Build machine
+;~ BLDLVL_MACHINE          EQU     'OS2BLDBOX'    ; 16 chars max.
 BLDLVL_MACHINE          EQU     '*UNKNOWN*'    ; 16 chars max.
 ; Build language
 IFDEF   WASM

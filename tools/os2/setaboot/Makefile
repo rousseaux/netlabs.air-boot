@@ -1,18 +1,17 @@
 ###############################################################################
-# Makefile :: Builds the 'set(a)boot' 'setboot' replacement for OS/2  [wmake] #
+# Makefile :: Builds the 'set(a)boot' 'setboot' replacement for OS/2  [WMake] #
+# --------------------------------------------------------------------------- #
+#                                                                             #
+# This Makefile builds the 'set(a)boot' 'setboot' replacement for OS/2.       #
+#                                                                             #
 ###############################################################################
-# rousseau@ecomstation.com
 
-
-#
-# This Makefile builds the 'set(a)boot' 'setboot' replacement for OS/2.
-#
 
 #
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
 #
-!include	../../../include/makefile.mif
+!include ../../../include/makefile.mif
 
 
 
@@ -69,15 +68,15 @@ ASM=jwasm
 # So we override to jwasm when a non-jwasm assembler is specified and
 # we are building on Linux.
 #
-!ifdef	__LINUX__
+!ifdef __LINUX__
 !if "$(ASM)"=="masm" | "$(ASM)"=="tasm" | "$(ASM)"=="alp"
 ASM=jwasm
 !endif
 !endif
 
 !if "$(ASM)"=="jwasm"
-# -Cp	= case sensitive symbols
-# -zcw	= no _ prefix on symbols (C model)
+# -Cp   = case sensitive symbols
+# -zcw = no _ prefix on symbols (C model)
 ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Fo$^. -Fl=$^&.lst -Fw$^&.err
 ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
 ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
@@ -158,7 +157,7 @@ LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 # This builds all targets by using normal dependency rules.
 # If this Makefile was modified, all targets are forcefully rebuilt.
 #
-all:	.SYMBOLIC Makefile.bu header $(TARGETS) footer
+all: .SYMBOLIC Makefile.bu header $(TARGETS) footer
 
 
 #
@@ -169,7 +168,7 @@ all:	.SYMBOLIC Makefile.bu header $(TARGETS) footer
 # this may result in multiple identical concatenations.
 # The second method uses the procedure method, no concatenation problem.
 #
-#all:	.SYMBOLIC
+#all: .SYMBOLIC
 #	Recursive method (concatenation problem)
 #	@for %%i in (header $(TARGETS) footer) do @$(MAKE) -h %%i
 #	Procedure method (no concatenation problem, no re-invocation)
@@ -180,7 +179,7 @@ all:	.SYMBOLIC Makefile.bu header $(TARGETS) footer
 #
 # Show the header.
 #
-header:	.SYMBOLIC
+header: .SYMBOLIC
 	@echo.
 	@echo =====================================================================
 	@echo = PROGRAM: 'setaboot', setboot replacement for OS/2          [OS/2] =
@@ -191,7 +190,7 @@ header:	.SYMBOLIC
 #
 # Show the footer.
 #
-footer:	.SYMBOLIC
+footer: .SYMBOLIC
 	@echo All targets up to date !
 	@echo.
 
@@ -202,7 +201,7 @@ footer:	.SYMBOLIC
 # So, when changing i.e. the DEBUG_LEVEL, all targets are rebuilt
 # using the new level.
 #
-Makefile.bu:	Makefile
+Makefile.bu: Makefile
 	@echo.
 	@echo Makefile modified, forcing rebuild of all targets !
 	@echo.
@@ -246,15 +245,15 @@ Makefile.bu:	Makefile
 ###############################################################################
 # OS/2 32-bits (LX)
 ###############################################################################
-$(MODULE).exe:	$(MODULE).obj
+$(MODULE).exe: $(MODULE).obj
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys os2v2
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@echo.
 	#~ wstrip $^.
 
 $(MODULE).obj:	$(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.exe	[OS/2 32-bits Executable]
+	@echo TARGET: $^&.exe [OS/2 32-bits Executable]
 	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=os2 $(BASENAME).c
 	@wdis -fi $^. > $^&.wda
 
@@ -267,14 +266,14 @@ $(MODULE).obj:	$(BASENAME).c $(BASENAME).h
 #
 # Rebuild all targets.
 #
-rebuild:	.SYMBOLIC
+rebuild: .SYMBOLIC
 	@%MAKE clean
 	@%MAKE all
 
 #
 # Remove all generated files.
 #
-clean:	.SYMBOLIC
+clean: .SYMBOLIC
 	@for %%i in ($(TARGETS)) do @if exist %%i $(RM) %%i
 	@if exist *.obj $(RM) *.obj
 	@if exist *.wda $(RM) *.wda
@@ -289,31 +288,31 @@ clean:	.SYMBOLIC
 # -----------------------------------------------------------------------------
 # This distributes 'setaboot' 'release'.
 # -----------------------------------------------------------------------------
-dist:	.SYMBOLIC
+dist: .SYMBOLIC
 	@if exist *.exe $(CP) *.exe ..$(DS)..$(DS)..$(DS)release$(DS)os2
 #
 # Help on using this Makefile.
 #
-help:	.SYMBOLIC
+help: .SYMBOLIC
 	@echo.
-	@echo		The following actions are available:
-	@echo		wmake 		to build all targets
-	@echo		wmake show	to show the list of buildable targets
-	@echo		wmake clean 	to remove all generated files
-	@echo		wmake rebuild	to rebuild all targets
-	@echo		wmake help 	for this information
+	@echo The following actions are available:
+	@echo wmake         to build all targets
+	@echo wmake show    to show the list of buildable targets
+	@echo wmake clean   to remove all generated files
+	@echo wmake rebuild to rebuild all targets
+	@echo wmake help    to show this information
 	@echo.
 
 #
 # Show the list of buildable targets.
 #
-show:	.SYMBOLIC
+show: .SYMBOLIC
 	@echo.
-	@echo		The following [case sensitive] targets can be built:
-	@for %%i in ($(TARGETS)) do @echo 	%%i
+	@echo The following [case sensitive] targets can be built:
+	@for %%i in ($(TARGETS)) do @echo %%i
 	@echo.
 # Alias for show
-list:	.SYMBOLIC
+list: .SYMBOLIC
 	@%MAKE show
 
 #
@@ -321,12 +320,10 @@ list:	.SYMBOLIC
 #
 .ERROR
 	@echo.
-	@echo		Oops!
-	@echo		Some error occured in this build session.
-	@echo		If it's a linker problem, it could be
-	@echo		the result of out-of-sync object files.
-	@echo		Doing a wmake rebuild might resolve the problem.
+	@echo Oops!
+	@echo Some error occured in this build session.
+	@echo If it's a linker problem, it could be
+	@echo the result of out-of-sync object files.
+	@echo Doing a wmake rebuild might resolve the problem.
 	@%MAKE help
 	@echo.
-
-

@@ -54,11 +54,12 @@ Copyright:
             db BLDLVL_MIDDLE_VERSION,'.'
             db BLDLVL_MINOR_VERSION,' - (c) 1998-'
             db BLDLVL_YEAR
-            ;~ db ' M. Kiewitz  <<Release Candidate 4>> (bld: '
-            db ' Martin Kiewitz, Dedicated to Gerd Kiewitz'
-            ;~ db BLDLVL_YEAR
-            ;~ db BLDLVL_MONTH
-            ;~ db BLDLVL_DAY,')'
+            ;~ db ' M. Kiewitz  <<Release Candidate 4>>  (bld: '
+            db ' M. Kiewitz   << Test Build >>   (bld:'
+            ;~ db ' Martin Kiewitz, Dedicated to Gerd Kiewitz'
+            db BLDLVL_YEAR
+            db BLDLVL_MONTH
+            db BLDLVL_DAY,')'
             db 0
 
 ;

@@ -4,14 +4,14 @@
 
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
-!include	../include/makefile.mif
+!include ../include/makefile.mif
 
-default:	.SYMBOLIC
+default: .SYMBOLIC
 	@echo.
 	@echo Use wmake clean to remove the distribution files
 	@echo.
 
-clean:		.SYMBOLIC
+clean: .SYMBOLIC
 #	@for %%i in ($(RELDIRS)) do @$(MAKE) -h %%i
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	@echo @@ CLEANING RELEASE DIRECTORIES

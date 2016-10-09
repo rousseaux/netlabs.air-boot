@@ -1,19 +1,20 @@
 ###############################################################################
-# Makefile :: Builds 'fixcode' program for several platforms.         [wmake] #
+# Makefile :: Builds 'fixcode' program for several platforms.         [WMake] #
+# --------------------------------------------------------------------------- #
+#                                                                             #
+# This Makefile builds the 'fixcode' program for DOS, Windows, OS/2 & Linux.  #
+# It is used to embed the anti-virus code into the AiR-BOOT image.            #
+# This anti-virus code protects the MBR and is installed as a TSR by the      #
+# loader. That's why it cannot be included at the source level.               #
+#                                                                             #
 ###############################################################################
 
-#
-# This Makefile builds the 'fixcode' program for DOS, Windows, OS/2 and Linux.
-# It is used to embed the anti-virus code into the AiR-BOOT image.
-# This anti-virus code protects the MBR and is installed as a TSR by the
-# loader. That's why it cannot be included at the source level.
-#
 
 #
 # Include a Master Makefile with several cross-platform definitions and macros.
 # This is used to compensate for the differences between the target platforms.
 #
-!include	../../include/makefile.mif
+!include ../../include/makefile.mif
 
 
 
@@ -68,15 +69,15 @@ ASM=jwasm
 # So we override to jwasm when a non-jwasm assembler is specified and
 # we are building on Linux.
 #
-!ifdef	__LINUX__
+!ifdef __LINUX__
 !if "$(ASM)"=="masm" | "$(ASM)"=="tasm" | "$(ASM)"=="alp"
 ASM=jwasm
 !endif
 !endif
 
 !if "$(ASM)"=="jwasm"
-# -Cp	= case sensitive symbols
-# -zcw	= no _ prefix on symbols (C model)
+# -Cp   = case sensitive symbols
+# -zcw  = no _ prefix on symbols (C model)
 ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Cp -Fo$^. -Fl=$^&.lst -Fw$^&.err
 ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
 ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DASSEMBLER=JWASM -q -Zd -Zi -Fo$^. -Sa -Fl=$^&.lst -Fw$^&.err
@@ -85,7 +86,7 @@ ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -fo=$^. -fr=$^&.e
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.err
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -zq -d1 -fo=$^. -fr=$^&.err
 !elseif "$(ASM)"=="tasm"
-# -ml	= case sensitive symbols
+# -ml  = case sensitive symbols
 ASM_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -l
 ASM_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -z -zi -c -la
 ASM_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -dASSEMBLER=TASM -t -z -zi -c -la
@@ -140,7 +141,7 @@ LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 #
 .AFTER
 #	@echo == AFTER ==
-!ifdef	__MSDOS__
+!ifdef __MSDOS__
 	@echo $(WARN_DOS_BLD_ENV)
 !endif
 
@@ -149,7 +150,7 @@ LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 # This builds all targets by using normal dependency rules.
 # If this Makefile was modified, all targets are forcefully rebuilt.
 #
-all:	.SYMBOLIC Makefile.bu header $(TARGETS) footer
+all: .SYMBOLIC Makefile.bu header $(TARGETS) footer
 
 
 #
@@ -171,7 +172,7 @@ all:	.SYMBOLIC Makefile.bu header $(TARGETS) footer
 #
 # Show the header.
 #
-header:	.SYMBOLIC
+header: .SYMBOLIC
 	@echo.
 	@echo =====================================================================
 	@echo = PROGRAM: 'fixcode' Multi Platform    [DOS, Win32, OS/2 and Linux] =
@@ -182,7 +183,7 @@ header:	.SYMBOLIC
 #
 # Show the footer.
 #
-footer:	.SYMBOLIC
+footer: .SYMBOLIC
 	@echo All targets up to date !
 	@echo.
 
@@ -193,7 +194,7 @@ footer:	.SYMBOLIC
 # So, when changing i.e. the DEBUG_LEVEL, all targets are rebuilt
 # using the new level.
 #
-Makefile.bu:	Makefile
+Makefile.bu: Makefile
 	@echo.
 	@echo Makefile modified, forcing rebuild of all targets !
 	@echo.
@@ -221,14 +222,14 @@ Makefile.bu:	Makefile
 ###############################################################################
 # DOS 16-bits (COM)
 ###############################################################################
-$(BASENAME).com:	$(BASENAME).obj
+$(BASENAME).com: $(BASENAME).obj
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys dos com
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@echo.
 
-$(BASENAME).obj:	$(BASENAME).asm
+$(BASENAME).obj: $(BASENAME).asm
 #	@echo.
-	@echo TARGET: $^&.com	[DOS 16-bits COM-file]
+	@echo TARGET: $^&.com [DOS 16-bits COM-file]
 	$(ASM) $(ASM_FLAGS) $(BASENAME).asm
 	@wdis -fi $^. > $^&.wda
 
@@ -236,14 +237,14 @@ $(BASENAME).obj:	$(BASENAME).asm
 ###############################################################################
 # DOS 16-bits (MZ)
 ###############################################################################
-$(BASENAME)d.exe:	$(BASENAME)d.obj
+$(BASENAME)d.exe: $(BASENAME)d.obj
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys dos
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@echo.
 
-$(BASENAME)d.obj:	$(BASENAME).c $(BASENAME).h
+$(BASENAME)d.obj: $(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.exe	[DOS 16-bits Executable]
+	@echo TARGET: $^&.exe [DOS 16-bits Executable]
 	$(CC16) $(CC16_FLAGS) -bt=dos $(BASENAME).c
 	@wdis -fi $^. > $^&.wda
 
@@ -251,14 +252,14 @@ $(BASENAME)d.obj:	$(BASENAME).c $(BASENAME).h
 ###############################################################################
 # NT 32-bits (PE)
 ###############################################################################
-$(BASENAME)w.exe:	$(BASENAME)w.obj
+$(BASENAME)w.exe: $(BASENAME)w.obj
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys nt
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@echo.
 
-$(BASENAME)w.obj:	$(BASENAME).c $(BASENAME).h
+$(BASENAME)w.obj: $(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.exe	[NT 32-bits Executable]
+	@echo TARGET: $^&.exe [NT 32-bits Executable]
 	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)nt -bt=nt $(BASENAME).c
 	@wdis -fi $^. > $^&.wda
 
@@ -266,14 +267,14 @@ $(BASENAME)w.obj:	$(BASENAME).c $(BASENAME).h
 ###############################################################################
 # OS/2 32-bits (LX)
 ###############################################################################
-$(BASENAME)2.exe:	$(BASENAME)2.obj
+$(BASENAME)2.exe: $(BASENAME)2.obj
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^. sys os2v2
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@echo.
 
-$(BASENAME)2.obj:	$(BASENAME).c $(BASENAME).h
+$(BASENAME)2.obj: $(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.exe	[OS/2 32-bits Executable]
+	@echo TARGET: $^&.exe [OS/2 32-bits Executable]
 	$(CC32) $(CC32_FLAGS) -I$(%WATCOM)$(DS)h$(DS)os2 -bt=os2 $(BASENAME).c
 	@wdis -fi $^. > $^&.wda
 
@@ -281,15 +282,15 @@ $(BASENAME)2.obj:	$(BASENAME).c $(BASENAME).h
 ###############################################################################
 # Linux 32-bits (ELF)
 ###############################################################################
-$(BASENAME)l.elf:	$(BASENAME)l.obj
+$(BASENAME)l.elf: $(BASENAME)l.obj
 	$(LNK) $(LNK_FLAGS) file $^&.obj name $^&.elf sys linux
 #	$(MV) $^&.elf $^.
-	@if exist $^. @echo		$^. $(MSG_SUCCESS)
+	@if exist $^. @echo $^. $(MSG_SUCCESS)
 	@echo.
 
-$(BASENAME)l.obj:	$(BASENAME).c $(BASENAME).h
+$(BASENAME)l.obj: $(BASENAME).c $(BASENAME).h
 #	@echo.
-	@echo TARGET: $^&.elf	[Linux 32-bits Executable]
+	@echo TARGET: $^&.elf [Linux 32-bits Executable]
 	$(CC32) $(CC32_FLAGS) -bt=linux $(BASENAME).c
 	@wdis -fi $^. > $^&.wda
 
@@ -305,14 +306,14 @@ $(BASENAME)l.obj:	$(BASENAME).c $(BASENAME).h
 #
 # Rebuild all targets.
 #
-rebuild:	.SYMBOLIC
+rebuild: .SYMBOLIC
 	@%MAKE clean
 	@%MAKE all
 
 #
 # Remove all generated files.
 #
-clean:	.SYMBOLIC
+clean: .SYMBOLIC
 	@for %%i in ($(TARGETS)) do @if exist %%i $(RM) %%i
 	@if exist *.obj $(RM) *.obj
 	@if exist *.wda $(RM) *.wda
@@ -325,26 +326,26 @@ clean:	.SYMBOLIC
 #
 # Help on using this Makefile.
 #
-help:	.SYMBOLIC
+help: .SYMBOLIC
 	@echo.
-	@echo		The following actions are available:
-	@echo		wmake 		to build all targets
-	@echo		wmake show	to show the list of buildable targets
-	@echo		wmake clean 	to remove all generated files
-	@echo		wmake rebuild	to rebuild all targets
-	@echo		wmake help 	for this information
+	@echo The following actions are available:
+	@echo wmake         to build all targets
+	@echo wmake show    to show the list of buildable targets
+	@echo wmake clean   to remove all generated files
+	@echo wmake rebuild to rebuild all targets
+	@echo wmake help    to show this information
 	@echo.
 
 #
 # Show the list of buildable targets.
 #
-show:	.SYMBOLIC
+show: .SYMBOLIC
 	@echo.
-	@echo		The following [case sensitive] targets can be built:
-	@for %%i in ($(TARGETS)) do @echo 	%%i
+	@echo The following [case sensitive] targets can be built:
+	@for %%i in ($(TARGETS)) do @echo %%i
 	@echo.
 # Alias for show
-list:	.SYMBOLIC
+list: .SYMBOLIC
 	@%MAKE show
 
 #
@@ -352,12 +353,10 @@ list:	.SYMBOLIC
 #
 .ERROR
 	@echo.
-	@echo		Oops!
-	@echo		Some error occured in this build session.
-	@echo		If it's a linker problem, it could be
-	@echo		the result of out-of-sync object files.
-	@echo		Doing a wmake rebuild might resolve the problem.
+	@echo Oops!
+	@echo Some error occured in this build session.
+	@echo If it's a linker problem, it could be
+	@echo the result of out-of-sync object files.
+	@echo Doing a wmake rebuild might resolve the problem.
 	@%MAKE help
 	@echo.
-
-

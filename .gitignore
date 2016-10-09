@@ -10,3 +10,9 @@
 
 # Ignore Geany Project Files
 /*.geany
+
+# Ignore prepared commit message
+/commit.msg
+
+# Ignore scratch files and directories
+...
