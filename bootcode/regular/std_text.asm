@@ -82,7 +82,7 @@ TXT_SETUP_LowerMessage      db 'This software is released under ', 0, 'GPLv3+', 
                             db 'http://www.gnu.org/licenses/gpl.txt', 0
                             db 'For more information and source, please visit:', 0
                             db 'http://svn.netlabs.org/air-boot', 0
-                            db 'Contact via e-mail: ', 0, 'airboot@ecomstation.com', 0
+                            db 'Contact via e-mail: ', 0, 'rousseau.os2dev@gmx.com', 0
 
 ; Table that points to BIOS device names.
 ContinueBIOSbootTable   dw offset TXT_SETUP_MAGIC_CDROM
@@ -102,7 +102,7 @@ TXT_NoINT13XSupport         db  'This BIOS does not support Extended INT13h Func
 
 ; MBR protection; should also be translated and moved.
 NonMBRwrite     db  'AiR-BOOT TRIED TO WRITE A non-MBR TO DISK !!',0
-NonMBRwrite_rep db  'Please report this at airboot@ecomstation.com',0
+NonMBRwrite_rep db  'Please report this at rousseau.os2dev@gmx.com',0
 SystemHalted    db  'System Halted',0
 
 ; Build Information string.
@@ -112,4 +112,3 @@ masm_txt        db  'Masm',0
 wasm_txt        db  'Wasm',0
 tasm_txt        db  'Tasm',0
 unknown_txt     db  '????',0
-

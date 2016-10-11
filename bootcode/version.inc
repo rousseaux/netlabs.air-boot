@@ -36,7 +36,7 @@ AB_MINOR_VERSION    EQU     1
 ; The Year, Month and Day in BCD so we can easily extract nibbles.
 AB_YEAR             EQU     2016h
 AB_MONTH            EQU     10h
-AB_DAY              EQU     09h
+AB_DAY              EQU     10h
 
 ; The Hours, Minutes and Seconds, again in BCD for easy manipulation.
 ;~ AB_HOURS            EQU     01h

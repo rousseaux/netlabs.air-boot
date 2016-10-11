@@ -15,7 +15,7 @@ o Replacing Open Watcom WMake with GNU Make<br>
 o Cleaning up documentation files<br>
 &nbsp;&nbsp;Many text documents contain duplicate, incorrect or obsolete information.<br>
 &nbsp;&nbsp;A cleanup will ensure a more up-to-date understanding of the current AirBoot<br>
-&nbsp;&nbsp;and it development direction.<br>
+&nbsp;&nbsp;and its development direction.<br>
 
 o Removing obsolete source files<br>
 &nbsp;&nbsp;There are sill some source files present which are not in use anymore.<br>

@@ -259,14 +259,12 @@ The eComStation version of AiR-BOOT resides on Netlabs and not on Sourceforge.
 
 Resources:
 ----------
-eWiki site           : http://ewiki.ecomstation.nl/AiRBOOT
-General project site : http://air-boot.netlabs.org
-Trac project site    : http://svn.netlabs.org/air-boot
-Bug tracking:        : http://bugs.ecomstation.nl
-Contact e-mail       : airboot@ecomstation.com
-
-
-
+GitHub Project Portal : http://rousseaux.github.io/netlabs.air-boot
+GitHub Repository     : http://github.com/rousseaux/netlabs.air-boot
+Netlabs Project Page  : http://trac.netlabs.org/air-boot
+Netlabs Respository   : http://trac.netlabs.org/air-boot/browser/trunk
+Bug tracking:         : http://trac.netlabs.org/air-boot/report
+Contact e-mail        : rousseau.os2dev@gmx.com
 
 
                                     - x -
