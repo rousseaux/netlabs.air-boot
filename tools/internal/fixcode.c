@@ -18,11 +18,11 @@
 
 /*
 // FIXCODE.C -- Fix the AiR-BOOT image; include the code-size and MBR prot-img.
-//  This reads 'air-boot.com', merges 'mbr-prot.bin' and writes 'airboot.bin'.
+//  This reads 'airboot.com', merges 'mbr-prot.bin' and writes 'airboot.bin'.
 //  It is a quick-and-dirty translation of the original DOS-only ASM file.
 //  Of course it's not as small but it's much easier to maintain across
 //  multiple platforms. A small change with regard to the old ASM version is
-//  that it directly writes 'airboot.bin' instead of writing 'air-boot.com'.
+//  that it directly writes 'airboot.bin' instead of writing 'airboot.com'.
 //  This way the pre and post situations are kept valid.
 */
 
@@ -48,7 +48,7 @@
 
 
 /* File names */
-#define     IN_FILE     "air-boot.com"              // Target from assembly.
+#define     IN_FILE     "airboot.com"              // Target from assembly.
 #ifdef      PLATFORM_LINUX
 #define     MERGE_FILE  "mbr-prot/mbr-prot.bin"     // MBR Protection Image.
 #else

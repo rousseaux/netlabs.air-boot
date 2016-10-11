@@ -13,7 +13,7 @@
 # in a tiny space (just over 31kB). One of this features is detecting         #
 # possible virusses. This detection code is "hooked" into the interrupt-chain #
 # and therefore has it's own relocations which are not related to the main    #
-# loader image. For this reason, when the main source 'air-boot.asm' is       #
+# loader image. For this reason, when the main source 'airboot.asm' is        #
 # assembled to a RAW image, this virus-protection code is "embedded" as the   #
 # last step. You could compare this to binding a resource-file to an OS/2     #
 # executable.                                                                 #
@@ -25,8 +25,8 @@
 # - Assembling the virus-detection code, 'mbrprot.asm', which always results  #
 #   in a 1024 bytes image.                                                    #
 # - Compiling the 'fixcode' program that does the actual embedding.           #
-# - Running the 'fixcode' program against 'air-boot.com' creating the         #
-#	final 'airboot.bin' image.                                                #
+# - Running the 'fixcode' program against 'airboot.com' creating the          #
+#   final 'airboot.bin' image.                                                #
 #                                                                             #
 # After these operations have been completed, the 'airboot.bin' image         #
 # is ready to be installed.                                                   #
@@ -70,7 +70,7 @@ MAX_DEBUG_LEVEL=2
 # Source Level base-name of Target to build.
 # The various language versions are created by replacing TXT-files
 # and reassembling this file.
-BASENAME=air-boot
+BASENAME=airboot
 
 # When you are developing, you might want to do that using your own language.
 # Using 'wmake dev' will built a module called 'airboot.bin' with this language
@@ -484,7 +484,7 @@ $(TARGET): .MULTIPLE Makefile.bu $(BASENAME).com
 
 
 # -----------------------------------------------------------------------------
-# INTERMEDIATE 'air-boot.com' IMAGE
+# INTERMEDIATE 'airboot.com' IMAGE
 # -----------------------------------------------------------------------------
 # This is an intermediate image without embedded MBR-protection and code count.
 # It needs to be post-processed with 'fixboot'.
@@ -501,9 +501,9 @@ $(BASENAME).com: .MULTIPLE $(BASENAME).obj
 
 
 # -----------------------------------------------------------------------------
-# INTERMEDIATE 'air-boot.obj' OBJECT MODULE
+# INTERMEDIATE 'airboot.obj' OBJECT MODULE
 # -----------------------------------------------------------------------------
-# This is the result of assembling 'air-boot.asm'.
+# This is the result of assembling 'airboot.asm'.
 # It is assembled back twice with 'wdis' for cross reference.
 # - once as an (almost) assemblable source-file
 # - once as a disassembly with opcodes in it
@@ -562,7 +562,7 @@ dev: .SYMBOLIC
 !endif
 !ifdef __LINUX__
 	@echo.
-	@if exist air-boot.lst @grep ^zzz_code_space air-boot.lst
+	@if exist air-boot.lst @grep ^zzz_code_space airboot.lst
 	@echo.
 	@cat airboot.md5
 	@md5sum $(TARGET) > airboot.md5
