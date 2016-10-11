@@ -323,14 +323,21 @@ ENDIF
 SETUP_MenuTask                  EndP
 
 
+; Initial bg-colors on setup-items -- revert to item-bg when cursor moved
+CLR_MENU_WINDOW_CLASSIC = 0e01h
+CLR_MENU_WINDOW_BM      = 0e01h
+CLR_MENU_WINDOW_TB      = 0e08h
+IFDEF TESTBUILD
+CLR_MENU_WINDOW = CLR_MENU_WINDOW_TB
+ELSE
+CLR_MENU_WINDOW = CLR_MENU_WINDOW_BM
+ENDIF
 
-CLR_MENU_WINDOW_CLASSIC    = 0e01h
-CLR_MENU_WINDOW_BM   = 0e01h
 ;        In: BP - Pointer to Menu
 ;       Out: DH - Active Item on Screen
 SETUP_DrawMenuOnScreen          Proc Near
    call    SETUP_DrawMenuWindow
-   mov     cx, CLR_MENU_WINDOW_BM
+   mov     cx, CLR_MENU_WINDOW
    call    VideoIO_Color
    xor     ch, ch
   SDMOS_Loop:
@@ -357,14 +364,20 @@ SETUP_FillUpItemPacks           Proc Near Uses cx
 SETUP_FillUpItemPacks           EndP
 
 
-
 CLR_SELECTED_ITEM_CLASSIC  = 0f04h
-CLR_SELECTED_ITEM_BM = 0f04h
+CLR_SELECTED_ITEM_BM       = 0f04h
+CLR_SELECTED_ITEM_TB       = 0f04h
+IFDEF TESTBUILD
+CLR_SELECTED_ITEM = CLR_SELECTED_ITEM_TB
+ELSE
+CLR_SELECTED_ITEM = CLR_SELECTED_ITEM_BM
+ENDIF
+
 ; Displays selected Item on screen
 ;        In: DH - Active Item
 ; Destroyed: None
 SETUP_DrawSelectItem            Proc Near Uses cx
-   mov     cx, CLR_SELECTED_ITEM_BM
+   mov     cx, CLR_SELECTED_ITEM
    call    VideoIO_Color
    mov     ch, dh
    call    SETUP_DrawItemOnScreen
@@ -372,13 +385,20 @@ SETUP_DrawSelectItem            Proc Near Uses cx
 SETUP_DrawSelectItem            EndP
 
 
-CLR_DESELECTED_ITEM_CLASSIC  = 0e01h
-CLR_DESELECTED_ITEM_BM  = 0e01h
+CLR_DESELECTED_ITEM_CLASSIC   = 0e01h
+CLR_DESELECTED_ITEM_BM        = 0e01h
+CLR_DESELECTED_ITEM_TB        = 0e08h
+IFDEF TESTBUILD
+CLR_DESELECTED_ITEM = CLR_DESELECTED_ITEM_TB
+ELSE
+CLR_DESELECTED_ITEM = CLR_DESELECTED_ITEM_BM
+ENDIF
+
 ; Display last-selected Item on screen (De-Select)
 ;        In: DL - Active Item
 ; Destroyed: None
 SETUP_DrawDeSelectItem          Proc Near Uses cx
-   mov     cx, CLR_DESELECTED_ITEM_BM
+   mov     cx, CLR_DESELECTED_ITEM
    call    VideoIO_Color
    mov     ch, dl
    call    SETUP_DrawItemOnScreen
@@ -440,10 +460,17 @@ SETUP_DrawItemOnScreen          Proc Near   Uses ax cx dx si es
         SDIOS_ItemPack_NoFixUpItemPack:
          call    VideoIO_Locate
 
-CLR_ITEM_PACK_CLASSIC   = 0f01h
-CLR_ITEM_PACK_BM  = 0f01h
 
-         mov     cx, CLR_ITEM_PACK_BM
+CLR_ITEM_PACK_CLASSIC   = 0f01h
+CLR_ITEM_PACK_BM        = 0f01h
+CLR_ITEM_PACK_TB        = 0f08h
+IFDEF TESTBUILD
+CLR_ITEM_PACK = CLR_ITEM_PACK_TB
+ELSE
+CLR_ITEM_PACK = CLR_ITEM_PACK_BM
+ENDIF
+
+         mov     cx, CLR_ITEM_PACK
          call    VideoIO_Color           ; White on blue background
          mov     si, ds:[si+LocMENU_ItemNamePtr] ; SI - Name of Item
          or      si, si
@@ -495,10 +522,17 @@ SETUP_FillUpItemPack_Now        Proc Near Uses ax bx si
    ret
 SETUP_FillUpItemPack_Now        EndP
 
-
+CLR_SETUP_WINDOW_CLASSIC   = 0f01h
+CLR_SETUP_WINDOW_BM        = 0901h
+CLR_SETUP_WINDOW_TB        = 0908h
+IFDEF TESTBUILD
+CLR_SETUP_WINDOW = CLR_SETUP_WINDOW_TB
+ELSE
+CLR_SETUP_WINDOW = CLR_SETUP_WINDOW_BM
+ENDIF
 
 SETUP_DrawMenuWindow            Proc Near   Uses es
-   mov     cx, 0901h
+   mov     cx, CLR_SETUP_WINDOW
    call    VideoIO_Color
    mov     bx, 0401h
    mov     dx, 0E50h
@@ -626,11 +660,22 @@ SETUP_DrawMenuBase              Proc Near
    ret
 SETUP_DrawMenuBase              EndP
 
+
+; F10-SETUP Help Directions
+CLR_SETUP_HELP_CLASSIC   = 0f01h
+CLR_SETUP_HELP_BM        = 0f01h
+CLR_SETUP_HELP_TB        = 0f08h
+IFDEF TESTBUILD
+CLR_SETUP_HELP = CLR_SETUP_HELP_TB
+ELSE
+CLR_SETUP_HELP = CLR_SETUP_HELP_BM
+ENDIF
+
 ; Zeichnet die MenÅ Hilfe aufn Bildschirm
 ;        In: SI - Pointer to 4 HelpStrings...
 ; Destroyed: None
 SETUP_DrawMenuHelp              Proc Near   Uses cx si
-   mov     cx, 0F01h
+   mov     cx, CLR_SETUP_HELP
    call    VideoIO_Color
    mov     cx, 0F05h
    call    VideoIO_Locate
@@ -892,7 +937,7 @@ SETUP_LetEnterPassword          Proc Near   Uses bx cx dx si es di
    pop     ax
    cmp     ax, 0ABABh                    ; Magic Processing...
    je      SLEP_MagicLayOut
-   mov     cx, 0D05h
+   mov     cx, 0D05h                     ; Password Dialog
    call    VideoIO_Color
 
    call    GetLenOfString                ; CX - Len of Error Message
@@ -907,7 +952,7 @@ SETUP_LetEnterPassword          Proc Near   Uses bx cx dx si es di
    add     dl, cl
    dec     dl                            ; Size window to match given string...
    call    VideoIO_MakeWindow
-   mov     cx, 0F05h
+   mov     cx, 0F05h                     ; Password EntryField Label
    call    VideoIO_Color
 
    mov     ch, 0Dh
@@ -915,14 +960,14 @@ SETUP_LetEnterPassword          Proc Near   Uses bx cx dx si es di
    add     cl, 3
    call    VideoIO_Locate
    call    VideoIO_Print                 ; Uses given string 'Define or Verify'
-   mov     cx, 0E05h
+   mov     cx, 0E05h                     ; Password EntryField
    call    VideoIO_Color
    mov     word ptr [EnterPwd_Location], 0E26h
    mov     word ptr [EnterPwd_DefinePwd], 1
    jmp     SLEP_JumpToInputProcess
 
   SLEP_MagicLayOut:
-   mov     cx, 0C04h
+   mov     cx, 0C04h                      ; Only used for different (unused) layout (ABAB)
    call    VideoIO_Color
 
    call    GetLenOfString                 ; CX - Len of Error Message

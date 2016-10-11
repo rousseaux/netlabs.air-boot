@@ -24,6 +24,8 @@ DB 'APM',0
 ENDIF
 
 ; Here is APM Code to turn off the computer
+; Does not work on all BIOSes
+; http://stackoverflow.com/questions/678458/shutdown-the-computer-using-assembly
 
 APM_TurnOffComputer            Proc Near  Uses ax bx cx
    mov     ax, 5301h

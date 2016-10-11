@@ -203,6 +203,16 @@ PARTSETUP_IsType35      Proc    Near
 PARTSETUP_IsType35      EndP
 
 
+
+CLR_SETUP_PARTITION_LABELS_CLASSIC  = 0b01h
+CLR_SETUP_PARTITION_LABELS_BM       = 0b01h
+CLR_SETUP_PARTITION_LABELS_TB       = 0b08h
+IFDEF TESTBUILD
+CLR_SETUP_PARTITION_LABELS = CLR_SETUP_PARTITION_LABELS_TB
+ELSE
+CLR_SETUP_PARTITION_LABELS = CLR_SETUP_PARTITION_LABELS_BM
+ENDIF
+
 ; Draw all standard-things for Partition Setup, dynamic content not included.
 PARTSETUP_DrawMenuBase          Proc Near   Uses dx
    call    SETUP_DrawMenuWindow          ; Standard Windows
@@ -243,7 +253,7 @@ PARTSETUP_DrawMenuBase          Proc Near   Uses dx
    mov     cl, 9
    call    VideoIO_Internal_MakeWinDown
 
-   mov     cx, 0B01h
+   mov     cx, CLR_SETUP_PARTITION_LABELS   ; F10-SETUP-PARTITION-SETUP labels bg
    call    VideoIO_Color
 
    ; ------------------------------------- 1st Part
@@ -306,7 +316,11 @@ PARTSETUP_RefreshPartitions     Proc Near   Uses cx dx
    dec     dh
    jnz     PSRP_Loop
    ; At last calculate Scroll-Markers
+IFDEF TESTBUILD
+   mov     cx, 0908h
+ELSE
    mov     cx, 0901h
+ENDIF
    call    VideoIO_Color
    mov     cx, 0603h                     ; 6, 3
    mov     dl, PartSetup_UpperPart
@@ -387,7 +401,11 @@ PARTSETUP_DrawPartitionInfo     Proc Near   Uses ax bx cx dx si
    ; Display "No Hd" field aka "01/01"
    call    VideoIO_Locate
    push    cx
+IFDEF TESTBUILD
+      mov     cx, 0F08h
+ELSE
       mov     cx, 0F01h
+ENDIF
       call    VideoIO_Color              ; Bright White, Blue
    pop     cx
    mov     al, NoOfPart
@@ -403,7 +421,11 @@ PARTSETUP_DrawPartitionInfo     Proc Near   Uses ax bx cx dx si
    add     cl, 7
    call    VideoIO_Locate
    push    cx
+IFDEF TESTBUILD
+      mov     cx, 0E08h
+ELSE
       mov     cx, 0E01h
+ENDIF
       call    VideoIO_Color              ; Yellow, Blue
       push    si
          add     si, LocIPT_Name
@@ -442,7 +464,11 @@ PARTSETUP_DrawPartitionInfo     Proc Near   Uses ax bx cx dx si
    add     cl, 7
    call    VideoIO_Locate
    push    cx
+IFDEF TESTBUILD
+      mov     cx, 0C08h
+ELSE
       mov     cx, 0C01h
+ENDIF
       call    VideoIO_Color              ; Bright Red, Blue
    pop     cx
    mov     al, [si+LocIPT_SystemID]
@@ -456,7 +482,11 @@ PARTSETUP_DrawPartitionInfo     EndP
 ;            BL - ==0 -> Flag not set, =!0 -> Flag set
 ; Destroyed: None
 PARTSETUP_DrawOneFlag           Proc Near   Uses cx
+IFDEF TESTBUILD
+   mov     cx, 0A08h                     ; Bright Green
+ELSE
    mov     cx, 0A01h                     ; Bright Green
+ENDIF
    or      bl, bl
    jnz     PSDOF_FlagSet
    mov     ch, 09h                       ; Bright Blue
@@ -465,6 +495,16 @@ PARTSETUP_DrawOneFlag           Proc Near   Uses cx
    call    VideoIO_PrintSingleChar
    ret
 PARTSETUP_DrawOneFlag           EndP
+
+; F10-SETUP
+CLR_SETUP_SELECTION_BAR_CLASSIC  = 10h
+CLR_SETUP_SELECTION_BAR_BM       = 10h
+CLR_SETUP_SELECTION_BAR_TB       = 80h
+IFDEF TESTBUILD
+CLR_SETUP_SELECTION_BAR = CLR_SETUP_SELECTION_BAR_TB
+ELSE
+CLR_SETUP_SELECTION_BAR = CLR_SETUP_SELECTION_BAR_BM
+ENDIF
 
 ;        In: DL - Current Active (to be inactivated)
 ;            DH - New Active (to be activated)
@@ -476,7 +516,7 @@ PARTSETUP_BuildChoiceBar        Proc Near
   PSBCB_SkipRetrace:
 
    ; Deactivate current active bar
-   mov     cl, 10h
+   mov     cl, CLR_SETUP_SELECTION_BAR
    call    PARTSETUP_ReColorPart
 
    ; Running Fixing
@@ -512,7 +552,7 @@ PARTSETUP_BuildChoiceBar        Proc Near
   PSBCB_NoScrolling:
 
    ; Activate fresh active bar
-   mov     cl, 40h
+   mov     cl, 40h                       ; F10-SETUP SelectionBar Active bg
    call    PARTSETUP_ReColorPart
    ; Now DL==DH
    ret
@@ -622,7 +662,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
     ;
     ; BOOKMARK: LVM Label Manipulations
     ;
-    
+
     ; ------------------------------------------------------------[LVM CHECK]---
     ; Load LVM-Sector here and seek to PartitionName
     ; Set CurPartition_Location information of destination partition
@@ -982,10 +1022,18 @@ PARTHIDESETUP_Main              EndP
 PARTHIDESETUP_DrawMenuBase      Proc Near   Uses dx
    ; PartSetup_HiddenX1
 
-CLR_PART_HIDE_WINDOW_BASE_CLASSIC   = 0d05h
-CLR_PART_HIDE_WINDOW_BASE_BM   = 0a02h
 
-   mov     cx, CLR_PART_HIDE_WINDOW_BASE_BM                    ; Lila on lila
+
+CLR_PART_HIDE_WINDOW_BASE_CLASSIC  = 0d05h
+CLR_PART_HIDE_WINDOW_BASE_BM       = 0a02h
+CLR_PART_HIDE_WINDOW_BASE_TB       = 0a02h
+IFDEF TESTBUILD
+CLR_PART_HIDE_WINDOW_BASE = CLR_PART_HIDE_WINDOW_BASE_TB
+ELSE
+CLR_PART_HIDE_WINDOW_BASE = CLR_PART_HIDE_WINDOW_BASE_BM
+ENDIF
+
+   mov     cx, CLR_PART_HIDE_WINDOW_BASE                    ; Lila on lila
    call    VideoIO_Color
    mov     bh, 05h
    mov     bl, [PartSetup_HiddenX]
@@ -1003,23 +1051,40 @@ CLR_PART_HIDE_WINDOW_BASE_BM   = 0a02h
    mov     al, 'µ'
    call    VideoIO_PrintSingleChar
 
-CLR_PART_HIDE_WINDOW_LABEL_CLASSIC = 0e05h
-CLR_PART_HIDE_WINDOW_LABEL_BM = 0e02h
 
-   mov     cx, CLR_PART_HIDE_WINDOW_LABEL_BM                     ; Yellow on Lila
+
+CLR_PART_HIDE_WINDOW_LABEL_CLASSIC  = 0e05h
+CLR_PART_HIDE_WINDOW_LABEL_BM       = 0e02h
+CLR_PART_HIDE_WINDOW_LABEL_TB       = 0e02h
+IFDEF TESTBUILD
+CLR_PART_HIDE_WINDOW_LABEL = CLR_PART_HIDE_WINDOW_LABEL_TB
+ELSE
+CLR_PART_HIDE_WINDOW_LABEL = CLR_PART_HIDE_WINDOW_LABEL_BM
+ENDIF
+
+   mov     cx, CLR_PART_HIDE_WINDOW_LABEL                     ; Yellow on Lila
    call    VideoIO_Color
    mov     si, offset TXT_SETUP_HideFeature
    call    VideoIO_Print
 
+
+
 CLR_PART_HIDE_WINDOW_BORDER_CLASSIC = 0d05h
-CLR_PART_HIDE_WINDOW_BORDER_BM = 0d02h
+CLR_PART_HIDE_WINDOW_BORDER_BM      = 0d02h
+CLR_PART_HIDE_WINDOW_BORDER_TB      = 0d02h
+IFDEF TESTBUILD
+CLR_PART_HIDE_WINDOW_BORDER = CLR_PART_HIDE_WINDOW_BORDER_TB
+ELSE
+CLR_PART_HIDE_WINDOW_BORDER = CLR_PART_HIDE_WINDOW_BORDER_BM
+ENDIF
 
-
-   mov     cx, CLR_PART_HIDE_WINDOW_BORDER_BM                     ; Lila on lila
+   mov     cx, CLR_PART_HIDE_WINDOW_BASE                     ; Lila on lila
    call    VideoIO_Color
    mov     al, 'Æ'
    call    VideoIO_PrintSingleChar
    ; --- Make Window-Footer - "State when booting..." at bottom right frame-line
+   mov     cx, CLR_PART_HIDE_WINDOW_BORDER                     ; Lila on lila
+   call    VideoIO_Color
    mov     dh, 10h
    mov     dl, [PartSetup_HiddenX]
    add     dl, 25h
@@ -1073,10 +1138,18 @@ CLR_PART_HIDE_WINDOW_BORDER_BM = 0d02h
 
    ; --- Make ':' Line down
 
-CLR_PART_HIDE_MENU_BASE_CLASSIC  = 0f05h
-CLR_PART_HIDE_MENU_BASE_BM  = 0f02h
 
-   mov     cx, CLR_PART_HIDE_MENU_BASE_BM                     ; Yellow on Lila
+
+CLR_PART_HIDE_MENU_BASE_CLASSIC = 0f05h
+CLR_PART_HIDE_MENU_BASE_BM      = 0f02h
+CLR_PART_HIDE_MENU_BASE_TB      = 0f02h
+IFDEF TESTBUILD
+CLR_PART_HIDE_MENU_BASE = CLR_PART_HIDE_MENU_BASE_TB
+ELSE
+CLR_PART_HIDE_MENU_BASE = CLR_PART_HIDE_MENU_BASE_BM
+ENDIF
+
+   mov     cx, CLR_PART_HIDE_MENU_BASE                     ; Yellow on Lila
    call    VideoIO_Color
    mov     ch, 07h
    mov     cl, PartSetup_HiddenX
@@ -1099,11 +1172,19 @@ PARTHIDESETUP_RefreshPartitions Proc Near   Uses dx
    dec     dh
    jnz     PHSRP_Loop
 
+
+
 CLR_PART_HIDE_MENU_MARKERS_CLASSIC = 0d05h
-CLR_PART_HIDE_MENU_MARKERS_BM = 0a02h
+CLR_PART_HIDE_MENU_MARKERS_BM      = 0a02h
+CLR_PART_HIDE_MENU_MARKERS_TB      = 0a02h
+IFDEF TESTBUILD
+CLR_PART_HIDE_MENU_MARKERS = CLR_PART_HIDE_MENU_MARKERS_TB
+ELSE
+CLR_PART_HIDE_MENU_MARKERS = CLR_PART_HIDE_MENU_MARKERS_BM
+ENDIF
 
    ; At last calculate Scroll-Markers
-   mov     cx, CLR_PART_HIDE_MENU_MARKERS_BM                     ; Lila on lila                          ; Hide Feature Markers
+   mov     cx, CLR_PART_HIDE_MENU_MARKERS                     ; Lila on lila                          ; Hide Feature Markers
    call    VideoIO_Color
    mov     cx, 0603h                     ; 6, +3
    add     cl, [PartSetup_HiddenX]
@@ -1149,10 +1230,18 @@ PARTHIDESETUP_DrawPartitionInfo Proc Near   Uses dx
    push    cx
       ; Display "Label" field aka "OS2" without ending NULs/Spaces
 
-CLR_PART_HIDE_LABEL_CLASSIC   = 0f05h
-CLR_PART_HIDE_LABEL_BM = 0f02h
 
-      mov     cx, CLR_PART_HIDE_LABEL_BM
+
+CLR_PART_HIDE_LABEL_CLASSIC   = 0f05h
+CLR_PART_HIDE_LABEL_BM        = 0f02h
+CLR_PART_HIDE_LABEL_TB        = 0f02h
+IFDEF TESTBUILD
+CLR_PART_HIDE_LABEL = CLR_PART_HIDE_LABEL_TB
+ELSE
+CLR_PART_HIDE_LABEL = CLR_PART_HIDE_LABEL_BM
+ENDIF
+
+      mov     cx, CLR_PART_HIDE_LABEL
       call    VideoIO_Color              ; Bright White on Lila
       push    si
          add     si, LocIPT_Name
@@ -1161,10 +1250,18 @@ CLR_PART_HIDE_LABEL_BM = 0f02h
          call    VideoIO_FixedPrint
       pop     si
 
-CLR_PART_HIDE_WINDOW_FS_CLASSIC   = 0d05h
-CLR_PART_HIDE_WINDOW_FS_BM = 0a02h
 
-      mov     cx, CLR_PART_HIDE_WINDOW_FS_BM
+
+CLR_PART_HIDE_WINDOW_FS_CLASSIC  = 0d05h
+CLR_PART_HIDE_WINDOW_FS_BM       = 0a02h
+CLR_PART_HIDE_WINDOW_FS_TB       = 0a02h
+IFDEF TESTBUILD
+CLR_PART_HIDE_WINDOW_FS = CLR_PART_HIDE_WINDOW_FS_TB
+ELSE
+CLR_PART_HIDE_WINDOW_FS = CLR_PART_HIDE_WINDOW_FS_BM
+ENDIF
+
+      mov     cx, CLR_PART_HIDE_WINDOW_FS
       call    VideoIO_Color              ; Bright Lila on Lila
       mov     al, ' '
       call    VideoIO_PrintSingleChar
@@ -1186,10 +1283,18 @@ CLR_PART_HIDE_WINDOW_FS_BM = 0a02h
    call    VideoIO_Locate
    push    cx
 
-CLR_PART_HIDE_WINDOW_CHOISES_CLASSIC   = 0e05h
-CLR_PART_HIDE_WINDOW_CHOISES_BM   = 0e02h
 
-      mov     cx, CLR_PART_HIDE_WINDOW_CHOISES_BM
+
+CLR_PART_HIDE_WINDOW_CHOISES_CLASSIC   = 0e05h
+CLR_PART_HIDE_WINDOW_CHOISES_BM        = 0e02h
+CLR_PART_HIDE_WINDOW_CHOISES_TB        = 0e02h
+IFDEF TESTBUILD
+CLR_PART_HIDE_WINDOW_CHOISES = CLR_PART_HIDE_WINDOW_CHOISES_TB
+ELSE
+CLR_PART_HIDE_WINDOW_CHOISES = CLR_PART_HIDE_WINDOW_CHOISES_BM
+ENDIF
+
+      mov     cx, CLR_PART_HIDE_WINDOW_CHOISES
       call    VideoIO_Color              ; Yellow on Lila
       mov     al, ' '
       mov     cl, 10
@@ -1221,11 +1326,19 @@ PARTHIDESETUP_BuildChoiceBar    Proc Near
    call    VideoIO_WaitRetrace
   PHSBCB_SkipRetrace:
 
+
+
 CLR_PART_HIDE_WINDOW_MENU_BAR_CLASSIC  = 5eh
-CLR_PART_HIDE_WINDOW_MENU_BAR_BM = 2eh
+CLR_PART_HIDE_WINDOW_MENU_BAR_BM       = 2eh
+CLR_PART_HIDE_WINDOW_MENU_BAR_TB       = 2eh
+IFDEF TESTBUILD
+CLR_PART_HIDE_WINDOW_MENU_BAR = CLR_PART_HIDE_WINDOW_MENU_BAR_TB
+ELSE
+CLR_PART_HIDE_WINDOW_MENU_BAR = CLR_PART_HIDE_WINDOW_MENU_BAR_BM
+ENDIF
 
    ; Deactivate current active bar
-   mov     cl, CLR_PART_HIDE_WINDOW_MENU_BAR_BM                       ; Yellow on Lila
+   mov     cl, CLR_PART_HIDE_WINDOW_MENU_BAR                       ; Yellow on Lila
    call    PARTHIDESETUP_ReColorPart
 
    ; Running Fixing
@@ -1258,12 +1371,19 @@ CLR_PART_HIDE_WINDOW_MENU_BAR_BM = 2eh
    call    PARTHIDESETUP_RefreshPartitions
   PHSBCB_NoScrolling:
 
-   ; Activate fresh active bar
 
+
+; Activate fresh active bar
 CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR_CLASSIC = 1fh
-CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR_BM   = 1fh
+CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR_BM      = 1fh
+CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR_TB      = 1fh
+IFDEF TESTBUILD
+CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR = CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR_TB
+ELSE
+CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR = CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR_BM
+ENDIF
 
-   mov     cl, CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR_BM                       ; Bright White on Blue
+   mov     cl, CLR_PART_HIDE_WINDOW_MENU_ACTIVE_BAR                       ; Bright White on Blue
    call    PARTHIDESETUP_ReColorPart
    ; Now DL==DH
    ret
@@ -1628,12 +1748,19 @@ PARTSETUPDL_DrawMenuBase        Proc Near   Uses dx si
   PSDLDMB_FirstStep:
    mov     PartSetup_HiddenX, al
 
-   ; Draw base-window
 
-CLR_PART_DL_XX_CLASSIC = 0d05h
-CLR_PART_DL_XX_BM = 0a02h
 
-   mov     cx, CLR_PART_DL_XX_BM                     ; Lila on lila
+; Draw base-window
+CLR_PART_DL_XX_CLASSIC  = 0d05h
+CLR_PART_DL_XX_BM       = 0a02h
+CLR_PART_DL_XX_TB       = 0a02h
+IFDEF TESTBUILD
+CLR_PART_DL_XX = CLR_PART_DL_XX_TB
+ELSE
+CLR_PART_DL_XX = CLR_PART_DL_XX_BM
+ENDIF
+
+   mov     cx, CLR_PART_DL_XX                     ; Lila on lila
    call    VideoIO_Color
    mov     bh, 06h
    mov     bl, [PartSetup_HiddenX]
@@ -1651,18 +1778,34 @@ CLR_PART_DL_XX_BM = 0a02h
       mov     al, 'µ'
       call    VideoIO_PrintSingleChar
 
-CLR_PART_DL_WINDOW_TITLE_CLASSIC  = 0e05h
-CLR_PART_DL_WINDOW_TITLE_BM  = 0e02h
 
-      mov     cx, CLR_PART_DL_WINDOW_TITLE_BM                  ; Yellow on Lila
+
+CLR_PART_DL_WINDOW_TITLE_CLASSIC = 0e05h
+CLR_PART_DL_WINDOW_TITLE_BM      = 0e02h
+CLR_PART_DL_WINDOW_TITLE_TB      = 0e02h
+IFDEF TESTBUILD
+CLR_PART_DL_WINDOW_TITLE = CLR_PART_DL_WINDOW_TITLE_TB
+ELSE
+CLR_PART_DL_WINDOW_TITLE = CLR_PART_DL_WINDOW_TITLE_BM
+ENDIF
+
+      mov     cx, CLR_PART_DL_WINDOW_TITLE                  ; Yellow on Lila
       call    VideoIO_Color
       mov     si, offset TXT_SETUP_DriveLetter
       call    VideoIO_Print
 
-CLR_PART_DL_WINDOW_BORDER2_CLASSIC  = 0d05h
-CLR_PART_DL_WINDOW_BORDER2_BM  = 0a02h
 
-      mov     cx, CLR_PART_DL_WINDOW_BORDER2_BM                 ; Lila on lila
+
+CLR_PART_DL_WINDOW_BORDER2_CLASSIC  = 0d05h
+CLR_PART_DL_WINDOW_BORDER2_BM       = 0a02h
+CLR_PART_DL_WINDOW_BORDER2_TB       = 0a02h
+IFDEF TESTBUILD
+CLR_PART_DL_WINDOW_BORDER2 = CLR_PART_DL_WINDOW_BORDER2_TB
+ELSE
+CLR_PART_DL_WINDOW_BORDER2 = CLR_PART_DL_WINDOW_BORDER2_BM
+ENDIF
+
+      mov     cx, CLR_PART_DL_WINDOW_BORDER2                 ; Lila on lila
       call    VideoIO_Color
       mov     al, 'Æ'
       call    VideoIO_PrintSingleChar
@@ -1670,11 +1813,18 @@ CLR_PART_DL_WINDOW_BORDER2_BM  = 0a02h
    ; Display help-information
    mov     si, offset TXT_SETUPHELP_DriveLetter
 
-CLR_PART_DL_SETUP_HELP_CLASSIC = 0d05h
-CLR_PART_DL_SETUP_HELP_BM = 0a02h
 
 
-   mov     cx, CLR_PART_DL_SETUP_HELP_BM                     ; Lila on lila
+CLR_PART_DL_SETUP_HELP_CLASSIC   = 0d05h
+CLR_PART_DL_SETUP_HELP_BM        = 0a02h
+CLR_PART_DL_SETUP_HELP_TB        = 0a02h
+IFDEF TESTBUILD
+CLR_PART_DL_SETUP_HELP = CLR_PART_DL_SETUP_HELP_TB
+ELSE
+CLR_PART_DL_SETUP_HELP = CLR_PART_DL_SETUP_HELP_BM
+ENDIF
+
+   mov     cx, CLR_PART_DL_SETUP_HELP                     ; Lila on lila
    call    VideoIO_Color
 
    call    GetLenOfString                ; CX - Len of string

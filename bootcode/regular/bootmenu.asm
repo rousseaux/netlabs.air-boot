@@ -47,11 +47,19 @@ BOOTMENU_BuildMain              Proc Near   Uses es di
    mov     si, offset Copyright
    call    VideoIO_Print                 ; Print Copyright Line...
 
-   ; Boot-Window...
-CLR_BOOT_WINDOW_CLASSIC    = 0901h
-CLR_BOOT_WINDOW_BM         = 0701h
 
-   mov     cx, CLR_BOOT_WINDOW_BM
+
+; Boot-Window... -- background color -- still need to adjust item-bg
+CLR_BOOT_WINDOW_CLASSIC = 0901h
+CLR_BOOT_WINDOW_BM      = 0701h
+CLR_BOOT_WINDOW_TB      = 0708h
+IFDEF TESTBUILD
+CLR_BOOT_WINDOW = CLR_BOOT_WINDOW_TB
+ELSE
+CLR_BOOT_WINDOW = CLR_BOOT_WINDOW_BM
+ENDIF
+
+   mov     cx, CLR_BOOT_WINDOW
    call    VideoIO_Color
    mov     bx, 0201h
    mov     dx, 0550h
@@ -71,12 +79,19 @@ CLR_BOOT_WINDOW_BM         = 0701h
   BMBM_NoDetailed1:
    mov     Menu_AbsoluteX, dl
 
-   ; Display Top-Infos (labels) in Boot-Window
 
-CLR_TOP_INFOS_CLASSIC    = 0b01h
-CLR_TOP_INFOS_BM  = 0301h
 
-   mov     cx, CLR_TOP_INFOS_BM
+; Display Top-Infos (labels) in Boot-Window
+CLR_TOP_INFOS_CLASSIC = 0b01h
+CLR_TOP_INFOS_BM      = 0301h
+CLR_TOP_INFOS_TB      = 0308h
+IFDEF TESTBUILD
+CLR_TOP_INFOS = CLR_TOP_INFOS_TB
+ELSE
+CLR_TOP_INFOS = CLR_TOP_INFOS_BM
+ENDIF
+
+   mov     cx, CLR_TOP_INFOS
    call    VideoIO_Color
    mov     ch, 03h
    mov     cl, dl
@@ -103,11 +118,19 @@ CLR_TOP_INFOS_BM  = 0301h
    mov     si, offset TXT_TopInfos_Type
    call    VideoIO_Print
 
-   ; Now make the separating vertical lines...
-CLR_SEP_VERT_LINES_CLASSIC    = 0901h
-CLR_SEP_VERT_LINES_BM   = 0701h
 
-   mov     cx, CLR_SEP_VERT_LINES_BM
+
+; Now make the separating vertical lines...
+CLR_SEP_VERT_LINES_CLASSIC  = 0901h
+CLR_SEP_VERT_LINES_BM       = 0701h
+CLR_SEP_VERT_LINES_TB       = 0708h
+IFDEF TESTBUILD
+CLR_SEP_VERT_LINES = CLR_SEP_VERT_LINES_TB
+ELSE
+CLR_SEP_VERT_LINES = CLR_SEP_VERT_LINES_BM
+ENDIF
+
+   mov     cx, CLR_SEP_VERT_LINES
    call    VideoIO_Color
    mov     ch, 03h
    mov     cl, Menu_AbsoluteX
@@ -173,21 +196,18 @@ CLR_SEP_VERT_LINES_BM   = 0701h
    call    BOOTMENU_RefreshPartitionText
    ; Boot-Window is DONE
 
-; Rousseau: = Colors =
-; FG
-; BG
-; 7 = grey
-; 6 = brown
-; 5 = magenta
-; 4 = red
-; 3 = cyan
-; 2 = green
-; 1 = blue
 
-CLR_INFO_WINDOW_CLASSIC    = 0c04h
-CLR_INFO_WINDOW_BM   = 0701h
 
-   mov     cx, CLR_INFO_WINDOW_BM
+CLR_INFO_WINDOW_CLASSIC = 0c04h
+CLR_INFO_WINDOW_BM      = 0701h
+CLR_INFO_WINDOW_TB      = 0708h
+IFDEF TESTBUILD
+CLR_INFO_WINDOW = CLR_INFO_WINDOW_TB
+ELSE
+CLR_INFO_WINDOW = CLR_INFO_WINDOW_BM
+ENDIF
+
+   mov     cx, CLR_INFO_WINDOW
    ;mov     cx, 0C06h ; brown, main background
    call    VideoIO_Color                    ; Color info window
 
@@ -206,10 +226,18 @@ CLR_INFO_WINDOW_BM   = 0701h
    mov     cx, 1703h
    call    VideoIO_Locate
 
-CLR_INFO_TEXT_CLASSIC   = 0f04h
-CLR_INFO_TEXT_BM   = 0701h
 
-   mov     cx, CLR_INFO_TEXT_BM             ; Info text
+
+CLR_INFO_TEXT_CLASSIC = 0f04h
+CLR_INFO_TEXT_BM      = 0701h
+CLR_INFO_TEXT_TB      = 0708h
+IFDEF TESTBUILD
+CLR_INFO_TEXT = CLR_INFO_TEXT_TB
+ELSE
+CLR_INFO_TEXT = CLR_INFO_TEXT_BM
+ENDIF
+
+   mov     cx, CLR_INFO_TEXT            ; Info text
    call    VideoIO_Color                    ; Color info text
 
    mov     si, offset TXT_BootMenuHelpText1
@@ -220,10 +248,17 @@ CLR_INFO_TEXT_BM   = 0701h
    call    VideoIO_Print
 
 
+
 CLR_F10_SETUP_CLASSIC   = 0c04h
 CLR_F10_SETUP_BM        = 0901h
+CLR_F10_SETUP_TB        = 0908h
+IFDEF TESTBUILD
+CLR_F10_SETUP = CLR_F10_SETUP_TB
+ELSE
+CLR_F10_SETUP = CLR_F10_SETUP_BM
+ENDIF
 
-   mov     cx, CLR_F10_SETUP_BM                            ; background F10 enter Setup
+   mov     cx, CLR_F10_SETUP                            ; background F10 enter Setup
    call    VideoIO_Color
 
    ; Additional message how to power off system
@@ -273,10 +308,18 @@ BOOTMENU_BuildGoodBye           Proc Near   Uses es di
    rep     stosw
    ; -------------------------------------------
 
-CLR_GOODBYE_WINDOW_CLASSIC = 0d05h
-CLR_GOODBYE_WINDOW_BM   = 0f01h
 
-   mov     cx, CLR_GOODBYE_WINDOW_BM
+
+CLR_GOODBYE_WINDOW_CLASSIC  = 0d05h
+CLR_GOODBYE_WINDOW_BM       = 0f01h
+CLR_GOODBYE_WINDOW_TB       = 0f01h
+IFDEF TESTBUILD
+CLR_GOODBYE_WINDOW = CLR_GOODBYE_WINDOW_TB
+ELSE
+CLR_GOODBYE_WINDOW = CLR_GOODBYE_WINDOW_BM
+ENDIF
+
+   mov     cx, CLR_GOODBYE_WINDOW
    call    VideoIO_Color
    mov     bx, 0101h
    mov     dx, 0550h
@@ -313,10 +356,18 @@ CLR_GOODBYE_WINDOW_BM   = 0f01h
    mov     al, TextChar_WinRep4
    call    VideoIO_PrintSingleChar
 
-CLR_GOODBYE_AB_VERSION_CLASSIC   = 0e01h
-CLR_GOODBYE_AB_VERSION_BM  = 0e03h
 
-   mov     cx, CLR_GOODBYE_AB_VERSION_BM
+
+CLR_GOODBYE_AB_VERSION_CLASSIC  = 0e01h
+CLR_GOODBYE_AB_VERSION_BM       = 0e03h
+CLR_GOODBYE_AB_VERSION_TB       = 0e03h
+IFDEF TESTBUILD
+CLR_GOODBYE_AB_VERSION = CLR_GOODBYE_AB_VERSION_TB
+ELSE
+CLR_GOODBYE_AB_VERSION = CLR_GOODBYE_AB_VERSION_BM
+ENDIF
+
+   mov     cx, CLR_GOODBYE_AB_VERSION
    call    VideoIO_Color
    mov     si, offset Copyright
    mov     cl, 11+CopyrightVersionLen
@@ -330,10 +381,18 @@ CLR_GOODBYE_AB_VERSION_BM  = 0e03h
    mov     cx, 020Dh
    call    VideoIO_Locate
 
-   CLR_GOODBYE_WINDOW_CLASSIC_2    = 0f05h
-   CLR_GOODBYE_WINDOW_BM_2   = 0701h
 
-   mov     cx,  CLR_GOODBYE_WINDOW_BM_2
+
+CLR_GOODBYE_WINDOW_CLASSIC_2    = 0f05h
+CLR_GOODBYE_WINDOW_BM_2         = 0701h
+CLR_GOODBYE_WINDOW_TB_2         = 0701h
+IFDEF TESTBUILD
+CLR_GOODBYE_WINDOW_2 = CLR_GOODBYE_WINDOW_TB_2
+ELSE
+CLR_GOODBYE_WINDOW_2 = CLR_GOODBYE_WINDOW_BM_2
+ENDIF
+
+   mov     cx,  CLR_GOODBYE_WINDOW_2
    call    VideoIO_Color
    inc     si
    call    VideoIO_Print                 ; Print Copyright to the end...
@@ -361,10 +420,18 @@ BOOTMENU_BuildTimedBootText     Proc Near   Uses ax cx si es di
    mov     cx, 1503h ;
    call    VideoIO_Locate
 
-CLR_NON_TIMED_BAR_CLASSIC  = 0e04h
-CLR_NON_TIMED_BAR_BM = 0701h
 
-   mov     cx, CLR_NON_TIMED_BAR_BM                      ; non-timed time bar
+
+CLR_NON_TIMED_BAR_CLASSIC   = 0e04h
+CLR_NON_TIMED_BAR_BM        = 0701h
+CLR_NON_TIMED_BAR_TB        = 0708h
+IFDEF TESTBUILD
+CLR_NON_TIMED_BAR = CLR_NON_TIMED_BAR_TB
+ELSE
+CLR_NON_TIMED_BAR = CLR_NON_TIMED_BAR_BM
+ENDIF
+
+   mov     cx, CLR_NON_TIMED_BAR                      ; non-timed time bar
    call    VideoIO_Color
    call    VideoIO_Internal_SetRegs
    mov     cx, 76
@@ -383,10 +450,18 @@ CLR_NON_TIMED_BAR_BM = 0701h
    mov     cx, 1503h
    call    VideoIO_Locate
 
-CLR_TIMED_BAR_CLASSIC   = 0e04h
-CLR_TIMED_BAR_BM  = 0e04h
 
-   mov     cx, CLR_TIMED_BAR_BM ; timed time bar, yellow on red
+
+CLR_TIMED_BAR_CLASSIC   = 0e04h
+CLR_TIMED_BAR_BM        = 0e04h
+CLR_TIMED_BAR_TB        = 0e04h
+IFDEF TESTBUILD
+CLR_TIMED_BAR = CLR_TIMED_BAR_TB
+ELSE
+CLR_TIMED_BAR = CLR_TIMED_BAR_BM
+ENDIF
+
+   mov     cx, CLR_TIMED_BAR ; timed time bar, yellow on red
    call    VideoIO_Color
    mov     si, offset TXT_TimedBootLine  ; will print TimedBootEntryName too
    call    VideoIO_Print
@@ -418,8 +493,15 @@ BOOTMENU_RefreshPartitionText   Proc Near Uses cx dx
 BOOTMENU_RefreshPartitionText   EndP
 
 
-CLR_VOLUME_INDEX_CLASSIC   = 0f01h
-CLR_VOLUME_INDEX_BM  = 0f01h
+
+CLR_VOLUME_INDEX_CLASSIC    = 0f01h
+CLR_VOLUME_INDEX_BM         = 0f01h
+CLR_VOLUME_INDEX_TB         = 0f08h
+IFDEF TESTBUILD
+CLR_VOLUME_INDEX = CLR_VOLUME_INDEX_TB
+ELSE
+CLR_VOLUME_INDEX = CLR_VOLUME_INDEX_BM
+ENDIF
 
 ; Writes Partition-Information to Screen (Boot-Menu)
 ;        In: CH - Line to print info
@@ -435,7 +517,7 @@ BOOTMENU_BuildPartitionText     Proc Near   Uses ax cx dx si
    mov     cl, Menu_AbsoluteX
    mov     dh, cl
    call    VideoIO_Locate
-   mov     cx, CLR_VOLUME_INDEX_BM                     ; Bwhite, blue
+   mov     cx, CLR_VOLUME_INDEX                     ; Bwhite, blue
    call    VideoIO_Color
    mov     al, dl
    inc     al
@@ -449,10 +531,18 @@ BOOTMENU_BuildPartitionText     Proc Near   Uses ax cx dx si
 
    call    VideoIO_Locate
 
-CLR_HD_INDEX_CLASSIC    = 0d01h
-CLR_HD_INDEX_BM   = 0701h
 
-   mov     cx, CLR_HD_INDEX_BM
+
+CLR_HD_INDEX_CLASSIC    = 0d01h
+CLR_HD_INDEX_BM         = 0701h
+CLR_HD_INDEX_TB         = 0708h
+IFDEF TESTBUILD
+CLR_HD_INDEX = CLR_HD_INDEX_TB
+ELSE
+CLR_HD_INDEX = CLR_HD_INDEX_BM
+ENDIF
+
+   mov     cx, CLR_HD_INDEX
    call    VideoIO_Color                 ; Violet, blue
    mov     si, PartPointer
    mov     al, [si+LocIPT_Drive]
@@ -471,10 +561,18 @@ CLR_HD_INDEX_BM   = 0701h
      BMBPT_IsHarddrive:
       ; Now display Size-Element...
 
-CLR_HD_SIZE_CLASSIC  = 0501h
-CLR_HD_SIZE_BM = 0701h
 
-      mov     cx, CLR_HD_SIZE_BM
+
+CLR_HD_SIZE_CLASSIC = 0501h
+CLR_HD_SIZE_BM      = 0701h
+CLR_HD_SIZE_TB      = 0708h
+IFDEF TESTBUILD
+CLR_HD_SIZE = CLR_HD_SIZE_TB
+ELSE
+CLR_HD_SIZE = CLR_HD_SIZE_BM
+ENDIF
+
+      mov     cx, CLR_HD_SIZE
       call    VideoIO_Color              ; Dark-Violet, Blue
       mov     al, '/'
       call    VideoIO_PrintSingleChar
@@ -496,10 +594,18 @@ CLR_HD_SIZE_BM = 0701h
 
    call    VideoIO_Locate
 
-CLR_LABEL_CLASSIC    = 0e01h
-CLR_LABEL_BM   = 0f01h
 
-   mov     cx, CLR_LABEL_BM
+
+CLR_LABEL_CLASSIC   = 0e01h
+CLR_LABEL_BM        = 0f01h
+CLR_LABEL_TB        = 0f08h
+IFDEF TESTBUILD
+CLR_LABEL = CLR_LABEL_TB
+ELSE
+CLR_LABEL = CLR_LABEL_BM
+ENDIF
+
+   mov     cx, CLR_LABEL
    call    VideoIO_Color                 ; Yellow, blue
    mov     si, PartPointer
    add     si, LocIPT_Name
@@ -517,18 +623,45 @@ CLR_LABEL_BM   = 0f01h
    mov     al, [si+LocIPT_SystemID]
    call    PART_SearchFileSysName
 
-CLR_FS_NAME_CLASSIC  =  0c01h
-CLR_FS_NAME_BM =  0701h
 
-; Color for drive-letter
-CLR_DL_BM   = 0f01h
 
-   mov     cx, CLR_FS_NAME_BM
+CLR_FS_NAME_CLASSIC = 0c01h
+CLR_FS_NAME_BM      = 0701h
+CLR_FS_NAME_TB      = 0708h
+IFDEF TESTBUILD
+CLR_FS_NAME = CLR_FS_NAME_TB
+ELSE
+CLR_FS_NAME = CLR_FS_NAME_BM
+ENDIF
+
+   mov     cx, CLR_FS_NAME
    call    VideoIO_Color                 ; Hrot, Blau
    mov     cl, 8
    call    VideoIO_FixedPrint
 
 
+
+; Color for drive-letter
+CLR_DL_CLASSIC  = 0f01h
+CLR_DL_BM       = 0f01h
+CLR_DL_TB       = 0f08h
+IFDEF TESTBUILD
+CLR_DL = CLR_DL_TB
+ELSE
+CLR_DL = CLR_DL_BM
+ENDIF
+
+
+
+; Color for hidden drive-letter
+CLR_DL_HIDDEN_CLASSIC   = 0701h
+CLR_DL_HIDDEN_BM        = 0701h
+CLR_DL_HIDDEN_TB        = 0708h
+IFDEF TESTBUILD
+CLR_DL_HIDDEN = CLR_DL_HIDDEN_TB
+ELSE
+CLR_DL_HIDDEN = CLR_DL_HIDDEN_BM
+ENDIF
 
 DRIVELETTERS_ENABLE     EQU
 
@@ -604,11 +737,11 @@ DRIVELETTERS_ENABLE     EQU
 
 
         mov     si, offset [dl_hidden]
-        mov     cx, CLR_DL_BM
+        mov     cx, CLR_DL
         call    VideoIO_Color
         call    VideoIO_Print
 
-        mov     cx, 0701h
+        mov     cx, CLR_DL_HIDDEN
         call    VideoIO_Color
 
         mov     al, dh
@@ -624,7 +757,7 @@ DRIVELETTERS_ENABLE     EQU
 
         call    VideoIO_Print
 
-        mov     cx, CLR_DL_BM
+        mov     cx, CLR_DL
         call    VideoIO_Color
 
         call    VideoIO_PrintSingleChar
@@ -656,7 +789,19 @@ BOOTMENU_BuildChoiceBar         Proc near   Uses ax es di
 
    ;call  SOUND_Beep
 
-   mov     cl, 10h    ; Color BLUE, Partition DL
+
+
+; SELECTION BAR REDRAW
+CLR_SELECTION_BAR_REDRAW_CLASSIC    = 10h
+CLR_SELECTION_BAR_REDRAW_BM         = 10h
+CLR_SELECTION_BAR_REDRAW_TB         = 80h
+IFDEF TESTBUILD
+CLR_SELECTION_BAR_REDRAW = CLR_SELECTION_BAR_REDRAW_TB
+ELSE
+CLR_SELECTION_BAR_REDRAW = CLR_SELECTION_BAR_REDRAW_BM
+ENDIF
+
+   mov     cl, CLR_SELECTION_BAR_REDRAW    ; Color BROWN, Partition DL
    call    BOOTMENU_ReColorPart
 
    ;call  SOUND_Beep
@@ -696,33 +841,21 @@ BOOTMENU_BuildChoiceBar         Proc near   Uses ax es di
    call    BOOTMENU_RefreshPartitionText
 
 
-; Keuze bar
-; 00h black
-; 10h blue
-; 20h green (also nice)
-; 30h cyan (also nice)
-; 40h red
-; 50h magenta
-; 60h brown (nice)
-; 70h white
-; 80h grey
-; 90h light blue (nice)
-; 0a0h bright green
-; 0b0h bright cyan
-; 0c0h bright red
-; 0d0h bright magenta
-; 0e0h bright yellow
-; 0f0h bright white
 
-
-CLR_SELECTION_BAR_CLASSIC  = 50h
-CLR_SELECTION_BAR_BM = 090h
-CLR_SELECTION_BAR_WARNING = 040h
-
+; SELECTION BAR
+CLR_SELECTION_BAR_CLASSIC   = 50h
+CLR_SELECTION_BAR_BM        = 90h
+CLR_SELECTION_BAR_WARNING   = 40h
+CLR_SELECTION_BAR_TB        = 60h
+IFDEF TESTBUILD
+CLR_SELECTION_BAR = CLR_SELECTION_BAR_TB
+ELSE
+CLR_SELECTION_BAR = CLR_SELECTION_BAR_BM
+ENDIF
 
 
   BMBCB_AfterScrolling:
-   mov     cl, CLR_SELECTION_BAR_BM
+   mov     cl, CLR_SELECTION_BAR
    test     byte ptr [TooManyPartitions],0ffh ; Check for too many partitions.
    jz       BOOTMENU_BuildChoiceBar_normal
    mov     cl, CLR_SELECTION_BAR_WARNING    ; Set red bar if so.
@@ -1130,6 +1263,3 @@ BOOTMENU_ResetGetFloppy     Proc Near   Uses ax
         mov     word ptr [FloppyGetNameTimer+2], dx
         ret
 BOOTMENU_ResetGetFloppy     EndP
-
-
-

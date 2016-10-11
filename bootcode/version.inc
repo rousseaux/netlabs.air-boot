@@ -17,6 +17,39 @@
 ;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
 ;
 
+;
+; If the EQU below is enabled, the testbuild color-scheme will be used.
+;
+TESTBUILD           EQU
+
+; COLORS basic
+; 0 = black
+; 1 = blue
+; 2 = green
+; 3 = cyan
+; 4 = red
+; 5 = magenta
+; 6 = brown
+; 7 = white
+; 8 = grey
+
+; COLORS all (fg)
+; 00h black
+; 10h blue
+; 20h green (also nice)
+; 30h cyan (also nice)
+; 40h red
+; 50h magenta
+; 60h brown (nice)
+; 70h white
+; 80h grey
+; 90h light blue (nice)
+; a0h bright green
+; b0h bright cyan
+; c0h bright red
+; d0h bright magenta
+; e0h bright yellow
+; f0h bright white
 
 ;
 ; AiR-BOOT Version Information.

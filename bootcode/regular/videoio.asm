@@ -102,6 +102,7 @@ VideoIO_CursorSet               Proc Near   Uses ax bx dx
    ret
 VideoIO_CursorSet               EndP
 
+; Sets DI which is used across many video routines !
 VideoIO_Internal_SetRegs        Proc Near   Uses bx
    mov     ax, VideoIO_Segment
    mov     es, ax
