@@ -1078,16 +1078,16 @@ DriveIO_LVMSectorValid           EndP
 ; Rousseau: # Load the master LVM-sector if one exists #
 ; ------------------------------------------------------
 ; Load the master LVM-sector to get the number of sectors per track as
-; eCS views the drive. If no master LVM-sector is found it is assumed eCS
+; OS/2 views the drive. If no master LVM-sector is found it is assumed OS/2
 ; is not installed. The master LVM-sector can be located at three different
 ; places depending on drive size and partitioning scheme and driver used.
-; When DANIS506.ADD is used, the eCS extended geometry will be 255/127 for
+; When DANIS506.ADD is used, the OS/2 extended geometry will be 255/127 for
 ; drives >502GiB but <1TiB. Then the location will be sector 127 which
 ; is LBA 126 (7Eh).
-; IBM1S506.ADD will always use 255/255 for the extended eCS geometry.
+; IBM1S506.ADD will always use 255/255 for the extended OS/2 geometry.
 ; DANIS506.ADD will use 255/255 for drives >1TiB.
 ; Then the location of the master LVM-sector will be 255 which is LBA 254 (FEh).
-; When eCS is installed on a huge drive that alread had a system on it, eCS
+; When OS/2 is installed on a huge drive that alread had a system on it, OS/2
 ; will be confined to the lower 502GiB of the drive.
 ; In this case the normal geometry from Int13X will be used.
 ; This is also the case when no valid master LVM-sector can be found.
@@ -1206,7 +1206,7 @@ DriveIO_LoadMasterLVMSector     Endp
 
 
 ; ---------------------------------------------------
-; Rousseau ## Large drives, (eCS) geometry and LBA ##
+; Rousseau ## Large drives, (OS/2) geometry and LBA ##
 ; ---------------------------------------------------
 ; A sector size of 512 bytes is assumed in the below calculations.
 ; Note that this scheme changes when the sector size will be 4096 or larger,

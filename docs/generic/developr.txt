@@ -406,7 +406,7 @@
          should look like this: 00h 02h 03h FFh (and 26 more FFhs)
 
         The boot-drive-letters string is 30-bytes long. One byte per partition.
-         It's used for OS/2 / eCS use ONLY and it's only definable for HPFS and
+         It's used for OS/2 use ONLY and it's only definable for HPFS and
          FAT16 partitions. If you enable/disable the driveletter, then YOU are
          required to change the corresponding partition's Drive-Letter flag
          accordingly.

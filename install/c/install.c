@@ -1844,7 +1844,7 @@ int main (int argc, char **argv) {
                         UserKey = getch();             // React on ENTER or ESC
                     } while (!((UserKey==0x0D) || (UserKey==0x1B)));
                 }
-                if (UserKey==0x0D) {              // ENTER reboots system... (if not in eCS install mode)
+                if (UserKey==0x0D) {              // ENTER reboots system... (if not in OS/2 install mode)
 
                     /*
                     // Rousseau: ## Disable Reboot when installing eComStation ##

@@ -238,7 +238,7 @@ LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
 
         ;
         ; It's a PRI so we use the special locator function.
-        ; This locator takes care of extended eCS geometry should that be used
+        ; This locator takes care of extended OS/2 geometry should that be used
         ;
         call    DriveIO_LoadMasterLVMSector
 
@@ -375,7 +375,7 @@ LVM_SetDriveLetter      Proc Near   Uses bx cx dx si di ds es
 
         ;
         ; It's a PRI so we use the special locator function.
-        ; This locator takes care of extended eCS geometry should that be used
+        ; This locator takes care of extended OS/2 geometry should that be used
         ;
         call    DriveIO_LoadMasterLVMSector
         jnc     LVM_SetDriveLetter_null_lvm_dl

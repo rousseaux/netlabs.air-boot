@@ -126,7 +126,7 @@ PARTSETUP_Main                  Proc Near
 
   PSM_KeyBootAble:
    call    PART_GetPartitionPointer      ; Gets Partition (DL) Pointer -> SI
-   ; See if this is an eCS LVM Volume.
+   ; See if this is an OS/2 LVM Volume.
    ; In that case, we don't allow it to be made bootable.
    ; We also show a popup to inform the user.
    call    PARTSETUP_IsType35

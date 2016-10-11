@@ -289,7 +289,7 @@ PRECRAP_Main    Proc Near
         mov     si, offset [Phase1]
         call    MBR_Teletype
 
-        mov     si, offset eCS_InstallVolume
+        mov     si, offset OS2_InstallVolume
         mov     al, [si]
         test    al,al                                 ; See if phase 1 is active
         jnz     MBR_Main_BootThrough

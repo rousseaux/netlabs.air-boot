@@ -948,7 +948,7 @@ DisksFound        db "Disks Found          : ",0
 PartitionsFound   db "Partitions Found     : ",0
 ;AutoStartPart     db "Auto Start Partition : ",0
 
-Phase1            db "eCS Install Phase 1  : ",0
+Phase1            db "OS/2 Install Phase 1 : ",0
 
 
 ShowMenu          db "Press TAB to return to the AiR-BOOT Menu",0

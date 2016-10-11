@@ -72,7 +72,7 @@ The following has been fixed:
   When using multiple eComStation systems installed on the same drive-letter,
   the drive-letter feature is still needed to force the correct letter on the
   system being booted and hide the others. See the documentation on how to
-  install multiple eCS systems using the same drive-letter.
+  install multiple OS/2 systems using the same drive-letter.
 
   Another case where the drive-letter feature can still be of value is when
   restoring a pre-LVM system from archive to an HPFS partition.
@@ -113,7 +113,7 @@ The following has been fixed:
 
 - HPFS zero-drive boot-bug (issues #3067 and #3119)
   -------------------------------------------------
-  AiR-BOOT would sometimes refuse to boot older eCS systems on HPFS.
+  AiR-BOOT would sometimes refuse to boot older OS/2 systems on HPFS.
   This has been fixed.
 
   The nature of this bug is described above.
@@ -226,8 +226,8 @@ These include the following:
 
 - Support for legacy systems on huge disks
   ----------------------------------------
-  Since it's always best to use the eCS Volume Manager (MiniLVM) to partition
-  disks that also contain eCS volumes, on huge disks this implies that such
+  Since it's always best to use the OS/2 Volume Manager (MiniLVM) to partition
+  disks that also contain OS/2 volumes, on huge disks this implies that such
   volumes have a different alignment due to the special geometry in use.
   With v1.07 support has been added for booting legacy systems like PC-DOS
   and FreeDOS and the DOS based 32-bit versions of Windows (95/98/ME) on

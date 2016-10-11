@@ -999,7 +999,7 @@ BOOL Track0WriteAiRBOOTConfig (void) {
 
 /*
 // Rousseau: # This is the main entry-point #
-// Special behavior if eCS is booted from CDROM and phase 1 called this program.
+// Special behavior if OS/2 is booted from CDROM and phase 1 called this program.
 // In that case, the name of the newly installed system is put in the AiR-BOOT configuration.
 // This will cause AiR-BOOT to boot through after phase 1.
 */

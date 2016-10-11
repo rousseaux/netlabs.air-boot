@@ -786,7 +786,7 @@ PART_CheckForValidPartName      EndP
 ; CY set if this entry is also the install-volume
 PART_IsInstallVolume            Proc Near   Uses ax cx dx si di
         cld                                    ; Advance upwards with lodsb
-        mov   di, offset eCS_InstallVolume     ; Address of install-volume label (max. 11 chars)
+        mov   di, offset OS2_InstallVolume     ; Address of install-volume label (max. 11 chars)
 
         mov   cx, 11                           ; Maximum length of label
         xor   dl, dl                           ; Not found yet
@@ -966,7 +966,7 @@ PART_SetupPhase1    EndP
 
 ;~ HELEMAAL NAKIJKEN !
 ;~ DRIVELETTER ASIGNMENT CORRIGEREN
-;~ WORDT TOCH BOOTDRIVE IN BPB GEZET ALS NON eCS SYSTEEM BOOT ?
+;~ WORDT TOCH BOOTDRIVE IN BPB GEZET ALS NON-OS/2 SYSTEEM BOOT ?
 
 
 
@@ -1209,7 +1209,7 @@ ENDIF
 
 
 
-    ; --------------------------------------------------------- OS/2 / eCS I13X
+    ; --------------------------------------------------------------- OS/2 I13X
     ; Now check if the partition to get booted is above 8 GB.
     ;  If yes, set magic bytes 'I13X' at 3000:0 for boot-loader to recognize.
     ;  This method is (c) by IBM <g>
@@ -1734,7 +1734,7 @@ ENDIF
         ; Better use the already done discovery to determine the system.
         ;
         ; FIXME: PBR Already loaded
-        
+
         ; When FAT12/FAT16/HPFS/JFS then boot-drive-letter can be tested
         ; or adjusted.
         call    PART_IsJFS
@@ -1874,7 +1874,7 @@ ENDIF
         ;
 
         ; See if the BPB boot-drive-letter is valid
-        ; This one is supposed not to change since eCS cannot be booted
+        ; This one is supposed not to change since OS/2 cannot be booted
         ; from another drive then it was installed on.
         test    ah,ah
         jnz     BPB_boot_drive_valid
@@ -1886,7 +1886,7 @@ ENDIF
         ; drive-letter feature.
         add     al,3dh
         mov     bx,[PhysDiskBpbIndex]
-        ; Advance to field for drive-letter in BIOS notation (OS/2 - eCS)
+        ; Advance to field for drive-letter in BIOS notation (OS/2)
         inc     bx
         ; Fix the boot-drive-letter field in the BPB
         mov     es:[di+bx],al
@@ -1900,7 +1900,7 @@ ENDIF
         ; drive-letter feature of AiR-BOOT is used.
         ; Also, this field is the culprit of AiR-BOOT v1.07 not handling it
         ; correctly when the system uses HPFS and this byte is zero.
-        ; This mostly involved booting older eCS versions on HPFS.
+        ; This mostly involved booting older OS/2 versions on HPFS.
         ; See issues #3067 and #3119 on http://bugs.ecomstation.nl
         ;
 
@@ -1955,10 +1955,10 @@ ENDIF
     ; Then force that drive-letter in the drive-letter feature.
     no_valid_boot_drive_letter_found:
         ; HERE SHOULD COME AN ERROR POP-UP ABOUT NO BOOT-DRIVE OR NO LVM-INFO.
-        ; WE CONTINUE BOOTING BUT OS/2 - eCS WILL MOST PROBABLY FAIL TO BOOT.
+        ; WE CONTINUE BOOTING BUT OS/2 WILL MOST PROBABLY FAIL TO BOOT.
 
         ; FIXME: Issue some kind of warning
-        
+
         ;mov     ah,07h
         ;mov     si,offset CheckID_MBR
         ;call    VideoIO_Print
@@ -2036,13 +2036,13 @@ ENDIF
         ; Restore IPT pointer
         pop     si
 
-        
+
         ; BOOKMARK: Update the CRC of the Partition Boot Record.
         mov     bx, offset [PBRSector]
         call    PART_UpdateBootRecordCRC
         call    DriveIO_SaveConfiguration
 
-        
+
         ; Setup the registers for the partition location.
         mov     ax, wptr [si+LocIPT_AbsoluteBegin+0]
         mov     bx, wptr [si+LocIPT_AbsoluteBegin+2]
@@ -2050,7 +2050,7 @@ ENDIF
         mov     dh, [si+LocIPT_LocationBegin+0]
         mov     dl, [si+LocIPT_Drive]
 
-        
+
         ; BOOKMARK: Write the adjusted HPFS/JFS PBR to disk.
         mov     si, offset [PBRSector]
         call    DriveIO_SaveSector
@@ -2094,7 +2094,7 @@ ENDIF
     boot_from_floppy:
 
 
-    
+
 
         ;
         ; Here we copy the prepared boot-record to 0000:7C00h

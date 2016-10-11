@@ -1181,14 +1181,14 @@ AiR_BOOT_Start:
 ; -----------------------------------------------------------------------------
 
                 ;
-                ; BOOKMARK: Check for eCS being installed
-                ; Here we check if eComStation v2.1+ is being installed.
+                ; BOOKMARK: Check for OS/2 being installed
+                ; Here we check if OS/2 is being installed.
                 ; If so, we forgo the menu and directly boot it.
                 ;
 
                 ; If the first byte of the name of the Install Volume is not 0
                 ; then we potentially have a phase1 boot.
-                test    byte ptr [eCS_InstallVolume],0ffh
+                test    byte ptr [OS2_InstallVolume],0ffh
                 ; Nope, so continue normally.
                 jz      MBR_Main_ContinueBoot
 
@@ -1220,7 +1220,7 @@ AiR_BOOT_Start:
             ENDIF
 
 
-                ; BOOKMARK: Scan for Partitions (Only if eCS install going on)
+                ; BOOKMARK: Scan for Partitions (Only if OS/2 install going on)
                 ; Because one or more partitions are possibly added, the
                 ; PartitionXref table is not 'in sync' and could cause the
                 ; wrong system to be automatically booted.
@@ -1304,7 +1304,7 @@ AiR_BOOT_Start:
                 ; BOOKMARK: Save Configuration
                 ; Save configuration so phase1 boot-through is disabled
                 ; on next boot.
-                mov     byte ptr [eCS_InstallVolume], 0
+                mov     byte ptr [OS2_InstallVolume], 0
                 call    DriveIO_SaveConfiguration
 
 
@@ -1439,7 +1439,7 @@ AiR_BOOT_Start:
                 call    ANTIVIR_SaveBackUpMBR
 
                 ; Preload the selected menu-entry
-                ; However, this value will be wrong if eCS phase1 is
+                ; However, this value will be wrong if OS/2 phase1 is
                 ; active and the installation partition is newly created.
                 ; See below for the adjustment.
                 mov     dl, byte ptr [Menu_EntrySelected]
@@ -1911,19 +1911,19 @@ DriveLetters            db  LocIPT_MaxPartitions dup (0)
                 ; at this offset.
                 ; So future config changes will not break auto-install.
                 ;
-                ; BOOKMARK: Name of eCS Installation Volume
+                ; BOOKMARK: Name of OS/2 Installation Volume
                 ORIGIN  06D00h
 
-; SET(A)BOOT stores the volume name of the eCS system being installed here.
+; SET(A)BOOT stores the volume name of the OS/2 system being installed here.
 ; It is truncated to 11 chars because AiR-BOOT currently does not support
 ; longer labelnames. The name is also capitalized.
-;eCS_InstallVolume       db  12 dup (0)
-;eCS_InstallVolume       db  'HIGHLOG' ,0
-;eCS_InstallVolume       db  'ECS-MIDDLE',0,0
-;eCS_InstallVolume       db  'ECS-HIGH',0,0,0,0
-;eCS_InstallVolume       db  'ECS-HIGH',0,'NO',0
-;eCS_InstallVolume       db  'KANWEG2',0
-eCS_InstallVolume       db  0,'NOPHASEONE' ,0
+;OS2_InstallVolume       db  12 dup (0)
+;OS2_InstallVolume       db  'HIGHLOG' ,0
+;OS2_InstallVolume       db  'ECS-MIDDLE',0,0
+;OS2_InstallVolume       db  'ECS-HIGH',0,0,0,0
+;OS2_InstallVolume       db  'ECS-HIGH',0,'NO',0
+;OS2_InstallVolume       db  'KANWEG2',0
+OS2_InstallVolume       db  0,'NOPHASEONE' ,0
 
 ;
 ; THERE IS ROOM RESERVED HERE FOR MORE VARIABLES
