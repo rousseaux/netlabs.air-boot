@@ -2153,7 +2153,7 @@ PartitionSector     db  512 dup (?) ; Temporary Sector for Partition
 PBRSector           db  512 dup (?) ; Temporary Sector for JFS/HPFS writeback
 LVMSector           db  512 dup (?) ; Temporary Sector for LVM
 TmpSector           db  512 dup (?) ; Temporary Sector
-Scratch             db  256 dup (?) ; Scratch buffer
+Scratch             db  512 dup (?) ; Scratch buffer
 
 ; -----------------------------------------------------------------------------
 ;                                                          NEW PARTITION TABLE
