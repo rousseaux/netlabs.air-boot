@@ -340,19 +340,19 @@ AuxIO_Print     EndP
 AuxIO_DumpParagraph     Proc  Near  Uses  ax cx dx si
 
         ; Dump the index dword
-        xor     dx,dx
+        mov     dx, ds
         mov     ax,si
         call    AuxIO_TeletypeHexDWord
+        ;~ call    AuxIO_TeletypeHexWord
 
         ; Separate it from the dump
         mov     al,' '
-        call    AuxIO_Teletype
+        ;~ call    AuxIO_Teletype
+        ;~ mov     al,'|'
         mov     al,' '
         call    AuxIO_Teletype
-        mov     al,'|'
-        call    AuxIO_Teletype
         mov     al,' '
-        call    AuxIO_Teletype
+        ;~ call    AuxIO_Teletype
 
         ; Save si for later
         push    si
@@ -393,21 +393,18 @@ AuxIO_DumpParagraph     Proc  Near  Uses  ax cx dx si
 
         ; space separator
         mov      al,' '
-        call    AuxIO_Teletype
+        ;~ call    AuxIO_Teletype
 
         ; separator
-        mov      al,'|'
+        ;~ mov      al,'|'
+        mov      al,' '
         call    AuxIO_Teletype
 
         ; space separator
         mov      al,' '
-        call    AuxIO_Teletype
+        ;~ call    AuxIO_Teletype
 
         loop    AuxIO_DumpParagraph_Next_1
-
-        ; space separator
-        mov      al,' '
-        call    AuxIO_Teletype
 
         ; recall pointer
         pop     si
