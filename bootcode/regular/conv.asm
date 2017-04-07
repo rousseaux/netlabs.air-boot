@@ -59,6 +59,58 @@ CONV_BinToAsc   Endp
 
 
 
+; Convert a byte in AL to it's packed BCD value in AX.
+; In:          AL - value to convert
+; Out:         AX - |digitcount|digit2|digit1|digit0|
+; Destroyed:   none
+CONV_BinToPBCD  Proc  Near uses cx
+
+        ; Use AAM to convert to unpacked BCD
+        mov     ch, 1           ; There always is at least one digit
+        aam                     ; Convert byte to unpacked BCD
+        test    ah, ah          ; If AH is zero, the value was below 10d
+
+        ; Just one digit, we're done
+        jz      CONV_BinToPBCD_done
+
+        ; There are more digits
+        inc     ch              ; Increment digit count
+        cmp     ah, 9           ; If AH is above 9, there is a third digit
+
+        ; There are three digits, AH needs to be processed too
+        ja      CONV_BinToPBCD_three_digits
+
+        ; There are two digits, AH contains second digit
+        shl     ah, 4           ; Correct the unpacked BCD nibble location
+        or      al, ah          ; Now we have a 2 digit packed BCD
+        xor     ah, ah          ; No third digit
+
+        ; Two digits, we're done
+        jmp     CONV_BinToPBCD_done
+
+    CONV_BinToPBCD_three_digits:
+        ; There are three digits, process AH
+        inc     ch              ; Increment digit count
+        mov     cl, al          ; Store the first digit
+        mov     al, ah          ; Value in AH needs to be processed also
+        aam                     ; Convert byte to unpacked BCD
+        shl     al, 4           ; Correct the unpacked BCD nibble location
+        or      al, cl          ; Merge the first BCD digit
+
+        ; Three digits, we're done
+        jmp     CONV_BinToPBCD_done
+
+    CONV_BinToPBCD_done:
+        ; Compose the packed BCD value with the digit count in high nibble
+        shl     ch, 4           ; Move count to correct nibble
+        or      ah, ch          ; Count is now in high nibble of AX
+        test    ax, 0fffh       ; Set ZF if all digits are 0
+
+        ret
+CONV_BinToPBCD  Endp
+
+
+
 ; See if a character is printable.
 ; Replace with a '.' if not.
 ; In:          AL - char to print
