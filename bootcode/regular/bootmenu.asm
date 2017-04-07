@@ -287,12 +287,8 @@ ENDIF
    call    VideoIO_Print
    mov     al, TextChar_WinRep5
    call    VideoIO_PrintSingleChar
+
    ; HelpWindow done...
-
-
-   ; Rousseau: Debug Stuff, put here after building Main Menu
-   ;call    VideoIO_DBG_WriteString
-   ;call    VideoIO_DBG_WriteString2
 
    ret
 BOOTMENU_BuildMain              EndP
@@ -1056,8 +1052,6 @@ BOOTMENU_Execute    Proc Near   Uses es di
 
 
     BME_MainLoop:
-
-        ;call    VideoIO_DBG_WriteString2    ; Rousseau
 
         test    byte ptr [TimedBootEnable], 1
         jz      BME_NoTimedBoot

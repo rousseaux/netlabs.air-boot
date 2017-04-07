@@ -78,10 +78,7 @@ SETUP_CheckEnterSETUP           Proc Near
 
    ; Setup PartitionPointers-Table...again (needed when re-entering setup)
    ;call    PART_CalculateStraightPartPointers
-   ;call    VideoIO_DBG_WriteString
    ; Rousseau: end added
-
-
 
    test    byte ptr [CFG_AutoEnterSetup], 1
    jnz     SCES_ForceEnter

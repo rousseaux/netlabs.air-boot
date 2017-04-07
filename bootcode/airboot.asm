@@ -1477,8 +1477,6 @@ ENDIF
                 ; Select default partition and boot system...
                 call    PASSWORD_AskSystemPwd
 
-                ;call    VideoIO_DBG_WriteString2
-
                 mov     al, Menu_EntryDefault
                 ;mov     al,0                         ; zero based
                 mov     Menu_EntrySelected, al
