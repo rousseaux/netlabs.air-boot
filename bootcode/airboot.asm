@@ -163,14 +163,14 @@ VideoIO_Page4               equ     0BC00h
 VideoIO_FXSegment           equ     0A000h
 
 ; Special line-drawing characters
-TextChar_WinLineRight       equ     0C4h ; 'Ä'
-TextChar_WinLineDown        equ     0B3h ; '³'
-TextChar_WinRep1            equ     0D1h ; 'Ñ'
-TextChar_WinRep2            equ     0C5h ; 'Å'
-TextChar_WinRep3            equ     0CFh ; 'Ï'
-TextChar_WinRep4            equ     0B5h ; 'µ'
-TextChar_WinRep5            equ     0C6h ; 'Æ'
-TextChar_WinRep6            equ     0D8h ; 'Ø'
+TextChar_WinLineRight       equ     0C4h
+TextChar_WinLineDown        equ     0B3h
+TextChar_WinRep1            equ     0D1h
+TextChar_WinRep2            equ     0C5h
+TextChar_WinRep3            equ     0CFh
+TextChar_WinRep4            equ     0B5h
+TextChar_WinRep5            equ     0C6h
+TextChar_WinRep6            equ     0D8h
 
 
 
@@ -1782,14 +1782,13 @@ MBR_Protection  db 'AiR-BOOT MBR-Protection Image'
                 ORIGIN  06C00h
 
 Configuration:
-                ; THERE IS A NON-ASCII CHAR HERE !!
-                ; Your editor may not display this non-ASCII
-                ; character at the end if the 'AiRCFG-TABLE'
-                ; string. When this character get's deleted,
-                ; AiR-BOOT will not function because it cannot
-                ; find the config-signature which includes this
-                ; invisible character. The code of the char is: 0adh.
-                db  'AiRCFG-TABLE­'
+                ; This is the signature for the AiR-BOOT Configuration.
+                ; Note that this configuration section, like the code section,
+                ; is CRC protected. This means that poking values in these
+                ; sections on the disk will invalidate AiR-BOOT and cause it
+                ; to halt. This is a protection method against other software
+                ; modifying stuff in track 0.
+                db  'AiRCFG-TABLE',0adh
                 db  01h, 10h, 'U' ; "Compressed" ID String
                 ; Version 1.02 was for code 1.06, 1.03 was internal
                 ; and 1.04,1.05 and 1.06 do not exist.
