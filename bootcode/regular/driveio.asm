@@ -706,6 +706,16 @@ DriveIO_SaveLVMSectorXBR    EndP
 ; Special error message instead of "LOAD ERROR" during partition scanning,
 ;  so users will notice that something is bad with their partition table(s)
 DriveIO_GotLoadError    Proc Near
+IFDEF   AUX_DEBUG
+        IF 1
+        DBG_TEXT_OUT_AUX    'DriveIO_GotLoadError:'
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
         test    byte ptr cs:[CurIO_Scanning], 1          ; Must be CS:, cause DS!=CS maybe here
         jnz     InScanMode
         jmp     MBR_LoadError

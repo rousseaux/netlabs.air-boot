@@ -687,7 +687,7 @@ DRIVELETTERS_ENABLE     EQU
         mov     ah, [si+LocIPT_SystemID]
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         pushf
         pusha
             mov     al, ' '
@@ -725,7 +725,7 @@ ENDIF
         mov     al, [si+25h]
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         pushf
         pusha
             call    VideoIO_PrintHexByte

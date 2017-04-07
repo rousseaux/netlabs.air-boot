@@ -1096,7 +1096,7 @@ ENDIF
     mov     dl, [si+LocIPT_Drive]
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         pushf
         pusha
             mov     si,offset [ptetb]

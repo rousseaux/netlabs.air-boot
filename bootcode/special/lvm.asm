@@ -230,7 +230,7 @@ LVM_SearchForPartition          EndP
 LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'LVM_GetDriveLetter:'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -329,7 +329,7 @@ LVM_SetDriveLetter      EndP
 LVM_RemoveVolLetterFromSector   Proc Near   Uses cx
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'LVM_RemoveVolLetterFromSector:'
         PUSHRF
             ;~ call    DEBUG_DumpRegisters
@@ -370,7 +370,7 @@ LVM_RemoveVolLetterFromSector   EndP
 LVM_DoLetterReassignment        Proc Near   Uses bx cx dx si di
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'LVM_DoLetterReassignment:'
         PUSHRF
             ;~ call    DEBUG_DumpRegisters
