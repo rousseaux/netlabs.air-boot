@@ -1793,6 +1793,23 @@ ENDIF
         ret
 DriveIO_GatherDiskInfo  EndP
 
+;------------------------------------------------------------------------------
+; Calculate pointer to entry in DISKINFO structure
+;------------------------------------------------------------------------------
+; IN    : DL BIOS disk number (80h etc)
+; OUT   : BX Pointer to entry
+; NOTE  : BIOS disk number must be valid
+;------------------------------------------------------------------------------
+DriveIO_CalcDiskInfoPointer Proc    Near
+        xchg    bx, ax                          ; AX is used for calculation
+        mov     al, DISKINFO_Size               ; Size of DISKINFO structure
+        mov     ah, dl                          ; BIOS disk number
+        sub     ah, 80h                         ; Now 0-based index
+        mul     ah                              ; Now offset into DISKINFO array
+        add     ax, offset [DiskInformation]    ; Base of DISKINFO array
+        xchg    bx, ax                          ; BX now points to entry for disk
+        ret
+DriveIO_CalcDiskInfoPointer EndP
 
 ;------------------------------------------------------------------------------
 ; Check if the BIOS disk number in DL is a harddisk and in range
