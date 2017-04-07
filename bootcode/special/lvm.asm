@@ -319,6 +319,7 @@ ENDIF
         push    di
         mov     si,offset [LVMSector]
         mov     di,ds
+        mov     ax, cx                      ; LBA low is now in AX
         call    DriveIO_ReadSectorLBA
         pop     di
         pop     si
@@ -540,6 +541,7 @@ ENDIF
         push    di
         mov     si,offset [LVMSector]
         mov     di,ds
+        mov     ax, cx                      ; LBA low is now in AX
         call    DriveIO_ReadSectorLBA
         pop     di
         pop     si

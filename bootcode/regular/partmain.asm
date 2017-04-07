@@ -2262,7 +2262,7 @@ ENDIF
 
         ; Load LBA sector 0 from the disk specified in DL
         xor      bx,bx
-        xor      cx,cx
+        xor      ax,ax
         mov      di,ds
         mov      si,offset [TmpSector]
         call     DriveIO_ReadSectorLBA
@@ -2466,6 +2466,7 @@ PART_IsFAT32    Endp
 ;        ; Load specified LBA sector (BX:CX) from the disk in DL
 ;        mov     di,ds
 ;        mov     si,offset [TmpSector]
+;        mov     ax, cx                      ; LBA low is now in AX
 ;        call    DriveIO_ReadSectorLBA
 
 ;        ; Point to location of 'BOOTMGR' signature.

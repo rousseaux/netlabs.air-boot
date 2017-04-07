@@ -720,7 +720,7 @@ ENDIF
         ;~ call    VideoIO_PrintSingleChar
 
         mov     dl, byte ptr [si+LocIPT_Drive]
-        mov     cx, [si+LocIPT_AbsoluteBegin+00h]
+        mov     ax, [si+LocIPT_AbsoluteBegin+00h]
         mov     bx, [si+LocIPT_AbsoluteBegin+02h]
 
         mov     si, offset [TmpSector]

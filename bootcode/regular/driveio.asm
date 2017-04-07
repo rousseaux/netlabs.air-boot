@@ -740,7 +740,6 @@ ENDIF
     DIOLS_UseExtension:
 
         mov     di, ds                  ; segment for transfer address
-        mov     cx, ax                  ; low word of lba
         call    DriveIO_ReadSectorLBA   ; extended read
         jc      DriveIO_GotLoadError    ; halt on error
 
@@ -791,12 +790,12 @@ DriveIO_LoadSector      EndP
 ;# ----------------------------------------------------------------------------
 ;# EFFECTS  : Modifies DAP structure and fills transfer buffer
 ;# ----------------------------------------------------------------------------
-;# IN       : BX:CX - LBA address of sector
+;# IN       : BX:AX - LBA address of sector
 ;#          : DI:SI - SEG:OFF of transfer buffer
 ;# ----------------------------------------------------------------------------
-;# OUT      : CF=1  - failure, AH failure code
+;# OUT      : CF=1  - failure
 ;##############################################################################
-DriveIO_ReadSectorLBA       Proc Near  Uses bx cx dx si di ds es
+DriveIO_ReadSectorLBA       Proc Near
 
 IFDEF   AUX_DEBUG
         IF 0
@@ -817,6 +816,11 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
+        ; Push all registers
+        pusha
+        push    ds
+        push    es
+
         ; One sector to read
         mov     cs:[INT13X_DAP_NumBlocks], 1
 
@@ -825,7 +829,7 @@ ENDIF
         mov     wptr cs:[INT13X_DAP_Transfer+2], di     ; segment
 
         ; Setup LBA64 address of requested sector
-        mov     wptr cs:[INT13X_DAP_Absolute+0], cx     ; low word lower part
+        mov     wptr cs:[INT13X_DAP_Absolute+0], ax     ; low word lower part
         mov     wptr cs:[INT13X_DAP_Absolute+2], bx     ; high word lower part
         mov     wptr cs:[INT13X_DAP_Absolute+4], 0      ; low word upper part
         mov     wptr cs:[INT13X_DAP_Absolute+6], 0      ; high word upper part
@@ -849,8 +853,13 @@ ENDIF
         clc
 
     DriveIO_ReadSectorLBA_exit:
-        ret
 
+        ; Pop all registers
+        pop     es
+        pop     ds
+        popa
+
+        ret
 DriveIO_ReadSectorLBA       EndP
 
 
@@ -860,13 +869,12 @@ DriveIO_ReadSectorLBA       EndP
 ;# ----------------------------------------------------------------------------
 ;# EFFECTS  : Modifies DAP structure and mofifies the disk
 ;# ----------------------------------------------------------------------------
-;# IN       : AL    - write flags, AL.0 verify (1.0,2.0), AL.1 verify (2.1+)
-;#          : BX:CX - LBA address of sector
+;# IN       : BX:AX - LBA address of sector
 ;#          : DI:SI - SEG:OFF of transfer buffer
 ;# ----------------------------------------------------------------------------
-;# OUT      : CF=1  - failure, AH failure code
+;# OUT      : CF=1  - failure
 ;##############################################################################
-DriveIO_WriteSectorLBA      Proc Near  Uses bx cx dx si di ds es
+DriveIO_WriteSectorLBA      Proc Near
 
 IFDEF   AUX_DEBUG
         IF 0
@@ -885,11 +893,10 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
-        ; Mask reserved bits for write flags -- should check version here
-        and     al, 03h
-
-        ; Actually, force 'no-write-verify' for now...
-        xor     al, al
+        ; Push all registers
+        pusha
+        push    ds
+        push    es
 
         ; One sector to read
         mov     cs:[INT13X_DAP_NumBlocks], 1
@@ -899,7 +906,7 @@ ENDIF
         mov     wptr cs:[INT13X_DAP_Transfer+2], di     ; segment
 
         ; Setup LBA64 address of requested sector
-        mov     wptr cs:[INT13X_DAP_Absolute+0], cx     ; low word lower part
+        mov     wptr cs:[INT13X_DAP_Absolute+0], ax     ; low word lower part
         mov     wptr cs:[INT13X_DAP_Absolute+2], bx     ; high word lower part
         mov     wptr cs:[INT13X_DAP_Absolute+4], 0      ; low word upper part
         mov     wptr cs:[INT13X_DAP_Absolute+6], 0      ; high word upper part
@@ -908,6 +915,7 @@ ENDIF
         mov     si, offset [INT13X_DAP]                 ; disk address packet
 
         ; Do the extended write
+        xor     al, al                                  ; no write verify
         mov     ah, 43h                                 ; write function
         int     13h                                     ; transfer to bios
 
@@ -923,8 +931,13 @@ ENDIF
         clc
 
     DriveIO_WriteSectorLBA_exit:
-        ret
 
+        ; Pop all registers
+        pop     es
+        pop     ds
+        popa
+
+        ret
 DriveIO_WriteSectorLBA      EndP
 
 
@@ -1016,7 +1029,8 @@ ENDIF
         mov     cx, bx                  ; Restore our precious sector LBA
 
         ; Now read the LBA sector specified in CX
-        xor     bx, bx                  ; LBA high, CX already has LBA low
+        mov     ax, cx                  ; LBA low
+        xor     bx, bx                  ; LBA high
         mov     di, ds                  ; Segment of temp buffer
         mov     si, offset [TmpSector]  ; Offset of temp buffer
         call    DriveIO_ReadSectorLBA   ; Read the sector
@@ -1053,7 +1067,7 @@ ENDIF
         ; We'll implement that later after some more research.
         ; For now we assume this is the correct Master LVM sector for the disk.
         inc     cx      ; CX was prepared to read next, correct that
-        stc             ; Indicate we have found a Master LVM sector
+        stc             ; Indicate we have found the Master LVM sector
 
     DriveIO_LocateMasterLVMSector_done:
         mov     bx, 0   ; A Master LVM sector always has high LBA=0
@@ -1363,8 +1377,6 @@ ENDIF
     DIOSS_UseExtension:
 
         mov     di, ds                  ; segment for transfer address
-        mov     cx, ax                  ; low word of lba
-        xor     ax, ax                  ; no verify
         call    DriveIO_WriteSectorLBA  ; extended write
         jc      MBR_SaveError           ; halt on error
 
