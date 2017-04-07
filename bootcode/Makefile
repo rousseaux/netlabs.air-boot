@@ -53,7 +53,7 @@
 # Level 0 is no debugging (release) and each higher level may use other
 # assembler / compiler / linker flags and define jammed-in constants
 # to influence source assembly / compilation.
-DEBUG_LEVEL=0
+DEBUG_LEVEL=2
 MAX_DEBUG_LEVEL=2
 
 # Protect against missing or invalid debug-levels.
@@ -160,8 +160,8 @@ ASM=jwasm
 # -Zd   = line number debug info
 # -Zi   = symbolic debug info
 ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W0 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
-ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Zd -Zi -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
-ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Zd -Zi -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -WX -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
 # Workaround for JWasm list-file generation.
 # Generate the list-file on a local drive so JWasm doen't take forever.
 # This is done in the recipe.
@@ -229,8 +229,10 @@ CC32_FLAGS=$(CC32_FLAGS_D$(DEBUG_LEVEL))
 # Open Watcom Linker.
 LNK=wlink
 LNK_FLAGS_D0=op q op v disa {1014 1023} op map=$^&.map
-LNK_FLAGS_D1=op q op v d all op map=$^&.map
-LNK_FLAGS_D2=op q op v d all op map=$^&.map
+#~ LNK_FLAGS_D1=op q op v d all op map=$^&.map
+#~ LNK_FLAGS_D2=op q op v d all op map=$^&.map
+LNK_FLAGS_D1=op q op v op map=$^&.map
+LNK_FLAGS_D2=op q op v op map=$^&.map
 LNK_FLAGS=$(LNK_FLAGS_D$(DEBUG_LEVEL))
 
 # These need to be built
