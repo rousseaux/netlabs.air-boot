@@ -2185,7 +2185,6 @@ ENDIF
 ; -----------------------------------------------------------------------------
 ;                                                            START OF BSS DATA
 ; -----------------------------------------------------------------------------
-
 ; This space actually gets initialized in PreCrap to NUL (till EndOfVariables)
 BeginOfVariables:
 BeginOfVariablesAbs = offset BeginOfVariables + image_size
@@ -2253,7 +2252,6 @@ PartitionPointerCount       db  ?
 ; -----------------------------------------------------------------------------
 ;                                                                   XREF TABLE
 ; -----------------------------------------------------------------------------
-
 ; X-Reference Table (holds new partnr, index is old part nr)
 ; BOOKMARK: Xref Table
 PartitionXref               db  LocIPT_MaxPartitions dup (?)
@@ -2263,7 +2261,6 @@ PartitionXref               db  LocIPT_MaxPartitions dup (?)
 ; -----------------------------------------------------------------------------
 ;                                                               VOLUME LETTERS
 ; -----------------------------------------------------------------------------
-
 ; Volume-Letters
 ; 0 - no LVM support
 ; 1 - LVM support, but no letter
@@ -2381,7 +2378,17 @@ LVM_CRCTable        dd   256 dup (?) ; LVM-CRC (->SPECiAL\LVM.asm)
 
 
 ; -----------------------------------------------------------------------------
-;                                                           ECS PHASE1 RELATED
+;                                                         LVM DRIVE-LETTER MAP
+; -----------------------------------------------------------------------------
+; Get's initialized at startup to: 00000011111111111111111111111100b
+; Meaning A,B not free; C-Z free, rest unused. (right to left)
+; Each partition with an assigned drive-letter clears a bit in this map.
+FreeDriveletterMap          dd      ?
+                            ALIGN   16
+
+
+; -----------------------------------------------------------------------------
+;                                                          OS/2 PHASE1 RELATED
 ; -----------------------------------------------------------------------------
 Phase1Active                db      ?
 OldPartitionCount           db      ?
@@ -2389,59 +2396,16 @@ OldPartitionCount           db      ?
 
 
 ; -----------------------------------------------------------------------------
-;                                                              DISK PARAMETERS
+;                                         ARRAY OF DISK INFORMATION STRUCTURES
 ; -----------------------------------------------------------------------------
-HugeDisk                    db      MaxDisks  dup(?)
-TrueSecs                    dd      MaxDisks  dup(?)
-                            ALIGN   16
-
-; BIOS geometry of the boot-drive
-; Note that heads cannot be 256 due to legacy DOS/BIOS bug
-; If Int13X is supported those values are used, otherwise the legacy values.
-BIOS_Cyls                   dd      MaxDisks  dup(?)
-BIOS_Heads                  dd      MaxDisks  dup(?)
-BIOS_Secs                   dd      MaxDisks  dup(?)
-BIOS_Bytes                  dw      MaxDisks  dup(?)
-BIOS_TotalSecs              dq      MaxDisks  dup(?)
-                            ALIGN   16
-
-; LBA geometry of the boot-drive
-; Note that these values are taken from the BPB of a partition boot-record
-LVM_Cyls                    dd      MaxDisks  dup(?)
-LVM_Heads                   dd      MaxDisks  dup(?)
-LVM_Secs                    dd      MaxDisks  dup(?)
-LVM_Bytes                   dw      MaxDisks  dup(?)
-LVM_TotalSecs               dq      MaxDisks  dup(?)
-LVM_MasterSecs              dd      MaxDisks  dup(?)
-                            ALIGN   16
-
-; OS/2 geometry of the boot-drive
-; Note that these values are taken from the BPB of a partition boot-record
-LOG_Cyls                    dd      MaxDisks  dup(?)
-LOG_Heads                   dd      MaxDisks  dup(?)
-LOG_Secs                    dd      MaxDisks  dup(?)
-LOG_Bytes                   dw      MaxDisks  dup(?)
-LOG_TotalSecs               dq      MaxDisks  dup(?)
-                            ALIGN   16
-
-; Get's initialized at startup to: 00000011111111111111111111111100b
-; Meaning A,B not free; C-Z free, rest unused. (right to left)
-; Each partition with an assigned drive-letter clears a bit in this map.
-FreeDriveletterMap          dd      ?
-                            ALIGN   16
-
-; LBA address of master LVM sector, zero if non-existant
-MasterLVMLBA                dd      MaxDisks  dup(?)
-                            ALIGN   16
-
 ; Array of DISKINFO structures
 DiskInformation             db      MaxDisks  dup(DISKINFO_Size dup(?))
                             ALIGN   16
 
+
 ; -----------------------------------------------------------------------------
 ;                                                                   INT13X DAP
 ; -----------------------------------------------------------------------------
-
 ; Disk Address Package that holds information for LBA-access using INT13X
 INT13X_DAP                  db      ?       ; Size of paket, inserted by code
                             db      ?       ; Reserved
@@ -2452,26 +2416,13 @@ INT13X_DAP_Absolute         dd      ?       ; Absolute Sector
 INT13X_DAP_Size = $-offset [INT13X_DAP]     ; Calculated size
                             ALIGN   16
 
-;
-; BOOKMARK: Temporary buffer for 48h INT13X bios call.
-;
 
-            ; Size of the buffer.
-            ; this param *must* be filled in.
-            ; Code inserts it.
-i13xbuf     dw  1   dup (?)
-
-            ; The buffer itself.
-            db  126 dup(?)
-
-            ; Size of buffer calculated.
-            ; (excluding the size word at the start).
-            i13xbuf_size = $-offset i13xbuf-2
-            ALIGN   16
-
-            ; Some debug area.
-dbg_scratch db  512 dup(?)
-            ALIGN   16
+; -----------------------------------------------------------------------------
+;                                                                        DEBUG
+; -----------------------------------------------------------------------------
+; Some debug area.
+dbg_scratch                 db      512 dup(?)
+                            ALIGN   16
 
 
 ; End of transient variables.
