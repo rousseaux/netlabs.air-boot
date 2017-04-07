@@ -677,7 +677,7 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
     mov     [CurPartition_Location+6], ax
     mov     di, si                        ; Put SI into DI
     call    DriveIO_LoadLVMSector
-    jnc     PSCPN_LVMGotError             ; Security again, if problem -> halt
+    jc     PSCPN_LVMGotError             ; Security again, if problem -> halt
     push    dx
       mov     ax, [di+LocIPT_AbsoluteBegin]
       mov     dx, [di+LocIPT_AbsoluteBegin+2]
