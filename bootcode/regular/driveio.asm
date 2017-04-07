@@ -810,8 +810,11 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
-        ; Mask reserved bits for wrte flags -- should check version here
+        ; Mask reserved bits for write flags -- should check version here
         and     al, 03h
+
+        ; Actually, force 'no-write-verify' for now...
+        xor     al, al
 
         ; One sector to read
         mov     cs:[INT13X_DAP_NumBlocks], 1
