@@ -93,6 +93,8 @@ DEBUG_ShowHelp      EndP
 ; Call list for debug hot-keys.
 ;
 dbg_call_list:
+        db      't'
+        dw      offset  DEBUG_Test
         db      'l'
         dw      offset  DEBUG_DumpDriveLetters
         db      'g'
@@ -403,6 +405,28 @@ ELSE
 DEBUG_DumpIPT   Proc
         ret
 DEBUG_DumpIPT   EndP
+ENDIF
+
+
+
+;
+; Activate zero or more test functions.
+; When a call is _not_ commented out, the test-function can still be disabled
+; if its 'IF' directive is 0.
+;
+IF  1
+DEBUG_Test  Proc
+    pushf
+    pusha
+    ; Put call to test-function here...
+    popa
+    popf
+    ret
+DEBUG_Test  EndP
+ELSE
+DEBUG_Test  Proc
+    ret
+DEBUG_Test  EndP
 ENDIF
 
 
