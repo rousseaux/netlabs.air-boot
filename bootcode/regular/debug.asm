@@ -39,36 +39,6 @@ ENDIF
 
 
 ;
-; Display a number that was put on the stack.
-; Used to track code-flow.
-;
-dbp     db  '>---------->> DebugProbe: ',0
-DEBUG_Probe     Proc
-        push    bp
-        mov     bp,sp
-        pushf
-        pusha
-
-        mov     si,offset [dbp]         ; Default probe-text.
-        call    AuxIO_Print
-        mov     ax,[bp+04]              ; Get probe-number from stack.
-        call    AuxIO_TeletypeHexWord
-        call    AuxIO_TeletypeNL
-
-        ; Also display registers.
-        popa
-        pusha
-        call    DEBUG_DumpRegisters
-
-        popa
-        popf
-        pop     bp
-        ret     2
-DEBUG_Probe     Endp
-
-
-
-;
 ; Show help on keys.
 ;
 dbh     db  10
@@ -90,9 +60,9 @@ DEBUG_ShowHelp      EndP
 
 
 ;
-; Call list for debug hot-keys.
+; Dispatch table for debug hot-keys.
 ;
-dbg_call_list:
+dbg_dispatch:
         db      't'
         dw      offset  DEBUG_Test
         db      'd'
@@ -118,78 +88,6 @@ dbg_call_list:
 
 
 ;
-; Handle keypresses when the main menu is active.
-;
-DEBUG_HandleKeypress    Proc
-        pushf
-        pusha
-
-        ; Save hot-key
-        mov     dl,al
-
-        ; Check for digit.
-        cmp     al,'0'
-        jb      DEBUG_HandleKeypress_exit
-        cmp     al,'9'
-        ja      DEBUG_HandleKeypress_try_alpha
-        ; It was a digit, dump disk info ('0' for 80h, '1' for 81h, etc)
-        call    DEBUG_DumpDiskInfo
-        ;~ jmp     DEBUG_HandleKeypress_check_it
-        jmp     DEBUG_HandleKeypress_exit
-
-        ; Check for alpha.
-    DEBUG_HandleKeypress_try_alpha:
-        ; Force upper-case.
-        and     al,11011111b
-        cmp     al,'A'
-        jb      DEBUG_HandleKeypress_exit
-        cmp     al,'Z'
-        ja      DEBUG_HandleKeypress_exit
-        ; It was an alpha.
-        jmp     DEBUG_HandleKeypress_check_it
-
-
-        ; Check if the key is a hot-key.
-    DEBUG_HandleKeypress_check_it:
-        cld
-        mov     si,offset dbg_call_list
-
-        ; Loop over jump-list.
-    DEBUG_HandleKeypress_next_entry:
-
-        ; Load the hot-key.
-        lodsb
-        ; No hot-key (not implemented) if end-of-list.
-        test    al,al
-        jz      DEBUG_HandleKeypress_ni
-
-        ; Compare hot-key and iterate if not the same.
-        cmp     dl,al
-        lodsw
-        jne     DEBUG_HandleKeypress_next_entry
-
-        ; Entry found, call corresponding routine.
-        mov     bx,ax
-        call    bx
-
-        ; Done.
-        jmp     DEBUG_HandleKeypress_exit
-
-        ; Call not-assigned routine.
-    DEBUG_HandleKeypress_ni:
-        call    DEBUG_NotAssigned
-        jmp     DEBUG_HandleKeypress_exit
-
-        ; Return to caller.
-    DEBUG_HandleKeypress_exit:
-        popa
-        popf
-        ret
-DEBUG_HandleKeypress    Endp
-
-
-
-;
 ; Show 'not assigned' message.
 ;
 dbg_na  db  'This key is not assigned, press ''h'' for Help.',10,0
@@ -204,201 +102,7 @@ DEBUG_NotAssigned       Proc
 DEBUG_NotAssigned       Endp
 
 
-
-;
-; Dump information before the menu is displayed.
-;
-DEBUG_Dump1     Proc  Near
-        pushf
-        pusha
-
-        ; Hello message
-        mov     si, offset AuxIOHello
-        call    AuxIO_Print
-
-        ; Build Info
-        ;~ mov     si, offset BUILD_DATE
-        ;~ call    AuxIO_Print
-        call    AuxIO_PrintBuildInfo
-
-        ; Start new line
-        call    AuxIO_TeletypeNL
-        ;~ call    AuxIO_TeletypeNL
-
-        ;~ call    DEBUG_DumpHidePartTables
-        ;~ call    DEBUG_CheckMath
-        ;~ call    DEBUG_DumpGeo
-        ;~ call    DEBUG_CheckBitFields
-
-        popa
-        popf
-        ret
-DEBUG_Dump1     EndP
-
-
-
-;
-; Check the simple 32-bit math functions.
-;
-IF  0
-db_testmul32   db "## CHK MUL32 ##",10,0
-DEBUG_Test_MATH_Mul32   Proc    Near
-        pushf
-        pusha
-
-        ; Msg check math-module
-        mov     si,offset [db_testmul32]
-        call    AuxIO_Print
-
-        ; Output hex-word
-        mov     ax,0BABEh
-        call    AuxIO_TeletypeHexWord
-
-        mov     al,' '
-        call    AuxIO_Teletype
-        mov     al,'*'
-        call    AuxIO_Teletype
-        mov     al,' '
-        call    AuxIO_Teletype
-
-        ; Output hex-word
-        mov     ax,0BABEh
-        call    AuxIO_TeletypeHexWord
-
-        mov     al,' '
-        call    AuxIO_Teletype
-        mov     al,'='
-        call    AuxIO_Teletype
-        mov     al,' '
-        call    AuxIO_Teletype
-
-        mov     ax,0BABEh
-        mul     ax
-        call    AuxIO_TeletypeHexDWord
-
-        ; Start new line
-        call    AuxIO_TeletypeNL
-
-        ; Output hex-dword
-        mov     dx,0DEADh
-        mov     ax,0FACEh
-        call    AuxIO_TeletypeHexDWord
-
-        mov     al,' '
-        call    AuxIO_Teletype
-        mov     al,'*'
-        call    AuxIO_Teletype
-        mov     al,' '
-        call     AuxIO_Teletype
-
-        ; Output hex-dword
-        mov     dx,0DEADh
-        mov     ax,0FACEh
-        call    AuxIO_TeletypeHexDWord
-
-        mov     al,' '
-        call    AuxIO_Teletype
-        mov     al,'='
-        call    AuxIO_Teletype
-        mov     al,' '
-        call    AuxIO_Teletype
-
-        mov     bx,0DEADh
-        mov     cx,0FACEh
-        mov     dx,0DEADh
-        mov     ax,0FACEh
-        call    MATH_Mul32
-        call    AuxIO_TeletypeHexQWord
-
-        call    AuxIO_TeletypeNL
-        call    AuxIO_TeletypeNL
-
-        popa
-        popf
-        ret
-DEBUG_Test_MATH_Mul32   EndP
-ELSE
-DEBUG_Test_MATH_Mul32   Proc    Near
-        ret
-DEBUG_Test_MATH_Mul32   EndP
-ENDIF
-
-
-
-;
-; Toggle display of debug video page.
-;
-IF  0
-DEBUG_DebugScreenToggle Proc
-        pushf
-        pusha
-
-        mov     si, offset $+5
-        jmp     @F
-        db      10,'DebugScreenToggle:',10,0
-prvpg   db      00h
-hdr     db      10,'[Debug Console]',13,10,0
-@@:     call    AuxIO_Print
-
-        ; Get current page in BH
-        mov     ah, 0fh
-        int     10h
-
-        ; Already debug page ?
-        cmp     bh, 03h
-        je      DEBUG_DebugScreenToggle_back
-
-        ; Remember page
-        mov     [prvpg], bh
-
-        ; Switch to debug page
-        mov     al, 03h
-        mov     ah, 05h
-        int     10h
-
-        ; Get cursor position in DX (DH=row, DL=column)
-        ;~ mov     ah, 03h
-        ;~ mov     bh, 03h
-        ;~ int     10h
-
-        ;~ mov     al, 01h
-        ;~ mov     bh, 03h
-        ;~ mov     bl, 07h
-        ;~ mov     bp, offset [hdr]
-        ;~ mov     cx, sizeof(hdr)
-        ;~ mov     ah, 13h
-        ;~ int     10h
-
-        ;~ mov     bh, 03h
-        ;~ mov     dh, 00h
-        ;~ mov     dl, 00h
-        ;~ mov     ah, 02h
-        ;~ int     10h
-
-        mov     si, offset [hdr]
-        call    DBG_Teletype
-
-        jmp     DEBUG_DebugScreenToggle_end
-
-    DEBUG_DebugScreenToggle_back:
-        ; Switch back to previous page
-        mov     al, [prvpg]
-        mov     ah, 05h
-        int     10h
-        jmp     DEBUG_DebugScreenToggle_end
-
-    DEBUG_DebugScreenToggle_end:
-        popa
-        popf
-        ret
-DEBUG_DebugScreenToggle EndP
-ELSE
-DEBUG_DebugScreenToggle Proc
-        ret
-DEBUG_DebugScreenToggle EndP
-ENDIF
-
-
+; ============================================================== [ dump stuff ]
 
 ;
 ; Dump the geometry.
@@ -482,62 +186,6 @@ ELSE
 DEBUG_DumpIPT   Proc
         ret
 DEBUG_DumpIPT   EndP
-ENDIF
-
-
-
-;
-; Activate zero or more test functions.
-; When a call is _not_ commented out, the test-function can still be disabled
-; if its 'IF' directive is 0.
-;
-IF  1
-DEBUG_Test  Proc
-    pushf
-    pusha
-    call    DEBUG_Test_CONV_BinToPBCD
-    ;~ call    DEBUG_Test_MATH_Mul32
-    popa
-    popf
-    ret
-DEBUG_Test  EndP
-ELSE
-DEBUG_Test  Proc
-    ret
-DEBUG_Test  EndP
-ENDIF
-
-
-
-;
-; Test the packed BCD conversion function.
-;
-IF 1
-DEBUG_Test_CONV_BinToPBCD   Proc
-        pushf
-        pusha
-        xor     cx, cx
-    next_value:
-        mov     al, cl
-        call    AuxIO_TeletypeHexByte
-        mov     al, ' '
-        call    AuxIO_Teletype
-        mov     al, cl
-        call    CONV_BinToPBCD
-        call    AuxIO_TeletypeHexWord
-        call    AuxIO_TeletypeNL
-
-        inc     cx
-        cmp     cx, 0ffh
-        jbe     next_value
-        popa
-        popf
-        ret
-DEBUG_Test_CONV_BinToPBCD   EndP
-ELSE
-DEBUG_Test_CONV_BinToPBCD   Proc
-        ret
-DEBUG_Test_CONV_BinToPBCD   EndP
 ENDIF
 
 
@@ -978,28 +626,184 @@ ENDIF
 
 
 
+; ============================================================== [ test stuff ]
+
 ;
-; Check the bitfield routines.
+; Activate zero or more test functions.
+; When a call is _not_ commented out, the test-function can still be disabled
+; if its 'IF' directive is 0.
 ;
-IF  0
-DEBUG_CheckBitFields    Proc
+IF  1
+DEBUG_Test  Proc
+    pushf
+    pusha
+    call    DEBUG_Test_CONV_BinToPBCD
+    ;~ call    DEBUG_Test_MATH_Mul32
+    popa
+    popf
+    ret
+DEBUG_Test  EndP
+ELSE
+DEBUG_Test  Proc
+    ret
+DEBUG_Test  EndP
+ENDIF
+
+
+
+;
+; Test the packed BCD conversion function.
+;
+IF 1
+db_testbin2pbcd db "## TEST BIN2PBCD ##",10,0
+DEBUG_Test_CONV_BinToPBCD   Proc
         pushf
         pusha
 
-        mov     bx,offset [ott]
+        ; Msg test bin2pbcd
+        mov     si,offset [db_testbin2pbcd]
+        call    AuxIO_Print
+
+        ; Start with 0
+        xor     cx, cx
+
+        ; Print 0 - 255 as BYTE and packed BCD
+    next_value:
+        mov     al, cl                  ; Current value
+        call    AuxIO_TeletypeHexByte   ; Print as byte
+        mov     al, ' '
+        call    AuxIO_Teletype
+        mov     al, cl                  ; Current value
+        call    CONV_BinToPBCD          ; Convert to packed BCD
+        call    AuxIO_TeletypeHexWord   ; Print as word
+        call    AuxIO_TeletypeNL
+
+        inc     cx                      ; Next value
+        cmp     cx, 0ffh                ; Check for last valid value
+        jbe     next_value              ; Repeat if still in range
+
+        popa
+        popf
+        ret
+DEBUG_Test_CONV_BinToPBCD   EndP
+ELSE
+DEBUG_Test_CONV_BinToPBCD   Proc
+        ret
+DEBUG_Test_CONV_BinToPBCD   EndP
+ENDIF
+
+
+
+;
+; Test the simple 32-bit math functions.
+;
+IF  0
+db_testmul32   db "## TEST MUL32 ##",10,0
+DEBUG_Test_MATH_Mul32   Proc    Near
+        pushf
+        pusha
+
+        ; Msg test math-module
+        mov     si,offset [db_testmul32]
+        call    AuxIO_Print
+
+        ; Output hex-word
+        mov     ax,0BABEh
+        call    AuxIO_TeletypeHexWord
+
+        mov     al,' '
+        call    AuxIO_Teletype
+        mov     al,'*'
+        call    AuxIO_Teletype
+        mov     al,' '
+        call    AuxIO_Teletype
+
+        ; Output hex-word
+        mov     ax,0BABEh
+        call    AuxIO_TeletypeHexWord
+
+        mov     al,' '
+        call    AuxIO_Teletype
+        mov     al,'='
+        call    AuxIO_Teletype
+        mov     al,' '
+        call    AuxIO_Teletype
+
+        mov     ax,0BABEh
+        mul     ax
+        call    AuxIO_TeletypeHexDWord
+
+        ; Start new line
+        call    AuxIO_TeletypeNL
+
+        ; Output hex-dword
+        mov     dx,0DEADh
+        mov     ax,0FACEh
+        call    AuxIO_TeletypeHexDWord
+
+        mov     al,' '
+        call    AuxIO_Teletype
+        mov     al,'*'
+        call    AuxIO_Teletype
+        mov     al,' '
+        call     AuxIO_Teletype
+
+        ; Output hex-dword
+        mov     dx,0DEADh
+        mov     ax,0FACEh
+        call    AuxIO_TeletypeHexDWord
+
+        mov     al,' '
+        call    AuxIO_Teletype
+        mov     al,'='
+        call    AuxIO_Teletype
+        mov     al,' '
+        call    AuxIO_Teletype
+
+        mov     bx,0DEADh
+        mov     cx,0FACEh
+        mov     dx,0DEADh
+        mov     ax,0FACEh
+        call    MATH_Mul32
+        call    AuxIO_TeletypeHexQWord
+
+        call    AuxIO_TeletypeNL
+        call    AuxIO_TeletypeNL
+
+        popa
+        popf
+        ret
+DEBUG_Test_MATH_Mul32   EndP
+ELSE
+DEBUG_Test_MATH_Mul32   Proc    Near
+        ret
+DEBUG_Test_MATH_Mul32   EndP
+ENDIF
+
+
+
+;
+; Test the bitfield routines.
+;
+IF  0
+DEBUG_TestBitFieldFunctions Proc
+        pushf
+        pusha
+
+        mov     bx,offset [dbg_scratch]
 
         mov     al,0
         mov     dl,0
         mov     dh,6
-    DEBUG_CheckBitFields_next_write:
+    DEBUG_TestBitFieldFunctions_next_write:
         call    CONV_SetBitfieldValue
         inc     al
         inc     dl
-        jnz     DEBUG_CheckBitFields_next_write
+        jnz     DEBUG_TestBitFieldFunctions_next_write
 
         mov     dl,0
         mov     dh,6
-    DEBUG_CheckBitFields_next_read:
+    DEBUG_TestBitFieldFunctions_next_read:
         mov     al,dl
         call    AuxIO_TeletypeHexByte
         mov     al,':'
@@ -1008,17 +812,68 @@ DEBUG_CheckBitFields    Proc
         call    AuxIO_TeletypeHexWord
         call    AuxIO_TeletypeNL
         inc     dl
-        jnz     DEBUG_CheckBitFields_next_read
+        jnz     DEBUG_TestBitFieldFunctions_next_read
 
         popa
         popf
         ret
-DEBUG_CheckBitFields    EndP
+DEBUG_TestBitFieldFunctions EndP
 ELSE
-DEBUG_CheckBitFields    Proc
+DEBUG_TestBitFieldFunctions Proc
         ret
-DEBUG_CheckBitFields    EndP
+DEBUG_TestBitFieldFunctions EndP
 ENDIF
+
+
+
+;
+; Like the MBR version, but uses video page 3.
+;
+DBG_Teletype    Proc Near   Uses ax bx cx
+        mov     ah, 0Eh
+        mov     bh, 03h
+        mov     bl, 07h
+    DBGT_Loop:
+        lodsb
+        or      al, al
+        jz      DBGT_End
+        int     10h
+        jmp     DBGT_Loop
+    DBGT_End:
+        ret
+DBG_Teletype    EndP
+
+
+
+;
+; Dump information before the menu is displayed.
+;
+DEBUG_Dump1     Proc  Near
+        pushf
+        pusha
+
+        ; Hello message
+        mov     si, offset AuxIOHello
+        call    AuxIO_Print
+
+        ; Build Info
+        ;~ mov     si, offset BUILD_DATE
+        ;~ call    AuxIO_Print
+        call    AuxIO_PrintBuildInfo
+
+        ; Start new line
+        call    AuxIO_TeletypeNL
+        ;~ call    AuxIO_TeletypeNL
+
+        ;~ call    DEBUG_DumpHidePartTables
+        ;~ call    DEBUG_CheckMath
+        ;~ call    DEBUG_DumpGeo
+        ;~ call    DEBUG_CheckBitFields
+
+        popa
+        popf
+        ret
+DEBUG_Dump1     EndP
 
 
 
@@ -1115,21 +970,179 @@ ENDIF
 
 
 ;
-; Like the MBR version, but uses video page 3
+; Display a number that was put on the stack.
+; Used to track code-flow.
 ;
-DBG_Teletype    Proc Near   Uses ax bx cx
-        mov     ah, 0Eh
-        mov     bh, 03h
-        mov     bl, 07h
-    DBGT_Loop:
-        lodsb
-        or      al, al
-        jz      DBGT_End
+dbp     db  '>---------->> DebugProbe: ',0
+DEBUG_Probe     Proc
+        push    bp
+        mov     bp,sp
+        pushf
+        pusha
+
+        mov     si,offset [dbp]         ; Default probe-text.
+        call    AuxIO_Print
+        mov     ax,[bp+04]              ; Get probe-number from stack.
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+
+        ; Also display registers.
+        popa
+        pusha
+        call    DEBUG_DumpRegisters
+
+        popa
+        popf
+        pop     bp
+        ret     2
+DEBUG_Probe     Endp
+
+
+
+;
+; Toggle display of debug video page.
+;
+IF  0
+DEBUG_DebugScreenToggle Proc
+        pushf
+        pusha
+
+        mov     si, offset $+5
+        jmp     @F
+        db      10,'DebugScreenToggle:',10,0
+prvpg   db      00h
+hdr     db      10,'[Debug Console]',13,10,0
+@@:     call    AuxIO_Print
+
+        ; Get current page in BH
+        mov     ah, 0fh
         int     10h
-        jmp     DBGT_Loop
-    DBGT_End:
+
+        ; Already debug page ?
+        cmp     bh, 03h
+        je      DEBUG_DebugScreenToggle_back
+
+        ; Remember page
+        mov     [prvpg], bh
+
+        ; Switch to debug page
+        mov     al, 03h
+        mov     ah, 05h
+        int     10h
+
+        ; Get cursor position in DX (DH=row, DL=column)
+        ;~ mov     ah, 03h
+        ;~ mov     bh, 03h
+        ;~ int     10h
+
+        ;~ mov     al, 01h
+        ;~ mov     bh, 03h
+        ;~ mov     bl, 07h
+        ;~ mov     bp, offset [hdr]
+        ;~ mov     cx, sizeof(hdr)
+        ;~ mov     ah, 13h
+        ;~ int     10h
+
+        ;~ mov     bh, 03h
+        ;~ mov     dh, 00h
+        ;~ mov     dl, 00h
+        ;~ mov     ah, 02h
+        ;~ int     10h
+
+        mov     si, offset [hdr]
+        call    DBG_Teletype
+
+        jmp     DEBUG_DebugScreenToggle_end
+
+    DEBUG_DebugScreenToggle_back:
+        ; Switch back to previous page
+        mov     al, [prvpg]
+        mov     ah, 05h
+        int     10h
+        jmp     DEBUG_DebugScreenToggle_end
+
+    DEBUG_DebugScreenToggle_end:
+        popa
+        popf
         ret
-DBG_Teletype    EndP
+DEBUG_DebugScreenToggle EndP
+ELSE
+DEBUG_DebugScreenToggle Proc
+        ret
+DEBUG_DebugScreenToggle EndP
+ENDIF
+
+
+
+;
+; Handle keypresses when the main menu is active.
+;
+DEBUG_HandleKeypress    Proc
+        pushf
+        pusha
+
+        ; Save hot-key
+        mov     dl,al
+
+        ; Check for digit.
+        cmp     al,'0'
+        jb      DEBUG_HandleKeypress_exit
+        cmp     al,'9'
+        ja      DEBUG_HandleKeypress_try_alpha
+        ; It was a digit, dump disk info ('0' for 80h, '1' for 81h, etc)
+        call    DEBUG_DumpDiskInfo
+        ;~ jmp     DEBUG_HandleKeypress_check_it
+        jmp     DEBUG_HandleKeypress_exit
+
+        ; Check for alpha.
+    DEBUG_HandleKeypress_try_alpha:
+        ; Force upper-case.
+        and     al,11011111b
+        cmp     al,'A'
+        jb      DEBUG_HandleKeypress_exit
+        cmp     al,'Z'
+        ja      DEBUG_HandleKeypress_exit
+        ; It was an alpha.
+        jmp     DEBUG_HandleKeypress_check_it
+
+
+        ; Check if the key is a hot-key.
+    DEBUG_HandleKeypress_check_it:
+        cld
+        mov     si,offset dbg_dispatch
+
+        ; Loop over jump-list.
+    DEBUG_HandleKeypress_next_entry:
+
+        ; Load the hot-key.
+        lodsb
+        ; No hot-key (not implemented) if end-of-list.
+        test    al,al
+        jz      DEBUG_HandleKeypress_ni
+
+        ; Compare hot-key and iterate if not the same.
+        cmp     dl,al
+        lodsw
+        jne     DEBUG_HandleKeypress_next_entry
+
+        ; Entry found, call corresponding routine.
+        mov     bx,ax
+        call    bx
+
+        ; Done.
+        jmp     DEBUG_HandleKeypress_exit
+
+        ; Call not-assigned routine.
+    DEBUG_HandleKeypress_ni:
+        call    DEBUG_NotAssigned
+        jmp     DEBUG_HandleKeypress_exit
+
+        ; Return to caller.
+    DEBUG_HandleKeypress_exit:
+        popa
+        popf
+        ret
+DEBUG_HandleKeypress    Endp
 
 
 

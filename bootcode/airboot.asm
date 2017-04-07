@@ -2403,7 +2403,7 @@ i13xbuf     dw  1   dup (?)
             i13xbuf_size = $-offset i13xbuf-2
 
             ; Some debug area.
-ott         db  512 dup(?)
+dbg_scratch db  512 dup(?)
 
 
 ; End of transient variables.
