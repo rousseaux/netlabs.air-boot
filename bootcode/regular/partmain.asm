@@ -1124,7 +1124,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
 IFDEF   AUX_DEBUG
     pusha
-    mov     si,offset ptetb
+    mov     si,offset [ptetb]
     call    AuxIO_Print
     call    DEBUG_DumpRegisters
     call    AuxIO_TeletypeNL

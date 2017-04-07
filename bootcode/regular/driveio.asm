@@ -942,7 +942,7 @@ DriveIO_SaveSector              Proc Near  Uses ax bx cx dx ds si es di
         IFDEF   __DIO_SS_DMP__
         pusha
         push    si
-        mov     si,offset dioss
+        mov     si,offset [dioss]
         call    AuxIO_Print
         pop     si
         call    DEBUG_DumpRegisters

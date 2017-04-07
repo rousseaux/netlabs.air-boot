@@ -27,13 +27,16 @@
 ; It is only included in debug builds and the codesize of AiR-BOOT increases
 ; in that case. To compensate for that, the FX code is disabled when debugging
 ; is active. Also, most of the debug-routines can selectively be disabled
-; by commenting-out the define above it.
+; by setting the 'IF' directive to 0 or 1. Setting to 0 does an immediate
+; return, setting to 1 enables the routine.
 
 
 
 IFDEF   MODULE_NAMES
 DB 'DEBUG',0
 ENDIF
+
+
 
 ;
 ; Display a number that was put on the stack.
@@ -69,7 +72,8 @@ DEBUG_Probe     Endp
 ; Show help on keys.
 ;
 dbh     db  10
-        db  'h=HELP, d=DRIVE-LETTERS, g=GEO, i=IPT, r=RESTART, v=VOL-LETTERS, x=XREF',10
+        db  'h=HELP, d=DBGSCR-TOGGLE',10
+        db  'l=DRIVE-LETTERS, g=GEO, i=IPT, r=RESTART, v=VOL-LETTERS, x=XREF',10
         db  '0-9=disk 80h-89h info',10
         db  10,0
 
@@ -84,11 +88,12 @@ DEBUG_ShowHelp      Proc
 DEBUG_ShowHelp      EndP
 
 
+
 ;
 ; Call list for debug hot-keys.
 ;
 dbg_call_list:
-        db      'd'
+        db      'l'
         dw      offset  DEBUG_DumpDriveLetters
         db      'g'
         dw      offset  DEBUG_DumpGeo
@@ -105,6 +110,8 @@ dbg_call_list:
         db      'R'
         dw      offset  AirbootRestart
         db      0
+
+
 
 ;
 ; Handle keypresses when the main menu is active.
@@ -179,7 +186,7 @@ DEBUG_HandleKeypress    Endp
 
 
 ;
-; Show not assigned message.
+; Show 'not assigned' message.
 ;
 dbg_na  db  'This key is not assigned, press ''h'' for Help.',10,0
 DEBUG_NotAssigned       Proc
@@ -225,17 +232,18 @@ DEBUG_Dump1     Proc  Near
 DEBUG_Dump1     EndP
 
 
+
 ;
 ; Check the simple 32-bit math functions.
 ;
-;~ __CHECK_MATH__  EQU
-DEBUG_CheckMath Proc    Near
-    IFDEF   __CHECK_MATH__
+IF  0
+db_testmul32   db "## CHK MUL32 ##",10,0
+DEBUG_Test_MATH_Mul32   Proc    Near
         pushf
         pusha
 
         ; Msg check math-module
-        mov     si,offset db_checkmath
+        mov     si,offset [db_testmul32]
         call    AuxIO_Print
 
         ; Output hex-word
@@ -303,17 +311,21 @@ DEBUG_CheckMath Proc    Near
 
         popa
         popf
-    ENDIF
         ret
-DEBUG_CheckMath EndP
+DEBUG_Test_MATH_Mul32   EndP
+ELSE
+DEBUG_Test_MATH_Mul32   Proc    Near
+        ret
+DEBUG_Test_MATH_Mul32   EndP
+ENDIF
+
 
 
 ;
 ; Dump the geometry.
 ;
-__DUMP_GEO__    EQU
+IF  0
 DEBUG_DumpGeo   Proc
-    IFDEF   __DUMP_GEO__
         pushf
         pusha
 
@@ -359,18 +371,21 @@ DEBUG_DumpGeo   Proc
 
         popa
         popf
-    ENDIF
-
         ret
 DEBUG_DumpGeo   Endp
+ELSE
+DEBUG_DumpGeo   Proc
+        ret
+DEBUG_DumpGeo   Endp
+ENDIF
+
 
 
 ;
 ; Dump the internal partition table.
 ;
-__DUMP_IPT__    EQU
+IF  0
 DEBUG_DumpIPT   Proc
-    IFDEF   __DUMP_IPT__
         pushf
         pusha
 
@@ -382,17 +397,21 @@ DEBUG_DumpIPT   Proc
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpIPT   EndP
+ELSE
+DEBUG_DumpIPT   Proc
+        ret
+DEBUG_DumpIPT   EndP
+ENDIF
+
 
 
 ;
 ; Dump the new  partitions table.
 ;
-;~ __DUMP_NPT__    EQU
+IF  0
 DEBUG_DumpNewPartTable  Proc
-    IFDEF   __DUMP_NPT__
         pushf
         pusha
 
@@ -403,17 +422,20 @@ DEBUG_DumpNewPartTable  Proc
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpNewPartTable  EndP
+DEBUG_DumpNewPartTable  Proc
+        ret
+DEBUG_DumpNewPartTable  EndP
+ENDIF
+
 
 
 ;
 ; Dump the partition pointers table.
 ;
-;~ __DUMP_PP__     EQU
+IF  0
 DEBUG_DumpPartitionPointers     Proc
-    IFDEF   __DUMP_PP__
         pushf
         pusha
 
@@ -430,17 +452,22 @@ DEBUG_DumpPartitionPointers     Proc
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpPartitionPointers     EndP
+ELSE
+DEBUG_DumpPartitionPointers     Proc
+        ret
+DEBUG_DumpPartitionPointers     EndP
+ENDIF
+
 
 
 ;
 ; Dump the partition x-ref table.
 ;
-__DUMP_PX__     EQU
+IF  0
+xrt     db  10,'XrefTable:',10,0
 DEBUG_DumpPartitionXref     Proc
-    IFDEF   __DUMP_PX__
         pushf
         pusha
 
@@ -459,17 +486,22 @@ DEBUG_DumpPartitionXref     Proc
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpPartitionXref     EndP
+ELSE
+DEBUG_DumpPartitionXref     Proc
+        ret
+DEBUG_DumpPartitionXref     EndP
+ENDIF
+
 
 
 ;
 ; Dump the dl-feature drive-letters.
 ;
-__DUMP_DL__     EQU
+IF  0
+ddl     db  10,'Driveletters:',10,0
 DEBUG_DumpDriveLetters      Proc
-    IFDEF   __DUMP_DL__
         pushf
         pusha
 
@@ -497,16 +529,22 @@ DEBUG_DumpDriveLetters      Proc
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpDriveLetters      EndP
+ELSE
+DEBUG_DumpDriveLetters      Proc
+        ret
+DEBUG_DumpDriveLetters      EndP
+ENDIF
+
+
 
 ;
 ; Dump some disk information.
 ;
-__DUMP_DI__     EQU
+IF  0
+ddi     db  10,'DumpDiskInfo:',10,0
 DEBUG_DumpDiskInfo          Proc
-    IFDEF   __DUMP_DI__
         pushf
         pusha
 
@@ -520,16 +558,22 @@ DEBUG_DumpDiskInfo          Proc
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpDiskInfo          EndP
+ELSE
+DEBUG_DumpDiskInfo          Proc
+        ret
+DEBUG_DumpDiskInfo          EndP
+ENDIF
+
+
 
 ;
 ; Dump the lvm volume drive-letters.
 ;
-__DUMP_VL__     EQU
+IF  0
+dvl     db  10,'VolumeLetters:',10,0
 DEBUG_DumpVolumeLetters     Proc
-    IFDEF   __DUMP_VL__
         pushf
         pusha
 
@@ -547,18 +591,20 @@ DEBUG_DumpVolumeLetters     Proc
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpVolumeLetters     EndP
-
+ELSE
+DEBUG_DumpVolumeLetters     Proc
+        ret
+DEBUG_DumpVolumeLetters     EndP
+ENDIF
 
 
 
 ;
 ; Dump the registers.
 ;
-__DUMP_REG__    EQU
-IFDEF   __DUMP_REG__
+IF  1
 regAX   db  'AX:',0
 regBX   db  ' BX:',0
 regCX   db  ' CX:',0
@@ -575,14 +621,12 @@ regES   db  ' BP:',0
 
 ;~ regFS   db  'FS:',0
 ;~ regGS   db  ' GS:',0
-ENDIF
 DEBUG_DumpRegisters     Proc
-    IFDEF   __DUMP_REG__
         pushf
         pusha
 
         push    si
-        mov     si, offset regAX
+        mov     si, offset [regAX]
         call    AuxIO_Print
         call    AuxIO_TeletypeHexWord
         ;~ call    AuxIO_TeletypeNL
@@ -658,17 +702,21 @@ DEBUG_DumpRegisters     Proc
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpRegisters     EndP
+ELSE
+DEBUG_DumpRegisters     Proc
+        ret
+DEBUG_DumpRegisters     EndP
+ENDIF
+
 
 
 ;
 ; Dump CHS values.
 ;
-__DUMP_CHS__    EQU
+IF  0
 DEBUG_DumpCHS   Proc    Near
-    IFDEF   __DUMP_CHS__
         pushf
         pusha
         mov     al,'C'
@@ -699,17 +747,21 @@ DEBUG_DumpCHS   Proc    Near
         call    AuxIO_TeletypeNL
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpCHS   EndP
+ELSE
+DEBUG_DumpCHS   Proc    Near
+        ret
+DEBUG_DumpCHS   EndP
+ENDIF
+
 
 
 ;
 ; Dump BSS.
 ;
-;~ __DUMP_BSS__    EQU
+IF  0
 DEBUG_DumpBSSSectors    Proc    Near
-    IFDEF   __DUMP_BSS__
         pushf
         pusha
 
@@ -736,17 +788,21 @@ DEBUG_DumpBSSSectors    Proc    Near
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpBSSSectors    EndP
+ELSE
+DEBUG_DumpBSSSectors    Proc    Near
+        ret
+DEBUG_DumpBSSSectors    EndP
+ENDIF
+
 
 
 ;
 ; Dump 6-bit packed hide partition table.
 ;
-;~ __DUMP_HPT__    EQU
+IF  0
 DEBUG_DumpHidePartTables    Proc    Near
-    IFDEF   __DUMP_HPT__
         pushf
         pusha
 
@@ -777,17 +833,21 @@ DEBUG_DumpHidePartTables    Proc    Near
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_DumpHidePartTables    EndP
+ELSE
+DEBUG_DumpHidePartTables    Proc    Near
+        ret
+DEBUG_DumpHidePartTables    EndP
+ENDIF
+
 
 
 ;
 ; Check the bitfield routines.
 ;
-;~ __CBF__     EQU
+IF  0
 DEBUG_CheckBitFields    Proc
-    IFDEF   __CBF__
         pushf
         pusha
 
@@ -817,19 +877,21 @@ DEBUG_CheckBitFields    Proc
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_CheckBitFields    EndP
-
+ELSE
+DEBUG_CheckBitFields    Proc
+        ret
+DEBUG_CheckBitFields    EndP
+ENDIF
 
 
 
 ;
 ; Dump information before the partition is booted.
 ;
-;~ __DMP2__    EQU
+IF  0
 DEBUG_Dump2     Proc  Near
-    IFDEF   __DMP2__
         pushf
         pusha
 
@@ -907,16 +969,20 @@ DEBUG_Dump2     Proc  Near
 
         popa
         popf
-    ENDIF
         ret
 DEBUG_Dump2     EndP
+ELSE
+DEBUG_Dump2     Proc  Near
+        ret
+DEBUG_Dump2     EndP
+ENDIF
 
 
 
-xrt     db  10,'XrefTable:',10,0
-ddl     db  10,'Driveletters:',10,0
-ddi     db  10,'DumpDiskInfo:',10,0
-dvl     db  10,'VolumeLetters:',10,0
+;
+; These strings can also be referenced outside the debug module when debugging
+; is enabled.
+;
 dlra    db  10,'LVM_DoLetterReassignment: ',0
 ptetb   db  10,'Partition Table Entry to boot',10,0
 bios_reg    db  10,'Registers passed by BIOS:',10,0
@@ -926,8 +992,6 @@ dioss   db  10,'DriveIO_SaveSector',10,0
 
 ;~ db_mbr              db "## MBR ##",10,0
 ;~ db_masterlvm        db "## MLVMR ##",10,0
-
-;~ db_checkmath        db "## CHK MATH ##",10,0
 
 
 ;~ db_config           db '## CFG (DMP2) ##',10,0

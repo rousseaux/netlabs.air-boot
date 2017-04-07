@@ -467,7 +467,7 @@ LVM_DoLetterReassignment        Proc Near   Uses bx cx dx si di
 
     IFDEF   AUX_DEBUG
         pusha
-        mov     si, offset dlra
+        mov     si, offset [dlra]
         call    AuxIO_Print
         call    AuxIO_Teletype
         call    AuxIO_TeletypeNL
