@@ -434,94 +434,65 @@ flagsPF db  ' PF:',0
 flagsCF db  ' CF:',0
 
 DEBUG_DumpRegisters     Proc
+
+        ; Save state of caller
         pushf
         pusha
 
-        ; Safe flags so they can be printed later
+        ; Save flags so they can be printed later
         pushf
 
-        ; Save value in SI so it can be printed later
+        ; Push the registers to print on the stack (SP is bogus)
+.386
+        push    gs
+        push    fs
+.286
+        push    bp
+        push    sp
+        push    ss
+        push    es
+        push    ds
+        push    cs
+        push    di
         push    si
+        push    dx
+        push    cx
+        push    bx
+        push    ax
 
         ; Base of registers string
         mov     si, offset [regAX]
 
-        ; AX
-        call    AuxIO_Print
-        call    AuxIO_TeletypeHexWord
-
-        ; BX
-        call    AuxIO_Print
-        mov     ax,bx
-        call    AuxIO_TeletypeHexWord
-
-        ; CX
-        call    AuxIO_Print
-        mov     ax,cx
-        call    AuxIO_TeletypeHexWord
-
-        ; DX
-        call    AuxIO_Print
-        mov     ax,dx
-        call    AuxIO_TeletypeHexWord
-
-        ; SI
-        call    AuxIO_Print
+        ; Print AX BX CX DX SI DI
+        mov     cx, 6
+    @@:
         pop     ax
-        call    AuxIO_TeletypeHexWord
-
-        ; DI
         call    AuxIO_Print
-        mov     ax,di
         call    AuxIO_TeletypeHexWord
+        loop    @B
 
         ; 1st row printed
         call    AuxIO_TeletypeNL
 
-        ; CS
+        ; Print CS DS ES SS SP BP
+        mov     cx, 6
+    @@:
+        pop     ax
         call    AuxIO_Print
-        mov     ax,cs
         call    AuxIO_TeletypeHexWord
-
-        ; DS
-        call    AuxIO_Print
-        mov     ax,ds
-        call    AuxIO_TeletypeHexWord
-
-        ; ES
-        call    AuxIO_Print
-        mov     ax,es
-        call    AuxIO_TeletypeHexWord
-
-        ; SS
-        call    AuxIO_Print
-        mov     ax,ss
-        call    AuxIO_TeletypeHexWord
-
-        ; SP
-        call    AuxIO_Print
-        mov     ax,sp
-        call    AuxIO_TeletypeHexWord
-
-        ; BP
-        call    AuxIO_Print
-        mov     ax,bp
-        call    AuxIO_TeletypeHexWord
+        loop    @B
 
         ; 2nd row printed
         call    AuxIO_TeletypeNL
-.386
-        ; FS
-        call    AuxIO_Print
-        mov     ax,fs
-        call    AuxIO_TeletypeHexWord
 
-        ; GS
+        ; Print FS GS
+        mov     cx, 2
+    @@:
+        pop     ax
         call    AuxIO_Print
-        mov     ax,gs
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
-.286
+        loop    @B
+
         ; Restore the flags
         popf
 
@@ -531,7 +502,7 @@ DEBUG_DumpRegisters     Proc
         ; Base of flags string
         ;~ mov     si, offset [flagsSF]
 
-        ; SF
+        ; Print SF
         call    AuxIO_Print
         mov     al, ah
         shr     al, 7
@@ -539,7 +510,7 @@ DEBUG_DumpRegisters     Proc
         add     al, '0'
         call    AuxIO_Teletype
 
-        ; ZF
+        ; Print ZF
         call    AuxIO_Print
         mov     al, ah
         shr     al, 6
@@ -547,7 +518,7 @@ DEBUG_DumpRegisters     Proc
         add     al, '0'
         call    AuxIO_Teletype
 
-        ; AF
+        ; Print AF
         call    AuxIO_Print
         mov     al, ah
         shr     al, 4
@@ -555,7 +526,7 @@ DEBUG_DumpRegisters     Proc
         add     al, '0'
         call    AuxIO_Teletype
 
-        ; PF
+        ; Print PF
         call    AuxIO_Print
         mov     al, ah
         shr     al, 2
@@ -563,7 +534,7 @@ DEBUG_DumpRegisters     Proc
         add     al, '0'
         call    AuxIO_Teletype
 
-        ; CF
+        ; Print CF
         call    AuxIO_Print
         mov     al, ah
         and     al, 01h
@@ -573,8 +544,10 @@ DEBUG_DumpRegisters     Proc
         ; 3rd and last row printed
         call    AuxIO_TeletypeNL
 
+        ; Restore caller state
         popa
         popf
+
         ret
 DEBUG_DumpRegisters     EndP
 ELSE
