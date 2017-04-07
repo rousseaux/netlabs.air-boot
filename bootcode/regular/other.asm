@@ -147,15 +147,23 @@ ENDIF
 
         ; Copyright
         mov     si, [offset Copyright]
-        call    MBR_Teletype
-        xor     si,si
-        call    MBR_TeletypeNL
-
+        call    VideoIO_Print
+        inc     [TextPosY]
+        mov     [TextPosX], 0
+        call    MBR_TeletypeSyncPos
 
         ;call    SOUND_Beep
 
         ; Show build info
         call    VideoIO_PrintBuildInfo
+
+        ; Let user know we started scanning...
+IFDEF   AUX_DEBUG
+        xor     si, si
+        call    MBR_TeletypeNL
+ENDIF
+        mov     si, offset [scanning_txt]
+        call    MBR_TeletypeBold
 
 ; Show message if com-port debugging is active
 IFDEF   AUX_DEBUG
@@ -165,40 +173,21 @@ IFDEF   AUX_DEBUG
         jz      @F
 
         ; Show initialization message
+        mov     ah, [TextPosY]
+        mov     [TextPosY], 2
         mov     si, offset AuxInitMsg
-        call    MBR_Teletype
+        ;~ call    MBR_Teletype
+        call    VideoIO_Print
 
         ; Sync output position
-        call    VideoIO_SyncPos
+        ;~ call    VideoIO_SyncPos
 
         ; Show port number
         mov     al, dl
         call    VideoIO_PrintByteDynamicNumber
-        xor     si, si
-        call    MBR_TeletypeNL
+        mov     [TextPosY], ah
     @@:
 ENDIF
-
-        xor     si,si
-        call    MBR_TeletypeNL
-
-        ;
-        ; Phase 1 Indicator
-        ;
-        mov     si, offset [Phase1]
-        call    MBR_Teletype
-
-        mov     si, offset OS2_InstallVolume
-        mov     al, [si]
-        test    al,al                                 ; See if phase 1 is active
-        jnz     MBR_Main_BootThrough
-        mov     si, offset NotActive
-
-    MBR_Main_BootThrough:
-        call    MBR_Teletype
-        xor     si,si
-        call    MBR_TeletypeNL
-
 
         ; Calculate Cooper-Bar Tables
     IFDEF   FX_ENABLED

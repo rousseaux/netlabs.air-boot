@@ -1258,29 +1258,39 @@ ENDIF
                 ;
 
                 ; Display number of physical disks found
-                mov     si, offset DisksFound
-                call    MBR_Teletype
+                IFNDEF  AUX_DEBUG
+                mov     [TextPosY], 3
+                ELSE
+                mov     [TextPosY], 4
+                ENDIF
+                mov     [TextPosX], 0
+                mov     si, offset [DisksFound]
+                call    VideoIO_Print
                 mov     al, [TotalHarddiscs]
-                call    VideoIO_SyncPos
+                mov     [TextColorFore], 0fh
                 call    VideoIO_PrintByteDynamicNumber
-                xor     si,si
-                call    MBR_TeletypeNL
+                mov     [TextColorFore], 07h
 
                 ; Display number of partitions found
-                mov     si, offset PartitionsFound
-                call    MBR_Teletype
+                inc     [TextPosY]
+                mov     [TextPosX], 0
+                mov     si, offset [PartitionsFound]
+                call    VideoIO_Print
                 mov     al, [CFG_Partitions]
-                call    VideoIO_SyncPos
                 call    VideoIO_PrintByteDynamicNumber
 
-                ; Dump summier disk-info for disks found
-                xor     si,si
-                call    MBR_TeletypeNL
-                call    MBR_TeletypeNL
-                call    VideoIO_SyncPos
-                mov     dl,80h
-                call    VideoIO_DumpDiskInfo
-
+                ; Display Phase 1 Indicator
+                inc     [TextPosY]
+                mov     [TextPosX], 0
+                mov     si, offset [Phase1]
+                call    VideoIO_Print
+                mov     si, offset [OS2_InstallVolume]
+                mov     al, [si]
+                test    al,al   ; See if phase 1 is active
+                jnz     @F
+                mov     si, offset [No]
+            @@:
+                call    VideoIO_Print
 
 
 
@@ -1383,17 +1393,26 @@ ENDIF
                 ; Inform user how to switch between post-screen and menu
                 ; by putting this info on the screen.
                 ;
-                xor     si,si
-                call    MBR_TeletypeNL
-                xor     si,si
-                call    MBR_TeletypeNL
+                mov     [TextPosY], 23
+                mov     [TextPosX], 0
+                mov     si, offset [TABMessage]
+                call    VideoIO_Print
+                inc     [TextPosY]
+                mov     [TextPosX], 57
                 call    MBR_TeletypeSyncPos
-                xor     si,si
-                call    MBR_TeletypeNL
-                call    MBR_TeletypeNL
-                mov     si, offset ShowMenu
+                mov     si, offset [PREPMessage]
                 call    MBR_TeletypeBold
+                mov     al,30
+                call    TIMER_WaitTicCount
+                mov     cl, sizeof [PREPMessage]
+                mov     al, ' '
+                call    VideoIO_PrintSingleMultiChar
 
+                mov     [TextPosX], 25
+                mov     si, offset [BootEndMsg2]
+                add     si, 39
+                mov     [TextColorFore], 08h
+                call    VideoIO_Print
 
 
                 ;

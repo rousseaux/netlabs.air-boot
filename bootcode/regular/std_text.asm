@@ -108,4 +108,5 @@ jwasm_txt       db  'JWasm',0
 masm_txt        db  'Masm',0
 wasm_txt        db  'Wasm',0
 tasm_txt        db  'Tasm',0
+scanning_txt    db  'Scanning...',0
 unknown_txt     db  '????',0
