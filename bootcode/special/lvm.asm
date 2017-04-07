@@ -124,24 +124,23 @@ LVM_CheckSectorCRC              Proc Near   Uses ax dx
         ret
 LVM_CheckSectorCRC              EndP
 
-; See if a LVM-sector is valid.
-; In  : si, pointer to sector
-; Out : CY if valid LVM sector, NC if not
-DriveIO_LVMSectorValid           Proc  Near
-        pusha
-
-        call    LVM_CheckSectorSignature
-        ; NC if no signature found
-        jnc     DriveIO_LVMSectorValid_End
-
-        call    LVM_CheckSectorCRC
-        ; Force valid !!!
-        ;~ stc
-
-    DriveIO_LVMSectorValid_End:
-        popa
+; Checks if a sector is a valid LVM-sector
+;  Sector is considered valid LVM-sector if both signature and CRC are correct.
+;        In: DS:SI - Sector that needs to get checked...
+;       Out: AL = 1 -> LVM Signature found
+;            AH = 1 -> CRC OK
+;            ZF = 0 -> Signature found and CRC OK, ZF = 1 -> Invalid LVM sector
+;      Note: AL thus indicates a valid signature and AH a valid CRC
+; Destroyed: None
+LVM_ValidateSector              Proc Near
+        xor     ax, ax                      ; Start with all zero bits
+        call    LVM_CheckSectorSignature    ; CF=1 -> Signature OK
+        rcl     al, 1                       ; Store CF in AL
+        call    LVM_CheckSectorCRC          ; CF=1 -> Checksum OK
+        rcl     ah, 1                       ; Store CF in AH
+        test    al, ah                      ; ZF=0 if both AL and AH are 1
         ret
-DriveIO_LVMSectorValid           EndP
+LVM_ValidateSector              EndP
 
 ; Updates Sector with valid LVM CRC
 ;  This one doesn't check, if it's really an LVM sector, so check before!

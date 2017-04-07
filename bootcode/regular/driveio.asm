@@ -1175,8 +1175,8 @@ DriveIO_LoadMasterLVMSector     Proc  Near
         mov     si,offset [LVMSector]
 
         ; See if this is a valid LVM-sector
-        ; CY=1 if valid
-        call    DriveIO_LVMSectorValid
+        ; ZF=0 if valid
+        call    LVM_ValidateSector
 
 ;        pushf
 ;        mov     ah,0
@@ -1191,7 +1191,7 @@ DriveIO_LoadMasterLVMSector     Proc  Near
 
 
         ; Yep, we found the master LVM-sector
-        jc      DriveIO_LoadMasterLVMSector_Found
+        jnz     DriveIO_LoadMasterLVMSector_Found
         ; Try next location
         loop    DriveIO_LoadMasterLVMSector_NextTry
 
