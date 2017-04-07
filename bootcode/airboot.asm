@@ -80,7 +80,7 @@ ENDIF
 ; To have room for the debug-code, the FX-code can only be enabled
 ; when AUX_DEBUG is not defined.
 ;
-;~ AUX_DEBUG       EQU
+AUX_DEBUG       EQU
 
 ;
 ; To have FX enabled, make sure FX_ENABLE is defined.
@@ -234,7 +234,7 @@ LocLVM_VolumeLetter         equ     12h ; Drive Letter for partition (C-Z or 0)
 LocLVM_Unknown              equ     13h ; unknown BYTE (can be used ?)
 LocLVM_InstallLetter        equ     13h ; unknown BYTE (can be used ?)
 
-; Truncated to 11 chars when  displayed in menu.
+; Truncated to 11 chars when displayed in menu.
 ; MiniLVM sets both to the same value.
 ; Also, MiniLVM uses a 0-byte terminator, so the maximum length is 19d.
 ; Same goes for LocLVM_DiskName.
@@ -1891,7 +1891,7 @@ CFG_IgnoreLVM           db  0   ; Ignores any LVM-Information
 
 ;
 ; Moved here to make room for packed hiddenparttable.
-; This gets filled when drive-letters that are assigned using the dl-feature.
+; This gets filled with drive-letters that are assigned using the dl-feature.
 ;
 DriveLetters            db  LocIPT_MaxPartitions dup (0)
                         ; Format is:
