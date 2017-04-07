@@ -1869,6 +1869,23 @@ ENDIF
 DriveIO_GatherDiskInfo  EndP
 
 
+;------------------------------------------------------------------------------
+; Check if the BIOS disk number in DL is a harddisk and in range
+;------------------------------------------------------------------------------
+; IN    : DL BIOS disk number (80h etc)
+; OUT   : CF=1 if invalid disk number or out of range
+; NOTE  : Only modifies flags
+;------------------------------------------------------------------------------
+DriveIO_IsValidHarddisk     Proc    Near    Uses dx
+        cmp     dl, 80h                 ; BIOS disk number must be at least 80h
+        jb      @F                      ; Not a harddisk, exit with CY
+        mov     dh, dl                  ; Save to do compare
+        sub     dh, 80h                 ; Now 0 based disk number
+        inc     dh                      ; Now 1 based disk number
+        cmp     [TotalHarddiscs], dh    ; Out of range, exit with CY
+    @@: ret
+DriveIO_IsValidHarddisk     EndP
+
 
 ; Values for sectors per track table corresponding to DriveIO_IsHugeDrive return value.
 secs_per_track_table    db    63,127,255,255,255,255
