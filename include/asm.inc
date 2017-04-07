@@ -29,6 +29,50 @@ MPop Macro reglist
    EndM
 EndM
 
+; Macro to show some text when using debugging.
+; Possibly a register dump is done after this code, so we save and restore
+; the flags too.
+DBG_TEXT_OUT_AUX   MACRO   txt
+        local   skip00              ; macro local jump labels
+        local   txt00               ; macro local storage definitions
+        jmp     skip00              ; jump over the string
+txt00   db      10,txt,10,0         ; macro text-string parameter inserted here
+    skip00:
+        pushf                       ; save flags
+        push    si                  ; used to print the string
+        mov     si, offset [txt00]  ; address of the string
+        call    AuxIO_Print         ; output to serial port
+        pop     si                  ; restore previous value
+        popf                        ; restore flags
+ENDM
+
+; Push CPU working context
+PUSHRF  MACRO
+        pusha
+        pushf
+ENDM
+
+; Restore CPU working context
+POPRF   MACRO
+        popf
+        popa
+ENDM
+
+; Push CPU working context including DS and ES
+PUSHRSF MACRO
+        pusha
+        push    ds
+        push    es
+        pushf
+ENDM
+
+; Restore CPU working context including DS and ES
+POPRSF  MACRO
+        popf
+        pop     es
+        pop     ds
+        popa
+ENDM
 
 ; Rousseau:
 ; My editor (Geany) keeps auto-completing 'call' to 'callfar' because
