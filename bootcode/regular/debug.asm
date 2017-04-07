@@ -95,6 +95,8 @@ DEBUG_ShowHelp      EndP
 dbg_call_list:
         db      't'
         dw      offset  DEBUG_Test
+        db      'd'
+        dw      offset  DEBUG_DebugScreenToggle
         db      'l'
         dw      offset  DEBUG_DumpDriveLetters
         db      'g'
@@ -319,6 +321,81 @@ ELSE
 DEBUG_Test_MATH_Mul32   Proc    Near
         ret
 DEBUG_Test_MATH_Mul32   EndP
+ENDIF
+
+
+
+;
+; Toggle display of debug video page.
+;
+IF  0
+DEBUG_DebugScreenToggle Proc
+        pushf
+        pusha
+
+        mov     si, offset $+5
+        jmp     @F
+        db      10,'DebugScreenToggle:',10,0
+prvpg   db      00h
+hdr     db      10,'[Debug Console]',13,10,0
+@@:     call    AuxIO_Print
+
+        ; Get current page in BH
+        mov     ah, 0fh
+        int     10h
+
+        ; Already debug page ?
+        cmp     bh, 03h
+        je      DEBUG_DebugScreenToggle_back
+
+        ; Remember page
+        mov     [prvpg], bh
+
+        ; Switch to debug page
+        mov     al, 03h
+        mov     ah, 05h
+        int     10h
+
+        ; Get cursor position in DX (DH=row, DL=column)
+        ;~ mov     ah, 03h
+        ;~ mov     bh, 03h
+        ;~ int     10h
+
+        ;~ mov     al, 01h
+        ;~ mov     bh, 03h
+        ;~ mov     bl, 07h
+        ;~ mov     bp, offset [hdr]
+        ;~ mov     cx, sizeof(hdr)
+        ;~ mov     ah, 13h
+        ;~ int     10h
+
+        ;~ mov     bh, 03h
+        ;~ mov     dh, 00h
+        ;~ mov     dl, 00h
+        ;~ mov     ah, 02h
+        ;~ int     10h
+
+        mov     si, offset [hdr]
+        call    DBG_Teletype
+
+        jmp     DEBUG_DebugScreenToggle_end
+
+    DEBUG_DebugScreenToggle_back:
+        ; Switch back to previous page
+        mov     al, [prvpg]
+        mov     ah, 05h
+        int     10h
+        jmp     DEBUG_DebugScreenToggle_end
+
+    DEBUG_DebugScreenToggle_end:
+        popa
+        popf
+        ret
+DEBUG_DebugScreenToggle EndP
+ELSE
+DEBUG_DebugScreenToggle Proc
+        ret
+DEBUG_DebugScreenToggle EndP
 ENDIF
 
 
@@ -1000,6 +1077,25 @@ DEBUG_Dump2     Proc  Near
         ret
 DEBUG_Dump2     EndP
 ENDIF
+
+
+
+;
+; Like the MBR version, but uses video page 3
+;
+DBG_Teletype    Proc Near   Uses ax bx cx
+        mov     ah, 0Eh
+        mov     bh, 03h
+        mov     bl, 07h
+    DBGT_Loop:
+        lodsb
+        or      al, al
+        jz      DBGT_End
+        int     10h
+        jmp     DBGT_Loop
+    DBGT_End:
+        ret
+DBG_Teletype    EndP
 
 
 
