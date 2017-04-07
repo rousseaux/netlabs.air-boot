@@ -80,7 +80,7 @@ ENDIF
 ; To have room for the debug-code, the FX-code can only be enabled
 ; when AUX_DEBUG is not defined.
 ;
-AUX_DEBUG       EQU
+;~ AUX_DEBUG       EQU
 
 ;
 ; To have FX enabled, make sure FX_ENABLE is defined.
