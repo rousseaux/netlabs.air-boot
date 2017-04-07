@@ -1292,6 +1292,8 @@ ENDIF
             @@:
                 call    VideoIO_Print
 
+                ; Display information about the disks found
+                call    VideoIO_DisplayDiskInfo
 
 
 
