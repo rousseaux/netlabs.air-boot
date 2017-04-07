@@ -416,20 +416,6 @@ ENDIF
         ret
 DriveIO_SavePartition   EndP
 
-; Keeps DS:SI for caller
-DriveIO_LoadTmpSector   Proc Near
-        mov     si, offset TmpSector
-        call    DriveIO_LoadSector
-        ret
-DriveIO_LoadTmpSector   EndP
-
-; Keeps DS:SI for caller
-DriveIO_SaveTmpSector   Proc Near
-        mov     si, offset TmpSector
-        call    DriveIO_SaveSector
-        ret
-DriveIO_SaveTmpSector   EndP
-
 
 
 ; Keeps DS:SI for caller, sets carry if valid LVM sector encountered

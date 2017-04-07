@@ -417,10 +417,9 @@ ENDIF
         adc     bx, wptr [CurPartition_Location+2] ;  sectors
 
 
-        ; Sets up DS:SI - TmpSector
-        call    DriveIO_LoadTmpSector         ; Loads Boot record
-
-
+        ; Load the partition sector
+        mov     si, offset [TmpSector]
+        call    DriveIO_LoadSector
 
         push    si
             mov     bx, 4B4Dh                  ; Magic 'MK' :)
