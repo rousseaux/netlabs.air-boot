@@ -2350,8 +2350,18 @@ MasterLVMLBA                dd      ?
 
 
 ; -----------------------------------------------------------------------------
-;                                                                  I13X BUFFER
+;                                                                   INT13X DAP
 ; -----------------------------------------------------------------------------
+
+; Disk Address Package that holds information for LBA-access using INT13X
+INT13X_DAP                  db      ?       ; Size of paket, inserted by code
+                            db      ?       ; Reserved
+INT13X_DAP_NumBlocks        dw      ?       ; Number of blocks
+INT13X_DAP_Transfer         dd      ?       ; Transfer Adress
+INT13X_DAP_Absolute         dd      ?       ; Absolute Sector
+                            dd      ?       ; Second Part of QWORD
+INT13X_DAP_Size = $-offset [INT13X_DAP]     ; Calculated size
+
 ;
 ; BOOKMARK: Temporary buffer for 48h INT13X bios call.
 ;

@@ -88,6 +88,7 @@ GetLenOfStrings     EndP
 ; DO PREPARING STUFF.
 ;
 PRECRAP_Main    Proc Near
+
         ; First initialize Variable-Area (everything with NUL)
         ; We use the start instead of the variables because they could be 'orged'
         ; to an offset. We want everything after the code to be nullified.
@@ -368,6 +369,11 @@ PRECRAP_Main    Proc Near
     ;
     INT13X_Supported:
 
+
+        ;
+        ; Setup the size of the INT13X Disk Address Packet
+        ;
+        mov     [INT13X_DAP], INT13X_DAP_Size
 
         ;
         ; Check valididy of the AiR-BOOT Configuration.

@@ -435,15 +435,7 @@ DriveIO_SaveLVMSector   Proc Near  Uses ax bx cx dx
         ret
 DriveIO_SaveLVMSector   EndP
 
-; Rousseau: Move this to BSS and merge with int13xbuf there.
 
-; Memory-Block that holds information for LBA-access via INT 13h
-DriveIO_DAP                 db      10h ; Size of paket
-                            db      0   ; Reserved
-DriveIO_DAP_NumBlocks       dw      0   ; Number of blocks
-DriveIO_DAP_Transfer        dd      0   ; Transfer Adress
-DriveIO_DAP_Absolute        dd      0   ; Absolute Sector
-                            dd      0   ; Second Part of QWORD
 
 ; Special error message instead of "LOAD ERROR" during partition scanning,
 ;  so users will notice that something is bad with their partition table(s)
@@ -516,16 +508,16 @@ DriveIO_LoadSector      Proc Near  Uses ax bx cx dx ds si es di
 
     DIOLS_UseExtension:
         push    cx
-        mov     cs:[DriveIO_DAP_NumBlocks], 1         ; Copy ONE sector
-        mov     wptr cs:[DriveIO_DAP_Transfer+0], si
+        mov     cs:[INT13X_DAP_NumBlocks], 1         ; Copy ONE sector
+        mov     wptr cs:[INT13X_DAP_Transfer+0], si
         mov     cx, ds
-        mov     wptr cs:[DriveIO_DAP_Transfer+2], cx ; Fill out Transfer Adress
-        mov     wptr cs:[DriveIO_DAP_Absolute+0], ax
-        mov     wptr cs:[DriveIO_DAP_Absolute+2], bx ; Fill out Absolute Sector
+        mov     wptr cs:[INT13X_DAP_Transfer+2], cx  ; Fill out Transfer Adress
+        mov     wptr cs:[INT13X_DAP_Absolute+0], ax
+        mov     wptr cs:[INT13X_DAP_Absolute+2], bx  ; Fill out Absolute Sector
         push    cs
         pop     ds
-        mov     si, offset DriveIO_DAP
-        mov     ah, 42h                        ; Extended Read
+        mov     si, offset [INT13X_DAP]
+        mov     ah, 42h                              ; Extended Read
         int     13h
         pop     cx
         jnc     DIOLS_Success
@@ -551,20 +543,20 @@ DriveIO_LoadSector      EndP
 DriveIO_ReadSectorLBA       Proc Near  Uses bx cx dx si di ds es
 
         ; One sector to read
-        mov     cs:[DriveIO_DAP_NumBlocks], 1
+        mov     cs:[INT13X_DAP_NumBlocks], 1
 
         ; Setup transfer address
-        mov     wptr cs:[DriveIO_DAP_Transfer+0], si    ; offset
-        mov     wptr cs:[DriveIO_DAP_Transfer+2], di    ; segment
+        mov     wptr cs:[INT13X_DAP_Transfer+0], si     ; offset
+        mov     wptr cs:[INT13X_DAP_Transfer+2], di     ; segment
 
         ; Setup LBA64 address of requested sector
-        mov     wptr cs:[DriveIO_DAP_Absolute+0], cx    ; low word lower part
-        mov     wptr cs:[DriveIO_DAP_Absolute+2], bx    ; high word lower part
-        mov     wptr cs:[DriveIO_DAP_Absolute+4], 0     ; low word upper part
-        mov     wptr cs:[DriveIO_DAP_Absolute+6], 0     ; high word upper part
+        mov     wptr cs:[INT13X_DAP_Absolute+0], cx     ; low word lower part
+        mov     wptr cs:[INT13X_DAP_Absolute+2], bx     ; high word lower part
+        mov     wptr cs:[INT13X_DAP_Absolute+4], 0      ; low word upper part
+        mov     wptr cs:[INT13X_DAP_Absolute+6], 0      ; high word upper part
 
         ; Address of packet
-        mov     si, offset [DriveIO_DAP]                ; disk address packet
+        mov     si, offset [INT13X_DAP]                 ; disk address packet
 
         ; Do the extended read
         mov     ah, 42h                                 ; read function
@@ -605,20 +597,20 @@ DriveIO_WriteSectorLBA      Proc Near  Uses bx cx dx si di ds es
         and     al, 03h
 
         ; One sector to read
-        mov     cs:[DriveIO_DAP_NumBlocks], 1
+        mov     cs:[INT13X_DAP_NumBlocks], 1
 
         ; Setup transfer address
-        mov     wptr cs:[DriveIO_DAP_Transfer+0], si    ; offset
-        mov     wptr cs:[DriveIO_DAP_Transfer+2], di    ; segment
+        mov     wptr cs:[INT13X_DAP_Transfer+0], si     ; offset
+        mov     wptr cs:[INT13X_DAP_Transfer+2], di     ; segment
 
         ; Setup LBA64 address of requested sector
-        mov     wptr cs:[DriveIO_DAP_Absolute+0], cx    ; low word lower part
-        mov     wptr cs:[DriveIO_DAP_Absolute+2], bx    ; high word lower part
-        mov     wptr cs:[DriveIO_DAP_Absolute+4], 0     ; low word upper part
-        mov     wptr cs:[DriveIO_DAP_Absolute+6], 0     ; high word upper part
+        mov     wptr cs:[INT13X_DAP_Absolute+0], cx     ; low word lower part
+        mov     wptr cs:[INT13X_DAP_Absolute+2], bx     ; high word lower part
+        mov     wptr cs:[INT13X_DAP_Absolute+4], 0      ; low word upper part
+        mov     wptr cs:[INT13X_DAP_Absolute+6], 0      ; high word upper part
 
         ; Address of packet
-        mov     si, offset [DriveIO_DAP]                ; disk address packet
+        mov     si, offset [INT13X_DAP]                 ; disk address packet
 
         ; Do the extended write
         mov     ah, 43h                                 ; write function
@@ -915,16 +907,16 @@ DriveIO_SaveSector              Proc Near  Uses ax bx cx dx ds si es di
 
     DIOSS_UseExtension:
         push    cx
-        mov     cs:[DriveIO_DAP_NumBlocks], 1        ; Copy ONE sector
-        mov     wptr cs:[DriveIO_DAP_Transfer+0], si
+        mov     cs:[INT13X_DAP_NumBlocks], 1         ; Copy ONE sector
+        mov     wptr cs:[INT13X_DAP_Transfer+0], si
         mov     cx, ds
-        mov     wptr cs:[DriveIO_DAP_Transfer+2], cx ; Fill out Transfer Adress
-        mov     wptr cs:[DriveIO_DAP_Absolute+0], ax
-        mov     wptr cs:[DriveIO_DAP_Absolute+2], bx ; Fill out Absolute Sector
+        mov     wptr cs:[INT13X_DAP_Transfer+2], cx  ; Fill out Transfer Adress
+        mov     wptr cs:[INT13X_DAP_Absolute+0], ax
+        mov     wptr cs:[INT13X_DAP_Absolute+2], bx  ; Fill out Absolute Sector
         push    cs
         pop     ds
-        mov     si, offset DriveIO_DAP
-        mov     ax, 4300h                  ; Extended Write (No Verify)
+        mov     si, offset [INT13X_DAP]
+        mov     ax, 4300h                            ; Extended Write (No Verify)
         int     13h
         pop     cx
         jnc     DIOSS_Success
@@ -980,13 +972,13 @@ DriveIO_LoadMasterLVMSector     Proc  Near
         mov     cx,3
     DriveIO_LoadMasterLVMSector_NextTry:
         ; Number of sectors to read
-        mov     [DriveIO_DAP_NumBlocks],1
+        mov     [INT13X_DAP_NumBlocks],1
 
         ; Setup destination address
         mov     si, offset [LVMSector]
-        mov     word ptr [DriveIO_DAP_Transfer+0],si
+        mov     word ptr [INT13X_DAP_Transfer+0],si
         mov     ax, ds
-        mov     word ptr [DriveIO_DAP_Transfer+2],ax
+        mov     word ptr [INT13X_DAP_Transfer+2],ax
 
         ; Get the sector-number of the next possible LVM sector (255,127,63)
         ; using the translation table and the counter as the index
@@ -1019,11 +1011,35 @@ DriveIO_LoadMasterLVMSector     Proc  Near
     ENDIF
 
         ; Setup the requested LBA sector number
-        mov     word ptr [DriveIO_DAP_Absolute+0],ax    ; LBA low                   NORMAL I/O GEBRUIKEN !
-        mov     word ptr [DriveIO_DAP_Absolute+2],00h   ; LBA high
-        mov     si, offset DriveIO_DAP                  ; address request packet
+        mov     word ptr [INT13X_DAP_Absolute+0],ax    ; LBA low                   NORMAL I/O GEBRUIKEN !
+        mov     word ptr [INT13X_DAP_Absolute+2],00h   ; LBA high
+        mov     si, offset [INT13X_DAP]                ; address request packet
         mov     ah, 42h
-        int     13h                                     ; do the i/o
+        int     13h                                    ; do the i/o, CF=1->error, CF=0->success
+
+IFDEF   AUX_DEBUG
+                pushf
+                pusha
+                pushf
+                xor     ax, ax
+                mov     al, dl
+                call    AuxIO_TeletypeHexWord
+                mov     al, '#'
+                call    AuxIO_Teletype
+                popf
+                mov     ax,0000h
+                rcl     al, 1
+                call    AuxIO_TeletypeHexWord
+                mov     al, '#'
+                call    AuxIO_Teletype
+                mov     ax,word ptr [INT13X_DAP_Absolute+0]
+                call    AuxIO_TeletypeHexWord
+                mov     al, '#'
+                call    AuxIO_Teletype
+                popa
+                popf
+ENDIF
+
         cmc     ; Complement carry so we can exit imm. on error
         jnc     DriveIO_LoadMasterLVMSector_End  ; oops, return with NC
 
@@ -1056,7 +1072,7 @@ DriveIO_LoadMasterLVMSector     Proc  Near
 
     DriveIO_LoadMasterLVMSector_Found:
         ; Store the address for later use.
-        mov     ax, word ptr [DriveIO_DAP_Absolute]
+        mov     ax, word ptr [INT13X_DAP_Absolute]
         mov     word ptr [MasterLVMLBA], ax
 
     DriveIO_LoadMasterLVMSector_End:
