@@ -119,6 +119,8 @@ BIOS_COM_PORT           EQU     1
 ; Note that is has moved since v1.07
 BIOS_AUXPARMS_DEFAULT   EQU     (AUX_INIT_PARMS SHL 8) OR BIOS_COM_PORT
 
+; Default byte value for BIOS_BootDisk variabls
+BIOS_BOOTDISK_DEFAULT   EQU     80h
 
 
 
@@ -491,14 +493,9 @@ MBR_Start:
                 ;sti            ; This opcode is dedicated to:
                                 ; =MICROSOFT JUMP DEPARTMENT=
 
-
                 ; Push all registers with values provided by the BIOS
                 ; on the stack.
                 pusha
-                ; Temporary save SS and SP so we still have access to this
-                ; stack after we have setup our own.
-                mov     dx,ss
-                mov     bx,sp
 
                 ;
                 ; Setup some base stuff
@@ -538,6 +535,11 @@ MBR_Start:
                 cld
                 rep     movsw
 
+                ; Temporary save SS and SP so we still have access to this
+                ; stack after we have setup our own.
+                mov     cx,ss
+                mov     bx,sp
+
                 ; Code an intersegment jump to the new location.
                 ; jmp    BootBaseSeg:BootBaseExec
                 ; Note that DX:BX containts the old SS:SP.
@@ -569,10 +571,10 @@ MBR_HaltSys:
                 jmp     MBR_HaltSys
 
 
-                ;
-                ; Some small space for variables.
-                ;
+                ; Base of some MBR variables
                 ORIGIN  0003Ch
+
+MBR_Variables:
 
 ; Comport settings.
 ; It had to be moved to create room for the double I13X signature.
@@ -580,11 +582,18 @@ MBR_HaltSys:
 ; because that area is crc-protected and would not allow 'poking'.
 BIOS_AuxParms   dw      BIOS_AUXPARMS_DEFAULT
 
+; When the BIOS turns over control to the MBR, DL holds the BIOS disk-number
+; from which the boot was initiated. This would normally be 80h, corresponding
+; to the first physical disk. However, some modern BIOSses can directly boot
+; from other disks, so AirBoot cannot assume being loaded from 80h anymore.
+; So here we store the BIOS disk-number passed in DL when AirBoot got control.
+BIOS_BootDisk   db      BIOS_BOOTDISK_DEFAULT   ; Get overwritten with 'DL'
 
+; Reserved space for future variables.
 IFDEF   AUX_DEBUG
-reserved        db      6   dup('X')
+reserved        db      5   dup('X')
 ELSE
-reserved        db      6   dup(0)
+reserved        db      5   dup(0)
 ENDIF
 
 
@@ -593,6 +602,7 @@ ENDIF
 ; -----------------------------------------------------------------------------
 ;                                                           SECOND ENTRY-POINT
 ; -----------------------------------------------------------------------------
+
                 ;
                 ; We arrive here after the first jump using the 'A' of the
                 ; AiR-BOOT signature. So we ensure the jump is always at
@@ -684,7 +694,7 @@ MBR_GetCheckOfSector    EndP
 
 ;
 ; When we arrive here we are running at 8000:0000.
-; DX:BX contains the SS:SP of the old stack.
+; CX:BX contains the SS:SP of the old stack.
 ;
 
 ;
@@ -703,43 +713,49 @@ MBR_RealStart:
                 pop     ds              ; Set DS=ES to Code Segment
 
                 ;
-                ; Push the old SS:SP which was saved in DX:BX on the new stack.
+                ; Push the old SS:SP which was saved in CX:BX on the new stack.
                 ;
-                push    dx      ; Old SS
+                push    cx      ; Old SS
                 push    bx      ; Old SP
 
+                ;
+                ; Store the BIOS disk-number AirBoot was loaded from.
+                ;
+                mov     [BIOS_BootDisk], dl
 
                 ; Load the configuration-sectors from disk.
                 ; These are the main configuration sector and the various
                 ; tables that follow it upto but not including the MBR backup.
-                mov     bx, offset Configuration
-                mov     dx, 0080h       ; First harddrive
-                mov     cx, 0037h       ; Config sector is at 55d (CHS)
-
-                ; Call the i/o-part
-                call    MBR_LoadConfig
+                mov     bx, offset Configuration    ; Location in RAM
+                mov     cx, 0037h                   ; Config sector is at 55d
+                mov     al, (MBR_BackUpMBR - Configuration) / 200h
+                mov     ah, 02h
+                ; DL is already loaded with BIOS disk-number
+                int     13h                             ; Call BIOS service
                 jnc     MBR_ConfigCopy_NoError
 
                 ; Some error occured
     MBR_ConfigCopy_LoadError:
-                call    MBR_LoadError               ; Will Abort BootUp
+                jmp     MBR_LoadError                   ; Will Abort BootUp
 
-                ; Load the code sectors
+                ; Load the code-sectors from disk.
+                ; [MBR_CodeSecs] is filled in by the FIXCODE helper that post
+                ; processes the AIRBOOT loader image after it has been built.
     MBR_ConfigCopy_NoError:
-                mov     bx, offset FurtherMoreLoad  ; Directly after MBR in mem
-                mov     dx, 0080h                   ; First harddrive
-                mov     cx, 0002h                   ; Start at second sector
-                mov     ah, 02h                     ; Read sectors
-
-                ; This location is in the MBR.
-                ; It is filled in by the FIXCODE helper that post processes
-                ; the AIRBOOT loader image after it has been built.
-                ; FIXCODE also embeds the MBR protection-image.
-                mov     al, ds:[10h]                ; Number of code sectors
-                int     13h                         ; Call BIOS service
+                mov     bx, offset  FurtherMoreLoad     ; Directly after MBR
+                mov     cx, 0002h                       ; Start at 2nd sector
+                mov     al, [MBR_CodeSecs]              ; Number of code sectors
+                mov     ah, 02h                         ; Read sectors
+                ; DL is already loaded with BIOS disk-number
+                int     13h                             ; Call BIOS service
                 jnc     MBR_RealStart_NoError
-                jmp     MBR_ConfigCopy_LoadError
 
+                ; Some error occured
+                jmp     MBR_LoadError                   ; Will Abort BootUp
+
+
+                ; I13X Signatures
+                ORIGIN  000d0h
 
                 ; [v1.05+]
                 ; Signature for IBM's LVM to detect our "powerful" features ;)
@@ -755,7 +771,6 @@ MBR_RealStart:
                 ; in the eCS LVM MBR-code. They are at different places in
                 ; the v1.x and v2.x LVM MBR-code. Other code might depend on
                 ; their presence. Let's protect their location.
-                ORIGIN  000d0h
                 db      'I13X',0,'I13X',0
 
 
@@ -804,30 +819,14 @@ MBR_RealStart:
 include text/txtmbr.asm                        ; All translateable Text in MBR
 ;------------------------------------------------------------------------------
 
-
-
-; This is an ugly kludge function to create space for the
-; double 'I13X' signature.
-; It loads the configuration sectors, but bx,cx and dx are not initialized
-; in this function. That's done around line 500.
-; Putting this few bytes here creates just enough room.
-MBR_LoadConfig  Proc Near
-        ; Changed from conditional assembler to calculated value
-        ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
-        ; Size of the ab-configuration in 512 byte sectors
-        mov     al, (MBR_BackUpMBR - Configuration) / 200h
-        mov     ah,02h
-        int     13h
-        ret
-MBR_LoadConfig  EndP
+                ; Disk Signature
+                ORIGIN  001B8h
 
 
                 ; Disk Signature
                 ; Note that in an LVM 2.x MBR this collides
                 ; with the dummy PTE that it uses to look for IBM-BM
                 ; on the second harddisk.
-                ORIGIN  001B8h
-
                 ; AiR-BOOT installer will merge the field
                 ; from the MBR it replaces.
     MBR_DrvSig  db      'DSIG'
@@ -839,9 +838,7 @@ MBR_LoadConfig  EndP
     MBR_Spare   dw      '$$'
 
 
-                ;
                 ; Partition Table.
-                ;
                 ORIGIN  001BEh
 
                 ; The 4 entries just for show.
@@ -869,7 +866,7 @@ MBR_LoadConfig  EndP
 ;                                                           FILE-SYSTEM TABLES
 ; -----------------------------------------------------------------------------
 
-
+                ; First sector the rest of the loader image
                 ORIGIN  00200h
 
 ;
@@ -929,12 +926,19 @@ FileSysNames    db  'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
 ;                               ENTRY-POINT AFTER LOADING THE REST OF THE CODE
 ; -----------------------------------------------------------------------------
 
+                ; The entry-point jumped to from the MBR code
                 ORIGIN  00400h
 
 
-; ############################################
-; # ENTRY-POINT AFTER ALL THE INITIAL HASSLE #
-; ############################################
+;##############################################################################
+;# AiR_BOOT_Start :: This is where the real work begins                       #
+;# -------------------------------------------------------------------------- #
+;# At this point, all of AirBoot is loaded, including its configuration.      #
+;# First, some setup is done, which includes the initialization of variables  #
+;# in the BSS. After that, disks are scanned for partitions and the required  #
+;# house keeping is done to incorporate changes from the previous boot. Then  #
+;# the partition list is prepared and the menu is presented.                  #
+;##############################################################################
 ; BOOKMARK: AiR_BOOT_Start (AiR-BOOT now completely loaded)
 AiR_BOOT_Start:
 
@@ -953,6 +957,20 @@ AiR_BOOT_Start:
         pop     [OldSP]
         pop     [OldSS]
 
+
+        ; Verify we still got the BIOS disk in DL
+        IFDEF   AUX_DEBUG
+            mov     ax, dx
+            call    AuxIO_TeletypeHexWord
+            call    AuxIO_TeletypeNL
+            mov     ax, bx
+            call    AuxIO_TeletypeHexWord
+            call    AuxIO_TeletypeNL
+            xor     ah, ah
+            mov     al, [BIOS_BootDisk]
+            call    AuxIO_TeletypeHexWord
+            call    AuxIO_TeletypeNL
+        ENDIF
 
 ; -----------------------------------------------------------------------------
 ;                                                      IBM-BM BOOT PREPARATION
@@ -1038,8 +1056,6 @@ AiR_BOOT_Start:
             ENDIF
 
 
-
-
             ;!
             ;! DEBUG_BLOCK
             ;! Dump the registers at this point.
@@ -1057,6 +1073,12 @@ AiR_BOOT_Start:
 ; -----------------------------------------------------------------------------
 ;                                                               PARTITION SCAN
 ; -----------------------------------------------------------------------------
+
+
+
+
+
+
                 ;
                 ; BOOKMARK: Scan all partitions
                 ;
