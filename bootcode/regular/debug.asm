@@ -495,7 +495,8 @@ IF  1
 DEBUG_Test  Proc
     pushf
     pusha
-    ; Put call to test-function here...
+    call    DEBUG_Test_CONV_BinToPBCD
+    ;~ call    DEBUG_Test_MATH_Mul32
     popa
     popf
     ret
@@ -504,6 +505,39 @@ ELSE
 DEBUG_Test  Proc
     ret
 DEBUG_Test  EndP
+ENDIF
+
+
+
+;
+; Test the packed BCD conversion function.
+;
+IF 1
+DEBUG_Test_CONV_BinToPBCD   Proc
+        pushf
+        pusha
+        xor     cx, cx
+    next_value:
+        mov     al, cl
+        call    AuxIO_TeletypeHexByte
+        mov     al, ' '
+        call    AuxIO_Teletype
+        mov     al, cl
+        call    CONV_BinToPBCD
+        call    AuxIO_TeletypeHexWord
+        call    AuxIO_TeletypeNL
+
+        inc     cx
+        cmp     cx, 0ffh
+        jbe     next_value
+        popa
+        popf
+        ret
+DEBUG_Test_CONV_BinToPBCD   EndP
+ELSE
+DEBUG_Test_CONV_BinToPBCD   Proc
+        ret
+DEBUG_Test_CONV_BinToPBCD   EndP
 ENDIF
 
 
