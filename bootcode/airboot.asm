@@ -960,16 +960,18 @@ AiR_BOOT_Start:
 
         ; Verify we still got the BIOS disk in DL
         IFDEF   AUX_DEBUG
-            mov     ax, dx
-            call    AuxIO_TeletypeHexWord
-            call    AuxIO_TeletypeNL
-            mov     ax, bx
-            call    AuxIO_TeletypeHexWord
-            call    AuxIO_TeletypeNL
-            xor     ah, ah
-            mov     al, [BIOS_BootDisk]
-            call    AuxIO_TeletypeHexWord
-            call    AuxIO_TeletypeNL
+                IF 1
+                pusha
+                    push    si
+                    mov     si, offset $+5
+                    jmp     @F
+                    db      10,'## AiR_BOOT_Start ##',10,0
+                    @@:
+                    call    AuxIO_Print
+                    pop     si
+                    call    DEBUG_DumpRegisters
+                popa
+                ENDIF
         ENDIF
 
 ; -----------------------------------------------------------------------------
@@ -1021,7 +1023,7 @@ AiR_BOOT_Start:
             ;! Let's see what the BIOS supplied us with...
             ;! Uncomment below to activate.
             ;!
-            __DUMP_BIOS_REGS__  EQU
+            ;~ __DUMP_BIOS_REGS__  EQU
             IFDEF   AUX_DEBUG
                 IFDEF   __DUMP_BIOS_REGS__
                     pushf
@@ -1065,9 +1067,9 @@ AiR_BOOT_Start:
                 ;~ call    DEBUG_DumpRegisters
                 ; Dump drive-letters of dl-feature before partitions are
                 ; scanned and processed.
-                call    DEBUG_DumpDriveLetters
-                call    DEBUG_DumpVolumeLetters
-                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpDriveLetters
+                ;~ call    DEBUG_DumpVolumeLetters
+                ;~ call    DEBUG_DumpPartitionXref
             ENDIF
 
 ; -----------------------------------------------------------------------------
@@ -1095,9 +1097,9 @@ AiR_BOOT_Start:
                 ;~ call    DEBUG_DumpPartitionPointers
                 ;~ call    DEBUG_DumpNewPartTable
                 ;~ call    DEBUG_DumpDriveLetters
-                call    DEBUG_DumpDriveLetters
-                call    DEBUG_DumpVolumeLetters
-                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpDriveLetters
+                ;~ call    DEBUG_DumpVolumeLetters
+                ;~ call    DEBUG_DumpPartitionXref
             ENDIF
 
 
@@ -1125,9 +1127,9 @@ AiR_BOOT_Start:
                 ;~ call    DEBUG_DumpPartitionPointers
                 ;~ call    DEBUG_DumpNewPartTable
                 ;~ call    DEBUG_DumpDriveLetters
-                call    DEBUG_DumpDriveLetters
-                call    DEBUG_DumpVolumeLetters
-                call    DEBUG_DumpPartitionXref
+                ;~ call    DEBUG_DumpDriveLetters
+                ;~ call    DEBUG_DumpVolumeLetters
+                ;~ call    DEBUG_DumpPartitionXref
             ENDIF
 
 
