@@ -33,7 +33,7 @@
 ; single source for other formats. The AiR-BOOT signature and the
 ; OS/2 BLDLEVEL use this basic version information.
 ;
-include version.inc
+include ../include/version.inc
 
 ;
 ; Include OS/2 BLDLEVEL Information.

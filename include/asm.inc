@@ -181,6 +181,26 @@ ORIGIN  MACRO   loc
 ENDM
 
 
+;
+; This macro inserts the AiR-BOOT signature at the place where it is invoked.
+;
+InsertAirbootSignature  MACRO   lang
+    db      'AiRBOOT'
+    dw      AB_SIG_DATE
+    dw      AB_SIG_YEAR
+    dw      AB_SIG_VERSION
+    ; Wasm can only process the reference to 'lang' in pass 2 because it comes
+    ; from an included file which it has not processed yet at pass 1.
+    IFDEF   WASM
+        IF2
+            db      lang
+        ENDIF
+    ; The other assemblers process 'lang' correctly in pass 1.
+    ELSE
+        db      lang
+    ENDIF
+ENDM
+
 
 ; Shortcuts for pointer-types
 bptr                             equ   byte ptr
