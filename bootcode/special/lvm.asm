@@ -148,20 +148,26 @@ LVM_CheckSectorCRC              Proc Near   Uses ax bx dx
 LVM_CheckSectorCRC              EndP
 
 ; Checks if a sector is a valid LVM-sector
-;  Sector is considered valid LVM-sector if both signature and CRC are correct.
-;        In: DS:SI - Sector that needs to get checked...
-;       Out: AL = 1 -> LVM Signature found
-;            AH = 1 -> CRC OK
-;            ZF = 0 -> Signature found and CRC OK, ZF = 1 -> Invalid LVM sector
-;      Note: AL thus indicates a valid signature and AH a valid CRC
+; Sector is considered valid LVM-sector if both signature and CRC are correct.
+; IN  : DS:SI - Buffer with LVM-sector that needs to be checked...
+; OUT : AL.0  - 1 -> LVM Signature found
+;       AL.1  - 1 -> CRC OK
+;       CY    - Signature and CRC OK, otherwise none or invalid LVM sector
 ; Destroyed: None
 LVM_ValidateSector              Proc Near
-        xor     ax, ax                      ; Start with all zero bits
+        xor     ax, ax                      ; Assume no Signature or valid CRC
         call    LVM_CheckSectorSignature    ; CF=1 -> Signature OK
-        rcl     al, 1                       ; Store CF in AL
-        call    LVM_CheckSectorCRC          ; CF=1 -> Checksum OK
-        rcl     ah, 1                       ; Store CF in AH
-        test    al, ah                      ; ZF=0 if both AL and AH are 1
+        rcl     al, 1                       ; Store CF in AL.0
+        call    LVM_CheckSectorCRC          ; CF=1 -> CRC OK
+        rcl     ah, 1                       ; Store CF in AH.0
+        shl     ah, 1                       ; Move it to AH.1
+        or      al, ah                      ; Merge CY results to AL
+        cmp     al, 3                       ; AH=3 -> Signature and CRC OK
+        clc                                 ; Assume invalid LVM-sector
+        jne     @F
+        stc                                 ; AH=3 -> Indicate valid LVM-sector
+    @@:
+        mov     ah, 0                       ; Don't leave garbage in AH
         ret
 LVM_ValidateSector              EndP
 

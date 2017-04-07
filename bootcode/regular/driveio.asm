@@ -1302,7 +1302,7 @@ ENDIF
         mov     si,offset [LVMSector]
 
         ; See if this is a valid LVM-sector
-        ; ZF=0 if valid
+        ; CY if valid
         call    LVM_ValidateSector
 
 IFDEF   AUX_DEBUG
@@ -1326,7 +1326,8 @@ ENDIF
 
 
         ; Yep, we found the master LVM-sector
-        jnz     DriveIO_LoadMasterLVMSector_Found
+        jc      DriveIO_LoadMasterLVMSector_Found
+
         ; Try next location
         loop    DriveIO_LoadMasterLVMSector_NextTry
 
