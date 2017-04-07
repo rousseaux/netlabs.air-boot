@@ -1361,26 +1361,26 @@ DriveIO_SaveSector              EndP
 
 
 
-; ------------------------------------------------------
-; Rousseau: # Load the master LVM-sector if one exists #
-; ------------------------------------------------------
-; Load the master LVM-sector to get the number of sectors per track as
-; OS/2 views the drive. If no master LVM-sector is found it is assumed OS/2
-; is not installed. The master LVM-sector can be located at three different
-; places depending on drive size and partitioning scheme and driver used.
-; When DANIS506.ADD is used, the OS/2 extended geometry will be 255/127 for
-; drives >502GiB but <1TiB. Then the location will be sector 127 which
-; is LBA 126 (7Eh).
-; IBM1S506.ADD will always use 255/255 for the extended OS/2 geometry.
-; DANIS506.ADD will use 255/255 for drives >1TiB.
-; Then the location of the master LVM-sector will be 255 which is LBA 254 (FEh).
-; When OS/2 is installed on a huge drive that alread had a system on it, OS/2
-; will be confined to the lower 502GiB of the drive.
-; In this case the normal geometry from Int13X will be used.
-; This is also the case when no valid master LVM-sector can be found.
-;
-; Return CF when valid master LVM sector found, NC if not.
-; Loads sector at [LVMSector] !
+
+;##############################################################################
+;# When a disk has a Master LVM sector, it means it has been prepared for use
+;# by OS/2 and contains important information about how OS/2 views its geometry
+;# and other disk related properties. This function assumes the LBA address
+;# of the Master LVM sector has already been located and simply loads the
+;# sector into [LVMSector].
+;#
+;# Note that because this is an operation similar to the regular loading of
+;# sectors, the disk I/O semantics are used here. This means CF=0 when an LVM
+;# sector is successfully loaded and CF=1 otherwise.
+;##############################################################################
+;# ACTION   : Loads the Master LVM sector if one exists
+;# ----------------------------------------------------------------------------
+;# EFFECTS  : Modifies DAP structure and [LVMSector]
+;# ----------------------------------------------------------------------------
+;# IN       : DL     - BIOS disk number (80h,81h,etc)
+;# ----------------------------------------------------------------------------
+;# OUT      : CF=0   - Valid Master LVM sector found and loaded
+;##############################################################################
 DriveIO_LoadMasterLVMSector     Proc  Near
 
 IFDEF   AUX_DEBUG
@@ -1394,128 +1394,61 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
+        ; Save all registers
         pusha
 
-        ; Loop over the sector-translation table,
-        ; process the first three values from high (255) to low.
-        ; (bios spt, most likely 63)
-        mov     cx,3
-    DriveIO_LoadMasterLVMSector_NextTry:
-        ; Number of sectors to read
-        mov     [INT13X_DAP_NumBlocks],1
+        ; Check if BIOS disk number is valid
+        call    DriveIO_IsValidHarddisk
+        jc      DriveIO_LoadMasterLVMSector_error
 
-        ; Setup destination address
+        ; Calculate the entry in the DISKINFO array for this disk
+        call    DriveIO_CalcDiskInfoPointer
+
+        ; Save the entry for later recalls
+        mov     bp, bx
+
+        ; Get the LBA address of the Master LVM sector
+        mov     ax, [bx+LocDISKINFO_LVM_MasterLBA+00h]
+        mov     bx, [bx+LocDISKINFO_LVM_MasterLBA+02h]
+
+        ; LBA of Master LVM sector cannot be 0, so none was found during
+        ; the gathering of disk information.
+        mov     cx, ax
+        or      cx, bx
+        jz      DriveIO_LoadMasterLVMSector_error
+
+        ; Load it into [LVMSector]
+        mov     di, ds
         mov     si, offset [LVMSector]
-        mov     word ptr [INT13X_DAP_Transfer+0],si
-        mov     ax, ds
-        mov     word ptr [INT13X_DAP_Transfer+2],ax
+        call    DriveIO_ReadSectorLBA
+        jc      DriveIO_LoadMasterLVMSector_error
 
-        ; Get the sector-number of the next possible LVM sector (255,127,63)
-        ; using the translation table and the counter as the index
-        mov     bx,offset [secs_per_track_table]
-        mov     ax,cx   ; 1-based index to sec_per_track_table
-        dec     ax      ; Adjust to 0-based
-        xlatb           ; Get the (well known) SPT
-        dec     al      ; Minus 1 for LVM-record
-
-        ;
-        ; AX now contains the LBA address of the sector
-        ; that could be an LVM sector.
-        ; This is all in track0 so the address will not exceed 64kiB sectors.
-        ;
-
-
-IFDEF   AUX_DEBUG
-        IF 0
-        DBG_TEXT_OUT_AUX    'geo'
-        PUSHRF
-            call    DEBUG_DumpRegisters
-            call    AuxIO_DumpParagraph
-            call    AuxIO_TeletypeNL
-        POPRF
-        ENDIF
-ENDIF
-
-
-        ; Setup the requested LBA sector number
-        mov     word ptr [INT13X_DAP_Absolute+0],ax    ; LBA low                   NORMAL I/O GEBRUIKEN !
-        mov     word ptr [INT13X_DAP_Absolute+2],00h   ; LBA high
-        mov     si, offset [INT13X_DAP]                ; address request packet
-        mov     ah, 42h
-        int     13h                                    ; do the i/o, CF=1->error, CF=0->success
-;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-IFDEF   AUX_DEBUG
-        IF 0
-        pushf
-        pusha
-            pushf
-            xor     ax, ax
-            mov     al, dl
-            call    AuxIO_TeletypeHexWord
-            mov     al, '#'
-            call    AuxIO_Teletype
-            popf
-            mov     ax,0000h
-            rcl     al, 1
-            call    AuxIO_TeletypeHexWord
-            mov     al, '#'
-            call    AuxIO_Teletype
-            mov     ax,word ptr [INT13X_DAP_Absolute+0]
-            call    AuxIO_TeletypeHexWord
-            mov     al, '#'
-            call    AuxIO_Teletype
-        popa
-        popf
-        ENDIF
-ENDIF
-
-        cmc     ; Complement carry so we can exit imm. on error
-        jnc     DriveIO_LoadMasterLVMSector_End  ; oops, return with NC
-
-
-        mov     si,offset [LVMSector]
-
-        ; See if this is a valid LVM-sector
-        ; CY if valid
+        ; Validate the Master LVM sector
         call    LVM_ValidateSector
 
+        ; Complement success indicator to conform to semantics of this function
+        cmc
 
+        ; Master LVM sector was valid and is now loaded in [LVMSector]
+        jnc     DriveIO_LoadMasterLVMSector_ret
 
-IFDEF   AUX_DEBUG
-        IF 0
-        DBG_TEXT_OUT_AUX    'lvm record'
-        PUSHRF
-            call    DEBUG_DumpRegisters
-            ;~ call    AuxIO_DumpSector
-            mov     cx, 7
-        @@:
-            call    AuxIO_DumpParagraph
-            call    AuxIO_TeletypeNL
-            add     si, 16
-            loop @B
-        POPRF
-        ENDIF
-ENDIF
+    DriveIO_LoadMasterLVMSector_error:
 
+        ; Clear the sector buffer for safety reasons
+        mov     si, offset [LVMSector]
+        call    ClearSectorBuffer
 
-        ; Yep, we found the master LVM-sector
-        jc      DriveIO_LoadMasterLVMSector_Found
+        ; Indicate no Master LVM sector loaded
+        stc
 
-        ; Try next location
-        loop    DriveIO_LoadMasterLVMSector_NextTry
+    DriveIO_LoadMasterLVMSector_ret:
 
-        ; No master LVM-sector found, set CF=false
-        clc
-
-    DriveIO_LoadMasterLVMSector_Found:
-        ; Store the address for later use.
-        mov     ax, word ptr [INT13X_DAP_Absolute]
-        mov     word ptr [MasterLVMLBA], ax
-
-    DriveIO_LoadMasterLVMSector_End:
+        ; Restore all registers
         popa
+
         ret
 DriveIO_LoadMasterLVMSector     Endp
+
 
 
 
