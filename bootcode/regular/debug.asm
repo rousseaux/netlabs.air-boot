@@ -325,7 +325,7 @@ ENDIF
 ;
 ; Dump some disk information.
 ;
-IF  1
+IF  0
 ddi     db  10,'DumpDiskInfo:',10,0
 DEBUG_DumpDiskInfo          Proc
         pushf
@@ -727,7 +727,7 @@ IF  1
 DEBUG_Test  Proc
     pushf
     pusha
-    ;~ call    DEBUG_Test_CONV_BinToPBCD
+    call    DEBUG_Test_CONV_BinToPBCD
     ;~ call    DEBUG_Test_MATH_Mul32
     popa
     popf
@@ -744,7 +744,7 @@ ENDIF
 ;
 ; Test the packed BCD conversion function.
 ;
-IF 0
+IF 1
 db_testbin2pbcd db "## TEST BIN2PBCD ##",10,0
 DEBUG_Test_CONV_BinToPBCD   Proc
         pushf
@@ -766,8 +766,11 @@ DEBUG_Test_CONV_BinToPBCD   Proc
         mov     al, cl                  ; Current value
         call    CONV_BinToPBCD          ; Convert to packed BCD
         call    AuxIO_TeletypeHexWord   ; Print as word
+        mov     al, ' '
+        call    AuxIO_Teletype
+        mov     al, cl                  ; Current value
+        call    AuxIO_TeletypeDecByte   ; Print as decimal
         call    AuxIO_TeletypeNL
-
         inc     cx                      ; Next value
         cmp     cx, 0ffh                ; Check for last valid value
         jbe     next_value              ; Repeat if still in range
