@@ -614,6 +614,18 @@ DriveIO_SaveLVMSector   EndP
 ;------------------------------------------------------------------------------
 DriveIO_SaveLVMSectorXBR    Proc    Near
 
+IFDEF   AUX_DEBUG
+        IF 1
+        DBG_TEXT_OUT_AUX    'DriveIO_SaveLVMSectorXBR:'
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpSector
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
+
         ; Save all registers
         pusha
 
