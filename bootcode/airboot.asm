@@ -806,10 +806,12 @@ MBR_RealStart:
                 call    MBR_GetCheckOfSector
                 loop    MBR_RealStart_CheckCodeLoop
 
-
+                ; Verify checksum
                 cmp     MBR_CheckCode, bx
-                je      MBR_RealStart_CheckSuccess
+                ;~ je      MBR_RealStart_CheckSuccess      ; CRC verified
+                jmp      MBR_RealStart_CheckSuccess     ; Ignore CRC
 
+                ; Oops, checksum mismatch -- halt the system
                 mov     si, offset TXT_ERROR_Attention
                 call    MBR_Teletype
                 mov     si, offset TXT_ERROR_CheckCode
