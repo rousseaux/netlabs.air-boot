@@ -271,69 +271,6 @@ DriveIO_InitLBASwitchTable  Proc Near   Uses es di
         ret
 DriveIO_InitLBASwitchTable  EndP
 
-
-
-
-;FIXME: Only LBA gets updated, need to update CHS too !!!!!!!
-
-; Adjusts BX:AX / CX:DX to meet LVM sector location
-; BX:AX / CX:DX point to MBR or EBR !
-;  Destroys SI
-; Rousseau: Enhanced to handle sector-numbers 127 and 255 besides 63 for LVM-info sectors.
-;           Ugly, need to cleanup.
-DriveIO_LVMAdjustToInfoSector   Proc Near
-
-IFDEF   AUX_DEBUG
-        IF 0
-        DBG_TEXT_OUT_AUX    'DriveIO_LVMAdjustToInfoSector:'
-        PUSHRF
-            call    DEBUG_DumpRegisters
-            ;~ call    AuxIO_DumpParagraph
-            ;~ call    AuxIO_TeletypeNL
-        POPRF
-        ENDIF
-ENDIF
-
-        push    cx                      ; Save Cyl/Sec part
-        xor     ch,ch                   ; Clear low Cyl part
-        and     cl,63                   ; Clear high Cyl part
-        push    bx                      ; We need BX...
-        push    dx                      ; and DX temoraily
-        mov     bx,offset [TrueSecs]    ; Offset of sector table
-        xor     dh,dh                   ; Clear DH because we use DL as index
-        and     dl,01111111b            ; Remove high bit of BIOS disk-nr
-        shl     dx,2                    ; Index to DWORD table
-        add     bx,dx                   ; Point to TrueSecs for this disk
-        mov     si,[bx]                 ; Get SPT for this disk
-        pop     dx                      ; Restore DX...
-        pop     bx                      ; and BX
-        ;~ sub     si,cx                   ; Adjust offset                      !! INCORRECT FOR LBA (TP CX != 0 !!)
-        dec     si
-        pop     cx                      ; Restore Cyl/Sec part
-        add     ax,si                   ; Add offset to low part...
-        adc     bx,0                    ; and high part of LBA address
-        or      cl,63                   ; Adjust CHS part   !FIX ME for > 63!   !! FIX HUGE DRIVE !!
-
-IFDEF   AUX_DEBUG
-        IF 0
-        DBG_TEXT_OUT_AUX    'adjusted'
-        PUSHRF
-            call    DEBUG_DumpRegisters
-            ;~ call    AuxIO_DumpParagraph
-            ;~ call    AuxIO_TeletypeNL
-        POPRF
-        ENDIF
-ENDIF
-
-        ret
-
-DriveIO_LVMAdjustToInfoSector   EndP
-
-
-
-
-
-
 ; #########################################################################
 ; Routine: Loads partition to ExecBase and checks for validity
 ; #########################################################################
