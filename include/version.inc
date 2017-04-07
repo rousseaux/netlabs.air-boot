@@ -20,7 +20,7 @@
 ;
 ; If the EQU below is enabled, the testbuild color-scheme will be used.
 ;
-TESTBUILD           EQU
+;~ TESTBUILD           EQU
 
 ; COLORS basic
 ; 0 = black
