@@ -325,19 +325,39 @@ ENDIF
 ;
 ; Dump some disk information.
 ;
-IF  0
+IF  1
 ddi     db  10,'DumpDiskInfo:',10,0
 DEBUG_DumpDiskInfo          Proc
         pushf
         pusha
 
-        add     al, 50h                 ; ASCII '0' to BIOS 80h, '1'->81h, etc.
+        ; ASCII '0' to BIOS 80h, '1'->81h, etc.
+        add     al, 50h
 
         mov     si, offset [ddi]
         call    AuxIO_Print
 
+        ; Print disk-number
         call    AuxIO_TeletypeHexByte
         call    AuxIO_TeletypeNL
+
+        ; Show disk parameters (legacy version)
+        pusha
+            mov     dl, al
+            mov     ah, 08h
+            int     13h
+            call    DEBUG_DumpRegisters
+        popa
+
+        ; Show status of last operation
+        pusha
+            mov     dl, al
+            mov     ah, 01
+            int     13h
+            mov     al, ah
+            call    AuxIO_TeletypeHexByte
+            call    AuxIO_TeletypeNL
+        popa
 
         popa
         popf
@@ -707,7 +727,7 @@ IF  1
 DEBUG_Test  Proc
     pushf
     pusha
-    call    DEBUG_Test_CONV_BinToPBCD
+    ;~ call    DEBUG_Test_CONV_BinToPBCD
     ;~ call    DEBUG_Test_MATH_Mul32
     popa
     popf
@@ -724,7 +744,7 @@ ENDIF
 ;
 ; Test the packed BCD conversion function.
 ;
-IF 1
+IF 0
 db_testbin2pbcd db "## TEST BIN2PBCD ##",10,0
 DEBUG_Test_CONV_BinToPBCD   Proc
         pushf
