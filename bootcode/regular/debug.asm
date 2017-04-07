@@ -325,7 +325,7 @@ ENDIF
 ;
 ; Dump some disk information.
 ;
-IF 0
+IF 1
 ddi     db  10,'DumpDiskInfo:',10,0
 DEBUG_DumpDiskInfo          Proc
         pushf
@@ -341,23 +341,12 @@ DEBUG_DumpDiskInfo          Proc
         call    AuxIO_TeletypeHexByte
         call    AuxIO_TeletypeNL
 
-        ; Show disk parameters (legacy version)
-        pusha
-            mov     dl, al
-            mov     ah, 08h
-            int     13h
-            call    DEBUG_DumpRegisters
-        popa
-
-        ; Show status of last operation
-        pusha
-            mov     dl, al
-            mov     ah, 01
-            int     13h
-            mov     al, ah
-            call    AuxIO_TeletypeHexByte
-            call    AuxIO_TeletypeNL
-        popa
+        ; Load the MBR
+        mov     dl, al
+        mov     si, offset [TmpSector]
+        call    DriveIO_LoadMBR
+        call    DEBUG_DumpRegisters
+        call    AuxIO_DumpSector
 
         popa
         popf
