@@ -219,10 +219,79 @@ ENDIF
 LVM_SearchForPartition          EndP
 
 
+;------------------------------------------------------------------------------
+; Get the LVM drive-letter for a partition (if available)
+;------------------------------------------------------------------------------
+; IN    : SI    - Pointer to IPT entry for partition
+; OUT   : AL    - LVM drive-letter
+;       : SI    - Pointer to LVM entry in loaded LVM record
+;       : CF=1  - No valid LVM sector found, AL not valid
+; NOTE  : Besides the drive-letter, AL can be 0 (LVM hidden) or '*' (LVM auto)
+;------------------------------------------------------------------------------
+LVM_GetDriveLetter      Proc Near   Uses bx cx dx di
 
-LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
-        xor     al, al
+IFDEF   AUX_DEBUG
+        IF 0
+        DBG_TEXT_OUT_AUX    'LVM_GetDriveLetter:'
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
+
+        ; Save IPT pointer
+        mov     di, si
+
+        ; Get the LBA addresses of the MBR or EBR from the IPT entry
+        mov     dl, [si+LocIPT_Drive]                   ; BIOS disk number
+        mov     ax, [si+LocIPT_AbsolutePartTable+00h]   ; LBA lo MBR/EBR
+        mov     bx, [si+LocIPT_AbsolutePartTable+02h]   ; LBA hi MBR/EBR
+
+        ; Try to load the corresponding LVM sector
+        mov     si, offset [LVMSector]                  ; Pointer to buffer
+        call    DriveIO_LoadLVMSectorXBR                ; Try to load LVM sector
+        jc      LVM_GetDriveLetter_no_lvm               ; No success
+
+        ; Recall IPT pointer
+        mov     si, di
+
+        ; Locate the LVM entry for the partition
+        mov     ax, [si+LocIPT_AbsoluteBegin+00h]       ; LBA lo of partition
+        mov     dx, [si+LocIPT_AbsoluteBegin+02h]       ; LBA hi of partition
+        mov     si, offset [LVMSector]                  ; Loaded LVM sector
+        call    LVM_SearchForPartition                  ; Locate entry
+        jnc     LVM_GetDriveLetter_no_lvm               ; Entry not found
+
+        ; Get the LVM drive-letter
+        mov     al, [si+LocLVM_VolumeLetter]            ; Can be 0,'*',letter
+
+        ; We're done, indicate success and return
         clc
+        jmp     LVM_GetDriveLetter_done
+
+    LVM_GetDriveLetter_no_lvm:
+        ; Indicate no LVM drive-letter found
+        xor     ax, ax
+        mov     si, ax
+        stc
+
+    LVM_GetDriveLetter_done:
+
+IFDEF   AUX_DEBUG
+        IF 0
+        DBG_TEXT_OUT_AUX    'lgdl_lvmsec'
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            mov     si, offset [LVMSector]
+            call    AuxIO_DumpSector
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
+
         ret
 LVM_GetDriveLetter      EndP
 
