@@ -1137,6 +1137,25 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
+; -----------------------------------------------------------------------------
+;                                                                   UPDATE MBR
+; -----------------------------------------------------------------------------
+
+        ; Write MBR back to disk to sync MBR variables.
+        ; Otherwise subsequent MBR loads will differ from the RAM stored one,
+        ; which is used by MBR protection to validate parts of the MBR.
+        xor     bx, bx                  ; 0000h - our load address (8000:0000)
+        mov     cx, 1                   ; CHS sector 1, cylinder 0
+        xor     dh, dh                  ; CHS head 0
+        mov     dl, [BIOS_BootDisk]     ; The disk we were loaded from
+        mov     al, 1                   ; One sector to write
+        mov     ah, 03h                 ; BIOS write disk (legacy)
+        int     13h                     ; Call BIOS
+        ;!
+        ;! TODO: Check success
+        ;! Yes, we should check for errors here, coz it would mean AirBoot
+        ;! was loaded from a disk where the MBR cannot be written !
+        ;!
 
 ; -----------------------------------------------------------------------------
 ;                                                                   SCAN DISKS

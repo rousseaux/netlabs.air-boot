@@ -182,23 +182,6 @@ ENDIF
         xor     si,si
         call    MBR_TeletypeNL
 
-        ; Write MBR back to disk to sync MBR variables.
-        ; Otherwise subsequent MBR loads will differ from the RAM stored one,
-        ; which is used by MBR protection to validate parts of the MBR.
-        xor     bx, bx
-        mov     cx, 1
-        xor     dh, dh
-        mov     dl, [BIOS_BootDisk]
-        mov     al, 1
-        mov     ah, 03h
-        int     13h
-        ;!
-        ;! TODO: Check success
-        ;! Yes, we should check for errors here, coz it would mean AirBoot
-        ;! was loaded from a disk where the MBR cannot be written !
-        ;!
-
-
         ;
         ; Phase 1 Indicator
         ;
