@@ -80,23 +80,6 @@ PARTSCAN_ScanForPartitions      Proc Near
         mov     cx, LocIPT_MaxPartitions
         rep     movsb
 
-; [Linux support removed since v1.02]
-;   ; Search for any Linux partition and remember, if it got found...
-;   mov     si, offset PartitionTable
-;   movzx   cx, CFG_Partitions
-;   xor     dl, dl                        ; DL - Is Linux here ?
-;   or      cx, cx
-;   jz      PSSFP_NoPartitions
-;  PSSFP_LinuxLoop:
-;      cmp     bptr [si+LocIPT_SystemID], 083h  ; Hard-Coded
-;      jne     PSSFP_NoLinux
-;      mov     dl, 1                      ; Linux found...
-;     PSSFP_NoLinux:
-;      add     si, LocIPT_LenOfIPT
-;   loop    PSSFP_LinuxLoop
-;  PSSFP_NoPartitions:
-;   mov     GotLinux, dl                  ; Set Flag
-
         ; ...and finally check, if we need to set a Drive-Letter
         mov     dl, AutoDrvLetter
         or      dl, dl

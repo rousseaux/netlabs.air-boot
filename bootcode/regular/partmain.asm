@@ -35,19 +35,6 @@ PART_FixUpDefaultPartitionValues Proc Near  Uses dx si di
     mov     dl, CFG_PartAutomatic
     call    PART_FixUpSelectionNumber
     mov     CFG_PartAutomatic, dl
-
-; [Linux support removed since v1.02]
-;   ; Fix-Up Linux Kernel Partition - If lost, search for FAT-16
-;   mov     bl, 06h
-;   mov     dl, CFG_LinuxKrnlPartition
-;   call    PART_FixUpPartitionNumber
-;   mov     CFG_LinuxKrnlPartition, dl
-;
-;   ; Fix-Up Linux Root Partition - If lost, search for Linux partition (83h)
-;   mov     bl, 83h
-;   mov     dl, CFG_LinuxRootPartition
-;   call    PART_FixUpPartitionNumber
-;   mov     CFG_LinuxRootPartition, dl
    ret
 PART_FixUpDefaultPartitionValues EndP
 
@@ -263,20 +250,6 @@ ENDIF
         add     bx, 2
     PCMPP_NoResumeBootSeqInclude:
 
-; [Linux support removed since v1.02]
-;   ; Now include all Linux Kernels, if any available...
-;   movzx   cx, LINUX_KernelNo
-;   or      cx, cx
-;   jz      PCMPP_NoLinuxKernels
-;   mov     ax, offset LINUX_KernelEntries
-;  PCMPP_KernelLoop:
-;      mov     ds:[bx], ax
-;      add     bx, 2
-;      add     ax, LocIPT_LenOfIPT
-;   dec     cx
-;   jnz     PCMPP_KernelLoop
-;  PCMPP_NoLinuxKernels:
-
         ;movzx   cx, CFG_Partitions ; LocIPT_MaxPartitions
         mov   cl,CFG_Partitions ; LocIPT_MaxPartitions
         mov   ch,0
@@ -377,10 +350,6 @@ PART_ConvertToStraight          Proc Near
         jb      PCTS_IsBIOSbootSeq                  ; Nope, is BIOS-bootseq
         je      PCTS_IsFloppy                       ; Is Floppy
 
-; [Linux support removed since v1.02]
-;   cmp     ax, offset LINUX_KernelEntries
-;   jae     PCTS_IsKernelEntry
-
         ;
         ; Is partition, AX contains pointer to IPT entry
         ;
@@ -389,11 +358,6 @@ PART_ConvertToStraight          Proc Near
         div     bl                              ; Divide with IPTlength
         mov     dl, al                          ; Index in IPT
         ret
-
-; [Linux support removed since v1.02]
-;  PCTS_IsKernelEntry:
-;   mov     dl, 0FDh
-;   ret
 
     PCTS_IsBIOSbootSeq:
         mov     dl, 0FEh
@@ -468,17 +432,8 @@ PART_ConvertFromStraight        EndP
 ;       Out: SI - Pointer to corresponding Size-Element
 ; Destroyed: AX
 PART_GetSizeElementPointer      Proc Near   Uses bx
-; [Linux support removed since v1.02]
-;   cmp     ax, offset LINUX_KernelEntries
-;   jae     PGSEP_IsKernelEntry
         mov     si, offset PartitionSizeTable
         sub     ax, offset PartitionTable
-;   jmp     PGSEP_Continue
-; [Linux support removed since v1.02]
-;  PGSEP_IsKernelEntry:
-;   mov     si, offset LINUX_KernelSizeTable
-;   sub     ax, offset LINUX_KernelEntries
-;  PGSEP_Continue:
         mov     bl, LocIPT_LenOfIPT
         div     bl                            ; Divide with IPTlength
         ;movzx   bx, al
@@ -1052,11 +1007,6 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         mov     si, offset TXT_BootingNow1
         call    MBR_Teletype
 
-
-; [Linux support removed since v1.02]
-;      cmp     dh, 0FDh
-;      je      PSP_IsKernel
-
         ;~ pusha
         ;~ call    MBR_Teletype
         ;~ mov     si,offset TXT_BootingNowPartName
@@ -1076,18 +1026,6 @@ PART_StartPartition             Proc Near   Uses ax dx es di
         mov     si, offset TXT_BootingNowPartName
         call    MBR_TeletypeVolName
         jmp     PSP_IsFloppyCDROMetc                                                ; JUMPS BUITEN SI POP !!! AANPASSEN
-
-
-; [Linux support removed since v1.02]
-;    PSP_IsKernel:
-;      IFDEF ReleaseCode
-;         ; Save configuration on HDD boots (save CFG_LinuxLastKernel)
-;         call    DriveIO_SaveConfiguration
-;      ENDIF
-;      call    MBR_Teletype       ; Prints out BootingNow2 including KernelName
-;      mov     si, offset TXT_BootingNowKernel
-;      call    MBR_Teletype
-;      jmp     PSP_IsFloppyCDROMetc
 
 
     PSP_IsHarddisc:
@@ -1416,10 +1354,6 @@ ENDIF
         cmp     al, 0FEh        ; Via BIOS ? (aka resume BIOS boot sequence)
         je      PSP_ResumeBIOSbootSeq
 
-; [Linux support removed since v1.02]
-;   cmp     al, 0FDh                        ; Kernel-Booting ?
-;   je      PSP_KernelBooting
-
         jmp     PSP_StartNormal
 
     PSP_ResumeBIOSbootSeq:
@@ -1427,14 +1361,6 @@ ENDIF
         db      0EAh                        ; if return to here -> Reboot
         dw      0FFF0h
         dw      0F000h
-
-; [Linux support removed since v1.02]
-;  PSP_KernelBooting:
-;   call    LINUX_LoadKernel              ; DS:SI - Entry Pointer to Kernel
-;   db      0EAh                          ; if return to here -> Reboot
-;   dw      0FFF0h
-;   dw      0F000h
-
 
 
     ; =======================================================================

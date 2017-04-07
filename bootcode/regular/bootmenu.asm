@@ -954,22 +954,6 @@ BOOTMENU_ResetMenuVars      Proc Near   Uses dx
         call    PART_ConvertFromStraight
         mov     Menu_EntryAutomatic, dl
 
-        ;~ ; [Linux support removed since v1.02]
-        ;~ ; Okay, now we check if Default/Last Kernel Partition Name is available...
-        ;~ ;  if so, simply set Menu_EntryDefault/Menu_EntryLast.
-        ;~ mov     si, offset CFG_LinuxDefaultKernel
-        ;~ call    LINUX_SearchKernelName        ; DL - Filtered Entry No
-        ;~ cmp     dl, 0FFh
-        ;~ je      BMRMV_DefaultKernelNF
-        ;~ mov     Menu_EntryDefault, dl
-    ;~ BMRMV_DefaultKernelNF:
-        ;~ mov     si, offset CFG_LinuxLastKernel
-        ;~ call    LINUX_SearchKernelName        ; DL - Filtered Entry No
-        ;~ cmp     dl, 0FFh
-        ;~ je      BMRMV_LastKernelNF
-        ;~ mov     Menu_EntryLast, dl
-    ;~ BMRMV_LastKernelNF:
-
         ; restlichen Variablen berechnen...
         mov     dl, Menu_TotalParts
         cmp     byte ptr [Menu_TotalParts], 14

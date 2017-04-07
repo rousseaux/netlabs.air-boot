@@ -1312,15 +1312,6 @@ AiR_BOOT_Start:
                 ; BOOKMARK: After Crap
                 call    AFTERCRAP_Main
 
-                ; [Linux support removed since v1.02]
-                ; Now get FAT16-Linux Kernel Partition, If requested
-                ;cmp     [CFG_LinuxKrnlPartition], 0FFh
-                ;je      MBR_Main_NoLinuxKrnlPartition
-                ;call    LINUX_InitFAT16access
-    ;MBR_Main_NoLinuxKrnlPartition:
-
-
-
     MBR_Main_ReEnterBootMenuPre:
                 ; SetUp PartitionPointers for BootMenu (filter non-bootable)
                 call    PART_CalculateMenuPartPointers
@@ -1575,10 +1566,6 @@ size_conv = $-b_conv
 b_virus:
 include special/virus.asm       ; Virus Detection / Anti-Virus
 size_virus = $-b_virus
-
-; [Linux support removed since v1.02]
-;include special/fat16.asm       ; FAT-16 Support
-;include special/linux.asm       ; Linux Kernel Support
 
 b_billsuxx:
 include special/f00k/billsuxx.asm   ; Extended Partition - Microsoft-Hack
@@ -1898,12 +1885,6 @@ DriveLetters            db  LocIPT_MaxPartitions dup (0)
 ; SET(A)BOOT stores the volume name of the OS/2 system being installed here.
 ; It is truncated to 11 chars because AiR-BOOT currently does not support
 ; longer labelnames. The name is also capitalized.
-;OS2_InstallVolume       db  12 dup (0)
-;OS2_InstallVolume       db  'HIGHLOG' ,0
-;OS2_InstallVolume       db  'ECS-MIDDLE',0,0
-;OS2_InstallVolume       db  'ECS-HIGH',0,0,0,0
-;OS2_InstallVolume       db  'ECS-HIGH',0,'NO',0
-;OS2_InstallVolume       db  'KANWEG2',0
 OS2_InstallVolume       db  0,'NOPHASEONE' ,0
 
 ;
@@ -2316,20 +2297,6 @@ CharsetTempBuffer   db  4096 dup (?) ; Uninitialized Charset buffer
 ; -----------------------------------------------------------------------------
 LVM_CRCTable        dd   256 dup (?) ; LVM-CRC (->SPECiAL\LVM.asm)
 
-;~ ; [Linux support removed since v1.02]
-;~ FAT16_Drive             db     ?    ; FAT-16: Drive of FAT16-partition
-;~ FAT16_AbsPartitionBegin dd     ?    ; FAT-16: LBA Begin of Partition
-;~ FAT16_SecsPerCluster    db     ?    ; FAT-16: Sectors Per Cluster
-;~ FAT16_NumOfRootEntries  dw     ?    ; FAT-16: Number of Root Entries
-;~ FAT16_SecsPerFAT        dw     ?    ; FAT-16: Sectors Per FAT
-;~ FAT16_AbsFATBegin       dd     ?    ; FAT-16: LBA Begin of FAT
-;~ FAT16_AbsRootBegin      dd     ?    ; FAT-16: LBA Begin of Root
-;~ FAT16_AbsClusterBegin   dd     ?    ; FAT-16: LBA Begin of Clusters
-;~ FAT16_FATCacheSector    db     ?    ; FAT-16: FAT-Sector No in Cache
-;~ FAT16_FATCache          db   512 dup (?) ; FAT-16: FAT-Area Cache
-;~ LINUX_KernelEntries     db   680 dup (?) ; 34*20 -> Space for Kernel-Entries
-;~ LINUX_KernelNo          db     ?         ; Total of Kernels in KernelEntries
-;~ LINUX_KernelSizeTable   db   120 dup (?) ; Size-Table (6 bytes per kernel)
 
 
 ;
