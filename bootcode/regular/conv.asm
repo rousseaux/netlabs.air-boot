@@ -141,6 +141,7 @@ CONV_ConvertToPrintable     EndP
 ; Out:         BX:CX:DX:AX - LBA address (64-bits)
 ;              ZF=1 if upper 32-bits are zero (LBA32)
 ; Destroyed:   none
+IF 0
 CONV_CHS2LBA    Proc  Near
         local   req_cyl:dword
         local   req_head:word
@@ -202,7 +203,11 @@ CONV_CHS2LBA    Proc  Near
 
       ret
 CONV_CHS2LBA    EndP
-
+ELSE
+CONV_CHS2LBA    Proc  Near
+        ret
+CONV_CHS2LBA    EndP
+ENDIF
 
 CONV_LBA2CYLS   Proc  Near
         ret
