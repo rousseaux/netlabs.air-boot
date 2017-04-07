@@ -221,11 +221,12 @@ PARTSCAN_ScanDriveForPartitions Proc Near
         call    DriveIO_LoadLVMSector                ; Load LVM sector
 
         call    PARTSCAN_ScanPartition
-    IFDEF ReleaseCode
+
         call    DriveIO_SavePartition
-    ENDIF
+
         call    PARTSCAN_ScanPartitionForExtended
         jc      PSSDFP_LoadThisPartition
+
     PSSDFP_InvalidPartition:
         ret
 PARTSCAN_ScanDriveForPartitions EndP
@@ -303,7 +304,7 @@ PARTSCAN_ScanPartition          Proc Near  Uses ax si
         ; Only clear the boot-flag on the boot-disk.
         ; Clearing the boot-flags on other disks would prevent booting them
         ; from the BIOS. (TRAC ticket #6)
-        cmp     dl, 080h                            ; See if this is boot-disk 
+        cmp     dl, 080h                            ; See if this is boot-disk
         jne     PSSP_Skip_Clear_BootFlag            ; Nope, skip clear flag
         and     byte ptr [si+LocBRPT_Flags], 7Fh    ; Reset the Active-Flag
     PSSP_Skip_Clear_BootFlag:
@@ -703,7 +704,7 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
         ; =================================
     PCCTP_CompareFailed:
         mov     ch, ah
-        ; Default Flags hinzufÅgen...
+        ; Insert Default Flags...
         mov     cl, LocIPT_DefaultFlags
 
         mov     al, PartTypeFlags

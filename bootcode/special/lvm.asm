@@ -500,9 +500,8 @@ LVM_DoLetterReassignment        Proc Near   Uses bx cx dx si di
         call    DriveIO_LoadLVMSector      ; SI points now to LVM-Sector
         call    LVM_RemoveVolLetterFromSector
 
-    IFDEF ReleaseCode
         call    DriveIO_SaveLVMSector   ; Save sector
-    ENDIF
+
     LVMDLR_NextPartition:
         inc     bx
         dec     cl
@@ -530,9 +529,7 @@ LVM_DoLetterReassignment        Proc Near   Uses bx cx dx si di
         mov     si, di                        ; SI - LVM Sector again
         call    LVM_UpdateSectorCRC           ; Update LVM-CRC now
 
-    IFDEF ReleaseCode
-        call    DriveIO_SaveLVMSector      ; Save sector
-    ENDIF
+        call    DriveIO_SaveLVMSector         ; Save sector
 
     LVMDLR_DestPartNotFound:
         ; This here is done for safety, because we misuse CurPartition_Location

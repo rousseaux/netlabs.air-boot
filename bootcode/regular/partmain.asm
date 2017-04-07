@@ -594,9 +594,7 @@ PART_HidePartition              Proc Near   Uses ax bx cx dx si di
         mov     al, bptr es:[di+LocBRPT_SystemID] ; Partition-ID into AL
         call    PART_SearchFileSysHiddenID    ; Put on =STEALTH=
         mov     bptr es:[di+LocBRPT_SystemID], al
-    IFDEF ReleaseCode
-        call    DriveIO_SavePartition      ; Saves Partition-Table
-    ENDIF
+        call    DriveIO_SavePartition         ; Saves Partition-Table
         ret
 PART_HidePartition              EndP
 
@@ -1095,12 +1093,10 @@ PART_StartPartition             Proc Near   Uses ax dx es di
     PSP_IsHarddisc:
 
 
-    IFDEF ReleaseCode
         ;
         ; Save configuration on HDD boots (save CFG_PartLast)
         ;
         call    DriveIO_SaveConfiguration
-    ENDIF
 
 
         ;
@@ -1200,12 +1196,10 @@ ENDIF
 
 
 
-    IFDEF ReleaseCode
         ;
         ; Save the Partition Table.
         ;
         call    DriveIO_SavePartition     ; Saves the Partition-Table    [SAVE]
-    ENDIF
 
 
 
@@ -1342,10 +1336,7 @@ ENDIF
                                                                      ; Load MBR
         call    DriveIO_LoadPartition      ; Load Primary Partition Table
         call    PART_MarkFirstGoodPrimary
-
-    IFDEF ReleaseCode
         call    DriveIO_SavePartition       ; Saves the Partition-Table
-    ENDIF
 
 
     PSP_NoHideAdjustPrimaryMark:
@@ -2207,11 +2198,9 @@ StartPBR:
         ; ###############################
         ; # JUMP TO THE PBR LOADER CODE #
         ; ###############################
-        IFDEF ReleaseCode
-            db      0EAh
-            dw      StartBasePtr
-            dw      StartBaseSeg
-        ENDIF
+        db      0EAh
+        dw      StartBasePtr
+        dw      StartBaseSeg
 
 
 PART_StartPartition             EndP

@@ -50,9 +50,9 @@ VIRUS_CheckForStealth      Proc Near  Uses ds si es di
    mov     cl, 2
    mov     si, 1Ch*4
    rep     movsw                         ; INT 1C Ptr
-   IFDEF ReleaseCode
-      call    DriveIO_SaveConfiguration
-   ENDIF
+
+   call    DriveIO_SaveConfiguration
+
    jmp     VCFS_Finished
 
   VCFS_AlreadyInitiated:

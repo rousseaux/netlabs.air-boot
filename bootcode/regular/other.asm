@@ -347,10 +347,6 @@ PRECRAP_Main    Proc Near
     ;
     INT13X_Supported:
 
-    IFNDEF ReleaseCode
-        ret
-    ENDIF
-
 
         ;
         ; Check valididy of the AiR-BOOT Configuration.

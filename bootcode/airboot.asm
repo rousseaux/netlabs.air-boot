@@ -93,12 +93,6 @@ IFNDEF  AUX_DEBUG
 FX_ENABLED      EQU
 ENDIF
 
-;
-; If ReleaseCode is not defined, it will produce debug-able code...
-; Rousseau: This is currently *not* functional so don't use it !
-;           It was used to debug AiR-BOOT as a .COM file.
-;
-ReleaseCode             equ     -1
 
 
 ; -----------------------------------------------------------------------------
@@ -132,23 +126,12 @@ BIOS_AUXPARMS_DEFAULT   EQU     (AUX_INIT_PARMS SHL 8) OR BIOS_COM_PORT
 ;                                                                       LABELS
 ; -----------------------------------------------------------------------------
 ; Address labels after code-move
-BootBaseSeg                 equ     08000h   ; Pre-boot, in the low 640K
-BootBasePtr                 equ         0h   ; We put our MBR to this location
+BootBaseSeg                 equ     08000h  ; Pre-boot, in the low 640K
+BootBasePtr                 equ         0h  ; We put our MBR to this location
 BootBaseExec                equ     BootBasePtr+offset MBR_RealStart
-StackSeg                    equ     07000h   ; Put the stack below the code
-
-; Use different addresses depending on whether in pre-boot
-; or debug (dos) environment.
-IFDEF ReleaseCode
-    StartBaseSeg    equ     00000h  ; Pre-boot, we are in low memory
-    StartBasePtr    equ     07C00h  ; BIOS starts our MBR at 0:7C00
-ELSE
-    ; Rousseau: where does this value come from ?
-    ; Should be CS.
-    ; Rectified in actual code by ignoring this value.
-    StartBaseSeg    equ     03A98h  ; Adjust to DOS segment
-    StartBasePtr    equ     00100h  ; We are a .COM file, DOS is active
-ENDIF
+StackSeg                    equ     07000h  ; Put the stack below the code
+StartBaseSeg                equ     00000h  ; Pre-boot, we are in low memory
+StartBasePtr                equ     07C00h  ; BIOS starts our MBR at 0:7C00
 
 
 
@@ -545,14 +528,8 @@ MBR_Start:
                 xor     di,di
                 ;sti
 
-            ; Depending on pre-boot or debug.
-            ; Note that ReleaseCode is obsolete, so we will always move
-            ; 256 words; aka this sector, the MBR.
-            IFDEF ReleaseCode
+                ; Size of the MBR in words.
                 mov     cx, 256          ; Pre-boot environment
-            ELSE
-                mov     cx, 32700        ; Old Debug environment (move ~64kB)
-            ENDIF
 
                 ;
                 ; This moves this 512-byte sector, loaded by the BIOS at
@@ -731,16 +708,6 @@ MBR_RealStart:
                 push    dx      ; Old SS
                 push    bx      ; Old SP
 
-
-            ; If we are in debug-mode, all code is moved already,
-            ; so we can directly jump to it.
-            ; One difference is that in debug-mode, the whole .com image is
-            ; loaded by dos while when air-boot is active from the MBR it
-            ; does the loading itself.
-            ; (This debug environment is obsolete and dis-fuctional)
-            IFNDEF ReleaseCode
-                jmp     AiR_BOOT_Start
-            ENDIF
 
                 ; Load the configuration-sectors from disk.
                 ; These are the main configuration sector and the various
@@ -1427,17 +1394,6 @@ AiR_BOOT_Start:
 
                 call    PASSWORD_AskChangeBootPwd
 
-            IFNDEF ReleaseCode
-                ; Debug Code to terminate DOS .COM program - used for
-                ;  testing AiR-BOOT
-                ; Obsolete.
-                int     3
-                mov     ax, 6200h
-                int     21h
-                mov     es, bx
-                mov     ax, 4C00h    ; Quit program
-                int     21h
-            ENDIF
                 call    ANTIVIR_SaveBackUpMBR
 
                 ; Preload the selected menu-entry

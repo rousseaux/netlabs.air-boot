@@ -58,7 +58,7 @@ SETUP_SwitchToSelectedItem      Proc Near   Uses ax cx
       mov     ax, word ptr ds:[si+LocMENU_VariablePtr]
       or      ax, ax
       jz      SSTSI_NoItemPack
-      add     si, LocMENU_LenOfItemPack  ; ItemPack Åbergehen
+      add     si, LocMENU_LenOfItemPack  ; Add ItemPack size
      SSTSI_NoItemPack:
       add     si, LocMENU_LenOfMenuPtrBlock ; Skip Ptr-Block (+3 deshalb, weil danach INC!)
       jmp     SSTSI_Loop
@@ -87,9 +87,7 @@ SETUP_CheckEnterSETUP           Proc Near
    jnz     SCES_ForceEnter
    mov     al, [SETUP_KeysOnEntry]
    test    al, Keys_Flags_EnterSetup
-IFDEF ReleaseCode
    jz      SCES_NoEnterSETUP
-ENDIF
   SCES_ForceEnter:
    call    SETUP_Main
   SCES_NoEnterSETUP:
@@ -671,7 +669,7 @@ ELSE
 CLR_SETUP_HELP = CLR_SETUP_HELP_BM
 ENDIF
 
-; Zeichnet die MenÅ Hilfe aufn Bildschirm
+; Display the Help Menu
 ;        In: SI - Pointer to 4 HelpStrings...
 ; Destroyed: None
 SETUP_DrawMenuHelp              Proc Near   Uses cx si
@@ -1126,9 +1124,7 @@ SETUP_EnterMenu_SaveAndExitSetup Proc Near   Uses dx bp
    mov     byte ptr [CFG_AutoEnterSetup], al
    add     word ptr [CFG_LastTimeEditLow], 1
    adc     word ptr [CFG_LastTimeEditHi], 0         ; Update Time-Stamp
-   IFDEF ReleaseCode
-      call    DriveIO_SaveConfiguration
-   ENDIF
+   call    DriveIO_SaveConfiguration
    mov     byte ptr [SETUP_ExitEvent], 1            ; Exit and continue boot process
   SEMSAES_UserAbort:
    ret
@@ -1144,9 +1140,9 @@ SETUP_EnterMenu_ExitWithoutSaving Proc Near   Uses dx bp
    jmp     SEMEWS_DoThis                 ; Cross-Jump to SaveAndExitSetup!
 
   SEMEWS_DoThis:
-   IFDEF ReleaseCode                     ; Loads basic configuration...
-      call    DriveIO_LoadConfiguration  ; This is *NOT* IPT nor HideConfig
-   ENDIF
+   ; Loads basic configuration...
+   ; This is *NOT* IPT nor HideConfig
+   call    DriveIO_LoadConfiguration
    mov     byte ptr [SETUP_ExitEvent], 1            ; Exit and continue boot process
   SEMEWS_UserAbort:
    ret

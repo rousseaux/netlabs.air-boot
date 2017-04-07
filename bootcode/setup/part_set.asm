@@ -878,9 +878,9 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
         ; Update LVM-CRC now...
         mov     si, offset LVMSector
         call    LVM_UpdateSectorCRC
-        IFDEF ReleaseCode
-          call    DriveIO_SaveLVMSector      ; Save sector
-        ENDIF
+
+        call    DriveIO_SaveLVMSector      ; Save sector
+
         jmp     PSCPN_AllDone
 
     ; -----------------------------------------------------[BOOT-RECORD SAVE]---
@@ -891,9 +891,8 @@ PARTSETUP_ChangePartitionName   Proc Near   Uses dx ds si di
         push    si
           rep     movsb                      ; Copy IPT-name to Boot-Record
         pop     si
-        IFDEF ReleaseCode
-          call    DriveIO_SavePartition      ; Saves Boot-Record
-        ENDIF
+
+        call    DriveIO_SavePartition        ; Saves Boot-Record
 
     ; And reset VIBR-CRC, otherwise virus-warning and system-halt
     ; BOOKMARK: Update CRC on Partition Sector
@@ -1048,7 +1047,7 @@ ENDIF
    inc     bl
    mov     cx, bx
    call    VideoIO_Locate
-   mov     al, 'µ'
+   mov     al, 0b5h
    call    VideoIO_PrintSingleChar
 
 
@@ -1080,7 +1079,7 @@ ENDIF
 
    mov     cx, CLR_PART_HIDE_WINDOW_BASE                     ; Lila on lila
    call    VideoIO_Color
-   mov     al, 'Æ'
+   mov     al, 0c6h
    call    VideoIO_PrintSingleChar
    ; --- Make Window-Footer - "State when booting..." at bottom right frame-line
    mov     cx, CLR_PART_HIDE_WINDOW_BORDER                     ; Lila on lila
@@ -1118,7 +1117,7 @@ ENDIF
 
 ;   inc     cl
 ;   call    MBR_Locate                    ; Location 16, HiddenX
-;   mov     al, 'µ'
+;   mov     al, 0b5h
 ;   call    MBR_PrintSingleChar
 ;   mov     cx, 0E05h                     ; Yellow on Lila
 ;   call    MBR_Color
@@ -1133,7 +1132,7 @@ ENDIF
 ;   call    MBR_FixedPrint
 ;   mov     cx, 0D05h                     ; Lila on lila
 ;   call    MBR_Color
-;   mov     al, 'Æ'
+;   mov     al, 0c6h
 ;   call    MBR_PrintSingleChar
 
    ; --- Make ':' Line down
@@ -1775,7 +1774,7 @@ ENDIF
    push    bx
       mov     cx, bx
       call    VideoIO_Locate
-      mov     al, 'µ'
+      mov     al, 0b5h
       call    VideoIO_PrintSingleChar
 
 
@@ -1807,7 +1806,7 @@ ENDIF
 
       mov     cx, CLR_PART_DL_WINDOW_BORDER2                 ; Lila on lila
       call    VideoIO_Color
-      mov     al, 'Æ'
+      mov     al, 0c6h
       call    VideoIO_PrintSingleChar
    pop     bx
    ; Display help-information
