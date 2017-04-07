@@ -103,7 +103,7 @@ NonMBRwrite_rep db  'Please report this at rousseau.os2dev@gmx.com',0
 SystemHalted    db  'System Halted',0
 
 ; Build Information string.
-build_info      db  'Build Date: ',0
+build_date      db  'Build Date: ',0
 jwasm_txt       db  'JWasm',0
 masm_txt        db  'Masm',0
 wasm_txt        db  'Wasm',0

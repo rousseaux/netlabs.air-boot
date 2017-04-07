@@ -688,71 +688,19 @@ VideoIO_SyncPos                 EndP
 ;
 VideoIO_PrintBuildInfo  Proc    Near    Uses ax cx si di
         ; Print header.
-        mov     si, offset build_info
+        mov     si, offset [build_date]
         call    MBR_Teletype
+        call    VideoIO_SyncPos
 
         ; Prepare info in temorary buffer.
         mov     si,offset bld_level_date_start
         mov     cx,offset bld_level_date_end
         sub     cx,si
-        mov     di,offset Scratch
-        cld
-        rep     movsb
+        call    VideoIO_FixedPrint
+        add     [TextPosY], 2
+        mov     [TextPosX], 0
+        call    MBR_TeletypeSyncPos
 
-        ; Fill spaces until assembler specification.
-        mov     al,' '
-        mov     cx,37
-        rep     stosb
-
-        ; Copy assembler specification.
-    IFDEF       JWASM
-        mov     al,'['
-        stosb
-        mov     si,offset jwasm_txt
-    ELSEIFDEF   TASM
-        mov     al,' '
-        stosb
-        mov     al,'['
-        stosb
-        mov     si,offset tasm_txt
-
-    ELSEIFDEF   WASM
-        mov     al,' '
-        stosb
-        mov     al,'['
-        stosb
-        mov     si,offset wasm_txt
-    ELSEIFDEF   MASM
-        mov     al,' '
-        stosb
-        mov     al,'['
-        stosb
-        mov     si,offset masm_txt
-    ELSE
-        mov     al,' '
-        stosb
-        mov     al,'['
-        stosb
-        mov     si,offset unknown_txt
-    ENDIF
-
-    VideoIO_PrintBuildInfo_a1:
-        lodsb
-        test    al,al
-        jz      VideoIO_PrintBuildInfo_e1
-        stosb
-        jmp     VideoIO_PrintBuildInfo_a1
-    VideoIO_PrintBuildInfo_e1:
-        mov     al,']'
-        stosb
-
-        ; Insert NULL Terminator.
-        xor     al,al
-        stosb
-
-        ; Print Info.
-        mov     si, offset Scratch
-        call    MBR_TeletypeNL
         ret
 VideoIO_PrintBuildInfo  EndP
 
