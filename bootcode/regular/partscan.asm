@@ -30,7 +30,7 @@ ENDIF
 PARTSCAN_ScanForPartitions      Proc Near
 
 IFDEF   AUX_DEBUG
-        IF 0
+        IF 1
         DBG_TEXT_OUT_AUX    'PARTSCAN_ScanForPartitions:'
         PUSHRF
             ;~ call    DEBUG_DumpRegisters
@@ -47,14 +47,123 @@ ENDIF
         xor     al, al
         mov     [NewPartitions], al
 
-        mov     byte ptr [CurIO_Scanning], 1             ; Set flag due scanning partitions
-        mov     dl, 80h                       ; is first harddisc
+        mov     byte ptr [CurIO_Scanning], 1    ; Set flag due scanning partitions
+        mov     dl, 80h                         ; Is first harddisc
     PSSFP_HarddiscLoop:
+
+
 
 ; ========================================================= [ Scan Partitions ]
 
+
+        ; Save BIOS disk number
         push    dx
+
+            ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            ;!! THIS IS WHERE WE TRY TO DETECT LARGE FLOPPIES !
+            ;!! ---------------------------------------------------------------
+            ;!! This is a quick hack to ignore LARGE FLOPPY removable media.
+            ;!! With LARGE FLOPPY, the boot record will be a BPB instead of
+            ;!! an MBR. To distinguish, it is assumed that the MBR bootable
+            ;!! flag is either 00h or 80h. LARGE FLOPPIES will often have
+            ;!! other values there. So, the block below tests if all 4 entries
+            ;!! result in 0 when first ored together and then anded with 7fh.
+            ;!!
+            ;!! THIS IS NOT BULLET PROOF AND WILL BE ENHANCED IN THE FUTURE
+            ;!!
+            ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            ; Push the whole shebang
+            pusha
+
+            ; Check if this is a removable drive
+            call    DriveIO_CalcDiskInfoPointer     ; Pointer to DISKINFO
+            mov     ax, [bx+LocDISKINFO_I13X_Flags] ; Get INT13X flags
+            test    ax, 04h                         ; Bit 3=1 if removable
+            clc                                     ; Assume fixed
+
+            ; Fixed drive, so skip further checking for LARGE FLOPPY.
+            ; We *DO* halt on broken partition tables !
+            ; This is needed because AiR-BOOT cannot continue with broken
+            ; tables on truly partitioned disks.
+            je      @F
+
+
+            ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            ; !! THE DISK IS A REMOVABLE !
+            ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+IFDEF   AUX_DEBUG
+        IF 0
+        DBG_TEXT_OUT_AUX    'test bigflop'
+        PUSHRF
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
+
+            ; If it has LVM info, it must be partitioned and thus OK
+            mov     al, [bx+LocDISKINFO_LVM_Secs]   ; Get LVM_SPT
+            test    al, al                          ; See if 0
+            clc                                     ; Assume OK
+            jne     @F                              ; LVM_SPT present, OK
+
+            ; Now load its boot sector and see if AiR-BOOT is there, if so, OK
+            mov     si, offset [Scratch]        ; Pointer to sector buffer
+            call    DriveIO_LoadMBR             ; Load it
+            test    al, 08h                     ; AiR-BOOT signature found ?
+            clc                                 ; Assume OK
+            jne     @F                          ; AB found, must be partitioned
+
+            ; A zero sector is also OK -- ready to be partitioned by OS/2 ;)
+            call    IsSectorBufferZero          ; check if sector is all zeros
+            clc                                 ; Assume OK
+            je      @F                          ; Zero sector, OK
+
+            ; !! NOW WE TEST MBR BOOT FLAGS.
+            ; !! MOST LARGE FLOPPIES WILL HAVE DATA THERE.
+            ; !! NOT BULLET PROOF, NEEDS TO BE IMPROVED.
+            xor     ax, ax          ; Clear for oring and anding
+            add     si, 01beh       ; Advance to partition table
+            mov     cx, 4           ; Four entries to test
+            cld                     ; Load upwards
+        __nxt:
+            lodsb                   ; Load Boot Flag (00h OR 80h)
+            or      ah, al          ; Merge all bits to AH
+            add     si, 16          ; Point to next entry
+            loop    __nxt           ; Again if still entries to test
+
+            ; A LARGE FLOPPY with 00h or 80h bytes at these 4 locations
+            ; will PASS !!
+            and     ah, 7fh         ; Strip of potential Boot Flag
+            clc                     ; Assume OK
+            jz      @F              ; Good indication this is NOT a BPB, but...
+
+
+            ;!! The Boot Flag bytes were NOT either 00h or 80h, so this is
+            ;!! definintly not a partitioned disk.
+            ;!! SET CY TO INDICATE SKIPPING 'PARTSCAN_ScanDriveForPartitions'
+            stc
+
+        ; End of LARGE FLOPPY test
+        @@:
+
+            ; Restore the whole shebang
+            popa
+
+        ; CARRY IS SET, LARGE FLOPPY OR WHAT -- SKIP IT !!
+        jc      @F
+
+        ; This disk should be partitioned, so scan it.
+        ; Broken partitions *DOS* halt AiR-BOOT !
         call    PARTSCAN_ScanDriveForPartitions
+
+    @@:
+
+
         pop     dx
         inc     dl
         dec     dh
