@@ -381,7 +381,7 @@ DriveIO_SavePartition   EndP
 DriveIO_LoadLVMSector   Proc Near  Uses ax bx cx dx di
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'DriveIO_LoadLVMSector:'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -413,45 +413,11 @@ ENDIF
         mov     dx, wptr cs:[CurPartition_Location+4]   ; BIOS disk num & head
         mov     cx, wptr cs:[CurPartition_Location+6]   ; BIOS cyl & sec
 
-        ; Calculate the entry in the DISKINFO array for this disk,
-        ; and put the LVM_SPT in DI
-        push    bx
-        call    DriveIO_CalcDiskInfoPointer
-        mov     di, [bx+LocDISKINFO_LVM_Secs]
-        pop     bx
-
-        ; If the LVM_SPT is ZERO, no LVM info is present and we quit with CY
-        test    di, di                          ; See if it is 0
-        jz      DIOLLVMS_NoLVMSector            ; Quit if so
-
-        ; Adjust the location to point to the LVM sector
-        add     ax, di      ; Add the LVM sectors-per-track
-        adc     bx, 0       ; Propagate LBA lo overflow to LBA hi
-        sub     ax, 1       ; LVM sector is located one sector below
-        sbb     bx, 0       ; Propagate borrow to LBA hi
-
-        ; Load the LVM sector into [LVMSector]
-        mov     si, offset [LVMSector]          ; Points to sector buffer
-        mov     di, ds                          ; Segment of that buffer
-        call    DriveIO_ReadSectorLBA           ; Read the LVM sector
-
-IFDEF   AUX_DEBUG
-        IF 1
-        DBG_TEXT_OUT_AUX    'LVMSecLoaded'
-        PUSHRF
-            call    DEBUG_DumpRegisters
-            call    AuxIO_DumpSector
-            ;~ call    AuxIO_DumpParagraph
-            ;~ call    AuxIO_TeletypeNL
-        POPRF
-        ENDIF
-ENDIF
-
-        jc      DIOLLVMS_NoLVMSector            ; Quit on error
-
-        ; Check the validity of the LVM sector, quit with CY if invalid
-        call    LVM_ValidateSector              ; Check signature and CRC
-        jnc     DIOLLVMS_NoLVMSector            ; Quit if not valid
+        ; Do the actual loading.
+        ; This is in a separate function so that LVM records can also be
+        ; loaded using the MBR/EBR LBA addresses from IPT entries.
+        call    DriveIO_LoadLVMSectorXBR
+        jc      DIOLLVMS_NoLVMSector
 
         ; We're done, indicate success and return
         clc
@@ -472,6 +438,96 @@ ENDIF
         ret
 DriveIO_LoadLVMSector   EndP
 
+
+
+
+
+;------------------------------------------------------------------------------
+; Attempts to load the corresponding LVM sector for a partition
+;------------------------------------------------------------------------------
+; IN    : AX    - LBA lo of MBR or EBR
+;       : BX    - LBA hi of MBR or EBR
+;       ; DL    - BIOS disk number
+;       ; SI    - Pointer to sector buffer (usually [LVMSec])
+; OUT   : CF=0  - A valid LVM sector was loaded
+; NOTE  : LocIPT_AbsolutePartTable and LocIPT_Drive can provide LBA and DISK
+;------------------------------------------------------------------------------
+DriveIO_LoadLVMSectorXBR    Proc    Near
+
+IFDEF   AUX_DEBUG
+        IF 1
+        DBG_TEXT_OUT_AUX    'DriveIO_LoadLVMSectorXBR:'
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpSector
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
+
+        ; Save all registers
+        pusha
+
+        ; Calculate the entry in the DISKINFO array for this disk,
+        ; and put the LVM_SPT in DI
+        push    bx
+        call    DriveIO_CalcDiskInfoPointer
+        mov     di, [bx+LocDISKINFO_LVM_Secs]
+        pop     bx
+
+        ; If the LVM_SPT is ZERO, no LVM info is present and we quit with CY
+        test    di, di                          ; See if it is 0
+        jz      DriveIO_LoadLVMSectorXBR_no_lvm ; Quit if so
+
+        ; Adjust the location to point to the LVM sector
+        add     ax, di      ; Add the LVM sectors-per-track
+        adc     bx, 0       ; Propagate LBA lo overflow to LBA hi
+        sub     ax, 1       ; LVM sector is located one sector below
+        sbb     bx, 0       ; Propagate borrow to LBA hi
+
+        ; Load the LVM sector into sector buffer pointed to by SI
+        mov     di, ds                          ; Segment of that buffer
+        call    DriveIO_ReadSectorLBA           ; Read the LVM sector
+
+IFDEF   AUX_DEBUG
+        IF 1
+        DBG_TEXT_OUT_AUX    'LVMSecLoaded'
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpSector
+            mov     cx, 3
+        @@:
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+            add     si, 16
+            loop @B
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
+
+        jc      DriveIO_LoadLVMSectorXBR_no_lvm ; Quit on error
+
+        ; Check the validity of the LVM sector, quit with CY if invalid
+        call    LVM_ValidateSector              ; Check signature and CRC
+        jnc     DriveIO_LoadLVMSectorXBR_no_lvm ; Quit if not valid
+
+        ; We're done, indicate success and return
+        clc
+        jmp     DriveIO_LoadLVMSectorXBR_done
+
+    DriveIO_LoadLVMSectorXBR_no_lvm:
+        ; Indicate no valid LVM sector was loaded
+        stc
+
+    DriveIO_LoadLVMSectorXBR_done:
+        ; Restore all registers
+        popa
+
+        ret
+DriveIO_LoadLVMSectorXBR    EndP
 
 
 ;##############################################################################
@@ -500,7 +556,7 @@ DriveIO_LoadLVMSector   EndP
 DriveIO_SaveLVMSector   Proc Near  Uses ax bx cx dx di
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'DriveIO_SaveLVMSector:'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -512,11 +568,7 @@ ENDIF
 
         ; Quit with CY if LVM is ignored in SETUP
         test    byte ptr [CFG_IgnoreLVM], 1     ; ZF=0 means ignore LVM
-        jnz     DIOSLVMS_SevereError            ; Quit if so
-
-        ; Check the validity of the LVM sector, quit with CY if invalid
-        call    LVM_ValidateSector              ; Check signature and CRC
-        jnc     DIOSLVMS_SevereError            ; Quit if not valid
+        jnz     DIOSLVMS_NoLVMSector            ; Quit if so
 
         ; Load the location of the current partition being acted upon.
         ; Note that this is not the actual LBA of the partition, but the
@@ -531,6 +583,46 @@ ENDIF
         mov     dx, wptr cs:[CurPartition_Location+4]   ; BIOS disk num & head
         mov     cx, wptr cs:[CurPartition_Location+6]   ; BIOS cyl & sec
 
+        ; Do the actual saving.
+        ; This is in a separate function so that LVM records can also be
+        ; saved using the MBR/EBR LBA addresses from IPT entries.
+        call    DriveIO_SaveLVMSectorXBR
+        jc      DIOSLVMS_NoLVMSector
+
+        ; We're done, indicate success and return
+        clc
+        jmp     DIOSLVMS_Done
+
+    DIOSLVMS_NoLVMSector:
+        ; Indicate no valid LVM sector was saved
+        stc
+
+    DIOSLVMS_Done:
+        ret
+DriveIO_SaveLVMSector   EndP
+
+
+;------------------------------------------------------------------------------
+; Attempts to save the corresponding LVM sector for a partition
+;------------------------------------------------------------------------------
+; IN    : AX    - LBA lo of MBR or EBR
+;       : BX    - LBA hi of MBR or EBR
+;       ; DL    - BIOS disk number
+;       ; SI    - Pointer to sector buffer (usually [LVMSec])
+; OUT   : CF=0  - A valid LVM sector was saved
+; NOTE  : LocIPT_AbsolutePartTable and LocIPT_Drive can provide LBA and DISK
+;------------------------------------------------------------------------------
+DriveIO_SaveLVMSectorXBR    Proc    Near
+
+        ; Save all registers
+        pusha
+
+        ; Check the validity of the LVM sector, quit with CY if invalid
+        push    ax                              ; Save LBA lo
+        call    LVM_ValidateSector              ; Check signature and CRC
+        pop     ax                              ; Restore LBA lo
+        jnc     DriveIO_SaveLVMSectorXBR_no_lvm ; Quit if not valid
+
         ; Calculate the entry in the DISKINFO array for this disk,
         ; and put the LVM_SPT in DI
         push    bx
@@ -540,13 +632,17 @@ ENDIF
 
         ; If the LVM_SPT is ZERO, no LVM info is present and we quit with CY
         test    di, di                          ; See if it is 0
-        jz      DIOSLVMS_SevereError            ; Quit if so
+        jz      DriveIO_SaveLVMSectorXBR_no_lvm ; Quit if so
 
         ; Adjust the location to point to the LVM sector
         add     ax, di      ; Add the LVM sectors-per-track
         adc     bx, 0       ; Propagate LBA lo overflow to LBA hi
         sub     ax, 1       ; LVM sector is located one sector below
         sbb     bx, 0       ; Propagate borrow to LBA hi
+
+        ; Save the LVM sector pointed to by SI
+        mov     di, ds                          ; Segment of that buffer
+        call    DriveIO_WriteSectorLBA          ; Read the LVM sector
 
 IFDEF   AUX_DEBUG
         IF 1
@@ -560,23 +656,22 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
-        ; Save the LVM sector pointed to by SI
-        mov     di, ds                          ; Segment of that buffer
-        call    DriveIO_WriteSectorLBA          ; Read the LVM sector
-        clc
-        jc      DIOSLVMS_SevereError            ; Quit on error
+        jc      DriveIO_SaveLVMSectorXBR_no_lvm ; Quit on error
 
         ; We're done, indicate success and return
         clc
-        jmp     DIOSLVMS_Done
+        jmp     DriveIO_SaveLVMSectorXBR_done
 
-    DIOSLVMS_SevereError:
-        ; Indicate no valid LVM sector was saved
+    DriveIO_SaveLVMSectorXBR_no_lvm:
+        ; Indicate no valid LVM sector was loaded
         stc
 
-    DIOSLVMS_Done:
+    DriveIO_SaveLVMSectorXBR_done:
+        ; Restore all registers
+        popa
+
         ret
-DriveIO_SaveLVMSector   EndP
+DriveIO_SaveLVMSectorXBR    EndP
 
 
 
