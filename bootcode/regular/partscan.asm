@@ -51,49 +51,9 @@ ENDIF
         mov     dl, 80h                       ; is first harddisc
     PSSFP_HarddiscLoop:
 
-        push    dx
-
-; ================================================ [ Locate Master LVM Sector ]
-
-        ; Locate the Master LVM sector for this disk.
-        ; If one is found, BX:AX will hold its LBA address, otherwise zero.
-        ; Note that if LVM is set to be ignored in the SETUP, checking for a
-        ; signature will not be done and thus no Master LVM sector will be
-        ; found.
-        call    DriveIO_LocateMasterLVMSector
-
-        ; Put the LBA address in the BSS location for this disk
-        xor     bh, bh                          ; Zero upper part of index
-        mov     bl, dl                          ; Get BIOS drive-number
-        sub     bl, 80h                         ; Now 0-based index
-        shl     bx, 3                           ; Mult by 4 for DWORD
-        add     bx, offset [LVM_MasterSecs]     ; Add the base offset
-        mov     [bx+00h], ax                    ; Store LBA low
-        xor     ax, ax                          ; LBA high always zero
-        mov     [bx+02h], ax                    ; Store LBA high
-
-;!
-;! DEBUG_BLOCK
-;! Check stored Master LVM LBA address.
-;!
-IFDEF   AUX_DEBUG
-        IF 0
-        DBG_TEXT_OUT_AUX    '[Master LVM Sector]'
-        PUSHRF
-            xor     bh, bh
-            mov     bl, dl
-            sub     bl, 80h
-            shl     bx, 3
-            add     bx, offset [LVM_MasterSecs]
-            mov     al, [bx]
-            mov     ah, dl
-            call    DEBUG_DumpRegisters
-        POPRF
-        ENDIF
-ENDIF
-
 ; ========================================================= [ Scan Partitions ]
 
+        push    dx
         call    PARTSCAN_ScanDriveForPartitions
         pop     dx
         inc     dl
@@ -103,11 +63,9 @@ ENDIF
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
+        PUSHRF
             call    DEBUG_DumpHidePartTables
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -116,17 +74,15 @@ ENDIF
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-        call    DEBUG_DumpHidePartTables
-        popa
-        popf
+        PUSHRF
+            call    DEBUG_DumpHidePartTables
+        POPRF
         ENDIF
 ENDIF
 
         ; Now we copy the new IPT over the old one...
-        mov     si, offset NewPartTable
-        mov     di, offset PartitionTable
+        mov     si, offset [NewPartTable]
+        mov     di, offset [PartitionTable]
         ;movzx   ax, NewPartitions
         mov   al,NewPartitions
         mov   ah,0
@@ -138,25 +94,25 @@ ENDIF
         rep     movsb
 
         ; and the New Logical Drive Letter table as well...
-        mov     si, offset NewDriveLetters
-        mov     di, offset DriveLetters
+        mov     si, offset [NewDriveLetters]
+        mov     di, offset [DriveLetters]
         mov     cx, LocIPT_MaxPartitions
         rep     movsb
 
         ; ...and finally check, if we need to set a Drive-Letter
-        mov     dl, AutoDrvLetter
+        mov     dl, [AutoDrvLetter]
         or      dl, dl
         jz      PSSFP_NoAutoDriveLetter
         ;movzx   cx, CFG_Partitions
-        mov   cl,CFG_Partitions
+        mov   cl, [CFG_Partitions]
         mov   ch,0
 
         or      cx, cx
         jz      PSSFP_NoAutoDriveLetter
-        mov     si, offset PartitionTable
-        mov     di, offset DriveLetters
-        mov     ax, wptr [AutoDrvLetterSerial]
-        mov     bx, wptr [AutoDrvLetterSerial+2]
+        mov     si, offset [PartitionTable]
+        mov     di, offset [DriveLetters]
+        mov     ax, word ptr [AutoDrvLetterSerial+00h]
+        mov     bx, word ptr [AutoDrvLetterSerial+02h]
     PSSFP_AutoDrvLetterLoop:
         cmp     ax, [si+LocIPT_Serial]
         jne     PSSFP_AutoDrvLetterNoMatch
@@ -432,7 +388,7 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
         local   PartCRC:word, PartPtr:word
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'PARTSCAN_CheckThisPartition:'
         PUSHRF
             call    DEBUG_DumpRegisters

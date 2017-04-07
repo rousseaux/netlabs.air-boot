@@ -1137,20 +1137,31 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
+
 ; -----------------------------------------------------------------------------
-;                                                               PARTITION SCAN
+;                                                                   SCAN DISKS
 ; -----------------------------------------------------------------------------
-
-
-
-
-
 
                 ;
-                ; BOOKMARK: Scan all partitions
+                ; Scan disks for information like size etc.
+                ;
+                call    DriveIO_ScanDisks
+
+
+
+; -----------------------------------------------------------------------------
+;                                                          SCAN FOR PARTITIONS
+; -----------------------------------------------------------------------------
+
+                ;
+                ; Scan disks for partitions
                 ;
                 call    PARTSCAN_ScanForPartitions
+
+                ;
                 ; Internal Partition Table is now populated.
+                ;
+
 
 ;!
 ;! DEBUG_BLOCK
