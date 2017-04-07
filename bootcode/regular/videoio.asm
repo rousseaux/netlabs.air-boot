@@ -200,6 +200,39 @@ VideoIO_PrintSingleChar         Proc Near   Uses ax bx es di
 VideoIO_PrintSingleChar         EndP
 
 
+IF 0
+; Print dec-byte to screen
+; This outputs 1 to 3 characters
+; In:          AL - byte to send
+; Out:         AL - byte sent
+; Destroyed:   None
+VideoIO_PrintDecByte    Proc     Near  Uses  ax
+      call    CONV_BinToPBCD  ; Convert to PBCD
+      mov     dx, ax          ; Save PBCD value
+      shr     ah, 4           ; Move digit count to low nibble
+      cmp     ah, 3           ; Less than 3 digits ?
+      jb      @F              ; Yep, skip digit with index 2
+      mov     al, dh          ; Get byte with digit
+      and     al, 0fh         ; Mask it out
+      add     al, '0'         ; To ASCII
+      call    VideoIO_PrintSingleChar
+    @@:
+      shr     dh, 4           ; Move digit count to low nibble
+      cmp     dh, 2           ; Less that 2 digits ?
+      jb      @F              ; Yep, skip digit with index 1
+      mov     al, dl          ; Get byte with digit
+      shr     al, 4           ; Move to lower nibble
+      add     al, '0'         ; To ASCII
+      call    VideoIO_PrintSingleChar
+    @@:
+      mov     al, dl          ; Get byte with digit
+      and     al, 0fh         ; Mask it out
+      add     al, '0'         ; To ASCII
+      call    VideoIO_PrintSingleChar
+      ret
+VideoIO_PrintDecByte    EndP
+ENDIF
+
 
 ; Print hex-byte to screen
 ; This outputs two characters

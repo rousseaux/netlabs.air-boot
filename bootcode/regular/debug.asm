@@ -325,7 +325,7 @@ ENDIF
 ;
 ; Dump some disk information.
 ;
-IF  0
+IF  1
 ddi     db  10,'DumpDiskInfo:',10,0
 DEBUG_DumpDiskInfo          Proc
         pushf
@@ -727,7 +727,7 @@ IF  1
 DEBUG_Test  Proc
     pushf
     pusha
-    call    DEBUG_Test_CONV_BinToPBCD
+    ;~ call    DEBUG_Test_CONV_BinToPBCD
     ;~ call    DEBUG_Test_MATH_Mul32
     popa
     popf
@@ -744,7 +744,7 @@ ENDIF
 ;
 ; Test the packed BCD conversion function.
 ;
-IF 1
+IF 0
 db_testbin2pbcd db "## TEST BIN2PBCD ##",10,0
 DEBUG_Test_CONV_BinToPBCD   Proc
         pushf
@@ -1068,6 +1068,7 @@ ENDIF
 ;
 dbp     db  '>---------->> DebugProbe: ',0
 DEBUG_Probe     Proc
+IF  0
         push    bp
         mov     bp,sp
         pushf
@@ -1087,6 +1088,7 @@ DEBUG_Probe     Proc
         popa
         popf
         pop     bp
+ENDIF
         ret     2
 DEBUG_Probe     Endp
 

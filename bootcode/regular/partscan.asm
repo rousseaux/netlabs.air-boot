@@ -170,7 +170,7 @@ PARTSCAN_UpdateDriveLetters     Proc
 ;!
 ;! DEBUG_PROBE
 ;!
-IFDEF   AUX_DEBUG
+IFDEF   AUX_DEBUGx
     push    1234h
     call    DEBUG_Probe
 ENDIF
