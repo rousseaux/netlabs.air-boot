@@ -42,7 +42,7 @@ IFDEF   AUX_DEBUG
             call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-            mov     si, offset [INT13X_DiskParams]
+            mov     si, offset [Scratch]
             mov     word ptr [si], 50h
             mov     ah, 48h
             int     13h
