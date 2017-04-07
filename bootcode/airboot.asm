@@ -2059,8 +2059,7 @@ AirBootRocks            db  'AiR-BOOT Rocks!',0
                 ; End of Image.
                 ;
                 ORIGIN  % (image_size)
-
-
+image_end:
 
 ;
 ; Terminate LDRIMAGE segment.
@@ -2407,12 +2406,17 @@ OldSS                       dw      ?
 CurrentSP                   dw      ?
 CurrentSS                   dw      ?
 
-
-
 ;
 ; End of BSS segment.
 ;
 eobss:
+
+;
+; Total RAM occupied, including BSS.
+; BASE is 8000:0000, LIMIT is 8000:FFFF.
+; Note that the LDRIMAGE is of constant size, 7C00h = 62 sectors of 512 bytes.
+;
+resident_size = (offset eobss + image_size)
 
 ;
 ; Close BSS segment.
