@@ -854,6 +854,142 @@ DriveIO_WriteSectorLBA      EndP
 
 
 
+
+;##############################################################################
+;# The Master LVM sector is *not* necessarily located at the end of the BIOS
+;# view of TRACK0. Its location depends on the *OS/2 geometry* active when the
+;# disk was partitioned. For disks < 502MiB this will most likely be LBA sector
+;# 62, but for disks >502MiB, *extended* OS/2 geometry was used and DANIS506
+;# uses SPT=127 for disks < 1TiB while IBMS506 uses  SPT=255.
+;# When a huge disk < 1TiB was partitioned with IBMS506, thus using SPT=255,
+;# and the driver was later changed to DANIS506, DANI uses SPT=255, eventhough
+;# the disk < 1TiB. Whether it is DANI that is LVM aware or something else
+;# (maybe LVM itself) that makes DANI use the correct geometry has yet to be
+;# investigated.
+;#
+;# Related geometry issues are also present with USB sticks, which can get
+;# assigned a geometry by OS/2, which can depend if the stick was partitioned
+;# on foreign systems or not, or even OS/2 manufacturing a geometry that is not
+;# the same as the BIOS reports to us here. In both cases, fixed disks and
+;# removable disks, the geometry recorded in the BPB of a partition can also
+;# influence the geometry that OS/2 assigns. This is the case when 'preparing'
+;# disks for LVM use, in which case BPB values could be incorporated.
+;#
+;# What this all boils down to, is that the geometry reported by the BIOS is
+;# of no practical use, especially not when taking BIOS USB MSD emulation into
+;# account. These are among the reasons why AirBoot needs to use LBA addressing
+;# when handling LVM stuff and why LBA use cannot be disabled in the SETUP
+;# anymore.
+;#
+;# So, a Master LVM sector can be present on any sector from LBA 254 downwards
+;# and the only way to locate the correct one is to scan all the way down and,
+;# if one is found, do proper validation on its values, because it may also be
+;# a 'phantom' LVM sector left over from previous partition layouts.
+;# Most of such 'phantoms' can be filtered out by verifying the location of
+;# the found sector against the OS/2 geometry it specifies itself, which means
+;# it must be located at the LBA of the SPT-1 it specifies.
+;##############################################################################
+;# ACTION   : Locates the Master LVM sector on the specified disk
+;# ----------------------------------------------------------------------------
+;# EFFECTS  : None
+;# ----------------------------------------------------------------------------
+;# IN       : DL    - BIOS disk number of drive to search
+;# ----------------------------------------------------------------------------
+;# OUT      : CF=1  - found
+;#          : BX:AX - LBA address of LVM sector if found, 0 otherwise
+;##############################################################################
+DriveIO_LocateMasterLVMSector   Proc    Near    uses cx dx si di ds es
+
+IFDEF   AUX_DEBUG
+        IF 1
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_LocateMasterLVMSector:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpSector
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
+        ; LBA address to start scanning down from
+        mov     cx, 255
+
+        ; Make sure ES==DS
+        push    ds
+        pop     es
+
+    DriveIO_LocateMasterLVMSector_next:
+        clc                             ; Indicate Master LVM sector not found
+        jcxz    DriveIO_LocateMasterLVMSector_done
+
+        ; Clear the sector buffer
+        mov     bx, cx                  ; Save our precious sector LBA
+        mov     cx, 100h                ; Clear 256 words is 512 bytes
+        mov     di, offset [TmpSector]  ; Offset of buffer
+        xor     ax, ax                  ; Value to sture
+        cld                             ; Increment DI each time
+        rep     stosw                   ; Store the value
+        mov     cx, bx                  ; Restore our precious sector LBA
+
+        ; Now read the LBA sector specified in CX
+        xor     bx, bx                  ; LBA high, CX already has LBA low
+        mov     di, ds                  ; Segment of temp buffer
+        mov     si, offset [TmpSector]  ; Offset of temp buffer
+        call    DriveIO_ReadSectorLBA   ; Read the sector
+        lahf
+        dec     cx                      ; Prepare LBA of next sector to read
+        sahf                            ; Restore CF
+        ; No need to do any LVM sector validation when read error, read next
+        jc      DriveIO_LocateMasterLVMSector_next
+
+        ; See if the read sector has a valid signature and checksum
+        call    LVM_ValidateSector
+
+        ; NC indicates invalid or none-LVM sector, read next
+        jnc     DriveIO_LocateMasterLVMSector_next
+
+        ; We have found a valid LVM sector !
+        ; So it contains the OS/2 geometry for the disk.
+        ; That means this LVM sector itself must be located on the last sector
+        ; of the SPT value its OS/2 geometery specifies, which, in LBA terms
+        ; is LVM SPT-1 -- let's check that...
+        mov     bx, offset [TmpSector]          ; Offset of the loaded LVM sector
+        mov     al, [bx+LocLVM_Secs]            ; Get the LVM SPT value (<=255)
+        dec     al                              ; Adjust to LVM LBA
+        mov     ah, cl                          ; Get next LVM LBA to search
+        inc     ah                              ; This one was found here
+        cmp     al, ah                          ; If same, LVM LBA location OK
+        call    DEBUG_DumpRegisters
+        jne     DriveIO_LocateMasterLVMSector_next
+
+        ; The LVM sector we found is at the location it should be on disk,
+        ; so it's almost 99% sure this is the correct one.
+        ; Now we should compare the start and sizes of the partitions in the
+        ; MBR with the partitions specified in this LVM record.
+        ; We'll implement that later after some more research.
+        ; For now we assume this is the correct Master LVM sector for the disk.
+        inc     cx      ; CX was prepared to read next, correct that
+        stc             ; Indicate we have found a Master LVM sector
+
+    DriveIO_LocateMasterLVMSector_done:
+        mov     bx, 0   ; A Master LVM sector always has high LBA=0
+        mov     ax, cx  ; Low LBA of Master LVM sector
+
+        ; We leave it up to the caller to store the value in a proper place
+        ret
+DriveIO_LocateMasterLVMSector   EndP
+
+
+
 ;
 ; ############################################################
 ; # Check for a valid MBR-sector to be written to disk       #
