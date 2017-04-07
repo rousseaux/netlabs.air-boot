@@ -89,6 +89,25 @@ GetLenOfStrings     EndP
 ;
 PRECRAP_Main    Proc Near
 
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PRECRAP_Main:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         ; First initialize Variable-Area (everything with NUL)
         ; We use the start instead of the variables because they could be 'orged'
         ; to an offset. We want everything after the code to be nullified.
@@ -179,6 +198,7 @@ PRECRAP_Main    Proc Near
         mov     ah, 03h
         int     13h
 
+; =============================================================================
 
         ; Start with disk at index 0
         xor     cx,cx
@@ -205,16 +225,6 @@ PRECRAP_Main    Proc Near
         call     DriveIO_LoadMasterLVMSector
 
         pushf
-
-        ;~ mov     al,'#'
-        ;~ pushf
-        ;~ call    VideoIO_PrintSingleChar
-        ;~ popf
-        ;~ mov     al,0
-        ;~ rcl     al,1
-        ;~ call    VideoIO_PrintHexByte
-        ;~ mov     al,'#'
-        ;~ call    VideoIO_PrintSingleChar
 
         mov      bx, offset [TrueSecs]
         add      bx,cx
@@ -263,7 +273,7 @@ PRECRAP_Main    Proc Near
         cmp     cl,[TotalHarddiscs]
         jb      PRECRAP_Main_next_disk
 
-
+; =============================================================================
 
     IFDEF   AUX_DEBUG
         ; Write some debug-info to the com-port
@@ -291,18 +301,18 @@ PRECRAP_Main    Proc Near
 
 
         ; Huge Disk indicator
-        mov     si, offset [HugeBootDisk]
-        call    MBR_Teletype
-        mov     al,[HugeDisk]
-        mov     si, offset [No]
-        test    al,al
-        jz      MBR_HugeDriveIndicator
-        mov     si, offset [Yes]
+        ;~ mov     si, offset [HugeBootDisk]
+        ;~ call    MBR_Teletype
+        ;~ mov     al,[HugeDisk]
+        ;~ mov     si, offset [No]
+        ;~ test    al,al
+        ;~ jz      MBR_HugeDriveIndicator
+        ;~ mov     si, offset [Yes]
 
     MBR_HugeDriveIndicator:
-        call    MBR_Teletype
-        xor     si,si
-        call    MBR_TeletypeNL
+        ;~ call    MBR_Teletype
+        ;~ xor     si,si
+        ;~ call    MBR_TeletypeNL
 
 
         ;
@@ -322,6 +332,7 @@ PRECRAP_Main    Proc Near
         xor     si,si
         call    MBR_TeletypeNL
 
+; =============================================================================
 
         ; Calculate Cooper-Bar Tables
     IFDEF   FX_ENABLED
@@ -437,6 +448,26 @@ PRECRAP_Main    EndP
 
 
 AFTERCRAP_Main  Proc Near
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'AFTERCRAP_Main:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         ; ===================================================
         ;  Now get volume label of FloppyDrive, if wanted...
         ; ===================================================
@@ -454,6 +485,26 @@ AFTERCRAP_Main  EndP
 
 ; Checks Configuration CheckSum...Displays message, if failed.
 PRECRAP_CheckConfiguration      Proc Near  Uses ds si es di
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PRECRAP_CheckConfiguration:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         mov     si, offset Configuration
         xor     bx, bx
 

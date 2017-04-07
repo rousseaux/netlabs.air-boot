@@ -107,7 +107,7 @@ DEBUG_NotAssigned       Endp
 ;
 ; Dump the geometry.
 ;
-IF  0
+IF 0
 DEBUG_DumpGeo   Proc
         pushf
         pusha
@@ -167,7 +167,7 @@ ENDIF
 ;
 ; Dump the internal partition table.
 ;
-IF  0
+IF 0
 DEBUG_DumpIPT   Proc
         pushf
         pusha
@@ -193,7 +193,7 @@ ENDIF
 ;
 ; Dump the new  partitions table.
 ;
-IF  0
+IF 0
 DEBUG_DumpNewPartTable  Proc
         pushf
         pusha
@@ -217,7 +217,7 @@ ENDIF
 ;
 ; Dump the partition pointers table.
 ;
-IF  0
+IF 0
 DEBUG_DumpPartitionPointers     Proc
         pushf
         pusha
@@ -248,7 +248,7 @@ ENDIF
 ;
 ; Dump the partition x-ref table.
 ;
-IF  0
+IF 0
 xrt     db  10,'XrefTable:',10,0
 DEBUG_DumpPartitionXref     Proc
         pushf
@@ -282,7 +282,7 @@ ENDIF
 ;
 ; Dump the dl-feature drive-letters.
 ;
-IF  0
+IF 0
 ddl     db  10,'Driveletters:',10,0
 DEBUG_DumpDriveLetters      Proc
         pushf
@@ -325,7 +325,7 @@ ENDIF
 ;
 ; Dump some disk information.
 ;
-IF  1
+IF 0
 ddi     db  10,'DumpDiskInfo:',10,0
 DEBUG_DumpDiskInfo          Proc
         pushf
@@ -374,7 +374,7 @@ ENDIF
 ;
 ; Dump the lvm volume drive-letters.
 ;
-IF  0
+IF 0
 dvl     db  10,'VolumeLetters:',10,0
 DEBUG_DumpVolumeLetters     Proc
         pushf
@@ -407,7 +407,7 @@ ENDIF
 ;
 ; Dump the registers and flags.
 ;
-IF  1
+IF 1
 regAX   db  'AX:',0
 regBX   db  ' BX:',0
 regCX   db  ' CX:',0
@@ -561,7 +561,7 @@ ENDIF
 ;
 ; Dump CHS values.
 ;
-IF  0
+IF 0
 DEBUG_DumpCHS   Proc    Near
         pushf
         pusha
@@ -606,7 +606,7 @@ ENDIF
 ;
 ; Dump BSS.
 ;
-IF  0
+IF 0
 DEBUG_DumpBSSSectors    Proc    Near
         pushf
         pusha
@@ -647,7 +647,7 @@ ENDIF
 ;
 ; Dump 6-bit packed hide partition table.
 ;
-IF  0
+IF 0
 DEBUG_DumpHidePartTables    Proc    Near
         pushf
         pusha
@@ -696,7 +696,7 @@ ENDIF
 ; When a call is _not_ commented out, the test-function can still be disabled
 ; if its 'IF' directive is 0.
 ;
-IF  1
+IF 1
 DEBUG_Test  Proc
     pushf
     pusha
@@ -763,7 +763,7 @@ ENDIF
 ;
 ; Test the simple 32-bit math functions.
 ;
-IF  0
+IF 0
 db_testmul32   db "## TEST MUL32 ##",10,0
 DEBUG_Test_MATH_Mul32   Proc    Near
         pushf
@@ -851,7 +851,7 @@ ENDIF
 ;
 ; Test the bitfield routines.
 ;
-IF  0
+IF 0
 DEBUG_TestBitFieldFunctions Proc
         pushf
         pusha
@@ -946,7 +946,7 @@ DEBUG_Dump1     EndP
 ;
 ; Dump information before the partition is booted.
 ;
-IF  0
+IF 0
 DEBUG_Dump2     Proc  Near
         pushf
         pusha
@@ -1041,7 +1041,7 @@ ENDIF
 ;
 dbp     db  '>---------->> DebugProbe: ',0
 DEBUG_Probe     Proc
-IF  0
+IF 0
         push    bp
         mov     bp,sp
         pushf
@@ -1070,7 +1070,7 @@ DEBUG_Probe     Endp
 ;
 ; Toggle display of debug video page.
 ;
-IF  0
+IF 0
 DEBUG_DebugScreenToggle Proc
         pushf
         pusha
@@ -1218,11 +1218,10 @@ DEBUG_HandleKeypress    Endp
 ; These strings can also be referenced outside the debug module when debugging
 ; is enabled.
 ;
-dlra    db  10,'LVM_DoLetterReassignment: ',0
+;~ dlra    db  10,'LVM_DoLetterReassignment: ',0
 ptetb   db  10,'Partition Table Entry to boot',10,0
 bios_reg    db  10,'Registers passed by BIOS:',10,0
 ;~ diopmbr db  10,'DriveIO_ProtectMBR',10,0
-dioss   db  10,'DriveIO_SaveSector',10,0
 
 
 ;~ db_mbr              db "## MBR ##",10,0

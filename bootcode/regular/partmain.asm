@@ -513,6 +513,26 @@ PART_FillOutSizeElement         EndP
 ;        In: DL - Partition to hide
 ; Destroyed: None
 PART_HidePartition              Proc Near   Uses ax bx cx dx si di
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PART_HidePartition:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         call    PART_GetPartitionPointer      ; Pointer to partition (DL) -> SI
 
         ; First load the partition table of that partition...
@@ -564,6 +584,26 @@ PART_HidePartition              EndP
 ;  *not* the BIOS. This one *could* cause havoc to some systems, but I can't
 ;  do anything else.
 PART_MarkFirstGoodPrimary       Proc Near   Uses ax si di
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PART_MarkFirstGoodPrimary:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
     mov     di, offset PartitionSector+446 ; DS:SI - 1st partitionentry
     ; First action to do: Remove the active flag from every partition
     push    di
@@ -943,6 +983,26 @@ PART_SetupPhase1    EndP
 ;               Copy boot-sector to StartBase
 ;               run boot sector...
 PART_StartPartition             Proc Near   Uses ax dx es di
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PART_StartPartition:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
     ;
     ; Local Storage for this much too large function.
     ;
@@ -2164,6 +2224,26 @@ PART_StartPartition             EndP
 ; CY    = Set if Primary, clear if not
 ;
 PART_IsPrimaryPartition Proc Near  Uses bx cx dx si di ds es
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PART_IsPrimaryPartition:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         ; Push LBA address of partition
         push     bx
         push     cx

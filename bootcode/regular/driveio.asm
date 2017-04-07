@@ -57,6 +57,26 @@ DriveIO_CheckFor13extensions    EndP
 ; Will only load base-configuration, will NOT load IPT nor Hide-Config
 ;  Those are originally loaded on startup and will NOT get reloaded.
 DriveIO_LoadConfiguration   Proc Near   Uses ax bx cx dx es
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_LoadConfiguration:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         mov     ax, cs
         mov     es, ax
         mov     bx, offset Configuration
@@ -72,6 +92,26 @@ DriveIO_LoadConfiguration   Proc Near   Uses ax bx cx dx es
 DriveIO_LoadConfiguration   EndP
 
 DriveIO_SaveConfiguration   Proc Near   Uses ax bx cx dx ds es si
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_SaveConfiguration:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         mov     ax, cs
         mov     ds, ax
         mov     es, ax                        ; Safety first (CS==DS==ES)
@@ -237,6 +277,24 @@ DriveIO_InitLBASwitchTable  EndP
 ; Rousseau: Enhanced to handle sector-numbers 127 and 255 besides 63 for LVM-info sectors.
 ;           Ugly, need to cleanup.
 DriveIO_LVMAdjustToInfoSector   Proc Near
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_LVMAdjustToInfoSector:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        ENDIF
+ENDIF
+
         push    cx                      ; Save Cyl/Sec part
         xor     ch,ch                   ; Clear low Cyl part
         and     cl,63                   ; Clear high Cyl part
@@ -257,6 +315,22 @@ DriveIO_LVMAdjustToInfoSector   Proc Near
         adc     bx,0                    ; and high part of LBA address
         or      cl,63                   ; Adjust CHS part   !FIX ME for > 63!   !! FIX HUGE DRIVE !!
 
+IFDEF   AUX_DEBUG
+        IF 0
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'adjusted',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        ENDIF
+ENDIF
 
         ret
 
@@ -325,6 +399,26 @@ DriveIO_LoadPartition   EndP
 ; Preserve: all registers
 ; #########################################################################
 DriveIO_SavePartition   Proc Near  Uses ax bx cx dx si
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_SavePartition:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         mov     ax, wptr cs:[CurPartition_Location+0]
         mov     bx, wptr cs:[CurPartition_Location+2]
         mov     dx, wptr cs:[CurPartition_Location+4]
@@ -355,6 +449,26 @@ DriveIO_SaveTmpSector   EndP
 
 ; Keeps DS:SI for caller, sets carry if valid LVM sector encountered
 DriveIO_LoadLVMSector   Proc Near  Uses ax bx cx dx
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_LoadLVMSector:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         test    byte ptr [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
         jnz     DIOLLVMS_NoLVMSector          ;  don't load but declare as bad!
         mov     ax, wptr cs:[CurPartition_Location+0]
@@ -401,6 +515,26 @@ DriveIO_LoadLVMSector   EndP
 
 ; Keeps DS:SI for caller, saves at anytime w/o checks (!)
 DriveIO_SaveLVMSector   Proc Near  Uses ax bx cx dx
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_SaveLVMSector:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         test    byte ptr [CFG_IgnoreLVM], 1            ; We are supposed to ignore LVM, so
         jnz     DIOSLVMS_SevereError          ;  don't save at anytime (security!)
         mov     ax, wptr cs:[CurPartition_Location+0]
@@ -475,6 +609,25 @@ DriveIO_GotLoadError    EndP
 ; #########################################################################
 DriveIO_LoadSector      Proc Near  Uses ax bx cx dx ds si es di
 
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_LoadSector:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         ; Is the drive not a harddrive?
         cmp     dl, 80h
         jb      DIOLS_UseNormal
@@ -493,8 +646,27 @@ DriveIO_LoadSector      Proc Near  Uses ax bx cx dx ds si es di
         and     di, 007Fh
         cmp     bptr cs:[LBASwitchTable+di], bl
         jbe     DIOLS_UseExtension
+
     DIOLS_UseNormal:
-        mov     di, 3
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_ReadSectorCHS:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+        popa
+        ENDIF
+ENDIF
+
+        mov     di, 3                      ; retry count
     DIOLS_ErrorLoop:
         push    ds
         pop     es
@@ -502,7 +674,7 @@ DriveIO_LoadSector      Proc Near  Uses ax bx cx dx ds si es di
         mov     ax, 0201h                  ; Function 2 - Load Sector
         int     13h
         jnc     DIOLS_Success
-        dec     di
+        dec     di                         ; decrement retry count
         jnz     DIOLS_ErrorLoop
 
         ; Sector load failed...
@@ -550,6 +722,25 @@ DriveIO_LoadSector      EndP
 ;# EFFECTS  : Modifies DAP structure and fills transfer buffer
 ;##############################################################################
 DriveIO_ReadSectorLBA       Proc Near  Uses bx cx dx si di ds es
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_ReadSectorLBA:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
 
         ; One sector to read
         mov     cs:[INT13X_DAP_NumBlocks], 1
@@ -601,6 +792,23 @@ DriveIO_ReadSectorLBA       EndP
 ;# EFFECTS  : Modifies DAP structure and mofifies the disk
 ;##############################################################################
 DriveIO_WriteSectorLBA      Proc Near  Uses bx cx dx si di ds es
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_WriteSectorLBA:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+        popa
+        ENDIF
+ENDIF
 
         ; Mask reserved bits for wrte flags -- should check version here
         and     al, 03h
@@ -793,6 +1001,24 @@ DriveIO_MBR_Addressed   EndP
 ; #########################################################################
 DriveIO_SaveSector              Proc Near  Uses ax bx cx dx ds si es di
 
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_SaveSector:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
 
     ;!
     ;! DEBUG_BLOCK
@@ -807,27 +1033,6 @@ DriveIO_SaveSector              Proc Near  Uses ax bx cx dx ds si es di
         xor cx,cx
         inc cx
         xor dh,dh
-        ENDIF
-    ENDIF
-
-
-    ;!
-    ;! DEBUG_BLOCK
-    ;! Check what is being written to disk.
-    ;! Uncomment below to activate.
-    ;!
-    __DIO_SS_DMP__  EQU
-    IFDEF   AUX_DEBUG
-        IFDEF   __DIO_SS_DMP__
-        pusha
-        push    si
-        mov     si,offset [dioss]
-        call    AuxIO_Print
-        pop     si
-        call    DEBUG_DumpRegisters
-        call    AuxIO_DumpSector
-        call    AuxIO_TeletypeNL
-        popa
         ENDIF
     ENDIF
 
@@ -903,7 +1108,25 @@ DriveIO_SaveSector              Proc Near  Uses ax bx cx dx ds si es di
         jbe     DIOSS_UseExtension
 
     DIOSS_UseNormal:
-        mov     di, 3
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_WriteSectorCHS:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+        popa
+        ENDIF
+ENDIF
+
+        mov     di, 3                      ; retry count
     DIOSS_ErrorLoop:
         push    ds
         pop     es
@@ -911,7 +1134,7 @@ DriveIO_SaveSector              Proc Near  Uses ax bx cx dx ds si es di
         mov     ax, 0301h                  ; Function 3 - Write Sector
         int     13h
         jnc     DIOSS_Success
-        dec     di
+        dec     di                         ; decrement retry count
         jnz     DIOSS_ErrorLoop
         call    MBR_SaveError
 
@@ -966,22 +1189,27 @@ DriveIO_SaveSector              EndP
 ; Return CF when valid master LVM sector found, NC if not.
 ; Loads sector at [LVMSector] !
 DriveIO_LoadMasterLVMSector     Proc  Near
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
         pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_LoadMasterLVMSector:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
 
-        ;~ mov      si,offset db_lmlvm
-        ;~ call     AuxIO_Print
-
-        ;~ ; Physical disk
-        ;~ mov     al,'<'
-        ;~ call    VideoIO_PrintSingleChar
-        ;~ mov     al,dl
-        ;~ call    VideoIO_PrintHexByte
-        ;~ mov     al,'>'
-        ;~ call    VideoIO_PrintSingleChar
-;~
-        ;~ call    AuxIO_TeletypeHexByte
-        ;~ call    AuxIO_TeletypeNL
-
+        pusha
 
         ; Loop over the sector-translation table,
         ; process the first three values from high (255) to low.
@@ -999,11 +1227,11 @@ DriveIO_LoadMasterLVMSector     Proc  Near
 
         ; Get the sector-number of the next possible LVM sector (255,127,63)
         ; using the translation table and the counter as the index
-        mov     bx,offset secs_per_track_table
-        mov     ax,cx
-        dec     ax
-        xlatb
-        dec     al
+        mov     bx,offset [secs_per_track_table]
+        mov     ax,cx   ; 1-based index to sec_per_track_table
+        dec     ax      ; Adjust to 0-based
+        xlatb           ; Get the (well known) SPT
+        dec     al      ; Minus 1 for LVM-record
 
         ;
         ; AX now contains the LBA address of the sector
@@ -1011,21 +1239,26 @@ DriveIO_LoadMasterLVMSector     Proc  Near
         ; This is all in track0 so the address will not exceed 64kiB sectors.
         ;
 
-        ;~ push    ax
-        ;~ push    ax
-        ;~ mov     al,'$'
-        ;~ call    VideoIO_PrintSingleChar
-        ;~ pop     ax
-        ;~ call    VideoIO_PrintHexByte
-        ;~ mov     al,'$'
-        ;~ call    VideoIO_PrintSingleChar
-        ;~ pop     ax
 
-    IFDEF   AUX_DEBUG
-        ; Dump the value
-        ;~ call     AuxIO_TeletypeHexByte
-        ;~ call     AuxIO_TeletypeNL
-    ENDIF
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'geo',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
 
         ; Setup the requested LBA sector number
         mov     word ptr [INT13X_DAP_Absolute+0],ax    ; LBA low                   NORMAL I/O GEBRUIKEN !
@@ -1035,26 +1268,28 @@ DriveIO_LoadMasterLVMSector     Proc  Near
         int     13h                                    ; do the i/o, CF=1->error, CF=0->success
 
 IFDEF   AUX_DEBUG
-                pushf
-                pusha
-                pushf
-                xor     ax, ax
-                mov     al, dl
-                call    AuxIO_TeletypeHexWord
-                mov     al, '#'
-                call    AuxIO_Teletype
-                popf
-                mov     ax,0000h
-                rcl     al, 1
-                call    AuxIO_TeletypeHexWord
-                mov     al, '#'
-                call    AuxIO_Teletype
-                mov     ax,word ptr [INT13X_DAP_Absolute+0]
-                call    AuxIO_TeletypeHexWord
-                mov     al, '#'
-                call    AuxIO_Teletype
-                popa
-                popf
+        IF 0
+        pushf
+        pusha
+            pushf
+            xor     ax, ax
+            mov     al, dl
+            call    AuxIO_TeletypeHexWord
+            mov     al, '#'
+            call    AuxIO_Teletype
+            popf
+            mov     ax,0000h
+            rcl     al, 1
+            call    AuxIO_TeletypeHexWord
+            mov     al, '#'
+            call    AuxIO_Teletype
+            mov     ax,word ptr [INT13X_DAP_Absolute+0]
+            call    AuxIO_TeletypeHexWord
+            mov     al, '#'
+            call    AuxIO_Teletype
+        popa
+        popf
+        ENDIF
 ENDIF
 
         cmc     ; Complement carry so we can exit imm. on error
@@ -1067,16 +1302,24 @@ ENDIF
         ; ZF=0 if valid
         call    LVM_ValidateSector
 
-;        pushf
-;        mov     ah,0
-;        rcl     ah,1
-;        mov     al,'|'
-;        call    VideoIO_PrintSingleChar
-;        mov     al,ah
-;        call    VideoIO_PrintHexByte
-;        mov     al,'|'
-;        call    VideoIO_PrintSingleChar
-;        popf
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'lvm record',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
 
 
         ; Yep, we found the master LVM-sector
@@ -1194,6 +1437,26 @@ DriveIO_LoadMasterLVMSector     Endp
 
 ; DL contains BIOS disk-number; 80h for first, 81h for second, etc.
 DriveIO_GatherDiskInfo  Proc Near
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_GatherDiskInfo:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         pushf
         push    bx
         push    cx
@@ -1359,4 +1622,4 @@ DriveIO_GatherDiskInfo  EndP
 ; Values for sectors per track table corresponding to DriveIO_IsHugeDrive return value.
 secs_per_track_table    db    63,127,255,255,255,255
 
-;db_lmlvm:   db 'Load Master LVM -- disk: ',0
+db_lmlvm    db 'Load Master LVM -- disk: ',0

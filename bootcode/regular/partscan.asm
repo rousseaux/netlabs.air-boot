@@ -28,6 +28,26 @@ ENDIF
 ;        here.
 
 PARTSCAN_ScanForPartitions      Proc Near
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PARTSCAN_ScanForPartitions:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         ; Reset X-Reference
         call    PARTSCAN_ResetXref
 
@@ -118,6 +138,26 @@ PARTSCAN_ScanForPartitions      EndP
 ; when partitions are removed.
 ;
 PARTSCAN_UpdateDriveLetters     Proc
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PARTSCAN_UpdateDriveLetters:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         pusha
         xor     bx,bx           ; index-pointer
         xor     cx,cx           ; counter
@@ -187,6 +227,26 @@ PARTSCAN_UpdateDriveLetters     EndP
 ; Falls eine fehlerhafte Partition gefunden wird, wird abgebrochen.
 ; falls eine Extended Partition (DOS) gefunden wird, wird erneut gescannt.
 PARTSCAN_ScanDriveForPartitions Proc Near
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PARTSCAN_ScanDriveForPartitions:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         xor     ax, ax
         xor     bx, bx     ; Location Absoluter Sektor 0
         mov     cx, 0001h
@@ -217,6 +277,26 @@ PARTSCAN_ScanDriveForPartitions EndP
 ; Scans Current Partition for Extended Partitions, if found, AX,BX,CX,DX will
 ; be set to this location and Carry will be set
 PARTSCAN_ScanPartitionForExtended Proc Near  Uses si
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PARTSCAN_ScanPartitionForExtended:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         mov     si, offset PartitionSector+446 ; DS:SI - 1st partition entry
         xor     ax, ax
     PSSPFE_ScanLoop:
@@ -253,6 +333,27 @@ PARTSCAN_ScanPartitionForExtended EndP
 
 ; The following routines have NOT *DS* set to CS, so we must address via ES
 PARTSCAN_ScanPartition          Proc Near  Uses ax si
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PARTSCAN_ScanPartition:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
+
         mov     si, offset PartitionSector+446 ; DS:SI - 1st Partition-Entry
     PSSP_ScanLoop:
         mov     al, bptr [si+LocBRPT_SystemID]
@@ -315,6 +416,26 @@ MBR_NoName_Patched           db  15 dup (0)
 ; Will also fill out PartitionXref to sync HideConfig later
 ;        In: SI - Points to Partition-Entry (16-Bytes)
 PARTSCAN_CheckThisPartition     Proc Near  Uses di si
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'PARTSCAN_CheckThisPartition:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         local   PartSystemID:byte, PartTypeFlags:byte
         local   PartCRC:word, PartPtr:word
 

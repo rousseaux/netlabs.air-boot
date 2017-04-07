@@ -55,6 +55,26 @@ LVM_InitCRCTable                EndP
 ;       Out: DX:AX - LVM CRC
 ; Destroyed: None
 LVM_GetSectorCRC                Proc Near   Uses bx cx
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'LVM_GetSectorCRC:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         push    word ptr [si+LocLVM_CRC+00]
         push    word ptr [si+LocLVM_CRC+02]
         push    si
@@ -164,7 +184,30 @@ LVM_UpdateSectorCRC            EndP
 ;       Out: Carry set, if partition found
 ;            DS:SI - points to LVM information entry
 ; Destroyed: None
+
+; INVALID LVM RECORD WHEN STICK INSERTED !
+
 LVM_SearchForPartition          Proc Near   Uses cx
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'LVM_SearchForPartition:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         cmp     byte ptr [si+LocLVM_SignatureStart], LocLVM_SignatureByte0
         jne     LVMSFP_NotFound               ; Quick Check, if LVM sector there
         add     si, LocLVM_StartOfEntries
@@ -194,6 +237,28 @@ LVM_SearchForPartition          EndP
 ;            AL - drive-letter from LVM-info or zero if no drive-letter
 ;            assigned or no LVM-info.
 LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'LVM_GetDriveLetter:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
+
+
         ; For primary partitions this information is stored in the last
         ; sector of track0; for all four partition entries in case they
         ; they are all primary ones.
@@ -215,6 +280,13 @@ LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
         ; If it's a logical partition, CY will be clear and AL
         ; will be set to 0ffh indicating an invalid index.
         call    PART_IsPrimaryPartition
+IF 0
+                pushf
+                pusha
+                call    VideoIO_PrintHexWord
+                popa
+                popf
+ENDIF
         mov     al,0
         rcl     al,1        ; CY if primary
         mov     dh,al       ; Save PRI or LOG
@@ -261,7 +333,41 @@ LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
         ; It's a PRI so we use the special locator function.
         ; This locator takes care of extended OS/2 geometry should that be used
         ;
+IF 0
+                ; DH=0 or 1, DL=disk (8?h)
+                pushf
+                pusha
+                mov     ax, dx
+                call    VideoIO_PrintHexWord
+                mov     al,'-'
+                call    VideoIO_PrintSingleChar
+                popa
+                popf
+ENDIF
+        ; THIS ONE FAULTERS WHEN DISKS > 1
         call    DriveIO_LoadMasterLVMSector
+
+IF 0
+                ; INVALID LVM SECTOR !!
+                pushf
+                pusha
+                mov     ax,0000h
+                rcl     al,1
+                call    VideoIO_PrintHexWord        ; LVMSector
+                mov     al,'-'
+                call    VideoIO_PrintSingleChar
+                mov     si, offset [LVMSector]
+                mov     ax, si
+                call    VideoIO_PrintHexWord        ; LVMSector
+                lodsw
+                call    VideoIO_PrintHexWord        ; sig
+                lodsw
+                call    VideoIO_PrintHexWord        ; sig
+                mov     al,'-'
+                call    VideoIO_PrintSingleChar
+                popa
+                popf
+ENDIF
 
     LVM_GetDriveLetter_is_not_pri:
 
@@ -278,9 +384,39 @@ LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
         ; If found, CY is set and SI points to LVM entry.
         push    si
         mov     ax,cx
-        mov     dx,bx
+        mov     dx,bx                   ; DL DESTROYED
         mov     si,offset [LVMSector]
         call    LVM_SearchForPartition
+
+IF 0
+                pushf
+                pusha
+                mov     ax, 0000h
+                rcl     al, 1
+                call    VideoIO_PrintHexWord
+                mov     ax, si
+                call    VideoIO_PrintHexWord
+                popa
+                popf
+ENDIF
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'LVM_GetDriveLetter:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+        popa
+        ENDIF
+ENDIF
+
         mov     bx,si   ; BX now points to LVM entry
         mov     dx,0
         pop     si
@@ -315,6 +451,7 @@ LVM_GetDriveLetter      EndP
 ;            AL = DriveLetter to set (can be zero to hide partition from LVM)
 ;       Out: CY=1 if LVM-info found, 0 if no LVM-info.
 LVM_SetDriveLetter      Proc Near   Uses bx cx dx si di ds es
+
         local   disk:byte
         local   drive_letter:byte
         local   pri_ind:byte
@@ -334,6 +471,25 @@ LVM_SetDriveLetter      Proc Near   Uses bx cx dx si di ds es
         ; info on all 4 entries, we need the partition index to obtain the
         ; correct drive-letter.
         ;
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'LVM_SetDriveLetter:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
 
         mov     [disk], dl
 
@@ -456,6 +612,26 @@ LVM_SetDriveLetter      EndP
 ;       Out: LVM-Information-Sector updated (including LVM CRC)
 ; Destroyed: None
 LVM_RemoveVolLetterFromSector   Proc Near   Uses cx
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'LVM_RemoveVolLetterFromSector:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         cmp     bptr [si+LocLVM_SignatureStart], LocLVM_SignatureByte0
         jne     LVMRVLFS_Done                 ; Quick Check, if LVM sector there
         push    si
@@ -486,14 +662,24 @@ LVM_RemoveVolLetterFromSector   EndP
 
 LVM_DoLetterReassignment        Proc Near   Uses bx cx dx si di
 
-    IFDEF   AUX_DEBUG
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
         pusha
-        mov     si, offset [dlra]
-        call    AuxIO_Print
-        call    AuxIO_Teletype
-        call    AuxIO_TeletypeNL
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'LVM_DoLetterReassignment:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
         popa
-    ENDIF
+        popf
+        ENDIF
+ENDIF
 
         mov     di, si              ; Save SI in DI (Partition-pointer)
         mov     ch, al              ; and AL in CH (drive-letter)
