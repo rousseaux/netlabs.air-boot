@@ -224,11 +224,10 @@ LVM_SearchForPartition          EndP
 ;------------------------------------------------------------------------------
 ; IN    : SI    - Pointer to IPT entry for partition
 ; OUT   : AL    - LVM drive-letter
-;       : SI    - Pointer to LVM entry in loaded LVM record
 ;       : CF=1  - No valid LVM sector found, AL not valid
 ; NOTE  : Besides the drive-letter, AL can be 0 (LVM hidden) or '*' (LVM auto)
 ;------------------------------------------------------------------------------
-LVM_GetDriveLetter      Proc Near   Uses bx cx dx di
+LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di
 
 IFDEF   AUX_DEBUG
         IF 0
@@ -274,7 +273,6 @@ ENDIF
     LVM_GetDriveLetter_no_lvm:
         ; Indicate no LVM drive-letter found
         xor     ax, ax
-        mov     si, ax
         stc
 
     LVM_GetDriveLetter_done:
@@ -302,12 +300,10 @@ LVM_GetDriveLetter      EndP
 ;------------------------------------------------------------------------------
 ; IN    : SI    - Pointer to IPT entry for partition
 ;       : AL    - LVM drive-letter
-; OUT   : SI    - Pointer to LVM entry in loaded (and saved) LVM record
-;       : AL    - LVM drive-letter
-;       : CF=1  - No valid LVM sector found, AL not valid
+; OUT   : CF=1  - No valid LVM sector found, AL was not valid
 ; NOTE  : Besides the drive-letter, AL can be 0 (LVM hidden) or '*' (LVM auto)
 ;------------------------------------------------------------------------------
-LVM_SetDriveLetter      Proc Near   Uses bx cx dx di
+LVM_SetDriveLetter      Proc Near   Uses bx cx dx si di
 
         ; THIS IS A DUMMY FUNCTION RETURNING FAILURE
 
@@ -319,7 +315,6 @@ LVM_SetDriveLetter      Proc Near   Uses bx cx dx di
 
         ; Just indicate failure and return
         xor     ax, ax
-        mov     si, ax
         stc
         ret
 LVM_SetDriveLetter      EndP
