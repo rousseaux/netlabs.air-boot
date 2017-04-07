@@ -385,7 +385,7 @@ ENDIF
 
 
 ;
-; Dump the registers.
+; Dump the registers and flags.
 ;
 IF  1
 regAX   db  'AX:',0
@@ -402,85 +402,155 @@ regSS   db  ' SS:',0
 regDS   db  ' SP:',0
 regES   db  ' BP:',0
 
-;~ regFS   db  'FS:',0
-;~ regGS   db  ' GS:',0
+regFS   db  'FS:',0
+regGS   db  ' GS:',0
+
+        db '       '
+
+flagsSF db  ' SF:',0
+flagsZF db  ' ZF:',0
+flagsAF db  ' AF:',0
+flagsPF db  ' PF:',0
+flagsCF db  ' CF:',0
+
 DEBUG_DumpRegisters     Proc
         pushf
         pusha
 
+        ; Safe flags so they can be printed later
+        pushf
+
+        ; Save value in SI so it can be printed later
         push    si
+
+        ; Base of registers string
         mov     si, offset [regAX]
+
+        ; AX
         call    AuxIO_Print
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
 
+        ; BX
         call    AuxIO_Print
         mov     ax,bx
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
 
+        ; CX
         call    AuxIO_Print
         mov     ax,cx
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
 
+        ; DX
         call    AuxIO_Print
         mov     ax,dx
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
 
+        ; SI
         call    AuxIO_Print
         pop     ax
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
 
+        ; DI
         call    AuxIO_Print
         mov     ax,di
         call    AuxIO_TeletypeHexWord
+
+        ; 1st row printed
         call    AuxIO_TeletypeNL
 
-
-
+        ; CS
         call    AuxIO_Print
         mov     ax,cs
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
 
+        ; DS
         call    AuxIO_Print
         mov     ax,ds
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
 
+        ; ES
         call    AuxIO_Print
         mov     ax,es
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
 
+        ; SS
         call    AuxIO_Print
         mov     ax,ss
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
 
+        ; SP
         call    AuxIO_Print
         mov     ax,sp
         call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
 
+        ; BP
         call    AuxIO_Print
         mov     ax,bp
         call    AuxIO_TeletypeHexWord
+
+        ; 2nd row printed
         call    AuxIO_TeletypeNL
+.386
+        ; FS
+        call    AuxIO_Print
+        mov     ax,fs
+        call    AuxIO_TeletypeHexWord
 
-        ;~ call    AuxIO_Print
-        ;~ mov     ax,fs
-        ;~ call    AuxIO_TeletypeHexWord
+        ; GS
+        call    AuxIO_Print
+        mov     ax,gs
+        call    AuxIO_TeletypeHexWord
         ;~ call    AuxIO_TeletypeNL
+.286
+        ; Restore the flags
+        popf
 
-        ;~ call    AuxIO_Print
-        ;~ mov     ax,gs
-        ;~ call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
+        ; Load flags into AH
+        lahf
 
+        ; Base of flags string
+        ;~ mov     si, offset [flagsSF]
+
+        ; SF
+        call    AuxIO_Print
+        mov     al, ah
+        shr     al, 7
+        and     al, 01h
+        add     al, '0'
+        call    AuxIO_Teletype
+
+        ; ZF
+        call    AuxIO_Print
+        mov     al, ah
+        shr     al, 6
+        and     al, 01h
+        add     al, '0'
+        call    AuxIO_Teletype
+
+        ; AF
+        call    AuxIO_Print
+        mov     al, ah
+        shr     al, 4
+        and     al, 01h
+        add     al, '0'
+        call    AuxIO_Teletype
+
+        ; PF
+        call    AuxIO_Print
+        mov     al, ah
+        shr     al, 2
+        and     al, 01h
+        add     al, '0'
+        call    AuxIO_Teletype
+
+        ; CF
+        call    AuxIO_Print
+        mov     al, ah
+        and     al, 01h
+        add     al, '0'
+        call    AuxIO_Teletype
+
+        ; 3rd and last row printed
         call    AuxIO_TeletypeNL
 
         popa
