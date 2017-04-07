@@ -153,48 +153,6 @@ AuxIO_PrintBuildInfo    EndP
 
 ; Print char to com-port (teletype style)
 AuxIO_Teletype  Proc     Near  Uses  ax dx
-
-
-    ;~ pusha
-    ;~ xor     dx,dx
-    ;~ mov     ah,03h
-    ;~ mov     al,00h
-    ;~ int     14h
-    ;~ mov     ah,al
-    ;~ shr     al,4
-    ;~ and     al,0fh
-    ;~ add     al,'0'
-    ;~ cmp     al,'9'
-    ;~ jbe     @F
-    ;~ add     al,7
-;~ @@: push    ax
-    ;~ xor     dx,dx
-    ;~ mov     ah,01h
-    ;~ int     14h
-    ;~ pop     ax
-    ;~ mov     al,ah
-    ;~ and     al,0fh
-    ;~ add     al,'0'
-    ;~ cmp     al,'9'
-    ;~ jbe     @F
-    ;~ add     al,7
-;~ @@: xor     dx,dx
-    ;~ mov     ah,01h
-    ;~ int     14h
-    ;~ popa
-
-        ;~ pusha
-;~ @@:
-        ;~ xor     dx,dx
-        ;~ mov     ah,03h
-        ;~ mov     al,00h
-        ;~ int     14h
-        ;~ and     al,20h
-        ;~ cmp     al,20h
-        ;~ jnz     @B
-        ;~ popa
-
-
         mov     dx,[BIOS_AuxParms]            ; get port and parameters
         xor     dh,dh                         ; we don't need the parameters
         test    dl,dl                         ; test if logging is enabled
@@ -214,6 +172,34 @@ AuxIO_TeletypeNL    Proc     Near  Uses  ax
         call    AuxIO_Teletype
         ret
 AuxIO_TeletypeNL    EndP
+
+
+; Print byte as decimal to com-port (teletype style)
+AuxIO_TeletypeDecByte   Proc     Near  Uses  ax dx
+        call    CONV_BinToPBCD  ; Convert to PBCD
+        mov     dx, ax          ; Save PBCD value
+        shr     ah, 4           ; Move digit count to low nibble
+        cmp     ah, 3           ; Less than 3 digits ?
+        jb      @F              ; Yep, skip digit with index 2
+        mov     al, dh          ; Get byte with digit
+        and     al, 0fh         ; Mask it out
+        add     al, '0'         ; To ASCII
+        call    AuxIO_Teletype
+    @@:
+        shr     dh, 4           ; Move digit count to low nibble
+        cmp     dh, 2           ; Less that 2 digits ?
+        jb      @F              ; Yep, skip digit with index 1
+        mov     al, dl          ; Get byte with digit
+        shr     al, 4           ; Move to lower nibble
+        add     al, '0'         ; To ASCII
+        call    AuxIO_Teletype
+    @@:
+        mov     al, dl          ; Get byte with digit
+        and     al, 0fh         ; Mask it out
+        add     al, '0'         ; To ASCII
+        call    AuxIO_Teletype
+        ret
+AuxIO_TeletypeDecByte   EndP
 
 
 ; Print Bin-byte to com-port (teletype style)
