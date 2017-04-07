@@ -1135,6 +1135,7 @@ ENDIF
         mov     al, 1                   ; One sector to write
         mov     ah, 03h                 ; BIOS write disk (legacy)
         int     13h                     ; Call BIOS
+        sti                             ; Enable ints
         ;!
         ;! TODO: Check success
         ;! Yes, we should check for errors here, coz it would mean AirBoot

@@ -34,6 +34,7 @@ DriveIO_CheckFor13extensions    Proc Near   Uses ax bx cx dx
         mov     bx, 55AAh
         mov     dl, [BIOS_BootDisk]     ; We check using the boot-disk
         int     13h
+        sti
 
 IFDEF   AUX_DEBUG
         IF 0
@@ -46,6 +47,7 @@ IFDEF   AUX_DEBUG
             mov     word ptr [si], 50h
             mov     ah, 48h
             int     13h
+            sti
             call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpSector
         POPRF
@@ -96,6 +98,7 @@ ENDIF
         mov     cx, 0037h                     ; Sector 55 (CHS)
         mov     ax, 0201h                     ; Function 02, read 1 sector...
         int     13h
+        sti                                   ; Enable ints
         jnc     DIOLC_NoError
         call    MBR_LoadError                 ; Will Abort BootUp
 
@@ -164,6 +167,7 @@ ENDIF
         mov     ah,03h
 ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         int     13h
+        sti
         jnc     DIOSC_NoError
         call    MBR_SaveError                 ; Will Abort BootUp
     DIOSC_NoError:
@@ -178,6 +182,7 @@ DriveIO_UpdateFloppyName    Proc Near   Uses bx cx dx ds si es di
         mov     ah, 00h                        ; Function 0 - Reset Drive
         xor     dl, dl
         int     13h
+        sti
         xor     dx, dx                         ; Cylinder=0, Head=0
         mov     cx,  1                         ; Sector=1, Drive=0
         mov     bx, offset TmpSector           ; ES:BX - TmpSector
@@ -247,6 +252,7 @@ DriveIO_InitLBASwitchTable  Proc Near   Uses es di
         push    di
         mov     ah, 08h
         int     13h            ; DISK - GET DRIVE PARAMETERS
+        sti                    ; Enable ints
         mov     ah, 0FBh       ; Assume 255 heads/63 sectors, if error
         jc      DIOILUT_Error
         and     cl, 111111b    ; Isolate lower 6 bits of CL -> sector count
@@ -801,6 +807,7 @@ ENDIF
         mov     bx, si                     ; ES:BX - Destination
         mov     ax, 0201h                  ; Function 2 - Load Sector
         int     13h
+        sti                                ; enable ints
         jnc     DIOLS_Success
         dec     di                         ; decrement retry count
         jnz     DIOLS_ErrorLoop
@@ -990,6 +997,7 @@ ENDIF
         ; Do the extended read
         mov     ah, 42h                                 ; read function
         int     13h                                     ; transfer to bios
+        sti                                             ; enable ints
 
         ; Error occured
         jc      DriveIO_ReadSectorLBA_exit
@@ -1062,6 +1070,7 @@ ENDIF
         xor     al, al                                  ; no write verify
         mov     ah, 43h                                 ; write function
         int     13h                                     ; transfer to bios
+        sti                                             ; enable ints
 
         ; Error occured
         jc      DriveIO_WriteSectorLBA_exit
@@ -1500,6 +1509,7 @@ ENDIF
         mov     bx, si                     ; ES:BX - Destination
         mov     ax, 0301h                  ; Function 3 - Write Sector
         int     13h
+        sti                                ; Enable ints
         jnc     DIOSS_Success
         dec     di                         ; decrement retry count
         jnz     DIOSS_ErrorLoop
@@ -1683,6 +1693,7 @@ ENDIF
         ; Get BIOS Disk Parameters (legacy method)
         mov     ah, 08h                         ; Get Disk Parameters
         int     13h                             ; Call BIOS
+        sti                                     ; Enable ints
 
         ; CF=1 or AH!=0 indicates error
         jc      DriveIO_GatherDiskInfo_error
@@ -1721,6 +1732,7 @@ ENDIF
         mov     [si], ax                        ; Store it in first word
         mov     ah, 48h                         ; Get Extended Disk Parameters
         int     13h                             ; Call BIOS
+        sti                                     ; Enable ints
 
         ; CF=1 or AH!=0 indicates error
         jc      DriveIO_GatherDiskInfo_error
