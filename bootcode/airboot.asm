@@ -158,6 +158,43 @@ TextChar_WinRep5            equ     0C6h
 TextChar_WinRep6            equ     0D8h
 
 
+; -----------------------------------------------------------------------------
+;                                                             DISK INFORMATION
+; -----------------------------------------------------------------------------
+; Offsets into the DISKINFO structures located in the array [DiskInformation]
+
+; BIOS disk number and MBR flags
+LocDISKINFO_DiskNum         equ     00h     ; BYTE  - BIOS disk number (80h etc)
+LocDISKINFO_MbrFlags        equ     01h     ; BYTE  - Valid MBR, etc
+
+; BIOS INT13 Info
+LocDISKINFO_I13_Secs        equ     02h     ; WORD  - Max 63
+LocDISKINFO_I13_Heads       equ     04h     ; WORD  - Max 16 or 255
+LocDISKINFO_I13_Cyls        equ     06h     ; WORD  - Max 1024
+
+; BIOS INT13X Info
+LocDISKINFO_I13X_Flags      equ     08h     ; WORD  - CHS valid, etc
+LocDISKINFO_I13X_SecSize    equ     0ah     ; WORD  - Normally 512 bytes
+LocDISKINFO_I13X_Secs       equ     0ch     ; DWORD - Max 63 ?
+LocDISKINFO_I13X_Heads      equ     10h     ; DWORD - Max 255 ?
+LocDISKINFO_I13X_Cyls       equ     14h     ; DWORD - Max 2_32 (4294967296)
+LocDISKINFO_I13X_SecsLBA    equ     18h     ; QWORD - Max 2^64 (4294967296^2)
+LocDISKINFO_I13X_HostBus    equ     20h     ; 4 bytes
+LocDISKINFO_I13X_Interface  equ     24h     ; 8 bytes
+
+; OS/2 LVM Info
+LocDISKINFO_LVM_Flags       equ     2ch     ; WORD  - OS/2 ext geo, etc
+LocDISKINFO_LVM_MasterLBA   equ     2eh     ; DWORD - Max 254
+LocDISKINFO_LVM_Secs        equ     32h     ; DWORD - Max 255
+LocDISKINFO_LVM_Heads       equ     36h     ; DWORD - Max 255
+LocDISKINFO_LVM_Cyls        equ     3ah     ; DWORD - Max 65536
+
+; Custom Info
+LocDISKINFO_Flags           equ     3eh     ; WORD  - Custom flags, dunno yet
+
+; Size of this structure
+DISKINFO_Size               equ     40h     ; Size to be allocated
+
 
 ; -----------------------------------------------------------------------------
 ;                                                              PARTITION TABLE
@@ -179,6 +216,7 @@ LocBRPT_AbsoluteLength      equ     12  ; 32-bit length of partition
 
 ; Signature relative to start of MBR/EBR
 LocBR_Magic                 equ     510 ; Offset of 0AA55h signature
+
 
 ; -----------------------------------------------------------------------------
 ;                                                                   LVM RECORD
@@ -2404,6 +2442,9 @@ FreeDriveletterMap          dd      ?
 MasterLVMLBA                dd      MaxDisks  dup(?)
                             ALIGN   16
 
+; Array of DISKINFO structures
+DiskInformation             db      MaxDisks  dup(DISKINFO_Size dup(?))
+                            ALIGN   16
 
 ; -----------------------------------------------------------------------------
 ;                                                                   INT13X DAP
