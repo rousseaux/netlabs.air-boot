@@ -197,7 +197,11 @@ PRECRAP_Main    Proc Near
         add      bx,cx
         mov      [bx], al
 
-        call     DriveIO_LoadMasterLVMSector         ; returns NC if no valid LVM record found
+
+        ; CHECKSUM CALCULATION DOES NOT WORK YET HERE
+        ; CRC TABLE NOT INITED YET
+        ; Returns NC if no valid LVM record found
+        call     DriveIO_LoadMasterLVMSector
 
         pushf
 
@@ -342,7 +346,7 @@ PRECRAP_Main    Proc Near
 
 
         ; This sets [CurIO_UseExtension] flag.
-        call    PRECRAP_CheckFor13extensions
+        call    DriveIO_CheckFor13extensions
         mov     al,[CurIO_UseExtension]
         test    al,al
         jnz     INT13X_Supported
@@ -440,25 +444,6 @@ AFTERCRAP_Main  Proc Near
     ACM_NoFloppyGetName:
         ret
 AFTERCRAP_Main  EndP
-
-
-
-
-PRECRAP_CheckFor13extensions    Proc Near
-        mov     ah, 41h
-        mov     bx, 55AAh
-        mov     dl, [BIOS_BootDisk]     ; We check using the boot-disk
-        int     13h
-        cmp     bx, 0AA55h
-        je      PCCF13E_Found
-    PCCF13E_NotFound:
-        ret
-    PCCF13E_Found:
-        and     cx, 1
-        jz      PCCF13E_NotFound
-        mov     byte ptr [CurIO_UseExtension], 1
-        ret
-PRECRAP_CheckFor13extensions    EndP
 
 
 ; Checks Configuration CheckSum...Displays message, if failed.

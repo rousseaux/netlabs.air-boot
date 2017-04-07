@@ -25,6 +25,28 @@ IFDEF   MODULE_NAMES
 DB 'DRIVEIO',0
 ENDIF
 
+;
+; Check if INT13X extensions are supported.
+; AirBoot requires these extensions, and will halt if they are not available.
+; Modified: AX, BX, CX, DX, CF
+DriveIO_CheckFor13extensions    Proc Near
+        mov     ah, 41h
+        mov     bx, 55AAh
+        mov     dl, [BIOS_BootDisk]     ; We check using the boot-disk
+        int     13h
+        jc      PCCF13E_NotFound        ; Error occured
+        cmp     bx, 0AA55h
+        je      PCCF13E_Found
+    PCCF13E_NotFound:
+        ret
+    PCCF13E_Found:
+        and     cx, 1                   ; Check 42h-44h,47h,48h supported
+        jz      PCCF13E_NotFound        ; Sig OK but no support, strange beast
+        mov     byte ptr [CurIO_UseExtension], 1
+        ret
+DriveIO_CheckFor13extensions    EndP
+
+
 ; Note: Some routines set DS/ES to CS or even address via CS, even if its not
 ;        needed. This was done for SECURITY. So DO NOT remove it.
 ;        Its there to make sure the correct data is loaded/written to/from
