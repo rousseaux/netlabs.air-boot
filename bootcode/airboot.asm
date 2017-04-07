@@ -2563,7 +2563,7 @@ CurrentSS                   dw      ?
 ; accidently using the resulting loader. Of course everyone is clever enough
 ; to _never_ build commits marked as 'testing' and install the result in
 ; environments where wiping all attached disks and sticks would be a problem...
-force_build_error           dd      0f000h  dup(?)
+;~ force_build_error           dd      0f000h  dup(?)
 
 ;
 ; End of BSS segment.
