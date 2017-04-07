@@ -2424,14 +2424,6 @@ LOG_Bytes                   dw      MaxDisks  dup(?)
 LOG_TotalSecs               dq      MaxDisks  dup(?)
                             ALIGN   16
 
-; Storage for INT13 disk parameters
-INT13_DiskParams            db      MaxDisks  dup(10h dup(?))
-                            ALIGN   16
-
-; Storage for INT13X disk parameters
-INT13X_DiskParams           db      MaxDisks  dup(80h dup(?))
-                            ALIGN   16
-
 ; Get's initialized at startup to: 00000011111111111111111111111100b
 ; Meaning A,B not free; C-Z free, rest unused. (right to left)
 ; Each partition with an assigned drive-letter clears a bit in this map.
