@@ -152,7 +152,8 @@ VIRUS_CheckForVirus             Proc Near  Uses ds si es di
    pop     ds
    pop     es
    mov     bx, offset TmpSector
-   mov     dx, 0080h
+   mov     dh, 0                 ; Head 0
+   mov     dl, [BIOS_BootDisk]   ; Disk AirBoot was loaded from
    mov     cx, 0001h  ; Harddisc 0, Sector 1
    mov     ax, 0201h
    int     13h
@@ -179,7 +180,8 @@ ANTIVIR_SaveBackUpMBR           Proc Near  Uses ax bx cx dx es
    push    cs
    pop     es
    mov     bx, BootBasePtr
-   mov     dx, 0080h
+   mov     dh, 0                 ; Head 0
+   mov     dl, [BIOS_BootDisk]   ; Disk AirBoot was loaded from
    ;mov     cx, 003Ch                     ; First Harddrive, Sector 60
    mov     cx, image_size / sector_size  ; Harddisc 0, Sector 60 (or 62 for extended version)
    mov     ax, 0301h                     ; Write 1 Sector
@@ -194,7 +196,8 @@ ANTIVIR_CheckBackUpMBR          Proc Near
    pop     es
    pop     ds
    mov     bx, offset TmpSector
-   mov     dx, 0080h
+   mov     dh, 0                 ; Head 0
+   mov     dl, [BIOS_BootDisk]   ; Disk AirBoot was loaded from
    ;mov     cx, 003Ch                     ; Harddisc 0, Sector 60
    mov     cx, image_size / sector_size  ; Harddisc 0, Sector 60 (or 62 for extended version)
    mov     ax, 0201h                     ; Load 1 Sector
@@ -219,7 +222,8 @@ ANTIVIR_RestoreMBR              Proc Near
    ret
   ARMBR_DoIt:
    mov     bx, offset TmpSector
-   mov     dx, 0080h
+   mov     dh, 0                 ; Head 0
+   mov     dl, [BIOS_BootDisk]   ; Disk AirBoot was loaded from
    mov     cx, 0001h                     ; Harddisc 0, Sector 1
    mov     ax, 0301h                     ; Write 1 Sector
    pushf
