@@ -1719,6 +1719,55 @@ ENDIF
 DriveIO_GatherDiskInfo  EndP
 
 ;------------------------------------------------------------------------------
+; Scan all disks to gather information
+;------------------------------------------------------------------------------
+; IN    : None
+; OUT   : CF=1  - some failure occured
+;       : ZF=1  - no harddisks
+; NOTE  : This does the preliminary gathering of disk information
+;------------------------------------------------------------------------------
+DriveIO_ScanDisks   Proc    Near
+
+IFDEF   AUX_DEBUG
+        IF 1
+        DBG_TEXT_OUT_AUX    'DriveIO_ScanDisks:'
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
+
+        ; Save all registers
+        pusha
+
+        ; Get number of disks in DH
+        call    DriveIO_GetHardDriveCount
+
+        ; Check if there are any disks to scan
+        xor     cx, cx                      ; Prepare 16-bit counter
+        mov     cl, dh                      ; Number of disks now in CX
+        jcxz    DriveIO_ScanDisks_end       ; Quit if no disks
+
+        ; Scan disks from 80h upward
+        mov     dl, 80h                     ; BIOS number of first disk
+    DriveIO_ScanDisks_next:
+        call    DriveIO_GatherDiskInfo      ; Gather info for this disk
+        jc       DriveIO_ScanDisks_end      ; Quit if some error occured
+        inc     dl                          ; Advance to next disk
+        loop    DriveIO_ScanDisks_next      ; Scan next disk if there is one
+        test    dl, dl                      ; Set ZF=0
+        clc                                 ; Indicate success
+
+    DriveIO_ScanDisks_end:
+        ; Restore all registers
+        popa
+
+        ret
+DriveIO_ScanDisks   EndP
+
+;------------------------------------------------------------------------------
 ; Calculate pointer to entry in DISKINFO structure
 ;------------------------------------------------------------------------------
 ; IN    : DL BIOS disk number (80h etc)
