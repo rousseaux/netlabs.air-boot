@@ -28,8 +28,8 @@ ENDIF
 ;
 ; Check if INT13X extensions are supported.
 ; AirBoot requires these extensions, and will halt if they are not available.
-; Modified: AX, BX, CX, DX, CF
-DriveIO_CheckFor13extensions    Proc Near
+; Modified: [CurIO_UseExtension]
+DriveIO_CheckFor13extensions    Proc Near   Uses ax bx cx dx
         mov     ah, 41h
         mov     bx, 55AAh
         mov     dl, [BIOS_BootDisk]     ; We check using the boot-disk
