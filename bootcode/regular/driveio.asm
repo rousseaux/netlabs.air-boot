@@ -775,6 +775,60 @@ DriveIO_ReadSectorLBA       EndP
 
 
 
+;##############################################################################
+;# ACTION   : Writes a sector to disk using INT13 extensions
+;# ----------------------------------------------------------------------------
+;# IN       : AL    - write flags, AL.0 verify (1.0,2.0), AL.1 verify (2.1+)
+;#          : BX:CX - LBA address of sector
+;#          : DI:SI - SEG:OFF of transfer buffer
+;# ----------------------------------------------------------------------------
+;# OUT      : CF=1  - failure, AH failure code
+;# ----------------------------------------------------------------------------
+;# EFFECTS  : Modifies DAP structure and mofifies the disk
+;##############################################################################
+DriveIO_WriteSectorLBA      Proc Near  Uses bx cx dx si di ds es
+
+        ; Mask reserved bits for wrte flags -- should check version here
+        and     al, 03h
+
+        ; One sector to read
+        mov     cs:[DriveIO_DAP_NumBlocks], 1
+
+        ; Setup transfer address
+        mov     wptr cs:[DriveIO_DAP_Transfer+0], si    ; offset
+        mov     wptr cs:[DriveIO_DAP_Transfer+2], di    ; segment
+
+        ; Setup LBA64 address of requested sector
+        mov     wptr cs:[DriveIO_DAP_Absolute+0], cx    ; low word lower part
+        mov     wptr cs:[DriveIO_DAP_Absolute+2], bx    ; high word lower part
+        mov     wptr cs:[DriveIO_DAP_Absolute+4], 0     ; low word upper part
+        mov     wptr cs:[DriveIO_DAP_Absolute+6], 0     ; high word upper part
+
+        ; Address of packet
+        mov     si, offset [DriveIO_DAP]                ; disk address packet
+
+        ; Do the extended write
+        mov     ah, 43h                                 ; write function
+        int     13h                                     ; transfer to bios
+
+        ; Error occured
+        jc      DriveIO_WriteSectorLBA_exit
+
+        ; AH should also be zero
+        test    ah, ah
+        stc
+        jnz     DriveIO_WriteSectorLBA_exit
+
+        ; Disk write succeeded, clear CF
+        clc
+
+    DriveIO_WriteSectorLBA_exit:
+        ret
+
+DriveIO_WriteSectorLBA      EndP
+
+
+
 ;
 ; ############################################################
 ; # Check for a valid MBR-sector to be written to disk       #
