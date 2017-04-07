@@ -241,7 +241,7 @@ LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
         push    di
         mov     si,offset [LVMSector]
         mov     di,ds
-        call    DriveIO_LoadSectorLBA                                           ; Change this to normal IO-routine !!!!!!
+        call    DriveIO_ReadSectorLBA
         pop     di
         pop     si
 
@@ -378,7 +378,7 @@ LVM_SetDriveLetter      Proc Near   Uses bx cx dx si di ds es
         push    di
         mov     si,offset [LVMSector]
         mov     di,ds
-        call    DriveIO_LoadSectorLBA                                           ; Change this to normal IO-routine !!!!!!
+        call    DriveIO_ReadSectorLBA
         pop     di
         pop     si
 

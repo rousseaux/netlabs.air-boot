@@ -725,64 +725,53 @@ DriveIO_LoadSector      EndP
 
 
 
-;
-; ############################################################
-; # Load a specified sector from a disk using LBA addressing #
-; ############################################################
-;
-; In
-; --
-; DL     = Physical Disk
-; BX:CX  = LBA sector
-; DI:SI  = Target buffer
-;
-; Out
-; ---
-; AX     = Error code
-;
-DriveIO_LoadSectorLBA       Proc Near  Uses bx cx dx si di ds es
-        ; Get one sector
+;##############################################################################
+;# ACTION   : Reads a sector from disk using INT13 extensions
+;# ----------------------------------------------------------------------------
+;# IN       : BX:CX - LBA address of sector
+;#          : DI:SI - SEG:OFF of transfer buffer
+;# ----------------------------------------------------------------------------
+;# OUT      : CF=1  - failure, AH failure code
+;# ----------------------------------------------------------------------------
+;# EFFECTS  : Modifies DAP structure and fills transfer buffer
+;##############################################################################
+DriveIO_ReadSectorLBA       Proc Near  Uses bx cx dx si di ds es
+
+        ; One sector to read
         mov     cs:[DriveIO_DAP_NumBlocks], 1
 
-        ; Setup buffer address
-        mov     wptr cs:[DriveIO_DAP_Transfer+0], si
-        mov     wptr cs:[DriveIO_DAP_Transfer+2], di
+        ; Setup transfer address
+        mov     wptr cs:[DriveIO_DAP_Transfer+0], si    ; offset
+        mov     wptr cs:[DriveIO_DAP_Transfer+2], di    ; segment
 
-        ; Setup LBA address of requested sector
-        mov     wptr cs:[DriveIO_DAP_Absolute+0], cx
-        mov     wptr cs:[DriveIO_DAP_Absolute+2], bx
-        mov     wptr cs:[DriveIO_DAP_Absolute+4], 0
-        mov     wptr cs:[DriveIO_DAP_Absolute+6], 0
+        ; Setup LBA64 address of requested sector
+        mov     wptr cs:[DriveIO_DAP_Absolute+0], cx    ; low word lower part
+        mov     wptr cs:[DriveIO_DAP_Absolute+2], bx    ; high word lower part
+        mov     wptr cs:[DriveIO_DAP_Absolute+4], 0     ; low word upper part
+        mov     wptr cs:[DriveIO_DAP_Absolute+6], 0     ; high word upper part
 
         ; Address of packet
-        mov     si, offset DriveIO_DAP
+        mov     si, offset [DriveIO_DAP]                ; disk address packet
 
         ; Do the extended read
-        mov     ah, 42h
-        int     13h
+        mov     ah, 42h                                 ; read function
+        int     13h                                     ; transfer to bios
 
-        ; Looking good so far
-        jnc     DriveIO_LoadSectorLBA_succes1
+        ; Error occured
+        jc      DriveIO_ReadSectorLBA_exit
 
-        ; AH should not be zero, if it is then set to undefined and set carry
-        test    ah,ah
-        jnz     DriveIO_LoadSectorLBA_error1
-        mov     ah, 0bbh        ; Undefined error
-    DriveIO_LoadSectorLBA_error1:
+        ; AH should also be zero
+        test    ah, ah
         stc
-        jmp     DriveIO_LoadSectorLBA_exit
+        jnz     DriveIO_ReadSectorLBA_exit
 
-        ; AL should be zero, if not then set to undefined and set carry
-    DriveIO_LoadSectorLBA_succes1:
-        test    ah,ah
-        jz      DriveIO_LoadSectorLBA_exit
-        stc
-        jmp     DriveIO_LoadSectorLBA_exit
+        ; Disk read succeeded, clear CF
+        clc
 
-        ; Return to caller
-    DriveIO_LoadSectorLBA_exit:
+    DriveIO_ReadSectorLBA_exit:
         ret
-DriveIO_LoadSectorLBA       EndP
+
+DriveIO_ReadSectorLBA       EndP
 
 
 

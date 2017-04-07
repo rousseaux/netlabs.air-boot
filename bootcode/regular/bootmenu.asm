@@ -719,7 +719,7 @@ DRIVELETTERS_ENABLE     EQU
 
         mov     si, offset [TmpSector]
         mov     di,ds
-        call    DriveIO_LoadSectorLBA
+        call    DriveIO_ReadSectorLBA
         mov     al, [si+25h]
 
     IFDEF   AUX_DEBUG

@@ -2173,7 +2173,7 @@ PART_IsPrimaryPartition Proc Near  Uses bx cx dx si di ds es
         xor      cx,cx
         mov      di,ds
         mov      si,offset [TmpSector]
-        call     DriveIO_LoadSectorLBA
+        call     DriveIO_ReadSectorLBA
 
         ; Restore partitions LBA address to DI:SI
         pop      si
@@ -2374,7 +2374,7 @@ PART_IsFAT32    Endp
 ;        ; Load specified LBA sector (BX:CX) from the disk in DL
 ;        mov     di,ds
 ;        mov     si,offset [TmpSector]
-;        call    DriveIO_LoadSectorLBA
+;        call    DriveIO_ReadSectorLBA
 
 ;        ; Point to location of 'BOOTMGR' signature.
 ;        add     si,169h
