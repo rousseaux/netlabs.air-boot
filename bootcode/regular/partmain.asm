@@ -1900,7 +1900,7 @@ ENDIF
         ;~ mov     bx,[si+LocIPT_AbsoluteBegin+02h]
         ;~ mov     al,[BPBdl]
         ;~ sub     al,3dh
-        ;~ call    LVM_SetDriveLetter
+        ;~ call    LVM_SetDriveLetter          ; !! NOT IMPLEMENTED !!
 
 
 ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

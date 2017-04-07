@@ -297,155 +297,30 @@ LVM_GetDriveLetter      EndP
 
 
 
-; Sets a drive-letter in the LVM-info of a partition. (if it exists)
-;        In: BX:CX - LBA starting sector of partition to be searched
-;            DL = Physical Disk in BIOS notation. (80h+)
-;            AL = DriveLetter to set (can be zero to hide partition from LVM)
-;       Out: CY=1 if LVM-info found, 0 if no LVM-info.
-LVM_SetDriveLetter      Proc Near   Uses bx cx dx si di ds es
+;------------------------------------------------------------------------------
+; Set the LVM drive-letter for a partition (if possible)
+;------------------------------------------------------------------------------
+; IN    : SI    - Pointer to IPT entry for partition
+;       : AL    - LVM drive-letter
+; OUT   : SI    - Pointer to LVM entry in loaded (and saved) LVM record
+;       : AL    - LVM drive-letter
+;       : CF=1  - No valid LVM sector found, AL not valid
+; NOTE  : Besides the drive-letter, AL can be 0 (LVM hidden) or '*' (LVM auto)
+;------------------------------------------------------------------------------
+LVM_SetDriveLetter      Proc Near   Uses bx cx dx di
 
-        local   disk:byte
-        local   drive_letter:byte
-        local   pri_ind:byte
-        local   lvm_log_high:word
-        local   lvm_log_low:word
-        ; For primary partitions this information is stored in the last
-        ; sector of track0; for all four partition entries in case they
-        ; they are all primary ones.
-        ;
-        ; LVM DLAT info for logical partitions is stored in the sector
-        ; preceding the start of the partition.
-        ;
-        ; Because the LVM info of a logical partition is the easiest to find,
-        ; we do that first. The LVM info for primary partitions is located
-        ; dependent on the geometry in use, so we use a special locater
-        ; call for that. Also, since the LVM info for primaries contains
-        ; info on all 4 entries, we need the partition index to obtain the
-        ; correct drive-letter.
-        ;
+        ; THIS IS A DUMMY FUNCTION RETURNING FAILURE
 
-IFDEF   AUX_DEBUG
-        IF 0
-        DBG_TEXT_OUT_AUX    'LVM_SetDriveLetter:'
-        PUSHRF
-            ;~ call    DEBUG_DumpRegisters
-            ;~ call    AuxIO_DumpParagraph
-            ;~ call    AuxIO_TeletypeNL
-        POPRF
-        ENDIF
-ENDIF
+        ; Setting LVM drive-letters is handled by the LVM drive-letter
+        ; reassignment functions. This is because when setting LVM
+        ; drive-letters, duplicates and other conditions need to be checked.
+        ; This dummy is only present because it might be implemented in the
+        ; future as part of the drive-letter reassignment logic.
 
-        mov     [disk], dl
-
-        ; Store the drive-letter for later use
-        mov     [drive_letter], al
-
-
-        ; See if this is a primary partition
-        ; CY will be set if it is and AL will contain the 0-based
-        ; index in the P-table.
-        ; If it's a logical partition, CY will be clear and AL
-        ; will be set to 0ffh indicating an invalid index.
-        call    PART_IsPrimaryPartition
-        mov     al,0
-        rcl     al,1        ; CY if primary
-        mov     dh,al       ; Save PRI or LOG
-        mov     [pri_ind],al
-
-        ; Save PRI/LOG indicator for later use
-        push    dx
-
-        ; Load *possible* LVM sector
-        ; This load is only valid if the partition is logical, in which case
-        ; the LVM sector is below the start of the partition.
-        ; If primary, the LVM sector is at a location that
-        ; DriveIO_LoadMasterLVMSector will find out.
-
-        ; Push LBA address
-        push    bx
-        push    cx
-
-        ; Adjust for logical LVM-sector
-        sub     cx,1
-        sbb     bx,0
-
-        ; Store LBA address of LVM-sector
-        mov     [lvm_log_low],cx
-        mov     [lvm_log_high],bx
-
-        ; Load the LVM sector
-        push    si
-        push    di
-        mov     si,offset [LVMSector]
-        mov     di,ds
-        mov     ax, cx                      ; LBA low is now in AX
-        call    DriveIO_ReadSectorLBA
-        pop     di
-        pop     si
-
-        ; Restore LBA address
-        pop     cx
-        pop     bx
-
-        ; Restore PRI/LOG partition indicator in DH
-        pop     dx
-
-        ; Test PRI or not
-        test    dh,dh
-        ; It's not a PRI so we can use the previously loaded LVM sector
-        jz      LVM_SetDriveLetter_is_not_pri
-
-        ;
-        ; It's a PRI so we use the special locator function.
-        ; This locator takes care of extended OS/2 geometry should that be used
-        ;
-        call    DriveIO_LoadMasterLVMSector
-        jnc     LVM_SetDriveLetter_null_lvm_dl
-
-        mov     ax, word ptr [MasterLVMLBA]                                         ; ARRAY VAN MAKEN !
-        mov     [lvm_log_low], ax
-        mov     [lvm_log_high], 0
-
-    LVM_SetDriveLetter_is_not_pri:
-
-        ;
-        ; At this stage the LVM-info sector has been loaded at [LVMSector].
-        ; From here we look for an LVM entry for the partition.
-        ; If one is found, based on it's LBA-start, it's driveletter is used
-        ; in case byte 25h in the BPB is zero.
-        ;
-
-        ; Search for the partition in the LVM info.
-        ; If found, CY is set and SI points to LVM entry.
-        push    si
-        mov     ax,cx
-        mov     dx,bx
-        mov     si,offset [LVMSector]
-        call    LVM_SearchForPartition
-        mov     bx,si   ; BX now points to LVM entry
-        pop     si
-
-        mov     al,0    ; Setup null driveletter
-        ; Oops, no valid LVM record was used so we have a null driveletter.
-        jnc     LVM_SetDriveLetter_null_lvm_dl
-
-        ;
-        ; At this point BX points to the LVM-entry related to the
-        ; partition, whether it was a logical or a primary one.
-        ;
-        mov     al, [drive_letter]
-        mov     [bx+LocLVM_VolumeLetter],al
-
-        mov     si, offset [LVMSector]
-        call    LVM_UpdateSectorCRC
-
-        mov     dl, [disk]
-        mov     bx, [lvm_log_high]
-        mov     ax, [lvm_log_low]
-
-        call    DriveIO_SaveSector
-
-    LVM_SetDriveLetter_null_lvm_dl:
+        ; Just indicate failure and return
+        xor     ax, ax
+        mov     si, ax
+        stc
         ret
 LVM_SetDriveLetter      EndP
 
