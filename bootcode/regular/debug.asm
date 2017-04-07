@@ -68,7 +68,11 @@ DEBUG_Probe     Endp
 ;
 ; Show help on keys.
 ;
-dbh     db  10,'h=HELP, d=DRIVE-LETTERS, g=GEO, i=IPT, r=RESTART, v=VOL-LETTERS, x=XREF',10,10,0
+dbh     db  10
+        db  'h=HELP, d=DRIVE-LETTERS, g=GEO, i=IPT, r=RESTART, v=VOL-LETTERS, x=XREF',10
+        db  '0-9=disk 80h-89h info',10
+        db  10,0
+
 DEBUG_ShowHelp      Proc
         pushf
         pusha
@@ -117,8 +121,10 @@ DEBUG_HandleKeypress    Proc
         jb      DEBUG_HandleKeypress_exit
         cmp     al,'9'
         ja      DEBUG_HandleKeypress_try_alpha
-        ; It was a digit.
-        jmp     DEBUG_HandleKeypress_check_it
+        ; It was a digit, dump disk info ('0' for 80h, '1' for 81h, etc)
+        call    DEBUG_DumpDiskInfo
+        ;~ jmp     DEBUG_HandleKeypress_check_it
+        jmp     DEBUG_HandleKeypress_exit
 
         ; Check for alpha.
     DEBUG_HandleKeypress_try_alpha:
@@ -495,6 +501,28 @@ DEBUG_DumpDriveLetters      Proc
         ret
 DEBUG_DumpDriveLetters      EndP
 
+;
+; Dump some disk information.
+;
+__DUMP_DI__     EQU
+DEBUG_DumpDiskInfo          Proc
+    IFDEF   __DUMP_DI__
+        pushf
+        pusha
+
+        add     al, 50h                 ; ASCII '0' to BIOS 80h, '1'->81h, etc.
+
+        mov     si, offset [ddi]
+        call    AuxIO_Print
+
+        call    AuxIO_TeletypeHexByte
+        call    AuxIO_TeletypeNL
+
+        popa
+        popf
+    ENDIF
+        ret
+DEBUG_DumpDiskInfo          EndP
 
 ;
 ; Dump the lvm volume drive-letters.
@@ -887,6 +915,7 @@ DEBUG_Dump2     EndP
 
 xrt     db  10,'XrefTable:',10,0
 ddl     db  10,'Driveletters:',10,0
+ddi     db  10,'DumpDiskInfo:',10,0
 dvl     db  10,'VolumeLetters:',10,0
 dlra    db  10,'LVM_DoLetterReassignment: ',0
 ptetb   db  10,'Partition Table Entry to boot',10,0
