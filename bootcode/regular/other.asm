@@ -638,15 +638,16 @@ IsMemBlockZero  EndP
 ;------------------------------------------------------------------------------
 ; Check if a loaded sector is all zeros
 ;------------------------------------------------------------------------------
-; IN    : BX pointer to memblock
+; IN    : SI pointer to sector buffer
 ; OUT   : ZF=1 block if all zeros
 ; NOTE  : Segment used is DS
 ;------------------------------------------------------------------------------
-IsSectorZero    Proc    Near    Uses cx
+IsSectorBufferZero  Proc    Near    Uses bx cx
+        mov     bx, si          ; Address of sector buffer
         mov     cx, sector_size ; Normal size of a sector (512 bytes)
         call    IsMemBlockZero  ; Check the memory block
         ret
-IsSectorZero    EndP
+IsSectorBufferZero  EndP
 
 ;------------------------------------------------------------------------------
 ; Fill a memory block with a specific value
@@ -684,11 +685,12 @@ ClearMemBlock   EndP
 ;------------------------------------------------------------------------------
 ; Clears a sector buffer
 ;------------------------------------------------------------------------------
-; IN    : BX pointer to sector buffer
+; IN    : SI pointer to sector buffer
 ; OUT   : Nothing
 ; NOTE  : Segment used is DS
 ;------------------------------------------------------------------------------
-ClearSectorBuffer   Proc    Near    Uses cx
+ClearSectorBuffer   Proc    Near    Uses bx cx
+        mov     bx, si              ; Address of sector buffer
         mov     cx, sector_size     ; Normal size of a sector (512 bytes)
         call    ClearMemBlock       ; Clear the sector buffer
         ret
