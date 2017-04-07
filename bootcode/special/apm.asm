@@ -28,6 +28,16 @@ ENDIF
 ; http://stackoverflow.com/questions/678458/shutdown-the-computer-using-assembly
 
 APM_TurnOffComputer            Proc Near  Uses ax bx cx
+
+IFDEF       AUX_DEBUG
+            pusha
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'>> System Shutdown <<',10,0
+@@:         call    AuxIO_Print
+            popa
+ENDIF
+
    mov     ax, 5301h
    xor     bx, bx
    int     15h
