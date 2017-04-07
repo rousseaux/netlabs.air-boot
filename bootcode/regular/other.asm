@@ -166,7 +166,7 @@ ENDIF
         ;~ call    VideoIO_BackUpTo   ; Copy BIOS POST to Second Page
 
         ; Copyright
-        mov     si, offset Copyright
+        mov     si, [offset Copyright]
         call    MBR_Teletype
         xor     si,si
         call    MBR_TeletypeNL
@@ -197,6 +197,11 @@ ENDIF
         mov     al, 1
         mov     ah, 03h
         int     13h
+        ;!
+        ;! TODO: Check success
+        ;! Yes, we should check for errors here, coz it would mean AirBoot
+        ;! was loaded from a disk where the MBR cannot be written !
+        ;!
 
 ; =============================================================================
 
@@ -226,11 +231,28 @@ ENDIF
 
         pushf
 
-        mov      bx, offset [TrueSecs]
-        add      bx,cx
-        add      bx,cx
-        add      bx,cx
-        add      bx,cx
+        mov     bx, offset [TrueSecs]
+        add     bx,cx
+        add     bx,cx
+        add     bx,cx
+        add     bx,cx
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            mov     al, '#'
+            call    AuxIO_Teletype
+            mov     ax, [bx]
+            call    AuxIO_TeletypeHexWord
+            mov     al, '#'
+            call    AuxIO_Teletype
+            call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         popf
 
         ; bx now contains pointer to truesecs for this drive
@@ -275,10 +297,11 @@ ENDIF
 
 ; =============================================================================
 
-    IFDEF   AUX_DEBUG
-        ; Write some debug-info to the com-port
-        call     DEBUG_Dump1
+IFDEF   AUX_DEBUG
+    IF 1
+    call     DEBUG_Dump1
     ENDIF
+ENDIF
 
         ;~ jz      NoValidMasterLVM
 ;~
@@ -298,7 +321,7 @@ ENDIF
 ;               call     AuxIO_TeletypeHexWord
 ;               call     AuxIO_TeletypeNL
 
-
+;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         ; Huge Disk indicator
         ;~ mov     si, offset [HugeBootDisk]
@@ -391,6 +414,17 @@ ENDIF
         ;
         call    PRECRAP_CheckConfiguration
 
+
+IFDEF   AUX_DEBUG
+        IF 1
+        mov     dl, [BIOS_BootDisk]
+        ;~ mov     dl, 81h
+        call    DriveIO_LocateMasterLVMSector
+        call    DEBUG_DumpRegisters
+        mov     si, offset [TmpSector]
+        call    AuxIO_DumpSector
+        ENDIF
+ENDIF
 
         ; =======================================
         ; Checks for MBR Virii :) I love that job

@@ -206,7 +206,7 @@ IFDEF   AUX_DEBUG
             @@:
             call    AuxIO_Print
             pop     si
-            ;~ call    DEBUG_DumpRegisters
+            call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
         popa

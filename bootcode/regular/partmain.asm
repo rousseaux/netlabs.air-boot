@@ -1121,15 +1121,19 @@ ENDIF
     mov     dl, [si+LocIPT_Drive]
 
 IFDEF   AUX_DEBUG
-    pusha
-    mov     si,offset [ptetb]
-    call    AuxIO_Print
-    call    DEBUG_DumpRegisters
-    call    AuxIO_TeletypeNL
-    mov     ax, word ptr [FreeDriveletterMap+00h]
-    mov     dx, word ptr [FreeDriveletterMap+02h]
-    call    AuxIO_TeletypeBinDWord
-    popa
+        IF 1
+        pushf
+        pusha
+            mov     si,offset [ptetb]
+            call    AuxIO_Print
+            call    DEBUG_DumpRegisters
+            call    AuxIO_TeletypeNL
+            mov     ax, word ptr [FreeDriveletterMap+00h]
+            mov     dx, word ptr [FreeDriveletterMap+02h]
+            call    AuxIO_TeletypeBinDWord
+        popa
+        popf
+        ENDIF
 ENDIF
 
 
@@ -1968,26 +1972,30 @@ ENDIF
 
 
 IFDEF   AUX_DEBUG
-    pusha
-    call    AuxIO_TeletypeNL
-    mov     bx, [PhysDiskBpbIndex]
-    inc     bx
-    mov     al, [di+bx]
-    call    AuxIO_TeletypeHexByte
-    mov     bl,[BootPartNo]
-    mov     al, [DriveLetters+bx]
-    call    AuxIO_TeletypeHexByte
-    mov     al, [PartitionVolumeLetters+bx]
-    add     al, 3dh
-    call    AuxIO_TeletypeHexByte
-    mov     al, [LVMdl]
-    add     al, 3dh
-    call    AuxIO_TeletypeHexByte
-    mov     al, [si+LocIPT_SystemID]
-    call    AuxIO_TeletypeHexByte
-    mov     al,[FSType]
-    call    AuxIO_TeletypeHexByte
-    popa
+        IF 1
+        pushf
+        pusha
+            call    AuxIO_TeletypeNL
+            mov     bx, [PhysDiskBpbIndex]
+            inc     bx
+            mov     al, [di+bx]
+            call    AuxIO_TeletypeHexByte
+            mov     bl,[BootPartNo]
+            mov     al, [DriveLetters+bx]
+            call    AuxIO_TeletypeHexByte
+            mov     al, [PartitionVolumeLetters+bx]
+            add     al, 3dh
+            call    AuxIO_TeletypeHexByte
+            mov     al, [LVMdl]
+            add     al, 3dh
+            call    AuxIO_TeletypeHexByte
+            mov     al, [si+LocIPT_SystemID]
+            call    AuxIO_TeletypeHexByte
+            mov     al,[FSType]
+            call    AuxIO_TeletypeHexByte
+        popa
+        popf
+        ENDIF
 ENDIF
 
         ;
@@ -2104,15 +2112,19 @@ ENDIF
 
 
 
-    IFDEF   AUX_DEBUG
+IFDEF   AUX_DEBUG
+        IF 1
+        pushf
         pusha
-        call    DEBUG_Dump2
-        ;~ call    DEBUG_DumpBSSSectors
-        call    DEBUG_DumpDriveLetters
-        call    DEBUG_DumpVolumeLetters
-        call    AuxIO_TeletypeNL
+            call    DEBUG_Dump2
+            ;~ call    DEBUG_DumpBSSSectors
+            call    DEBUG_DumpDriveLetters
+            call    DEBUG_DumpVolumeLetters
+            call    AuxIO_TeletypeNL
         popa
-    ENDIF
+        popf
+        ENDIF
+ENDIF
 
 
 

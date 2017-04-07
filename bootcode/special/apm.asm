@@ -30,12 +30,16 @@ ENDIF
 APM_TurnOffComputer            Proc Near  Uses ax bx cx
 
 IFDEF       AUX_DEBUG
+            IF 1
+            pushf
             pusha
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'>> System Shutdown <<',10,0
-@@:         call    AuxIO_Print
+                mov     si, offset $+5
+                jmp     @F
+                db      10,'>> System Shutdown <<',10,0
+        @@:     call    AuxIO_Print
             popa
+            popf
+            ENDIF
 ENDIF
 
    mov     ax, 5301h

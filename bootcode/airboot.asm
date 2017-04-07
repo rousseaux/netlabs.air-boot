@@ -958,21 +958,24 @@ AiR_BOOT_Start:
         pop     [OldSS]
 
 
-        ; Verify we still got the BIOS disk in DL
-        IFDEF   AUX_DEBUG
-                IF 1
-                pusha
-                    push    si
-                    mov     si, offset $+5
-                    jmp     @F
-                    db      10,'## AiR_BOOT_Start ##',10,0
-                    @@:
-                    call    AuxIO_Print
-                    pop     si
-                    call    DEBUG_DumpRegisters
-                popa
-                ENDIF
+; Verify we still got the BIOS disk in DL
+IFDEF   AUX_DEBUG
+        IF 1
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'## AiR_BOOT_Start ##',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+        popa
+        popf
         ENDIF
+ENDIF
+
 
 ; -----------------------------------------------------------------------------
 ;                                                      IBM-BM BOOT PREPARATION
@@ -1018,59 +1021,61 @@ AiR_BOOT_Start:
                 call    PRECRAP_Main
                 ; Number of harddisks and other system-info is now known.
 
-            ;!
-            ;! DEBUG_BLOCK
-            ;! Let's see what the BIOS supplied us with...
-            ;! Uncomment below to activate.
-            ;!
-            ;~ __DUMP_BIOS_REGS__  EQU
-            IFDEF   AUX_DEBUG
-                IFDEF   __DUMP_BIOS_REGS__
-                    pushf
-                    pusha
-                    ; Print title.
-                    mov     si,offset [bios_reg]
-                    call    AuxIO_Print
-                    ; Save the current stack (SS:SP).
-                    mov     ax,ss
-                    mov     [CurrentSS],ax
-                    mov     [CurrentSP],sp
+;!
+;! DEBUG_BLOCK
+;! Let's see what the BIOS supplied us with...
+;! Uncomment below to activate.
+;!
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
 
-                    ; Restore the old stack.
-                    mov     ss,[OldSS]
-                    mov     sp,[OldSP]
+            ; Print title.
+            mov     si,offset [bios_reg]
+            call    AuxIO_Print
+            ; Save the current stack (SS:SP).
+            mov     ax,ss
+            mov     [CurrentSS],ax
+            mov     [CurrentSP],sp
 
-                    ; Pop the registers with the BIOS values.
-                    popa
-                    ; Push them back for AiR-BOOT restart (debug mode).
-                    pusha
-                    ; Dump them to the serial-port.
-                    call    DEBUG_DumpRegisters
-                    ; Restore the current stack.
-                    mov     ax,[CurrentSS]
-                    mov     ss,ax
-                    mov     sp,[CurrentSP]
+            ; Restore the old stack.
+            mov     ss,[OldSS]
+            mov     sp,[OldSP]
 
-                    ; Restore registers.
-                    popa
-                    popf
-                ENDIF
-            ENDIF
+            ; Pop the registers with the BIOS values.
+            popa
+            ; Push them back for AiR-BOOT restart (debug mode).
+            pusha
+            ; Dump them to the serial-port.
+            call    DEBUG_DumpRegisters
+            ; Restore the current stack.
+            mov     ax,[CurrentSS]
+            mov     ss,ax
+            mov     sp,[CurrentSP]
+
+        popa
+        popf
+        ENDIF
+ENDIF
 
 
-            ;!
-            ;! DEBUG_BLOCK
-            ;! Dump the registers at this point.
-            ;! Uncomment below to activate.
-            ;!
-            IFDEF   AUX_DEBUG
-                ;~ call    DEBUG_DumpRegisters
-                ; Dump drive-letters of dl-feature before partitions are
-                ; scanned and processed.
-                ;~ call    DEBUG_DumpDriveLetters
-                ;~ call    DEBUG_DumpVolumeLetters
-                ;~ call    DEBUG_DumpPartitionXref
-            ENDIF
+;!
+;! DEBUG_BLOCK
+;! Dump the registers at this point.
+;!
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    DEBUG_DumpDriveLetters
+            ;~ call    DEBUG_DumpVolumeLetters
+            ;~ call    DEBUG_DumpPartitionXref
+        popa
+        popf
+        ENDIF
+ENDIF
 
 ; -----------------------------------------------------------------------------
 ;                                                               PARTITION SCAN
@@ -1087,20 +1092,26 @@ AiR_BOOT_Start:
                 call    PARTSCAN_ScanForPartitions
                 ; Internal Partition Table is now populated.
 
-            ;!
-            ;! DEBUG_BLOCK
-            ;! Dump various tables.
-            ;! Uncomment below to activate.
-            ;!
-            IFDEF   AUX_DEBUG
-                ;~ call    DEBUG_DumpIPT
-                ;~ call    DEBUG_DumpPartitionPointers
-                ;~ call    DEBUG_DumpNewPartTable
-                ;~ call    DEBUG_DumpDriveLetters
-                ;~ call    DEBUG_DumpDriveLetters
-                ;~ call    DEBUG_DumpVolumeLetters
-                ;~ call    DEBUG_DumpPartitionXref
-            ENDIF
+;!
+;! DEBUG_BLOCK
+;! Dump various tables.
+;! Uncomment below to activate.
+;!
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            ;~ call    DEBUG_DumpIPT
+            ;~ call    DEBUG_DumpPartitionPointers
+            ;~ call    DEBUG_DumpNewPartTable
+            ;~ call    DEBUG_DumpDriveLetters
+            ;~ call    DEBUG_DumpDriveLetters
+            ;~ call    DEBUG_DumpVolumeLetters
+            ;~ call    DEBUG_DumpPartitionXref
+        popa
+        popf
+        ENDIF
+ENDIF
 
 
 ; -----------------------------------------------------------------------------
@@ -1117,20 +1128,25 @@ AiR_BOOT_Start:
 
 
 
-            ;!
-            ;! DEBUG_BLOCK
-            ;! Dump various tables.
-            ;! Uncomment below to activate.
-            ;!
-            IFDEF   AUX_DEBUG
-                ;~ call    DEBUG_DumpIPT
-                ;~ call    DEBUG_DumpPartitionPointers
-                ;~ call    DEBUG_DumpNewPartTable
-                ;~ call    DEBUG_DumpDriveLetters
-                ;~ call    DEBUG_DumpDriveLetters
-                ;~ call    DEBUG_DumpVolumeLetters
-                ;~ call    DEBUG_DumpPartitionXref
-            ENDIF
+;!
+;! DEBUG_BLOCK
+;! Dump various tables.
+;!
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            ;~ call    DEBUG_DumpIPT
+            ;~ call    DEBUG_DumpPartitionPointers
+            ;~ call    DEBUG_DumpNewPartTable
+            ;~ call    DEBUG_DumpDriveLetters
+            ;~ call    DEBUG_DumpDriveLetters
+            ;~ call    DEBUG_DumpVolumeLetters
+            ;~ call    DEBUG_DumpPartitionXref
+        popa
+        popf
+        ENDIF
+ENDIF
 
 
 ; -----------------------------------------------------------------------------
@@ -1199,18 +1215,23 @@ AiR_BOOT_Start:
                 ;
 
 
-            ;!
-            ;! DEBUG_BLOCK
-            ;! Dump various tables.
-            ;! Uncomment below to activate.
-            ;!
-            IFDEF   AUX_DEBUG
-                ;~ call    DEBUG_DumpIPT
-                ;~ call    DEBUG_DumpPartitionPointers
-                ;~ call    DEBUG_DumpPartitionXref
-                ;~ call    DEBUG_DumpNewPartTable
-                ;~ call    DEBUG_DumpDriveLetters
-            ENDIF
+;!
+;! DEBUG_BLOCK
+;! Dump various tables.
+;!
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            ;~ call    DEBUG_DumpIPT
+            ;~ call    DEBUG_DumpPartitionPointers
+            ;~ call    DEBUG_DumpPartitionXref
+            ;~ call    DEBUG_DumpNewPartTable
+            ;~ call    DEBUG_DumpDriveLetters
+        popa
+        popf
+        ENDIF
+ENDIF
 
 
                 ; BOOKMARK: Scan for Partitions (Only if OS/2 install going on)
@@ -1223,18 +1244,23 @@ AiR_BOOT_Start:
                 call    PARTSCAN_ScanForPartitions
 
 
-            ;!
-            ;! DEBUG_BLOCK
-            ;! Dump various tables.
-            ;! Uncomment below to activate.
-            ;!
-            IFDEF   AUX_DEBUG
-                ;~ call    DEBUG_DumpIPT
-                ;~ call    DEBUG_DumpPartitionPointers
-                ;~ call    DEBUG_DumpPartitionXref
-                ;~ call    DEBUG_DumpNewPartTable
-                ;~ call    DEBUG_DumpDriveLetters
-            ENDIF
+;!
+;! DEBUG_BLOCK
+;! Dump various tables.
+;!
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            ;~ call    DEBUG_DumpIPT
+            ;~ call    DEBUG_DumpPartitionPointers
+            ;~ call    DEBUG_DumpPartitionXref
+            ;~ call    DEBUG_DumpNewPartTable
+            ;~ call    DEBUG_DumpDriveLetters
+        popa
+        popf
+        ENDIF
+ENDIF
 
                 ; Setup automatic boot to forgo the Menu.
                 ; PART_SetupPhase1 has filled in the other variables.
@@ -1431,12 +1457,18 @@ AiR_BOOT_Start:
 
     MBR_Main_StartPartition:
 
-            IFDEF   AUX_DEBUG
-                ;~ call    DEBUG_DumpIPT
-                ;~ call    DEBUG_DumpPartitionPointers
-                ;~ call    DEBUG_DumpPartitionXref
-                ;~ call    DEBUG_DumpNewPartTable
-            ENDIF
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            ;~ call    DEBUG_DumpIPT
+            ;~ call    DEBUG_DumpPartitionPointers
+            ;~ call    DEBUG_DumpPartitionXref
+            ;~ call    DEBUG_DumpNewPartTable
+        popa
+        popf
+        ENDIF
+ENDIF
 
 
                 ; -------------------------------------------- START PARTITION

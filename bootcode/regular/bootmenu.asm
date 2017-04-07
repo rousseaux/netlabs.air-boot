@@ -690,14 +690,20 @@ DRIVELETTERS_ENABLE     EQU
         mov     si, [PartPointer]
         mov     ah, [si+LocIPT_SystemID]
 
-    IFDEF   AUX_DEBUG
-        mov     al, ' '
-        call    VideoIO_PrintSingleChar
-        mov     al, ah
-        call    VideoIO_PrintHexByte
-        mov     al, ' '
-        call    VideoIO_PrintSingleChar
-    ENDIF
+IFDEF   AUX_DEBUG
+        IF 1
+        pushf
+        pusha
+            mov     al, ' '
+            call    VideoIO_PrintSingleChar
+            mov     al, ah
+            call    VideoIO_PrintHexByte
+            mov     al, ' '
+            call    VideoIO_PrintSingleChar
+        popa
+        popf
+        ENDIF
+ENDIF
 
         mov     al, ah
 
@@ -722,9 +728,15 @@ DRIVELETTERS_ENABLE     EQU
         call    DriveIO_ReadSectorLBA
         mov     al, [si+25h]
 
-    IFDEF   AUX_DEBUG
-        call    VideoIO_PrintHexByte
-    ENDIF
+IFDEF   AUX_DEBUG
+        IF 1
+        pushf
+        pusha
+            call    VideoIO_PrintHexByte
+        popa
+        popf
+        ENDIF
+ENDIF
 
         mov     dh,al
         sub     dh,3dh

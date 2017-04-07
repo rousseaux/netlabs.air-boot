@@ -67,19 +67,28 @@ ENDIF
         jnz     PSSFP_HarddiscLoop
         mov     byte ptr [CurIO_Scanning], 0             ; Reset flag due scanning complete
 
-    IFDEF   AUX_DEBUG
-        ;~ pusha
-        ;~ call    DEBUG_DumpHidePartTables
-        ;~ popa
-    ENDIF
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            call    DEBUG_DumpHidePartTables
+        popa
+        popf
+        ENDIF
+ENDIF
+
         ; Use X-Reference to sync NewPartitionTable with Hide-Config
         call    PARTSCAN_SyncHideConfigWithXref
 
-    IFDEF   AUX_DEBUG
-        ;~ pusha
-        ;~ call    DEBUG_DumpHidePartTables
-        ;~ popa
-    ENDIF
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+        call    DEBUG_DumpHidePartTables
+        popa
+        popf
+        ENDIF
+ENDIF
 
         ; Now we copy the new IPT over the old one...
         mov     si, offset NewPartTable
@@ -417,6 +426,9 @@ MBR_NoName_Patched           db  15 dup (0)
 ;        In: SI - Points to Partition-Entry (16-Bytes)
 PARTSCAN_CheckThisPartition     Proc Near  Uses di si
 
+        local   PartSystemID:byte, PartTypeFlags:byte
+        local   PartCRC:word, PartPtr:word
+
 IFDEF   AUX_DEBUG
         IF 0
         pushf
@@ -436,8 +448,6 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
-        local   PartSystemID:byte, PartTypeFlags:byte
-        local   PartCRC:word, PartPtr:word
 
         mov     wptr [PartPtr], si          ; Save Pointer to PartitionEntry
 
@@ -511,8 +521,11 @@ ENDIF
         mov     dx, wptr [si+LocBRPT_RelativeBegin+2]
         add     ax, wptr [CurPartition_Location+0] ; +Partition-Absolute
         adc     dx, wptr [CurPartition_Location+2] ;  sectors
-        mov     si, offset LVMSector
+
+        mov     si, offset [LVMSector]
+
         call    LVM_SearchForPartition     ; Search for DX:AX partition
+
         jnc     PCCTP_CheckBootRecord
         ; Check, if volume has driveletter assigned and remember it for later
         mov     al, [si+LocLVM_VolumeLetter]
@@ -1077,13 +1090,17 @@ PARTSCAN_SyncHideConfigWithXref Proc Near Uses ax bx cx dx si di
     PSSHCWX_SyncLoopEnd:
 
 
-    IFDEF   AUX_DEBUG
-        ;~ pusha
-        ;~ mov     al,dl
-        ;~ call    AuxIO_TeletypeHexByte
-        ;~ call    AuxIO_TeletypeNL
-        ;~ popa
-    ENDIF
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            mov     al,dl
+            call    AuxIO_TeletypeHexByte
+            call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
 
 
         or      dl, dl
@@ -1097,10 +1114,15 @@ PARTSCAN_SyncHideConfigWithXref Proc Near Uses ax bx cx dx si di
         jnz     PSSHCWX_LostFillLoop
 
     IFDEF   AUX_DEBUG
-        ; debug code
-        ;~ mov     ax,di
-        ;~ call    AuxIO_TeletypeHexWord
-        ;~ call    AuxIO_TeletypeNL
+        IF 0
+        pushf
+        pusha
+            mov     ax,di
+            call    AuxIO_TeletypeHexWord
+            call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
     ENDIF
 
     PSSHCWX_NothingLost:

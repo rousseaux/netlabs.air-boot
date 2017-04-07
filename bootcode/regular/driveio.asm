@@ -34,6 +34,35 @@ DriveIO_CheckFor13extensions    Proc Near
         mov     bx, 55AAh
         mov     dl, [BIOS_BootDisk]     ; We check using the boot-disk
         int     13h
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_CheckFor13extensions:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+
+            mov     si, offset [INT13X_DiskParams]
+            mov     word ptr [si], 50h
+            mov     ah, 48h
+            int     13h
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpSector
+
+
+        popa
+        popf
+        ENDIF
+ENDIF
+
         jc      PCCF13E_NotFound        ; Error occured
         cmp     bx, 0AA55h
         je      PCCF13E_Found
@@ -350,6 +379,26 @@ DriveIO_LVMAdjustToInfoSector   EndP
 ; Preserve: all registers
 ; #########################################################################
 DriveIO_LoadPartition   Proc Near  Uses si
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'DriveIO_LoadPartition:',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
+ENDIF
+
         mov     wptr cs:[CurPartition_Location+0], ax
         mov     wptr cs:[CurPartition_Location+2], bx
         mov     wptr cs:[CurPartition_Location+4], dx
@@ -368,23 +417,7 @@ DriveIO_LoadPartition   Proc Near  Uses si
         stc                                   ; Set carry, so no partition table
     DIOLP_Success:
 
-    IFDEF   AUX_DEBUG
-        ; show current partition location
-        ;~ pushf
-        ;~ pusha
-        ;~ call     AuxIO_TeletypeNL
-        ;~ mov      si,offset db_curpartloc
-        ;~ call     AuxIO_Print
-        ;~ mov      dx,word ptr [CurPartition_Location+02]
-        ;~ mov      ax,word ptr [CurPartition_Location+00]
-        ;~ call     AuxIO_TeletypeHexDWord
-        ;~ call     AuxIO_TeletypeNL
-        ;~ mov      si,offset PartitionSector
-        ;~ call     AuxIO_DumpSector
-        ;~ call     AuxIO_TeletypeNL
-        ;~ popa
-        ;~ popf
-    ENDIF
+
 
         ret
     DIOLP_Failed:
@@ -461,7 +494,8 @@ IFDEF   AUX_DEBUG
             @@:
             call    AuxIO_Print
             pop     si
-            ;~ call    DEBUG_DumpRegisters
+            call    DEBUG_DumpRegisters
+            call    AuxIO_DumpSector
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
         popa
@@ -478,25 +512,36 @@ ENDIF
 
         call    DriveIO_LVMAdjustToInfoSector
 
-        mov     si, offset LVMSector
+        mov     si, offset [LVMSector]
         call    DriveIO_LoadSector
 
-    IFDEF   AUX_DEBUG
-        ; show current partition location
-        ;~ pushf
-        ;~ pusha
-        ;~ call    AuxIO_TeletypeNL
-        ;~ mov     si,offset db_curlvmsec
-        ;~ call    AuxIO_Print
-        ;~ mov     dx,bx
-        ;~ call    AuxIO_TeletypeHexDWord
-        ;~ call    AuxIO_TeletypeNL
-        ;~ mov     si,offset LVMSector
-        ;~ call    AuxIO_DumpSector
-        ;~ call    AuxIO_TeletypeNL
-        ;~ popa
-        ;~ popf
-    ENDIF
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'lvm record ex',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    AuxIO_TeletypeHexWord
+            ;~ call    AuxIO_TeletypeNL
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpSector
+            ;~ mov     cx, 7
+            mov     cx, 32
+        @@:
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+            add     si, 16
+            loop @B
+        popa
+        popf
+        ENDIF
+ENDIF
+
 
         call    LVM_CheckSectorSignature
         jnc     DIOLLVMS_NoLVMSector
@@ -544,24 +589,36 @@ ENDIF
         call    LVM_CheckSectorSignature
         jnc     DIOSLVMS_SevereError                  ; LVM Signature must be there
 
-    IFDEF   AUX_DEBUG
-;~ dioatlvm    db 'DriveIO_LVMAdjustToInfoSector',10,0
-        ;~ pushf
-        ;~ pusha
-        ;~ mov     si,offset dioatlvm
-        ;~ call    AuxIO_Print
-        ;~ popa
-        ;~ popf
-        call    DEBUG_DumpRegisters
-        call    DEBUG_DumpCHS
-    ENDIF
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            ;~ dioatlvm    db 'DriveIO_LVMAdjustToInfoSector',10,0
+            ;~ pushf
+            ;~ pusha
+            ;~ mov     si,offset dioatlvm
+            ;~ call    AuxIO_Print
+            ;~ popa
+            ;~ popf
+            call    DEBUG_DumpRegisters
+            call    DEBUG_DumpCHS
+        popa
+        popf
+        ENDIF
+ENDIF
 
         call    DriveIO_LVMAdjustToInfoSector
 
-    IFDEF   AUX_DEBUG
-        call    DEBUG_DumpRegisters
-        call    DEBUG_DumpCHS
-    ENDIF
+IFDEF   AUX_DEBUG
+        IF 0
+        pushf
+        pusha
+            call    DEBUG_DumpRegisters
+            call    DEBUG_DumpCHS
+        popa
+        popf
+        ENDIF
+ENDIF
 
         mov     si, offset LVMSector
         call    DriveIO_SaveSector
@@ -620,7 +677,7 @@ IFDEF   AUX_DEBUG
             @@:
             call    AuxIO_Print
             pop     si
-            ;~ call    DEBUG_DumpRegisters
+            call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
         popa
@@ -706,6 +763,24 @@ ENDIF
         ;~ jmp     DriveIO_GotLoadError
 
     DIOLS_Success:
+
+IFDEF   AUX_DEBUG
+        IF 0
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'sector loaded',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            ;~ call    DEBUG_DumpRegisters
+            call    AuxIO_DumpSector
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        popa
+        ENDIF
+ENDIF
         ret
 DriveIO_LoadSector      EndP
 
@@ -714,12 +789,12 @@ DriveIO_LoadSector      EndP
 ;##############################################################################
 ;# ACTION   : Reads a sector from disk using INT13 extensions
 ;# ----------------------------------------------------------------------------
+;# EFFECTS  : Modifies DAP structure and fills transfer buffer
+;# ----------------------------------------------------------------------------
 ;# IN       : BX:CX - LBA address of sector
 ;#          : DI:SI - SEG:OFF of transfer buffer
 ;# ----------------------------------------------------------------------------
 ;# OUT      : CF=1  - failure, AH failure code
-;# ----------------------------------------------------------------------------
-;# EFFECTS  : Modifies DAP structure and fills transfer buffer
 ;##############################################################################
 DriveIO_ReadSectorLBA       Proc Near  Uses bx cx dx si di ds es
 
@@ -783,13 +858,13 @@ DriveIO_ReadSectorLBA       EndP
 ;##############################################################################
 ;# ACTION   : Writes a sector to disk using INT13 extensions
 ;# ----------------------------------------------------------------------------
+;# EFFECTS  : Modifies DAP structure and mofifies the disk
+;# ----------------------------------------------------------------------------
 ;# IN       : AL    - write flags, AL.0 verify (1.0,2.0), AL.1 verify (2.1+)
 ;#          : BX:CX - LBA address of sector
 ;#          : DI:SI - SEG:OFF of transfer buffer
 ;# ----------------------------------------------------------------------------
 ;# OUT      : CF=1  - failure, AH failure code
-;# ----------------------------------------------------------------------------
-;# EFFECTS  : Modifies DAP structure and mofifies the disk
 ;##############################################################################
 DriveIO_WriteSectorLBA      Proc Near  Uses bx cx dx si di ds es
 
@@ -1159,21 +1234,25 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
-    ;!
-    ;! DEBUG_BLOCK
-    ;! Force write to LBA0 to test interception routine.
-    ;! Do *NOT* enable unless you are debugging, will overwrite MBR !
-    ;!
-    ;~ __DIO_FORCE_LBA0_WRITE__    EQU
-    IFDEF   AUX_DEBUG
-        IFDEF   __DIO_FORCE_LBA0_WRITE__
+
+;!
+;! DEBUG_BLOCK
+;! Force write to LBA0 to test interception routine.
+;! Do *NOT* enable unless you are debugging, will overwrite MBR !
+;!
+IFDEF   AUX_DEBUG
+    IF 0
+    pushf
+    pusha
         xor ax,ax
         xor bx,bx
         xor cx,cx
         inc cx
         xor dh,dh
-        ENDIF
+    popa
+    popf
     ENDIF
+ENDIF
 
         ;
         ; Check if the MBR is the destination for the write.
@@ -1209,14 +1288,18 @@ ENDIF
         call    SETUP_ShowErrorBox
 
 
-    IFDEF   AUX_DEBUG
-        pusha
-        mov     si, offset NonMBRwrite
+IFDEF   AUX_DEBUG
+    IF 0
+    pushf
+    pusha
+        mov     si, offset [NonMBRwrite]
         call    AuxIO_TeletypeNL
         call    AuxIO_Print
         call    AuxIO_TeletypeNL
-        popa
+    popa
+    popf
     ENDIF
+ENDIF
 
         ; Show popup and halt the system.
         jmp    HaltSystem
@@ -1441,6 +1524,8 @@ ENDIF
         ; CY if valid
         call    LVM_ValidateSector
 
+
+
 IFDEF   AUX_DEBUG
         IF 0
         pushf
@@ -1453,8 +1538,13 @@ IFDEF   AUX_DEBUG
             call    AuxIO_Print
             pop     si
             call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpSector
+            mov     cx, 7
+        @@:
             call    AuxIO_DumpParagraph
             call    AuxIO_TeletypeNL
+            add     si, 16
+            loop @B
         popa
         popf
         ENDIF
@@ -1589,7 +1679,7 @@ IFDEF   AUX_DEBUG
             @@:
             call    AuxIO_Print
             pop     si
-            ;~ call    DEBUG_DumpRegisters
+            call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
         popa
@@ -1614,7 +1704,7 @@ ENDIF
         ; Old Phoenix BIOSses require word (flags) at 02 to be zero,
         ; so we clear the whole buffer to be sure.
         mov     cx, i13xbuf_size        ; Dynamically calculated by assembler.
-        mov     di, offset i13xbuf      ; Points to size field.
+        mov     di, offset [i13xbuf]    ; Points to size field.
         mov     [di],cx                 ; Setup buffer-size.
         inc     di
         inc     di                      ; Now pointing at actual buffer.
@@ -1625,7 +1715,7 @@ ENDIF
         ; Get the drive parameters
         mov     ah, 48h                 ; Get Drive Parameters (extended version)
         ;mov     dl, 80h                ; Drive number
-        mov     si, offset i13xbuf      ; Buffer for result-info
+        mov     si, offset [i13xbuf]    ; Buffer for result-info
         push    dx
         int     13h                     ; Call the BIOS-function
         pop     dx
@@ -1688,7 +1778,7 @@ ENDIF
         mov      word ptr [bx+02],ax
 
         ; Store total secs
-        mov      bx, offset BIOS_TotalSecs
+        mov      bx, offset [BIOS_TotalSecs]
         add      bx,dx
         add      bx,dx
         mov      ax,[si+10h]
@@ -1702,7 +1792,7 @@ ENDIF
         mov      word ptr [bx+06],ax
 
         ; Store number of bytes per sector
-        mov      bx, offset BIOS_Bytes
+        mov      bx, offset [BIOS_Bytes]
         add      bx,dx
         mov      ax,[si+18h]
         mov      [bx],ax

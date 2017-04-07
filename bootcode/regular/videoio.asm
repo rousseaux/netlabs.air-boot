@@ -886,7 +886,7 @@ VideoIO_DumpDiskInfo    Proc Near uses ax bx cx dx
 
         push    dx
         ; Offset of array containing LVM SPT values for each disk found
-        mov     bx,offset TrueSecs
+        mov     bx,offset [TrueSecs]
         ; DX to index
         xor     dh,dh
         and     dl,01111111b

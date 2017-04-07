@@ -972,11 +972,15 @@ PARTHIDESETUP_Main              Proc Near   Uses dx
    mov     dl, [PartSetup_ActivePart]
 
 IFDEF   AUX_DEBUG
-        ;~ pusha
-        ;~ mov     al,dl   ; Partition the hiding is set for.
-        ;~ call    AuxIO_TeletypeHexByte
-        ;~ call    AuxIO_TeletypeNL
-        ;~ popa
+        IF 0
+        pushf
+        pusha
+            mov     al,dl   ; Partition the hiding is set for.
+            call    AuxIO_TeletypeHexByte
+            call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
 ENDIF
 
    call    PARTHIDESETUP_CollectHideConfigAndPutToTable
@@ -996,11 +1000,15 @@ ENDIF
   PHSM_KeyToogle:
 
 IFDEF   AUX_DEBUG
-        ;~ pusha
-        ;~ mov     al,dl   ; Index of partition to set Special Marker on.
-        ;~ call    AuxIO_TeletypeHexByte
-        ;~ call    AuxIO_TeletypeNL
-        ;~ popa
+        IF 0
+        pushf
+        pusha
+            mov     al,dl   ; Index of partition to set Special Marker on.
+            call    AuxIO_TeletypeHexByte
+            call    AuxIO_TeletypeNL
+        popa
+        popf
+        ENDIF
 ENDIF
 
    call    PART_GetPartitionPointer      ; Holt den Pointer der Partition (DL) nach SI
