@@ -567,7 +567,7 @@ MBR_HaltSystem:
                 mov     dx, 500
                 int     15h         ; Wait to display the whole screen :]
 MBR_HaltSys:
-                cli
+                ;~ cli
                 jmp     MBR_HaltSys
 
 
