@@ -961,18 +961,10 @@ AiR_BOOT_Start:
 ; Verify we still got the BIOS disk in DL
 IFDEF   AUX_DEBUG
         IF 1
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'## AiR_BOOT_Start ##',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    '## AiR_BOOT_Start ##'
+        PUSHRF
             call    DEBUG_DumpRegisters
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 

@@ -58,20 +58,12 @@ LVM_GetSectorCRC                Proc Near   Uses bx cx
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'LVM_GetSectorCRC:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'LVM_GetSectorCRC:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -197,20 +189,12 @@ LVM_SearchForPartition          Proc Near   Uses cx
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'LVM_SearchForPartition:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'LVM_SearchForPartition:'
+        PUSHRF
             call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -246,20 +230,12 @@ LVM_GetDriveLetter      Proc Near   Uses bx cx dx si di ds es
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'LVM_GetDriveLetter:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'LVM_GetDriveLetter:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -409,18 +385,12 @@ ENDIF
 
 IFDEF   AUX_DEBUG
         IF 0
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'LVM_GetDriveLetter:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'LVM_GetDriveLetter:'
+        PUSHRF
             call    DEBUG_DumpRegisters
             call    AuxIO_DumpParagraph
             call    AuxIO_TeletypeNL
-        popa
+        POPRF
         ENDIF
 ENDIF
 
@@ -481,20 +451,12 @@ LVM_SetDriveLetter      Proc Near   Uses bx cx dx si di ds es
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'LVM_SetDriveLetter:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'LVM_SetDriveLetter:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -623,20 +585,12 @@ LVM_RemoveVolLetterFromSector   Proc Near   Uses cx
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'LVM_RemoveVolLetterFromSector:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'LVM_RemoveVolLetterFromSector:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -672,20 +626,12 @@ LVM_DoLetterReassignment        Proc Near   Uses bx cx dx si di
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'LVM_DoLetterReassignment:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'LVM_DoLetterReassignment:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 

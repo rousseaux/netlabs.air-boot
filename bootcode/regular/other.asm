@@ -83,28 +83,19 @@ GetLenOfStrings     EndP
 
 
 
-
 ;
 ; DO PREPARING STUFF.
 ;
 PRECRAP_Main    Proc Near
 
 IFDEF   AUX_DEBUG
-        IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PRECRAP_Main:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        IF 1
+        DBG_TEXT_OUT_AUX    'PRECRAP_Main'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -474,20 +465,12 @@ AFTERCRAP_Main  Proc Near
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'AFTERCRAP_Main:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'AFTERCRAP_Main:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -511,20 +494,12 @@ PRECRAP_CheckConfiguration      Proc Near  Uses ds si es di
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PRECRAP_CheckConfiguration:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'PRECRAP_CheckConfiguration:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 

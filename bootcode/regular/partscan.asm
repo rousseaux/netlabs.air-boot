@@ -31,29 +31,21 @@ PARTSCAN_ScanForPartitions      Proc Near
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PARTSCAN_ScanForPartitions:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'PARTSCAN_ScanForPartitions:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
         ; Reset X-Reference
         call    PARTSCAN_ResetXref
 
-        mov     dh, TotalHarddiscs
+        mov     dh, [TotalHarddiscs]
         xor     al, al
-        mov     NewPartitions, al
+        mov     [NewPartitions], al
 
         mov     byte ptr [CurIO_Scanning], 1             ; Set flag due scanning partitions
         mov     dl, 80h                       ; is first harddisc
@@ -85,16 +77,9 @@ ENDIF
 ;! Check stored Master LVM LBA address.
 ;!
 IFDEF   AUX_DEBUG
-        IF 1
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'[Master LVM Sector]',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        IF 0
+        DBG_TEXT_OUT_AUX    '[Master LVM Sector]'
+        PUSHRF
             xor     bh, bh
             mov     bl, dl
             and     bl, 7fh
@@ -103,8 +88,7 @@ IFDEF   AUX_DEBUG
             mov     al, [bx]
             mov     ah, dl
             call    DEBUG_DumpRegisters
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -200,20 +184,12 @@ PARTSCAN_UpdateDriveLetters     Proc
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PARTSCAN_UpdateDriveLetters:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'PARTSCAN_UpdateDriveLetters:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -289,20 +265,12 @@ PARTSCAN_ScanDriveForPartitions Proc Near
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PARTSCAN_ScanDriveForPartitions:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'PARTSCAN_ScanDriveForPartitions:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -339,20 +307,12 @@ PARTSCAN_ScanPartitionForExtended Proc Near  Uses si
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PARTSCAN_ScanPartitionForExtended:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'PARTSCAN_ScanPartitionForExtended:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -395,25 +355,17 @@ PARTSCAN_ScanPartition          Proc Near  Uses ax si
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PARTSCAN_ScanPartition:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'PARTSCAN_ScanPartition:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
 
-        mov     si, offset PartitionSector+446 ; DS:SI - 1st Partition-Entry
+        mov     si, offset [PartitionSector+446] ; DS:SI - 1st Partition-Entry
     PSSP_ScanLoop:
         mov     al, bptr [si+LocBRPT_SystemID]
         cmp     al, 5                      ; Is Partition EXTENDED ?
@@ -480,21 +432,13 @@ PARTSCAN_CheckThisPartition     Proc Near  Uses di si
         local   PartCRC:word, PartPtr:word
 
 IFDEF   AUX_DEBUG
-        IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PARTSCAN_CheckThisPartition:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
-            ;~ call    DEBUG_DumpRegisters
+        IF 1
+        DBG_TEXT_OUT_AUX    'PARTSCAN_CheckThisPartition:'
+        PUSHRF
+            call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -509,9 +453,12 @@ ENDIF
         mov     dl, bptr [CurPartition_Location+4] ; Drive
         mov     ax, wptr [si+LocBRPT_RelativeBegin] ; Absolute Sector
         mov     bx, wptr [si+LocBRPT_RelativeBegin+2]
+
+
+
+
         add     ax, wptr [CurPartition_Location+0] ; +Partition-Absolute
         adc     bx, wptr [CurPartition_Location+2] ;  sectors
-
 
 
         ; Sets up DS:SI - TmpSector
@@ -574,6 +521,18 @@ ENDIF
 
         mov     si, offset [LVMSector]
 
+IFDEF   AUX_DEBUG
+        IF 0
+        DBG_TEXT_OUT_AUX    'LVMSector'
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            call    AuxIO_DumpSector
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
+
         call    LVM_SearchForPartition     ; Search for DX:AX partition
 
         jnc     PCCTP_CheckBootRecord
@@ -604,6 +563,22 @@ ENDIF
         rep     movsw                      ; Copy LVM-PartitionName to Temp Space
         movsb                               ;  (11 bytes in total)
         pop   di
+
+
+
+IFDEF   AUX_DEBUG
+        IF 0
+        DBG_TEXT_OUT_AUX    'LVMSector-2'
+        PUSHRF
+            mov     si, di
+            call    AuxIO_Print
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpSector
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
 
 
         ; Check if this is an IBM-BM partition

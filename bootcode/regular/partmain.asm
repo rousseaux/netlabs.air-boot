@@ -516,20 +516,12 @@ PART_HidePartition              Proc Near   Uses ax bx cx dx si di
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PART_HidePartition:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'PART_HidePartition:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -587,20 +579,12 @@ PART_MarkFirstGoodPrimary       Proc Near   Uses ax si di
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PART_MarkFirstGoodPrimary:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'PART_MarkFirstGoodPrimary:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -986,20 +970,12 @@ PART_StartPartition             Proc Near   Uses ax dx es di
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PART_StartPartition:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'PART_StartPartition:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -1972,7 +1948,7 @@ ENDIF
 
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         pushf
         pusha
             call    AuxIO_TeletypeNL
@@ -2239,20 +2215,12 @@ PART_IsPrimaryPartition Proc Near  Uses bx cx dx si di ds es
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
-            push    si
-            mov     si, offset $+5
-            jmp     @F
-            db      10,'PART_IsPrimaryPartition:',10,0
-            @@:
-            call    AuxIO_Print
-            pop     si
+        DBG_TEXT_OUT_AUX    'PART_IsPrimaryPartition:'
+        PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
