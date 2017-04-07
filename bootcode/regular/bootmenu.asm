@@ -510,8 +510,8 @@ ENDIF
 BOOTMENU_BuildPartitionText     Proc Near   Uses ax cx dx si
    local PartPointer:word
 
-   call    PART_GetPartitionPointer      ; Gets pointer to partition (DL) -> SI
-   mov     PartPointer, si
+   call    PART_GetPartitionPointer     ; Gets pointer to partition (DL) -> SI
+   mov     [PartPointer], si            ; SI now points to the IPT-entry
 
    ; === Display Boot-Number ===
    mov     cl, Menu_AbsoluteX
@@ -544,7 +544,7 @@ ENDIF
 
    mov     cx, CLR_HD_INDEX
    call    VideoIO_Color                 ; Violet, blue
-   mov     si, PartPointer
+   mov     si, [PartPointer]
    mov     al, [si+LocIPT_Drive]
    sub     al, 7Fh                       ; Will only display numbers up to 99,
    call    VideoIO_PrintByteNumber       ;  so only showing harddrives...
@@ -576,9 +576,9 @@ ENDIF
       call    VideoIO_Color              ; Dark-Violet, Blue
       mov     al, '/'
       call    VideoIO_PrintSingleChar
-      mov     cx, CLR_HD_SIZE_BM
+      mov     cx, CLR_HD_SIZE
       call    VideoIO_Color              ; Violet, Blue
-      mov     ax, PartPointer            ; Get Size-Element from PartPtr (AX)
+      mov     ax, [PartPointer]            ; Get Size-Element from PartPtr (AX)
       call    PART_GetSizeElementPointer ; DS:SI -> Size-Element...
       mov     cl, 4
       call    VideoIO_FixedPrint         ; Display 4 chars from DS:SI
@@ -607,7 +607,7 @@ ENDIF
 
    mov     cx, CLR_LABEL
    call    VideoIO_Color                 ; Yellow, blue
-   mov     si, PartPointer
+   mov     si, [PartPointer]
    add     si, LocIPT_Name
    mov     cl, 11
    call    VideoIO_FixedPrint
@@ -619,7 +619,7 @@ ENDIF
    mov   ch,0
 
    call    VideoIO_Locate
-   mov     si, PartPointer
+   mov     si, [PartPointer]
    mov     al, [si+LocIPT_SystemID]
    call    PART_SearchFileSysName
 
@@ -730,6 +730,19 @@ DRIVELETTERS_ENABLE     EQU
         sub     dh,3dh
 
         call    LVM_GetDriveLetter
+IF 0
+                ; Print values at start of LVM-record
+                pushf
+                pusha
+                mov     si, offset [LVMSector]
+                lodsw
+                call    VideoIO_PrintHexWord
+                lodsw
+                call    VideoIO_PrintHexWord
+                popa
+                popf
+ENDIF
+        jnc     skip_show_dl
 
         test    al,al
         jnz     show_dl2
@@ -971,7 +984,7 @@ BOOTMENU_ResetMenuVars      Proc Near   Uses dx
         jz      BMRMV_TimedBootDefault
         mov     dl, Menu_EntryLast
     BMRMV_TimedBootDefault:
-        call    PART_GetPartitionPointer      ; Holt SI fÅr Partition DL
+        call    PART_GetPartitionPointer      ; Hold SI for Partition DL
         add     si, LocIPT_Name
         mov     cx, 11
         call    GetLenOfName

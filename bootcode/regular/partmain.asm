@@ -2266,7 +2266,7 @@ PART_IsPrimaryPartition Proc Near  Uses bx cx dx si di ds es
         add      dx,01beh+08h            ; Point DX to 1st partition address
 
     next_pe:
-        ; Computer pointer to PE
+        ; Compute pointer to PE
         mov      bx,dx          ; Point BX to 1st partition address
         mov      ax,cx          ; Get PE-index
         dec      ax             ; Index is zero based so adjust it
