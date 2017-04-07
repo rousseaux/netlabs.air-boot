@@ -2509,6 +2509,16 @@ OldSS                       dw      ?
 CurrentSP                   dw      ?
 CurrentSS                   dw      ?
                             ALIGN   16
+
+; Usually, commits are buildable and some minor checking has been done that
+; whole disks do not get wiped. However, there are situations where stuff is
+; in such a flux that it would be better to do non-buildable commits.
+; That makes it possible to record the changes piecemeal without the danger of
+; accidently using the resulting loader. Of course everyone is clever enough
+; to _never_ build commits marked as 'testing' and install the result in
+; environments where wiping all attached disks and sticks would be a problem...
+;~ force_build_error           dd      0f000h  dup(?)
+
 ;
 ; End of BSS segment.
 ;
