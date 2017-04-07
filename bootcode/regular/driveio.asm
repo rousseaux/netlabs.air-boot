@@ -696,6 +696,95 @@ ENDIF
 DriveIO_LoadSector      EndP
 
 
+;##############################################################################
+;# ACTION   : Loads the Master Boot Record from the specified drive into buffer
+;# ----------------------------------------------------------------------------
+;# EFFECTS  : Modifies DAP structure and fills or clears transfer buffer
+;# ----------------------------------------------------------------------------
+;# IN       : DL     - BIOS disk number (80h,81h,etc)
+;#          : SI     - Pointer to transfer buffer
+;# ----------------------------------------------------------------------------
+;# OUT      : CF=1   - failure
+;#          : AL.0   - MBR signature present
+;#          : AL.1   - Primary partitions present
+;#          : AL.2   - Extended partitions present
+;#          : AL.3   - AiR-BOOT signature present
+;#          : AL.4:7 - Reserved, returned as 0
+;#          : AH.0:7 - Reserved, returned as 0
+;##############################################################################
+DriveIO_LoadMBR     Proc Near uses bx cx dx si di
+
+        ; Always clear the transfer buffer first
+        call    ClearSectorBuffer
+
+        ; Assume an invalid MBR
+        xor     ax, ax
+
+        ; Accept only valid harddisks
+        call    DriveIO_IsValidHarddisk
+        jc      DriveIO_LoadMBR_exit
+
+        ; Save the address of the transfer buffer
+        mov     di, si
+
+        ; Read the MBR from disk
+        xor     ax, ax                  ; LBA low
+        xor     bx, bx                  ; LBA high
+        xor     dh, dh                  ; Head 0
+        mov     cx, 1                   ; Sector 1
+        call    DriveIO_LoadSector      ; Read the sector from disk
+
+        ; Check the loaded MBR for a signature
+        xor     ax, ax                  ; Assume an invalid MBR
+        mov     dx, [si+LocBR_Magic]    ; Get word from MBR signature location
+        cmp     dx, 0aa55h              ; Is it the magic value ?
+        jne     DriveIO_LoadMBR_exit    ; Nope, no need to test anything else
+
+        ; Indicate we have a MBR signature
+        or      al, 01h
+
+        ; Advance to the partition table
+        add     si, 01beh
+
+        ; Total of 4 entries to check
+        mov     cx, 4
+
+    DriveIO_LoadMBR_next_entry:
+        mov     dl, [si+LocBRPT_SystemID]   ; Get partition-type / system-id
+        add     si, 10h                     ; Point to next entry
+        test    dl, dl                      ; Nothing in this one ?
+        loopz   DriveIO_LoadMBR_next_entry  ; Then check next entry
+
+        ; All entries checked and last one was also empty, we're done
+        jz      DriveIO_LoadMBR_check_ab
+
+        ; Found a non-empty entry, set bits according to its type
+        cmp     dl, 05h                     ; Old style extended container ?
+        jne     @F                          ; Nope...
+        or      al, 04h                     ; Yep, mark ext. container present
+    @@: cmp     dl, 0fh                     ; New style extended container ?
+        jne     @F                          ; Nope...
+        or      al, 04h                     ; Yep, mark ext. container present
+    @@: or      al, 02h                     ; Then is must be a primary
+        jcxz    DriveIO_LoadMBR_check_ab    ; CX=0? Then all entries processed,
+        jmp     DriveIO_LoadMBR_next_entry  ; otherwise check next entry
+
+        ; Check if an AiR-BOOT signature is present
+    DriveIO_LoadMBR_check_ab:
+        mov     si, offset [MBR_ABSig]      ; Offset of AiR-BOOT signature
+        inc     di                          ; Advance buffer pointer
+        inc     di                          ; to AiR-BOOT signature location
+        mov     cx, 7                       ; Length of AiR-BOOT signature
+        cld                                 ; Direction upwards
+        repe    cmpsb                       ; Compare 7 bytes
+        jne     DriveIO_LoadMBR_exit        ; Nope, no AiR-BOOT on this disk
+        or      al, 08h                     ; Yep, AiR-BOOT is on this disk
+        ;~ jmp     DriveIO_LoadMBR_exit
+
+    DriveIO_LoadMBR_exit:
+        ret
+DriveIO_LoadMBR     EndP
+
 
 ;##############################################################################
 ;# ACTION   : Reads a sector from disk using INT13 extensions
