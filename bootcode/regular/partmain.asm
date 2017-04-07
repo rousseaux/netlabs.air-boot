@@ -979,7 +979,7 @@ PART_StartPartition             Proc Near   Uses ax dx es di
     local BPBdl:byte                ; BPB boot-drive-letter. (at 25h)
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'PART_StartPartition:'
         PUSHRF
             call    DEBUG_DumpRegisters

@@ -110,7 +110,7 @@ IFDEF   AUX_DEBUG
         IF 0
         DBG_TEXT_OUT_AUX    'DriveIO_SaveConfiguration:'
         PUSHRF
-            ;~ call    DEBUG_DumpRegisters
+            call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
         POPRF
@@ -226,7 +226,7 @@ DriveIO_GetHardDriveCount   Proc Near   Uses ds si
         push    0040h
         pop     ds
         mov     si, 0075h
-        mov     dh, ds:[si]                ; 40:75 -> POST: Total Harddiscs == DL
+        mov     dh, ds:[si]                ; 40:75 -> POST: Total Harddiscs == DH
         pop     si
         pop     ds
         mov     [TotalHarddiscs], dh
@@ -296,7 +296,7 @@ ENDIF
         mov     wptr cs:[CurPartition_Location+2], bx
         mov     wptr cs:[CurPartition_Location+4], dx
         mov     wptr cs:[CurPartition_Location+6], cx ; Saves the location
-        mov     si, offset PartitionSector    ; DS:SI - ExecBase
+        mov     si, offset [PartitionSector]    ; DS:SI - ExecBase
 
 
 ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -334,7 +334,7 @@ IFDEF   AUX_DEBUG
         IF 0
         DBG_TEXT_OUT_AUX    'DriveIO_SavePartition:'
         PUSHRF
-            ;~ call    DEBUG_DumpRegisters
+            call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
         POPRF
@@ -455,7 +455,7 @@ DriveIO_LoadLVMSector   EndP
 DriveIO_LoadLVMSectorXBR    Proc    Near
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'DriveIO_LoadLVMSectorXBR:'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -491,7 +491,7 @@ ENDIF
         call    DriveIO_ReadSectorLBA           ; Read the LVM sector
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'LVMSecLoaded'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -615,7 +615,7 @@ DriveIO_SaveLVMSector   EndP
 DriveIO_SaveLVMSectorXBR    Proc    Near
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'DriveIO_SaveLVMSectorXBR:'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -657,7 +657,7 @@ ENDIF
         call    DriveIO_WriteSectorLBA          ; Read the LVM sector
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'LVMSecSaved'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -1107,7 +1107,7 @@ DriveIO_WriteSectorLBA      EndP
 DriveIO_LocateMasterLVMSector   Proc    Near    uses cx dx si di ds es
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'DriveIO_LocateMasterLVMSector:'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -1337,7 +1337,7 @@ IFDEF   AUX_DEBUG
         IF 0
         DBG_TEXT_OUT_AUX    'DriveIO_SaveSector:'
         PUSHRF
-            ;~ call    DEBUG_DumpRegisters
+            call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
         POPRF
@@ -1605,7 +1605,7 @@ DriveIO_LoadMasterLVMSector     Endp
 DriveIO_GatherDiskInfo  Proc Near
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'DriveIO_GatherDiskInfo:'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -1810,7 +1810,7 @@ ENDIF
 
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    '[DISKINFO]'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -1860,7 +1860,7 @@ DriveIO_GatherDiskInfo  EndP
 DriveIO_ScanDisks   Proc    Near
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'DriveIO_ScanDisks:'
         PUSHRF
             call    DEBUG_DumpRegisters

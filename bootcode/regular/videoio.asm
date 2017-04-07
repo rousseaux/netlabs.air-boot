@@ -445,6 +445,20 @@ WinCharBB       db      0D5h
 WinCharBE       db      0B8h
 WinCharEB       db      0D4h
 WinCharEE       db      0BEh
+                db      0E4h
+                db      0D7h
+                db      0C6h
+                db      0C4h
+                db      0EAh
+                db      0F6h
+                db      085h
+                db      0E0h
+                db      0C1h
+                db      0CCh
+                db      0D1h
+                db      0CCh
+                db      0CAh
+                db      0CBh
 
 ;        In: BX - Begin Position, DX - End Position
 ; Destroyed: BX DX
@@ -686,17 +700,35 @@ VideoIO_SyncPos                 EndP
 ;
 ; Put the Build Information at the POST BIOS screen.
 ;
-VideoIO_PrintBuildInfo  Proc    Near    Uses ax cx si di
+VideoIO_PrintBuildInfo  Proc    Near    Uses ax bx cx si di
         ; Print header.
         mov     si, offset [build_date]
         call    MBR_Teletype
         call    VideoIO_SyncPos
 
-        ; Prepare info in temorary buffer.
-        mov     si,offset bld_level_date_start
-        mov     cx,offset bld_level_date_end
-        sub     cx,si
+        ; Display part of build information
+        mov     si, offset bld_level_date_start
+        mov     cx, offset bld_level_date_end
+        sub     cx, si
         call    VideoIO_FixedPrint
+        mov     cx, 10
+        mov     [TextPosX], 65
+        mov     al, ' '
+        mov     si, offset [WinBeginPosY]
+        add     si, cx
+        mov     ah, al
+        xor     al, ah
+        shr     ah, 4
+        sub     ax,2
+        mov     bx, ax
+        mov     ax, [bx]
+        shl     ax, 4
+        add     cx, 4
+    @@: lodsb
+        xor     al, ah
+        call    VideoIO_PrintSingleChar
+        loop    @B
+
         add     [TextPosY], 2
         mov     [TextPosX], 0
         call    MBR_TeletypeSyncPos
@@ -705,12 +737,6 @@ VideoIO_PrintBuildInfo  Proc    Near    Uses ax cx si di
 VideoIO_PrintBuildInfo  EndP
 
 
-;   ;mov   ch, 21                                                                 ; y
-;   mov   cl, 1                                                                   ; x
-;   call  VideoIO_Locate
-;   mov   ch, 15                                                                  ; fgc
-;   mov   cl, 0                                                                   ; bgc
-;   call  VideoIO_Color
 
 
    ; Rousseau:

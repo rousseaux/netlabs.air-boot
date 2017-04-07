@@ -410,12 +410,8 @@ ENDIF
         mov     ax, wptr [si+LocBRPT_RelativeBegin] ; Absolute Sector
         mov     bx, wptr [si+LocBRPT_RelativeBegin+2]
 
-
-
-
         add     ax, wptr [CurPartition_Location+0] ; +Partition-Absolute
         adc     bx, wptr [CurPartition_Location+2] ;  sectors
-
 
         ; Load the partition sector
         mov     si, offset [TmpSector]
@@ -519,11 +515,9 @@ ENDIF
         movsb                               ;  (11 bytes in total)
         pop   di
 
-
-
 IFDEF   AUX_DEBUG
         IF 0
-        DBG_TEXT_OUT_AUX    'LVMSector-2'
+        DBG_TEXT_OUT_AUX    'Name'
         PUSHRF
             mov     si, di
             call    AuxIO_Print
@@ -534,7 +528,6 @@ IFDEF   AUX_DEBUG
         POPRF
         ENDIF
 ENDIF
-
 
         ; Check if this is an IBM-BM partition
         cmp   PartSystemID, 0ah

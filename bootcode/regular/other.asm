@@ -89,7 +89,7 @@ GetLenOfStrings     EndP
 PRECRAP_Main    Proc Near
 
 IFDEF   AUX_DEBUG
-        IF 1
+        IF 0
         DBG_TEXT_OUT_AUX    'PRECRAP_Main:'
         PUSHRF
             ;~ call    DEBUG_DumpRegisters

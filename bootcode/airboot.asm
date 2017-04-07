@@ -1120,22 +1120,6 @@ IFDEF   AUX_DEBUG
 ENDIF
 
 
-;!
-;! DEBUG_BLOCK
-;! Dump the registers at this point.
-;!
-IFDEF   AUX_DEBUG
-        IF 0
-        pushf
-        pusha
-            ;~ call    DEBUG_DumpRegisters
-            ;~ call    DEBUG_DumpDriveLetters
-            ;~ call    DEBUG_DumpVolumeLetters
-            ;~ call    DEBUG_DumpPartitionXref
-        popa
-        popf
-        ENDIF
-ENDIF
 
 ; -----------------------------------------------------------------------------
 ;                                                                   UPDATE MBR
@@ -1157,15 +1141,47 @@ ENDIF
         ;! was loaded from a disk where the MBR cannot be written !
         ;!
 
+
+
 ; -----------------------------------------------------------------------------
 ;                                                                   SCAN DISKS
 ; -----------------------------------------------------------------------------
+
+;!
+;! DEBUG_BLOCK
+;! Dump the registers at this point.
+;!
+IFDEF   AUX_DEBUG
+        IF 0
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            ;~ call    DEBUG_DumpDriveLetters
+            ;~ call    DEBUG_DumpVolumeLetters
+            ;~ call    DEBUG_DumpPartitionXref
+        POPRF
+        ENDIF
+ENDIF
+
 
                 ;
                 ; Scan disks for information like size etc.
                 ;
                 call    DriveIO_ScanDisks
 
+;!
+;! DEBUG_BLOCK
+;! Dump the registers at this point.
+;!
+IFDEF   AUX_DEBUG
+        IF 0
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            ;~ call    DEBUG_DumpDriveLetters
+            ;~ call    DEBUG_DumpVolumeLetters
+            ;~ call    DEBUG_DumpPartitionXref
+        POPRF
+        ENDIF
+ENDIF
 
 
 ; -----------------------------------------------------------------------------
@@ -1181,16 +1197,13 @@ ENDIF
                 ; Internal Partition Table is now populated.
                 ;
 
-
 ;!
 ;! DEBUG_BLOCK
 ;! Dump various tables.
-;! Uncomment below to activate.
 ;!
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
+        PUSHRF
             ;~ call    DEBUG_DumpIPT
             ;~ call    DEBUG_DumpPartitionPointers
             ;~ call    DEBUG_DumpNewPartTable
@@ -1198,8 +1211,7 @@ IFDEF   AUX_DEBUG
             ;~ call    DEBUG_DumpDriveLetters
             ;~ call    DEBUG_DumpVolumeLetters
             ;~ call    DEBUG_DumpPartitionXref
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -1224,8 +1236,7 @@ ENDIF
 ;!
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
+        PUSHRF
             ;~ call    DEBUG_DumpIPT
             ;~ call    DEBUG_DumpPartitionPointers
             ;~ call    DEBUG_DumpNewPartTable
@@ -1233,8 +1244,7 @@ IFDEF   AUX_DEBUG
             ;~ call    DEBUG_DumpDriveLetters
             ;~ call    DEBUG_DumpVolumeLetters
             ;~ call    DEBUG_DumpPartitionXref
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -1276,7 +1286,7 @@ ENDIF
 
 
 ; -----------------------------------------------------------------------------
-;                                                     eComStation PHASE1 CHECK
+;                                                            OS/2 PHASE1 CHECK
 ; -----------------------------------------------------------------------------
 
                 ;
@@ -1311,15 +1321,13 @@ ENDIF
 ;!
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
+        PUSHRF
             ;~ call    DEBUG_DumpIPT
             ;~ call    DEBUG_DumpPartitionPointers
             ;~ call    DEBUG_DumpPartitionXref
             ;~ call    DEBUG_DumpNewPartTable
             ;~ call    DEBUG_DumpDriveLetters
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -1340,15 +1348,13 @@ ENDIF
 ;!
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
+        PUSHRF
             ;~ call    DEBUG_DumpIPT
             ;~ call    DEBUG_DumpPartitionPointers
             ;~ call    DEBUG_DumpPartitionXref
             ;~ call    DEBUG_DumpNewPartTable
             ;~ call    DEBUG_DumpDriveLetters
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
@@ -1387,6 +1393,7 @@ ENDIF
                 call    MBR_TeletypeNL
                 mov     si, offset ShowMenu
                 call    MBR_TeletypeBold
+
 
 
                 ;
@@ -1514,6 +1521,17 @@ ENDIF
                 call    FX_StartScreen
             ENDIF
 
+IFDEF   AUX_DEBUG
+        IF 0
+        DBG_TEXT_OUT_AUX    'HALTING'
+        PUSHRF
+            ;~ call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        @@: jmp     @B
+        POPRF
+        ENDIF
+ENDIF
                 ; BOOKMARK: Display bye-screen and start selected partition
                 call    BOOTMENU_BuildGoodBye
 
@@ -1547,14 +1565,12 @@ ENDIF
 
 IFDEF   AUX_DEBUG
         IF 0
-        pushf
-        pusha
+        PUSHRF
             ;~ call    DEBUG_DumpIPT
             ;~ call    DEBUG_DumpPartitionPointers
             ;~ call    DEBUG_DumpPartitionXref
             ;~ call    DEBUG_DumpNewPartTable
-        popa
-        popf
+        POPRF
         ENDIF
 ENDIF
 
