@@ -65,7 +65,7 @@ ENDIF
         ; Put the LBA address in the BSS location for this disk
         xor     bh, bh                          ; Zero upper part of index
         mov     bl, dl                          ; Get BIOS drive-number
-        and     bl, 7fh                         ; Strip bit 7
+        sub     bl, 80h                         ; Now 0-based index
         shl     bx, 3                           ; Mult by 4 for DWORD
         add     bx, offset [LVM_MasterSecs]     ; Add the base offset
         mov     [bx+00h], ax                    ; Store LBA low
@@ -82,7 +82,7 @@ IFDEF   AUX_DEBUG
         PUSHRF
             xor     bh, bh
             mov     bl, dl
-            and     bl, 7fh
+            sub     bl, 80h
             shl     bx, 3
             add     bx, offset [LVM_MasterSecs]
             mov     al, [bx]
