@@ -41,13 +41,13 @@ FAT16_InitAccess                Proc Near  Uses eax bx edx
    mov    FAT16_Drive, al
    mov    edx, dptr ds:[si+LocIPT_AbsoluteBegin]
    mov    FAT16_AbsPartitionBegin, edx
-   mov    DriveIO_DAP_Absolute, edx      ; Read in Boot-Record of partition
-   mov    DriveIO_DAP_NumBlocks, 1       ; 1 Sector to load
+   mov    INT13X_DAP_Absolute, edx       ; Read in Boot-Record of partition
+   mov    INT13X_DAP_NumBlocks, 1        ; 1 Sector to load
    mov    FAT16_FATCacheSector, 255      ; Sector 255 - So nothing cached
    mov    ax, ds
    shl    eax, 16
    mov    ax, offset FAT16_FATCache
-   mov    DriveIO_DAP_Transfer, eax      ; Transfer to FAT-Cache Area
+   mov    INT13X_DAP_Transfer, eax       ; Transfer to FAT-Cache Area
    call   FAT16_LoadSectors
    mov    al, bptr [FAT16_FATCache+13]
    mov    FAT16_SecsPerCluster, al
@@ -78,12 +78,12 @@ FAT16_InitAccess                EndP
 FAT16_ReadRoot                  Proc Near  Uses eax
    mov    ax, 9000h
    shl    eax, 16                        ; 9000:0 -> Space for Root
-   mov    DriveIO_DAP_Transfer, eax      ; Transfer to that segment
+   mov    INT13X_DAP_Transfer, eax       ; Transfer to that segment
    mov    eax, FAT16_AbsRootBegin
-   mov    DriveIO_DAP_Absolute, eax      ; Read in Root-Entries...
+   mov    INT13X_DAP_Absolute, eax       ; Read in Root-Entries...
    mov    ax, FAT16_NumOfRootEntries
    shr    ax, 4                          ; NumOfRootEntries/16
-   mov    DriveIO_DAP_NumBlocks, ax      ;  -> Sectors of Root-Entries
+   mov    INT13X_DAP_NumBlocks, ax       ;  -> Sectors of Root-Entries
    call   FAT16_LoadSectors              ; DONE.
    ret
 FAT16_ReadRoot                  EndP
@@ -133,7 +133,7 @@ FAT16_ReadCluster               Proc Near  Uses eax bx
       mov    ax, es
       shl    eax, 16
       mov    ax, di
-      mov    DriveIO_DAP_Transfer, eax   ; Read to 9000:DI
+      mov    INT13X_DAP_Transfer, eax    ; Read to 9000:DI
       mov    ax, dx
       sub    ax, 2                       ; Everything starts at Cluster 2
       ;movzx  bx, FAT16_SecsPerCluster
@@ -144,8 +144,8 @@ FAT16_ReadCluster               Proc Near  Uses eax bx
       shl    edx, 16
       mov    dx, ax                      ; EDX - Relative to Cluster-Start
       add    edx, FAT16_AbsClusterBegin  ; EDX - Absolute Sector Count
-      mov    DriveIO_DAP_Absolute, edx
-      mov    DriveIO_DAP_NumBlocks, bx   ; Get a whole cluster
+      mov    INT13X_DAP_Absolute, edx
+      mov    INT13X_DAP_NumBlocks, bx    ; Get a whole cluster
       call   FAT16_LoadSectors           ; DONE.
    pop    dx
    ; Update DI to next position...
@@ -166,12 +166,12 @@ FAT16_ReadCluster               Proc Near  Uses eax bx
    mov    ax, cs
    shl    eax, 16
    mov    ax, offset FAT16_FATCache
-   mov    DriveIO_DAP_Transfer, eax      ; Transfer to FAT-Cache Area
+   mov    INT13X_DAP_Transfer, eax       ; Transfer to FAT-Cache Area
    movzx  edx, dx
    mov    eax, FAT16_AbsFATBegin
    add    eax, edx
-   mov    DriveIO_DAP_Absolute, eax      ; Read in Boot-Record of partition
-   mov    DriveIO_DAP_NumBlocks, 1       ; 1 Sector to load
+   mov    INT13X_DAP_Absolute, eax       ; Read in Boot-Record of partition
+   mov    INT13X_DAP_NumBlocks, 1        ; 1 Sector to load
    call   FAT16_LoadSectors              ; DONE.
   FAT16RC_GotFATsectorAlready:
    mov    dx, wptr cs:[FAT16_FATCache+bx] ; Get Next-Cluster Pointer
@@ -183,7 +183,7 @@ FAT16_ReadCluster               EndP
 FAT16_LoadSectors               Proc Near  Uses eax dx ds si
    push   cs
    pop    ds
-   mov    si, offset DriveIO_DAP
+   mov    si, offset INT13X_DAP
    mov    dl, ds:[FAT16_Drive]
    mov    ah, 42h                        ; Extended Read
    int    13h
@@ -191,8 +191,8 @@ FAT16_LoadSectors               Proc Near  Uses eax dx ds si
    call   MBR_LoadError
 
   FAT16LS_Success:
-   movzx  eax, wptr ds:[DriveIO_DAP_NumBlocks]
-   add    dptr ds:[DriveIO_DAP_Absolute+0], eax ; Adjust Absolute Offset
+   movzx  eax, wptr ds:[INT13X_DAP_NumBlocks]
+   add    dptr ds:[INT13X_DAP_Absolute+0], eax  ; Adjust Absolute Offset
    ret
 FAT16_LoadSectors               EndP
 
