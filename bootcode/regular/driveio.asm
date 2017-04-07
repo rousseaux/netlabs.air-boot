@@ -1452,104 +1452,29 @@ DriveIO_LoadMasterLVMSector     Endp
 
 
 
-
-; ---------------------------------------------------
-; Rousseau ## Large drives, (OS/2) geometry and LBA ##
-; ---------------------------------------------------
-; A sector size of 512 bytes is assumed in the below calculations.
-; Note that this scheme changes when the sector size will be 4096 or larger,
-; like with modern drives that do not translate to 512 bytes per sector anymore.
-; These drives will have a capacity above the 2TiB LBA32 boundary.
-; For now, we assume drives <=2TiB with a sector size of 512 bytes.
-
-; There are a few boundaries that are of importance.
-; Note that these are disk-boundaries and not partition boundaries.
-; Even with a small partition, like <502GiB, OS/2 will use extended geometry on
-; an empty huge disk.
-; These boundaries are (from high to low):
-
-; (code 5)
-; 2^32 = 4294967296 = 100000000 sectors = 2048 GiB
-;   This is the LBA32 2TiB boundary.
-;   Everything above it must be addressed using LBA48.
-;   OS/2 can currently not address this space above.
-
-; (code4)
-; 65536*255*255 = 4261478400 = FE010000 sectors ~ 2032 GiB
-;   This is the max OS/2 boundary using 255/255 extended geometry.
-;   OS/2 can currently not address this space above.
-
-; (code 3)
-; 2^31 = 2147483648 = 80000000 sectors = 1024 GiB
-;   This is the LBA32 1TiB boundary.
-;   OS/2 can address this space and will use 255/255 extended geometry.
-
-; (code 2)
-; 65536*255*127 = 2122383360 = 7E810000 sectors ~ 1012 GiB
-;   This is the DANI 1TiB boundary.
-;   OS/2 can address this space and will use 255/255 extended geometry.
-;   Below this DANI will use 255/127 extended geometry.
-;   This matters on where the LVM-sectors are located !
-
-; (code 1)
-; 65536*255*63  = 1052835840 = 3EC10000 sectors ~ 502 GiB
-;   This is the current OS/2 limit using this geometry because OS/2 can
-;   currently not address more than 65536 cylinders.
-;   DANI will address space above with 255/127 extended geometry up until
-;   the DANI 1TiB boundary (code 2)
-
-; (code 0)
-; Everything below 65536*255*63 will be addressed using standard geometry.
-
-
-;
-; This function will return the following values:
-;
-
-; 5 = This drive is above the 2^32 LBA32 (2TB) boundary and has more
-;     than 4294967296 sectors.
-;     LBA48 addressing is needed to access the complete capacity of the drive.
-;     OS/2 is currently unable to do so.
-
-; 4 = This drive is above the 65536*255*255 (4261478400) boundary but below 2^32.
-;     This is an OS/2 boundary and OS/2 is not able to access the drive above
-;     this boundary.
-
-; 3 = This drive is above the 2^31 (1TB) boundary and has more than
-;     2147483648 sectors.
-;     OS/2 is able to access the drive using it's extended geometry.
-;     Both DANIS506 and IBM1S506 will use the 255/255 scheme.
-
-; 2 = This drive is above the 65536*255*127 (2122383360) boundary but below 2^31.
-;     OS/2 is able to access the drive using it's extended geometry.
-;     Both DANIS506 and IBM1S506 will use the 255/255 scheme.
-
-; 1 = This drive is above the 65536*255*63 (1052835840) boundary but
-;     below 65536*255*127.
-;     OS/2 is able to access the drive using it's extended geometry.
-;     Note that DANIS506 will use 255/127 and IBM1S506 will use 255/255 geometry !
-;     Using DANI or IBM influences the location of the LVM info-sectors !
-
-; 0 = This drive is below the 65536*255*63 (1052835840) boundary.
-;     OS/2 is able to access this drive using the standard 255/63 geometry.
-
-; So, any return value >0 means OS/2 extended geometry will be used.
-; Value 1 will use 255/127 with DANIS506 but 255/255 with IBM1S506.
-; Values 2 and 3 will use 255/255 on both drivers.
-; You can or with 0x01 and check for 3 in this case.
-; Any value above 3 will be a drive who's capacity cannot be fully used by OS/2
-; The upper limit of 65536*255*255 will be in effect here.
-
-; Note this function currently handles the boot-drive only !
-; It should be extended and use dl for the drive-number as a parameter.
-; Because we use this function to get this info in a number of places,
-; all regs and flags except AX are saved and restored.
-
-; DL contains BIOS disk-number; 80h for first, 81h for second, etc.
+;##############################################################################
+;# There is much information to know about the connected disks.
+;# We also want this information clustered per disk and available before
+;# further disk and partition scanning takes place.
+;# This function gathers such information like INT13, INT13X, MBR, LVM, more.
+;# Especially important is the LVM information, because that contains the
+;# geometry OS/2 uses to access the disk. Other important information is the
+;# presence of valid MBRs, logical partitions and whatnot.
+;# This function gathers such information and stores it in a DISKINFO structure
+;# for which an instance exists for every disk found.
+;##############################################################################
+;# ACTION   : Gather disk information and store this in the BSS
+;# ----------------------------------------------------------------------------
+;# EFFECTS  : Modifies DAP structure and the buffers it uses, fills DISKINFO[n]
+;# ----------------------------------------------------------------------------
+;# IN       : DL     - BIOS disk number (80h,81h,etc)
+;# ----------------------------------------------------------------------------
+;# OUT      : CF=1   - failure
+;##############################################################################
 DriveIO_GatherDiskInfo  Proc Near
 
 IFDEF   AUX_DEBUG
-        IF 0
+        IF 1
         DBG_TEXT_OUT_AUX    'DriveIO_GatherDiskInfo:'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -1559,170 +1484,237 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
-        pushf
-        push    bx
-        push    cx
-        push    dx
-        push    si
-        push    di
+        ; Push all registers we use
+        pusha
+        push    ds
         push    es
 
-        ; Set ES to CS for buffer clearing
-        push    cs
+        ; Make sure ES=DS
+        push    ds
         pop     es
 
-        ; Clear the buffer
-        ; Also setup the buffer size.
-        ; Old Phoenix BIOSses require word (flags) at 02 to be zero,
-        ; so we clear the whole buffer to be sure.
-        mov     cx, i13xbuf_size        ; Dynamically calculated by assembler.
-        mov     di, offset [i13xbuf]    ; Points to size field.
-        mov     [di],cx                 ; Setup buffer-size.
-        inc     di
-        inc     di                      ; Now pointing at actual buffer.
-        xor     ah,ah                   ; Fill value.
-        cld                             ; Direction up.
-        rep stosb                       ; Clear buffer.
+        ; Check if BIOS disk number is valid
+        call    DriveIO_IsValidHarddisk
+        jc      DriveIO_GatherDiskInfo_error
 
-        ; Get the drive parameters
-        mov     ah, 48h                 ; Get Drive Parameters (extended version)
-        ;mov     dl, 80h                ; Drive number
-        mov     si, offset [i13xbuf]    ; Buffer for result-info
-        push    dx
-        int     13h                     ; Call the BIOS-function
-        pop     dx
+        ; Calculate the entry in the DISKINFO array for this disk
+        call    DriveIO_CalcDiskInfoPointer
 
-        ; Do some error-checking
-        or      ah,ah                       ; AH is zero if no error (ZF=1 if no error)
-        mov     ax,0                        ; Setup code for non-huge drive (does not influence ZF)
-        jz      DriveIO_GatherDiskInfo_ok   ; Return if error (AL<>0 thus ZF=0) but CY not set, assuming non-huge drive
-        jnc     DriveIO_GatherDiskInfo_ok   ; Return if error (CY=1), assuming non-huge drive
+        ; Save the entry for later recalls
+        mov     bp, bx
+
+        ; Store the BIOS disk number in the structure
+        mov     [bx+LocDISKINFO_DiskNum], dl
+
+; ------------------------------------------------------------------- [ INT13 ]
+
+        ; Get BIOS Disk Parameters (legacy method)
+        mov     ah, 08h                         ; Get Disk Parameters
+        int     13h                             ; Call BIOS
+
+        ; CF=1 or AH!=0 indicates error
+        jc      DriveIO_GatherDiskInfo_error
+        test    ah, ah
+        jnz     DriveIO_GatherDiskInfo_error
+
+        ; Recall DISKINFO entry
+        mov     bx, bp
+
+        ; Store SPT (WORD)
+        xor     ah, ah                          ; Zero extend SPT to 16 bits
+        mov     al, cl                          ; Hi 2 bits max cyl and max sec
+        and     al, 3fh                         ; Mask max sec (1-based)
+        mov     [bx+LocDISKINFO_I13_Secs], ax   ; Store SPT
+
+        ; Store HEADS (WORD)
+        xor     dl, dl                          ; Zero extend HEADS to 16 bits
+        xchg    dl, dh                          ; Get max head (0-based)
+        inc     dx                              ; Head count
+        mov     [bx+LocDISKINFO_I13_Heads], dx  ; Store HEADS
+
+        ; Store CYLS (WORD)
+        shr     cl, 6                           ; Hi 2 bits of max cyl to 1:0
+        xchg    cl, ch                          ; Max cyl (0-based)
+        inc     cx                              ; Cyl count
+        mov     [bx+LocDISKINFO_I13_Cyls], cx   ; Store CYLS
+
+        ; Recall BIOS disk number
+        mov     dl, [bx+LocDISKINFO_DiskNum]
+
+; ------------------------------------------------------------------ [ INT13X ]
+
+        ; Get BIOS Disk Parameters (extended method)
+        mov     si, offset [Scratch]            ; Buffer to return disk info
+        mov     ax, 80h                         ; Size of buffer
+        mov     [si], ax                        ; Store it in first word
+        mov     ah, 48h                         ; Get Extended Disk Parameters
+        int     13h                             ; Call BIOS
+
+        ; CF=1 or AH!=0 indicates error
+        jc      DriveIO_GatherDiskInfo_error
+        test    ah, ah
+        jnz     DriveIO_GatherDiskInfo_error
+
+        ; Store flags (WORD)
+        cld                                         ; Direction up
+        lodsw                                       ; Buffersize, discard
+        lodsw                                       ; Flags (CHS valid etc)
+        mov     [bx+LocDISKINFO_I13X_Flags], ax     ; Store them
+
+        ; Store CYLS (DWORD)
+        lodsw                                       ; Cyl count low
+        mov     [bx+LocDISKINFO_I13X_Cyls+00h], ax  ; Store CYLS low
+        lodsw                                       ; Cyl count high
+        mov     [bx+LocDISKINFO_I13X_Cyls+02h], ax  ; Store CYLS high
+
+        ; Store HEADS (DWORD)
+        lodsw                                       ; Head count low
+        mov     [bx+LocDISKINFO_I13X_Heads+00h], ax ; Store HEADS low
+        lodsw                                       ; Head count high
+        mov     [bx+LocDISKINFO_I13X_Heads+02h], ax ; Store HEADS high
+
+        ; Store SPT (DWORD)
+        lodsw                                       ; Secs per track low
+        mov     [bx+LocDISKINFO_I13X_Secs+00h], ax  ; Store SPT low
+        lodsw                                       ; Secs per track high
+        mov     [bx+LocDISKINFO_I13X_Secs+02h], ax  ; Store SPT high
+
+        ; Store total LBA sectors (QWORD)
+        lea     di, [bx+LocDISKINFO_I13X_SecsLBA]
+        mov     cx, 4
+        rep     movsw
+
+        ; Store sector size (WORD)
+        lodsw
+        mov     [bx+LocDISKINFO_I13X_SecSize], ax
+
+        ; Store bus name (4 bytes, space padded, v3.0+)
+        lea     si, [Scratch+24h]
+        lea     di, [bx+LocDISKINFO_I13X_HostBus]
+        movsw
+        movsw
+
+        ; Store interface name (8 bytes, space padded, v3.0+)
+        lea     di, [bx+LocDISKINFO_I13X_Interface]
+        mov     cx, 4
+        rep     movsw
+
+        ; Should gather some more INT13X info here,
+        ; like maybe Advanced Format stuff or so.
+        ; We'll investigate that at a later time.
+
+; --------------------------------------------------------------------- [ MBR ]
+
+        ; Load the MBR
+        mov     si, offset [TmpSector]
+        call    DriveIO_LoadMBR
+
+        ; Store MBR flags (valid sig, partitions present, airboot installed)
+        mov     [bx+LocDISKINFO_MbrFlags], al
+
+        ; Recall BIOS disk number
+        mov     dl, [bx+LocDISKINFO_DiskNum]
+
+; --------------------------------------------------------------------- [ LVM ]
+
+        ; Locate the Master LVM sector, if any
+        call    DriveIO_LocateMasterLVMSector
+
+        ; Save Master LVM sector LBA high
+        mov     cx, bx
+
+        ; Recall DISKINFO entry
+        mov     bx, bp
+
+        ; Store Master LVM sector LBA
+        mov     [bx+LocDISKINFO_LVM_MasterLBA+00h], ax
+        mov     [bx+LocDISKINFO_LVM_MasterLBA+02h], cx
+
+        ; No Master LVM sector found, so skip storing LVM info for this disk
+        jnc     DriveIO_GatherDiskInfo_no_master_lvm
+
+        ; Load the Master LVM sector into [LVMSector]
+        call    DriveIO_LoadMasterLVMSector
+
+        ; No valid Master LVM sector, so skip storing LVM info for this disk
+        jc      DriveIO_GatherDiskInfo_no_master_lvm
+
+        ; A valid Master LVM sector has been loaded into [LVMSector]
+        mov     si, offset [LVMSector]
+
+        ; Get the number of sectors per track (OS/2 geometry)
+        mov     ax, [si+LocLVM_Secs+00h]
+        mov     cx, [si+LocLVM_Secs+02h]
+
+        ; Store it
+        mov     [bx+LocDISKINFO_LVM_Secs+00h], ax
+        mov     [bx+LocDISKINFO_LVM_Secs+02h], cx
+
+        ; Get the number of heads (OS/2 geometry)
+        mov     ax, [si+LocLVM_Heads+00h]
+        mov     cx, [si+LocLVM_Heads+02h]
+
+        ; Store it
+        mov     [bx+LocDISKINFO_LVM_Heads+00h], ax
+        mov     [bx+LocDISKINFO_LVM_Heads+02h], cx
+
+        ; Should gather some more LVM info here,
+        ; like OS/2 extended geometry and other flags.
+        ; We'll implement that at a later time.
+
+    DriveIO_GatherDiskInfo_no_master_lvm:
+
+        ; When no Master LVM sector was found,
+        ; the LVM info in the DISKINFO structure for the disk
+        ; will be ZERO because the area was cleared in PRECRAP.
+
+        ; Indicate success
+        clc
+
         jmp     DriveIO_GatherDiskInfo_ret
 
-
-    DriveIO_GatherDiskInfo_ok:
-
-        ;
-        ; Store the drive geometry
-        ;
-
-        mov      si, offset i13xbuf
-
-        xor      dh,dh
-        and      dl,01111111b
-        shl      dx,1
-        shl      dx,1
-
-        ; Store number of cylinders on disk
-        mov      bx, offset BIOS_Cyls
-        add      bx,dx
-        mov      ax,[si+04h]
-
-        mov      word ptr [bx+00],ax
-        mov      ax,[si+06]
-        mov      word ptr [bx+02],ax
-
-        ; Store number of heads per cylinder
-        mov      bx, offset BIOS_Heads
-        add      bx,dx
-        mov      ax,[si+08h]
-        mov      word ptr [bx+00],ax
-        mov      ax,[si+0ah]
-        mov      word ptr [bx+02],ax
-
-        ; Store number of sectors per track
-        mov      bx, offset BIOS_Secs
-        add      bx,dx
-        mov      ax,[si+0ch]
-        mov      word ptr [bx+00],ax
-
-        ; Update first byte of translation-table to conform to BIOS SPT
-        ; rousseau.comment.201610122010
-        ; Very bad !!
-        ; This table is global and the instruction below would change the
-        ; first (last checked) 'well known' SPT value to the SPT value of
-        ; the last disk scanned. This goes wrong when the last disk scanned
-        ; has a SPT <63, which is often the case when an USB stick is present
-        ; when AirBoot starts.
-        ;~ mov      byte ptr [secs_per_track_table], al
-
-        mov      ax,[si+0eh]
-        mov      word ptr [bx+02],ax
-
-        ; Store total secs
-        mov      bx, offset [BIOS_TotalSecs]
-        add      bx,dx
-        add      bx,dx
-        mov      ax,[si+10h]
-
-        mov      word ptr [bx+00],ax
-        mov      ax,[si+12h]
-        mov      word ptr [bx+02],ax
-        mov      ax,[si+14h]
-        mov      word ptr [bx+04],ax
-        mov      ax,[si+18h]
-        mov      word ptr [bx+06],ax
-
-        ; Store number of bytes per sector
-        mov      bx, offset [BIOS_Bytes]
-        add      bx,dx
-        mov      ax,[si+18h]
-        mov      [bx],ax
-
-
-        ;
-        ; See of it's a huge drive of not
-        ;
-
-        ; Drive is larger than 2TiB
-        mov     ax,5                        ; Drive code (5)
-        mov     bx, [si+14h]                ; Low word of high dword of sector-count
-        or      bx, [si+16h]                ; High word of high dword of sector-count
-        jnz     DriveIO_GatherDiskInfo_ret  ; If non-zero we have a drive with >2^32 sectors and thus LBA48 addressing
-
-        ; Drive is larger than max OS/2 capacity
-        dec     ax                          ; Drive code (4)
-        mov     bx, [si+12h]                ; High word of low dword of sector-count
-        cmp     bx, 0fe01h                  ; Boundary
-        jae     DriveIO_GatherDiskInfo_ret  ; If above or equal to boundary,
-                                            ; we have a drive larger than to 65536*255*255 = FE010000 sectors
-
-        ; Drive can be completely utilized by OS/2
-        dec     ax                          ; Drive code (3)
-        cmp     bx, 8000h                   ; Boundary
-        jae     DriveIO_GatherDiskInfo_ret  ; If above or equal to boundary,
-                                            ; we have a drive larger than 2^31 sectors but smaller than 65536*255*255
-
-        ; This is the small area between DANI 1TiB and LBA 1TiB
-        dec     ax                          ; Drive code (2)
-        cmp     bx, 7e81h                   ; Boundary
-        jae     DriveIO_GatherDiskInfo_ret  ; If above or equal to boundary,
-                                            ; we have a drive larger than 65536*255*127 but <65536*255*255
-                                            ; DANIS506.ADD will use 255/255 extended geometry
-
-        ; DANI will use 255/127 in this area, this could impact the location of LVM-sectors ! (last sec on track)
-        dec     ax                          ; Drive code (1)
-        cmp     bx, 3ec1h                   ; Boundary
-        jae     DriveIO_GatherDiskInfo_ret  ; If above or equal to boundary,
-                                            ; we have a drive larger than 65536*255*63 sectors (OS/2 502GiB Limit!)
-                                            ; DANIS506.ADD will use 255/127 extended geometry !
-                                            ; IBM1S506.ADD will use 255/255 extended geometry !
-
-        ; We have a drive that can be addressed using standard 255/63 geometry
-        dec     ax                                      ; Drive code (0)
-                                            ; We have a drive smaller than 65536*255*63 = 3EC10000 sectors
-
+    DriveIO_GatherDiskInfo_error:
+        stc
     DriveIO_GatherDiskInfo_ret:
+
+
+IFDEF   AUX_DEBUG
+        IF 1
+        DBG_TEXT_OUT_AUX    '[DISKINFO]'
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+            mov     si, bp
+            mov     cx, 4
+        @@:
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+            add     si, 16
+            loop @B
+            mov     si, offset [Scratch]
+            mov     cx, 4
+        @@:
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+            add     si, 16
+            loop @B
+            mov     si, offset [LVMSector]
+            mov     cx, 7
+        @@:
+            call    AuxIO_DumpParagraph
+            call    AuxIO_TeletypeNL
+            add     si, 16
+            loop @B
+        POPRF
+        ENDIF
+ENDIF
+
+        ; Restore registers
         pop     es
-        pop     di
-        pop     si
-        pop     dx
-        pop     cx
-        pop     bx
+        pop     ds
+        popa
 
-        mov      byte ptr [CurIO_UseExtension],1
-
-        popf
         ret
 DriveIO_GatherDiskInfo  EndP
 
@@ -1763,6 +1755,6 @@ DriveIO_IsValidHarddisk     EndP
 
 
 ; Values for sectors per track table corresponding to DriveIO_IsHugeDrive return value.
-secs_per_track_table    db    63,127,255,255,255,255
+;~ secs_per_track_table    db    63,127,255,255,255,255
 
 ;~ db_lmlvm    db 'Load Master LVM -- disk: ',0
