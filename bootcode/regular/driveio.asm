@@ -615,11 +615,11 @@ DriveIO_SaveLVMSector   EndP
 DriveIO_SaveLVMSectorXBR    Proc    Near
 
 IFDEF   AUX_DEBUG
-        IF 0
+        IF 1
         DBG_TEXT_OUT_AUX    'DriveIO_SaveLVMSectorXBR:'
         PUSHRF
             call    DEBUG_DumpRegisters
-            ;~ call    AuxIO_DumpSector
+            call    AuxIO_DumpSector
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
         POPRF
@@ -652,12 +652,28 @@ ENDIF
         sub     ax, 1       ; LVM sector is located one sector below
         sbb     bx, 0       ; Propagate borrow to LBA hi
 
+        ; Writing an LVM sector is always the result of modifications to a
+        ; previously loaded one. So, now that we have the LBA address of the
+        ; LVM sector, the one about to be overwritten should be there.
+        ; If it's not, something is seriously wrong and we quit immetiately.
+        pusha                           ; Push our context except the flags
+        mov     si, offset [Scratch]    ; Sector buffer to load the LVM sector
+        call    ClearSectorBuffer       ; Make sure no old LVM info is present
+        mov     di, ds                  ; Segment of buffer
+        call    DriveIO_ReadSectorLBA   ; Load the old LVM sector
+        call    LVM_ValidateSector      ; CF=1 if valid
+        cmc                             ; Complement for disk i/o semantics
+        popa                            ; Restore our context except the flags
+
+        ; OOPS, There was no LVM sector there !!
+        jc      DriveIO_SaveLVMSectorXBR_no_lvm
+
         ; Save the LVM sector pointed to by SI
         mov     di, ds                          ; Segment of that buffer
-        call    DriveIO_WriteSectorLBA          ; Read the LVM sector
+        call    DriveIO_WriteSectorLBA          ; Write the LVM sector
 
 IFDEF   AUX_DEBUG
-        IF 0
+        IF 1
         DBG_TEXT_OUT_AUX    'LVMSecSaved'
         PUSHRF
             call    DEBUG_DumpRegisters
@@ -675,7 +691,7 @@ ENDIF
         jmp     DriveIO_SaveLVMSectorXBR_done
 
     DriveIO_SaveLVMSectorXBR_no_lvm:
-        ; Indicate no valid LVM sector was loaded
+        ; Indicate no valid LVM sector was saved
         stc
 
     DriveIO_SaveLVMSectorXBR_done:
