@@ -99,16 +99,6 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
-        ; Clear the BSS from its real start just upto the end of the variables.
-        ; Here 'real start' means from where the BSS begins, which is below
-        ; the point where the first variables are located. The part after
-        ; the variables is not cleared because that is where the old SS:SP is
-        ; stored, which is needed for AirBoot restarts during debugging.
-        mov     bx, offset sobss
-        mov     cx, offset EndOfVariables - offset sobss
-        xor     ax, ax
-        call    FillMemBlock
-
     ;
     ; Tasm needs .386 to handle 32-bit constants so we push the current
     ; operating state and switch temporarily to handle
