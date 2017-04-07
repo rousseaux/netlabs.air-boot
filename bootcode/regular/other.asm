@@ -642,29 +642,80 @@ MBR_TeletypeSyncPos     Proc Near   Uses ax bx cx dx
         ret
 MBR_TeletypeSyncPos     EndP
 
+;------------------------------------------------------------------------------
 ; Check if a memory block is all zeros
-; IN  : BX pointer to memblock
-;       CX length to check, zero length is interpreted as block is zero
-; OUT : ZF=1 block if all zeros
-; NOTE: Segment used is DS, which should be the same as ES
-IsMemBlockZero  Proc    Near    Uses ax di
-        push    es          ; Save ES just to be sure
+;------------------------------------------------------------------------------
+; IN    : BX pointer to memblock
+;       : CX length to check, zero length is interpreted as block is zero
+; OUT   : ZF=1 block if all zeros
+; NOTE  : Segment used is DS, which should be the same as ES
+;------------------------------------------------------------------------------
+IsMemBlockZero  Proc    Near    Uses ax di es
         push    ds          ; Segment to use
         pop     es          ; Pop in ES because ES is required for scasb
         mov     di, bx      ; Pointer to memblock
         xor     al, al      ; Compare to zero
+        cld                 ; Direction upwards
         repe    scasb       ; Scan the block, will leave ZF=1 if all zeros
-        mov     bx, di      ; Update pointer (points past last byte compared)
-        pop     es          ; Restore ES
         ret
 IsMemBlockZero  EndP
 
+;------------------------------------------------------------------------------
 ; Check if a loaded sector is all zeros
-; IN  : BX pointer to memblock
-; OUT : ZF=1 block if all zeros
-; NOTE: Segment used is DS, which should be the same as ES
+;------------------------------------------------------------------------------
+; IN    : BX pointer to memblock
+; OUT   : ZF=1 block if all zeros
+; NOTE  : Segment used is DS
+;------------------------------------------------------------------------------
 IsSectorZero    Proc    Near    Uses cx
         mov     cx, sector_size ; Normal size of a sector (512 bytes)
         call    IsMemBlockZero  ; Check the memory block
         ret
 IsSectorZero    EndP
+
+;------------------------------------------------------------------------------
+; Fill a memory block with a specific value
+;------------------------------------------------------------------------------
+; IN    : AL value to fill block with
+;       : BX pointer to memblock
+;       : CX length to fill, 0 fills nothing
+; OUT   : ZF=1 if fill value was 0
+; NOTE  : Segment used is DS
+;------------------------------------------------------------------------------
+FillMemBlock    Proc    Near    Uses cx di es
+        push    ds          ; Segment to use
+        pop     es          ; Pop in ES because ES is required for scasb
+        mov     di, bx      ; Pointer to memblock
+        cld                 ; Direction upwards
+        rep     stosb       ; Fill the memory block with value in AL
+        test    al, al      ; Set ZR if fill value used is 0
+        ret
+FillMemBlock    EndP
+
+;------------------------------------------------------------------------------
+; Fill a memory block with zeros
+;------------------------------------------------------------------------------
+; IN    : BX pointer to memblock
+;       : CX length to fill, 0 fills nothing
+; OUT   : Nothing
+; NOTE  : Segment used is DS
+;------------------------------------------------------------------------------
+ClearMemBlock   Proc    Near    Uses ax
+        xor     al, al          ; Fill value
+        call    FillMemBlock    ; Fill the memory block
+        ret
+ClearMemBlock   EndP
+
+;------------------------------------------------------------------------------
+; Clears a sector buffer
+;------------------------------------------------------------------------------
+; IN    : BX pointer to sector buffer
+; OUT   : Nothing
+; NOTE  : Segment used is DS
+;------------------------------------------------------------------------------
+ClearSectorBuffer   Proc    Near    Uses cx
+        mov     cx, sector_size     ; Normal size of a sector (512 bytes)
+        call    ClearMemBlock       ; Clear the sector buffer
+        ret
+ClearSectorBuffer   EndP
+
