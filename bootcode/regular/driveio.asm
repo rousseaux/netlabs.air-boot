@@ -999,7 +999,7 @@ IFDEF   AUX_DEBUG
             @@:
             call    AuxIO_Print
             pop     si
-            ;~ call    DEBUG_DumpRegisters
+            call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpSector
             ;~ call    AuxIO_DumpParagraph
             ;~ call    AuxIO_TeletypeNL
@@ -1015,6 +1015,8 @@ ENDIF
         push    ds
         pop     es
 
+        ; Because JCXZ is used, LBA sector 0 is never loaded and checked.
+        ; This is of course no problem since it is the MBR.
     DriveIO_LocateMasterLVMSector_next:
         clc                             ; Indicate Master LVM sector not found
         jcxz    DriveIO_LocateMasterLVMSector_done

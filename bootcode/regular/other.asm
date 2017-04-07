@@ -415,17 +415,6 @@ ENDIF
         call    PRECRAP_CheckConfiguration
 
 
-IFDEF   AUX_DEBUG
-        IF 1
-        mov     dl, [BIOS_BootDisk]
-        ;~ mov     dl, 81h
-        call    DriveIO_LocateMasterLVMSector
-        call    DEBUG_DumpRegisters
-        mov     si, offset [TmpSector]
-        call    AuxIO_DumpSector
-        ENDIF
-ENDIF
-
         ; =======================================
         ; Checks for MBR Virii :) I love that job
         ; =======================================

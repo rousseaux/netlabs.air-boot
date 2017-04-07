@@ -2382,6 +2382,7 @@ LVM_Heads                   dd      MaxDisks  dup(?)
 LVM_Secs                    dd      MaxDisks  dup(?)
 LVM_Bytes                   dw      MaxDisks  dup(?)
 LVM_TotalSecs               dq      MaxDisks  dup(?)
+LVM_MasterSecs              dd      MaxDisks  dup(?)
                             ALIGN   16
 
 ; OS/2 geometry of the boot-drive

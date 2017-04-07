@@ -60,6 +60,56 @@ ENDIF
     PSSFP_HarddiscLoop:
 
         push    dx
+
+; ================================================ [ Locate Master LVM Sector ]
+
+        ; Locate the Master LVM sector for this disk.
+        ; If one is found, BX:AX will hold its LBA address, otherwise zero.
+        ; Note that if LVM is set to be ignored in the SETUP, checking for a
+        ; signature will not be done and thus no Master LVM sector will be
+        ; found.
+        call    DriveIO_LocateMasterLVMSector
+
+        ; Put the LBA address in the BSS location for this disk
+        xor     bh, bh                          ; Zero upper part of index
+        mov     bl, dl                          ; Get BIOS drive-number
+        and     bl, 7fh                         ; Strip bit 7
+        shl     bx, 3                           ; Mult by 4 for DWORD
+        add     bx, offset [LVM_MasterSecs]     ; Add the base offset
+        mov     [bx+00h], ax                    ; Store LBA low
+        xor     ax, ax                          ; LBA high always zero
+        mov     [bx+02h], ax                    ; Store LBA high
+
+;!
+;! DEBUG_BLOCK
+;! Check stored Master LVM LBA address.
+;!
+IFDEF   AUX_DEBUG
+        IF 1
+        pushf
+        pusha
+            push    si
+            mov     si, offset $+5
+            jmp     @F
+            db      10,'[Master LVM Sector]',10,0
+            @@:
+            call    AuxIO_Print
+            pop     si
+            xor     bh, bh
+            mov     bl, dl
+            and     bl, 7fh
+            shl     bx, 3
+            add     bx, offset [LVM_MasterSecs]
+            mov     al, [bx]
+            mov     ah, dl
+            call    DEBUG_DumpRegisters
+        popa
+        popf
+        ENDIF
+ENDIF
+
+; ========================================================= [ Scan Partitions ]
+
         call    PARTSCAN_ScanDriveForPartitions
         pop     dx
         inc     dl
