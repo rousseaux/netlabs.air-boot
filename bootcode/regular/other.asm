@@ -90,7 +90,7 @@ PRECRAP_Main    Proc Near
 
 IFDEF   AUX_DEBUG
         IF 1
-        DBG_TEXT_OUT_AUX    'PRECRAP_Main'
+        DBG_TEXT_OUT_AUX    'PRECRAP_Main:'
         PUSHRF
             ;~ call    DEBUG_DumpRegisters
             ;~ call    AuxIO_DumpParagraph
@@ -157,10 +157,27 @@ ENDIF
         ; Show build info
         call    VideoIO_PrintBuildInfo
 
-    IFDEF   AUX_DEBUG
-        ; Initialize the com-port for debugging
-        call     AuxIO_Init
-    ENDIF
+; Show message if com-port debugging is active
+IFDEF   AUX_DEBUG
+        ; Don't show message if com-port debugging is not active
+        mov     dx, [BIOS_AuxParms]
+        test    dl, dl
+        jz      @F
+
+        ; Show initialization message
+        mov     si, offset AuxInitMsg
+        call    MBR_Teletype
+
+        ; Sync output position
+        call    VideoIO_SyncPos
+
+        ; Show port number
+        mov     al, dl
+        call    VideoIO_PrintByteDynamicNumber
+        xor     si, si
+        call    MBR_TeletypeNL
+    @@:
+ENDIF
 
         xor     si,si
         call    MBR_TeletypeNL
@@ -180,13 +197,6 @@ ENDIF
         ;! Yes, we should check for errors here, coz it would mean AirBoot
         ;! was loaded from a disk where the MBR cannot be written !
         ;!
-
-
-IFDEF   AUX_DEBUG
-    IF 1
-    call     DEBUG_Dump1
-    ENDIF
-ENDIF
 
 
         ;

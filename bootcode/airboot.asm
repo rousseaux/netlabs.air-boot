@@ -1005,6 +1005,27 @@ AiR_BOOT_Start:
         xor     ax, ax
         call    FillMemBlock
 
+; Initialize the com-port for debugging
+IFDEF   AUX_DEBUG
+        PUSHRF
+        ; Init com-port
+        call     AuxIO_Init
+        ; Hello message
+        mov     si, offset [AuxIOHello]
+        call    AuxIO_Print
+        ; Show Build Info
+        call    AuxIO_PrintBuildInfo
+        call    AuxIO_TeletypeNL
+        POPRF
+ENDIF
+
+; Dump debug information
+IFDEF   AUX_DEBUG
+    IF 1
+    call     DEBUG_Dump1
+    ENDIF
+ENDIF
+
 ; Verify we still got the BIOS disk in DL
 IFDEF   AUX_DEBUG
         IF 1

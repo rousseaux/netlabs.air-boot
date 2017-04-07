@@ -907,19 +907,6 @@ DEBUG_Dump1     Proc  Near
         pushf
         pusha
 
-        ; Hello message
-        mov     si, offset AuxIOHello
-        call    AuxIO_Print
-
-        ; Build Info
-        ;~ mov     si, offset BUILD_DATE
-        ;~ call    AuxIO_Print
-        call    AuxIO_PrintBuildInfo
-
-        ; Start new line
-        call    AuxIO_TeletypeNL
-        ;~ call    AuxIO_TeletypeNL
-
         ;~ call    DEBUG_DumpHidePartTables
         ;~ call    DEBUG_CheckMath
         ;~ call    DEBUG_DumpGeo

@@ -45,20 +45,9 @@ AuxIO_Init      Proc  Near  Uses dx si
         test    dl,dl                         ; see if logging is enabled, if not, skip initialization
         jz      AuxIO_Init_NoLogging
 
+        ; Adjust to valid port range
         dec     dl                            ; adjust port-number
         and     dl,03h                        ; 3 is max value
-
-        ; Initialization message
-        mov     si,offset AuxInitMsg
-        call    MBR_Teletype
-
-        ; Port number
-        call    VideoIO_SyncPos
-        mov     al,dl
-        inc     al
-        call    VideoIO_PrintByteDynamicNumber
-        xor     si,si
-        call    MBR_TeletypeNL
 
         ; Do the initialization
         mov     al,dh                         ; initialization parameters to al
@@ -74,73 +63,6 @@ AuxIO_Init      EndP
 ; Send the Build Information to the COM-port.
 ;
 AuxIO_PrintBuildInfo    Proc    Near    Uses ax cx si di
-        ; Print header.
-        mov     si, offset build_info
-        call    AuxIO_Print
-
-        ; Prepare info in temorary buffer.
-        mov     si,offset bld_level_date_start
-        mov     cx,offset bld_level_date_end
-        sub     cx,si
-        mov     di,offset Scratch
-        cld
-        rep     movsb
-
-        ; Fill spaces until assembler specification.
-        mov     al,' '
-        mov     cx,37
-        rep     stosb
-
-        ; Copy assembler specification.
-    IFDEF       JWASM
-        mov     al,'['
-        stosb
-        mov     si,offset jwasm_txt
-    ELSEIFDEF   TASM
-        mov     al,' '
-        stosb
-        mov     al,'['
-        stosb
-        mov     si,offset tasm_txt
-
-    ELSEIFDEF   WASM
-        mov     al,' '
-        stosb
-        mov     al,'['
-        stosb
-        mov     si,offset wasm_txt
-    ELSEIFDEF   MASM
-        mov     al,' '
-        stosb
-        mov     al,'['
-        stosb
-        mov     si,offset masm_txt
-    ELSE
-        mov     al,' '
-        stosb
-        mov     al,'['
-        stosb
-        mov     si,offset unknown_txt
-    ENDIF
-
-    AuxIO_PrintBuildInfo_a1:
-        lodsb
-        test    al,al
-        jz      AuxIO_PrintBuildInfo_e1
-        stosb
-        jmp     AuxIO_PrintBuildInfo_a1
-    AuxIO_PrintBuildInfo_e1:
-        mov     al,']'
-        stosb
-
-        ; Insert NULL Terminator.
-        xor     al,al
-        stosb
-
-        ; Print Info.
-        mov     si, offset Scratch
-        call    AuxIO_Print
-        call    AuxIO_TeletypeNL
 
         ; OS/2 BLDLEVEL information.
         mov     si, offset bld_level
@@ -434,6 +356,4 @@ AuxIO_DumpSector    Proc  Near  Uses  cx si
 AuxIO_DumpSector    EndP
 
 
-AuxIOHello  db 10,10,10,10,10,'AiR-BOOT com-port debugging',10,0
-
-
+AuxIOHello  db 10,10,10,'<<<<< AiR-BOOT SERIAL DEBUGGER ACTIVE >>>>>',10,0
