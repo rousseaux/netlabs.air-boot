@@ -968,17 +968,6 @@ PART_SetupPhase1    EndP
 ;               run boot sector...
 PART_StartPartition             Proc Near   Uses ax dx es di
 
-IFDEF   AUX_DEBUG
-        IF 0
-        DBG_TEXT_OUT_AUX    'PART_StartPartition:'
-        PUSHRF
-            ;~ call    DEBUG_DumpRegisters
-            ;~ call    AuxIO_DumpParagraph
-            ;~ call    AuxIO_TeletypeNL
-        POPRF
-        ENDIF
-ENDIF
-
     ;
     ; Local Storage for this much too large function.
     ;
@@ -989,6 +978,16 @@ ENDIF
     local LVMdl:byte                ; LVM drive-letter
     local BPBdl:byte                ; BPB boot-drive-letter. (at 25h)
 
+IFDEF   AUX_DEBUG
+        IF 1
+        DBG_TEXT_OUT_AUX    'PART_StartPartition:'
+        PUSHRF
+            call    DEBUG_DumpRegisters
+            ;~ call    AuxIO_DumpParagraph
+            ;~ call    AuxIO_TeletypeNL
+        POPRF
+        ENDIF
+ENDIF
 
     ; Get Partition-Pointer (SI) to Partition-To-Boot (DL).
     ; DL is filtered partition number and thus uses the PPT.
