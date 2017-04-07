@@ -1675,7 +1675,14 @@ ENDIF
         mov      word ptr [bx+00],ax
 
         ; Update first byte of translation-table to conform to BIOS SPT
-        mov      byte ptr [secs_per_track_table], al
+        ; rousseau.comment.201610122010
+        ; Very bad !!
+        ; This table is global and the instruction below would change the
+        ; first (last checked) 'well known' SPT value to the SPT value of
+        ; the last disk scanned. This goes wrong when the last disk scanned
+        ; has a SPT <63, which is often the case when an USB stick is present
+        ; when AirBoot starts.
+        ;~ mov      byte ptr [secs_per_track_table], al
 
         mov      ax,[si+0eh]
         mov      word ptr [bx+02],ax
