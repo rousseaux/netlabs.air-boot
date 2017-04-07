@@ -741,7 +741,9 @@ ENDIF
         mov     dh,al
         sub     dh,3dh
 
+        mov     si, [PartPointer]
         call    LVM_GetDriveLetter
+
 IF 0
                 ; Print values at start of LVM-record
                 pushf
@@ -754,7 +756,7 @@ IF 0
                 popa
                 popf
 ENDIF
-        jnc     skip_show_dl
+        jc      skip_show_dl
 
         test    al,al
         jnz     show_dl2

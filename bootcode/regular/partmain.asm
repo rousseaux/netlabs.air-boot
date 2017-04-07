@@ -1760,14 +1760,18 @@ ENDIF
 
         ;
         ; Get the drive-letter for the partition from the LVM-info.
-        ; Returns CY=1 if AL contains drive-letter, CY=0 and AL=0 if
-        ; no letter assigned (hidden) or no LVM info found.
+        ; Returns CY=0 if AL contains drive-letter, '*' or 0.
+        ; Returns CY=1 and AL=0 if no LVM info found.
+        ; The new 'LVM_GetDriveLetter' directly uses SI, so the loading of
+        ; DL, CX and BX is not needed. We'll leave it here for now.
         ;
         mov     dl,byte ptr [si+LocIPT_Drive]
         mov     cx,[si+LocIPT_AbsoluteBegin+00h]
         mov     bx,[si+LocIPT_AbsoluteBegin+02h]
-        call    LVM_GetDriveLetter
 
+        ; Now uses SI, not DL,CX,BX
+        call    LVM_GetDriveLetter
+        ;//! CHECKME: No test on LVM info found
 
         ; Save for later use.
         mov     byte ptr [LVMdl], al
@@ -1896,20 +1900,25 @@ ENDIF
         ;~ mov     bx,[si+LocIPT_AbsoluteBegin+02h]
         ;~ mov     al,[BPBdl]
         ;~ sub     al,3dh
-        ;~ call    LVM_SetDriveLetter                                                                  ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ;~ call    LVM_SetDriveLetter
 
 
+;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ;
         ; ALWAYS SET BPB to LVM
         ;
-        mov     dl,byte ptr [si+LocIPT_Drive]
-        mov     cx,[si+LocIPT_AbsoluteBegin+00h]
-        mov     bx,[si+LocIPT_AbsoluteBegin+02h]
-        call    LVM_GetDriveLetter                                                                  ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        add     al,3dh
-        mov     bx,[PhysDiskBpbIndex]
+        mov     dl, byte ptr [si+LocIPT_Drive]
+        mov     cx, [si+LocIPT_AbsoluteBegin+00h]
+        mov     bx, [si+LocIPT_AbsoluteBegin+02h]
+
+        ; Now uses SI, not DL,CX,BX
+        call    LVM_GetDriveLetter
+        ;//! CHECKME: No test on LVM info found
+
+        add     al, 3dh
+        mov     bx, [PhysDiskBpbIndex]
         inc     bx
-        mov     es:[di+bx],al
+        mov     es:[di+bx], al
 
 
     update_PBR:
