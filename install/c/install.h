@@ -29,16 +29,16 @@
 #define     BLDLVL_MIDDLE_VERSION   "1"
 #define     BLDLVL_MINOR_VERSION    "1"
 // Build date
-#define     BLDLVL_YEAR             "2016"
-#define     BLDLVL_MONTH            "10"
-#define     BLDLVL_DAY              "10"
+#define     BLDLVL_YEAR             "2017"
+#define     BLDLVL_MONTH            "03"
+#define     BLDLVL_DAY              "15"
 // Build time
 //~ #define     BLDLVL_HOURS            "01"
 //~ #define     BLDLVL_MINUTES          "01"
 //~ #define     BLDLVL_SECONDS          "00"
-#define     BLDLVL_HOURS            "99"
-#define     BLDLVL_MINUTES          "99"
-#define     BLDLVL_SECONDS          "99"
+#define     BLDLVL_HOURS            "23"
+#define     BLDLVL_MINUTES          "59"
+#define     BLDLVL_SECONDS          "59"
 // Build machine
 //~ #define     BLDLVL_MACHINE          "OS2BLDBOX"
 #define     BLDLVL_MACHINE          "*UNKNOWN*"

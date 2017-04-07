@@ -62,9 +62,9 @@
 COMPONENTS=&
  bootcode$(DS)mbr-prot&
  tools$(DS)internal&
- bootcode&
  install$(DS)c&
  tools$(DS)os2$(DS)setaboot&
+ bootcode&
 
 
 # Components to distribute to the RELEASE directories.
@@ -72,9 +72,9 @@ COMPONENTS=&
 # the installer for several platforms,
 # and the OS/2 setboot replacement (setaboot).
 COMPONENTS2DIST=&
- bootcode&
  install$(DS)c&
  tools$(DS)os2$(DS)setaboot&
+ bootcode&
 
 
 

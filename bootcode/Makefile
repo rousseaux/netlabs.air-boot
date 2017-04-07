@@ -165,7 +165,7 @@ ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Zd -Zi -Fo$^.
 # Workaround for JWasm list-file generation.
 # Generate the list-file on a local drive so JWasm doen't take forever.
 # This is done in the recipe.
-JWASM_LIST_FILE_LOC=$(%TEMP)\
+JWASM_LIST_FILE_LOC=$(%TEMP)$(DS)
 JWASM_LIST_FILE=-Fl=$(JWASM_LIST_FILE_LOC)$^&.lst
 
 # WASM
@@ -512,14 +512,14 @@ $(BASENAME).obj: .MULTIPLE $(BASENAME).asm
 	@echo $^.: [16-bits OMF Object File]
 	$(ASM) $(ASM_FLAGS) $(BASENAME).asm
 !if "$(%AB_DEV)"=="TRUE"
-	@copy ..\install\c\airboot2.exe .
+	@$(CP) ..$(DS)install$(DS)c$(DS)airboot2.exe .
 !endif
 !if "$(ASM)"=="jwasm"
 # Workaround for generating JWasm list-files.
 # Command 'move' does not work across drives.
 # So we do a 'copy' then 'del' instead.
-	@if not exist $^&.lst copy $(JWASM_LIST_FILE_LOC)$^&.lst .
-	@if exist $(JWASM_LIST_FILE_LOC)$^&.lst del $(JWASM_LIST_FILE_LOC)$^&.lst
+	@if not exist $^&.lst $(CP) $(JWASM_LIST_FILE_LOC)$^&.lst .
+	@if exist $(JWASM_LIST_FILE_LOC)$^&.lst $(RM) $(JWASM_LIST_FILE_LOC)$^&.lst
 !endif
 !ifndef __MSDOS__
 	@wdis -fi $^. > $^..wda
