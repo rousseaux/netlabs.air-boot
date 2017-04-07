@@ -474,6 +474,7 @@ DriveIO_GotLoadError    EndP
 ; Preserve: all registers
 ; #########################################################################
 DriveIO_LoadSector      Proc Near  Uses ax bx cx dx ds si es di
+
         ; Is the drive not a harddrive?
         cmp     dl, 80h
         jb      DIOLS_UseNormal
@@ -503,26 +504,34 @@ DriveIO_LoadSector      Proc Near  Uses ax bx cx dx ds si es di
         jnc     DIOLS_Success
         dec     di
         jnz     DIOLS_ErrorLoop
+
         ; Sector load failed...
         jmp     DriveIO_GotLoadError
 
     DIOLS_UseExtension:
-        push    cx
-        mov     cs:[INT13X_DAP_NumBlocks], 1         ; Copy ONE sector
-        mov     wptr cs:[INT13X_DAP_Transfer+0], si
-        mov     cx, ds
-        mov     wptr cs:[INT13X_DAP_Transfer+2], cx  ; Fill out Transfer Adress
-        mov     wptr cs:[INT13X_DAP_Absolute+0], ax
-        mov     wptr cs:[INT13X_DAP_Absolute+2], bx  ; Fill out Absolute Sector
-        push    cs
-        pop     ds
-        mov     si, offset [INT13X_DAP]
-        mov     ah, 42h                              ; Extended Read
-        int     13h
-        pop     cx
-        jnc     DIOLS_Success
+
+        mov     di, ds                  ; segment for transfer address
+        mov     cx, ax                  ; low word of lba
+        call    DriveIO_ReadSectorLBA   ; extended read
+        jc      DriveIO_GotLoadError    ; halt on error
+
+        ;~ push    cx
+        ;~ mov     cs:[INT13X_DAP_NumBlocks], 1         ; Copy ONE sector
+        ;~ mov     wptr cs:[INT13X_DAP_Transfer+0], si
+        ;~ mov     cx, ds
+        ;~ mov     wptr cs:[INT13X_DAP_Transfer+2], cx  ; Fill out Transfer Adress
+        ;~ mov     wptr cs:[INT13X_DAP_Absolute+0], ax
+        ;~ mov     wptr cs:[INT13X_DAP_Absolute+2], bx  ; Fill out Absolute Sector
+        ;~ push    cs
+        ;~ pop     ds
+        ;~ mov     si, offset [INT13X_DAP]
+        ;~ mov     ah, 42h                              ; Extended Read
+        ;~ int     13h
+        ;~ pop     cx
+        ;~ jnc     DIOLS_Success
+
         ; Sector load failed...
-        jmp     DriveIO_GotLoadError
+        ;~ jmp     DriveIO_GotLoadError
 
     DIOLS_Success:
         ret
@@ -892,6 +901,7 @@ DriveIO_SaveSector              Proc Near  Uses ax bx cx dx ds si es di
         and     di, 007Fh
         cmp     bptr cs:[LBASwitchTable+di], bl
         jbe     DIOSS_UseExtension
+
     DIOSS_UseNormal:
         mov     di, 3
     DIOSS_ErrorLoop:
@@ -906,21 +916,28 @@ DriveIO_SaveSector              Proc Near  Uses ax bx cx dx ds si es di
         call    MBR_SaveError
 
     DIOSS_UseExtension:
-        push    cx
-        mov     cs:[INT13X_DAP_NumBlocks], 1         ; Copy ONE sector
-        mov     wptr cs:[INT13X_DAP_Transfer+0], si
-        mov     cx, ds
-        mov     wptr cs:[INT13X_DAP_Transfer+2], cx  ; Fill out Transfer Adress
-        mov     wptr cs:[INT13X_DAP_Absolute+0], ax
-        mov     wptr cs:[INT13X_DAP_Absolute+2], bx  ; Fill out Absolute Sector
-        push    cs
-        pop     ds
-        mov     si, offset [INT13X_DAP]
-        mov     ax, 4300h                            ; Extended Write (No Verify)
-        int     13h
-        pop     cx
-        jnc     DIOSS_Success
-        call    MBR_SaveError
+
+        mov     di, ds                  ; segment for transfer address
+        mov     cx, ax                  ; low word of lba
+        xor     ax, ax                  ; no verify
+        call    DriveIO_WriteSectorLBA  ; extended write
+        jc      MBR_SaveError           ; halt on error
+
+        ;~ push    cx
+        ;~ mov     cs:[INT13X_DAP_NumBlocks], 1         ; Copy ONE sector
+        ;~ mov     wptr cs:[INT13X_DAP_Transfer+0], si
+        ;~ mov     cx, ds
+        ;~ mov     wptr cs:[INT13X_DAP_Transfer+2], cx  ; Fill out Transfer Adress
+        ;~ mov     wptr cs:[INT13X_DAP_Absolute+0], ax
+        ;~ mov     wptr cs:[INT13X_DAP_Absolute+2], bx  ; Fill out Absolute Sector
+        ;~ push    cs
+        ;~ pop     ds
+        ;~ mov     si, offset [INT13X_DAP]
+        ;~ mov     ax, 4300h                            ; Extended Write (No Verify)
+        ;~ int     13h
+        ;~ pop     cx
+        ;~ jnc     DIOSS_Success
+        ;~ call    MBR_SaveError
 
     DIOSS_Success:
         ret
