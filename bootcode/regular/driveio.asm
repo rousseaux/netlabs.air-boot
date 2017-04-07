@@ -1079,24 +1079,6 @@ DriveIO_SaveSector              Proc Near  Uses ax bx cx dx ds si es di
 DriveIO_SaveSector              EndP
 
 
-; See if a LVM-sector is valid.
-; In  : si, pointer to sector
-; Out : CY if valid LVM sector, NC if not
-DriveIO_LVMSectorValid           Proc  Near
-        pusha
-
-        call    LVM_CheckSectorSignature
-        ; NC if no signature found
-        jnc     DriveIO_LVMSectorValid_End
-
-        call    LVM_CheckSectorCRC
-        ; Force valid !!!
-        stc
-
-    DriveIO_LVMSectorValid_End:
-        popa
-        ret
-DriveIO_LVMSectorValid           EndP
 
 ; ------------------------------------------------------
 ; Rousseau: # Load the master LVM-sector if one exists #
