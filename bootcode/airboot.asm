@@ -1461,8 +1461,10 @@ AiR_BOOT_Start:
 ;
 ; BOOKMARK: AiR-BOOT Restart (used for debugging)
 AirbootRestart:
-        mov     bx, [OldSP]     ; Old SP when BIOS transferred control to AB
-        mov     dx, [OldSS]     ; Old SS when BIOS transferred control to AB
+        mov     bx, [OldSP]             ; Old SP when BIOS transferred control to AB
+        mov     cx, [OldSS]             ; Old SS when BIOS transferred control to AB
+        xor     dh, dh                  ; Head 0
+        mov     dl, [BIOS_BootDisk]     ; Disk AirBoot was loaded from
         jmp     MBR_RealStart
 
 
