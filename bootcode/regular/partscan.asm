@@ -304,7 +304,7 @@ PARTSCAN_ScanPartition          Proc Near  Uses ax si
         ; Only clear the boot-flag on the boot-disk.
         ; Clearing the boot-flags on other disks would prevent booting them
         ; from the BIOS. (TRAC ticket #6)
-        cmp     dl, 080h                            ; See if this is boot-disk
+        cmp     dl, [BIOS_BootDisk]                 ; See if this is boot-disk
         jne     PSSP_Skip_Clear_BootFlag            ; Nope, skip clear flag
         and     byte ptr [si+LocBRPT_Flags], 7Fh    ; Reset the Active-Flag
     PSSP_Skip_Clear_BootFlag:
@@ -312,11 +312,12 @@ PARTSCAN_ScanPartition          Proc Near  Uses ax si
         cmp     si, 500+offset PartitionSector
         jb      PSSP_ScanLoop
         ; If we are on first HDD and in primary partition table -> mark primary
-        cmp     bptr [CurPartition_Location+4], 80h ; Drive
+        mov     al, [BIOS_BootDisk]
+        cmp     bptr [CurPartition_Location+4], al  ; Drive
         jne     PSSP_NoMarkPrimary
         cmp     wptr [CurPartition_Location+0], 0
         jne     PSSP_NoMarkPrimary
-        cmp     wptr [CurPartition_Location+2], 0 ; Absolute Location
+        cmp     wptr [CurPartition_Location+2], 0   ; Absolute Location
         jne     PSSP_NoMarkPrimary
         call    PART_MarkFirstGoodPrimary
     PSSP_NoMarkPrimary:

@@ -165,9 +165,26 @@ PRECRAP_Main    Proc Near
         xor     si,si
         call    MBR_TeletypeNL
 
+        ;
+        ; Write MBR back to disk to sync MBR variables.
+        ; Otherwise subsequent MBR loads will differ from the RAM stored one,
+        ; which is used by MBR protection to validate parts of the MBR.
+        ;
+        xor     bx, bx
+        mov     cx, 1
+        xor     dh, dh
+        mov     dl, [BIOS_BootDisk]
+        mov     al, 1
+        mov     ah, 03h
+        int     13h
+
+
+        ; Start with disk at index 0
         xor     cx,cx
+
     PRECRAP_Main_next_disk:
 
+        ; Get next disk and convert to BIOS disk-number
         mov     dl,cl
         or      dl,80h
 
@@ -430,7 +447,7 @@ AFTERCRAP_Main  EndP
 PRECRAP_CheckFor13extensions    Proc Near
         mov     ah, 41h
         mov     bx, 55AAh
-        mov     dl, 80h
+        mov     dl, [BIOS_BootDisk]     ; We check using the boot-disk
         int     13h
         cmp     bx, 0AA55h
         je      PCCF13E_Found

@@ -119,7 +119,7 @@ BIOS_COM_PORT           EQU     1
 ; Note that is has moved since v1.07
 BIOS_AUXPARMS_DEFAULT   EQU     (AUX_INIT_PARMS SHL 8) OR BIOS_COM_PORT
 
-; Default byte value for BIOS_BootDisk variabls
+; Default byte value for BIOS_BootDisk variable
 BIOS_BOOTDISK_DEFAULT   EQU     80h
 
 

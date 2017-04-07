@@ -38,8 +38,9 @@ DriveIO_LoadConfiguration   Proc Near   Uses ax bx cx dx es
         mov     ax, cs
         mov     es, ax
         mov     bx, offset Configuration
-        mov     dx, 0080h                     ; First harddrive, Sector 55...
-        mov     cx, 0037h
+        xor     dh, dh
+        mov     dl, [BIOS_BootDisk]           ; Disk we booted from
+        mov     cx, 0037h                     ; Sector 55 (CHS)
         mov     ax, 0201h                     ; Function 02, read 1 sector...
         int     13h
         jnc     DIOLC_NoError
@@ -85,8 +86,9 @@ DriveIO_SaveConfiguration   Proc Near   Uses ax bx cx dx ds es si
         ; --------------------------------------------------------------------
         ; ES == CS
         mov     bx, offset Configuration
-        mov     dx, 0080h                     ; First harddrive, Sector 55...
-        mov     cx, 0037h
+        xor     dh, dh
+        mov     dl, [BIOS_BootDisk]           ; Disk we booted from
+        mov     cx, 0037h                     ; Sector 55 (CHS)
 
         ; Changed from 5 to calculated value
         ; Fixes issue: #2987 -- "air-boot doesn't remember drive letter"
@@ -172,7 +174,7 @@ DriveIO_GetHardDriveCount   EndP
 DriveIO_InitLBASwitchTable  Proc Near   Uses es di
         mov     di, offset LBASwitchTable
         mov     dh, [TotalHarddiscs]
-        mov     dl, 80h
+        mov     dl, 80h        ; First disk to process
     DIOILUT_DriveLoop:
         push    dx
         push    di
@@ -196,9 +198,9 @@ DriveIO_InitLBASwitchTable  Proc Near   Uses es di
         pop     dx
         mov     bptr ds:[di], ah  ; Save that value
         inc     di                ; Go to next BYTE
-        inc     dl
-        dec     dh
-        jnz     DIOILUT_DriveLoop
+        inc     dl                ; Next disk
+        dec     dh                ; Decrease disks to process
+        jnz     DIOILUT_DriveLoop ; Next disk if DH != 0
         ret
 DriveIO_InitLBASwitchTable  EndP
 
@@ -799,8 +801,8 @@ DriveIO_ProtectMBR  Proc Near
         ; If the sector to be written is not the boot-disk, then skip
         ; checking the AiR-BOOT MBR.
         ;
-        cmp     dl,80h
-        ja      DriveIO_ProtectMBR_is_not_bootdisk
+        cmp     dl, [BIOS_BootDisk]
+        jne     DriveIO_ProtectMBR_is_not_bootdisk
 
         ;
         ; The boot-disk is accessed so the sector to be written must be

@@ -1317,14 +1317,15 @@ ENDIF
 
         ; --- HIDE COMPLETED ---
         ; So something got hidden and we have to remark a primary partition,
-        ;  if we are booting something non-primary from 1st hdd.
-        cmp     bptr [si+LocIPT_Drive], 80h
-        ja      PSP_HideAdjustPrimaryMark  ; When booting any hdd, but 1st
+        ;  if we are booting something non-primary from the boot-disk.
+        mov     al, [BIOS_BootDisk]
+        cmp     bptr [si+LocIPT_Drive], al
+        jne     PSP_HideAdjustPrimaryMark  ; When booting any hdd, but boot-disk
         mov     ax, wptr [si+LocIPT_AbsolutePartTable]
         mov     bx, wptr [si+LocIPT_AbsolutePartTable+2]
         or      ax, ax
         jnz     PSP_HideAdjustPrimaryMark  ; or booting non-primary partition
-        or      bx, bx                     ;  on 1st harddrive.
+        or      bx, bx                     ;  on boot-disk.
         jz      PSP_NoHideAdjustPrimaryMark
 
     PSP_HideAdjustPrimaryMark:
@@ -1332,11 +1333,20 @@ ENDIF
         xor     ax, ax
         xor     bx, bx
         mov     cx, 0001h                  ; Cylinder 0, Sector 1
-        mov     dx, 0080h                  ; First HD, Head 0
-                                                                     ; Load MBR
+        xor     dh, dh                     ; Head 0
+        mov     dl, [BIOS_BootDisk]        ; Boot Disk
+
+        ; This uses the boot-disk and alters 'CurPartition_Location'.
+        ; CHECKME: How does 81h being the boot-disk influences this ?
         call    DriveIO_LoadPartition      ; Load Primary Partition Table
+
+        ; This would only be needed for very old BIOSses
         call    PART_MarkFirstGoodPrimary
-        call    DriveIO_SavePartition       ; Saves the Partition-Table
+
+        ; CHECKME: Disabled writing back MBR with modified boot flags
+        ; This is a safety measure now that booting AirBoot from other disks
+        ; than 80h can occur.
+        ;~ call    DriveIO_SavePartition       ; Saves the Partition-Table
 
 
     PSP_NoHideAdjustPrimaryMark:
