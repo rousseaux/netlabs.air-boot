@@ -1050,6 +1050,21 @@ ENDIF
 
     DriveIO_WriteSectorLBA_exit:
 
+        ; Skip the removable drive check on success
+        jnc     @F
+
+        ; Here, CF=1 because of a failure.
+        ; This could be from a removable drive that is set to read-only,
+        ; in which case we want to fake success. What this boils down to
+        ; is that CY must be set to !IsRemovable.
+        call    DriveIO_CalcDiskInfoPointer         ; Get DISKINFO pointer
+        mov     dx, [bx+LocDISKINFO_I13X_Flags]     ; Get INT13X flags
+        xor     dl, 04h                             ; Invert 'removable' bit
+        and     dl, 04h                             ; Mask it out
+        rcr     dl, 3                               ; Move it to CY
+
+    @@:
+
         ; Pop all registers
         pop     es
         pop     ds
