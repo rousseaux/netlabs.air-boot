@@ -90,9 +90,6 @@ ContinueBIOSbootTable   dw offset TXT_SETUP_MAGIC_CDROM
                         dw offset TXT_SETUP_MAGIC_ZIPLS
                         dw     0
 
-; Com-port debugging header.
-AuxInitMsg              db 'Initializing Serial Communications on COM',0
-
 ; LVM protection messages; should be translated and moved to lang-files.
 TXT_SETUP_NoEditType35      db 'Labels of LVM-Data partitions cannot be changed', 0
 TXT_SETUP_NoBootType35      db 'LVM-Data partitions cannot be set bootable', 0

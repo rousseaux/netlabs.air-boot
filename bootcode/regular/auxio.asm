@@ -356,4 +356,5 @@ AuxIO_DumpSector    Proc  Near  Uses  cx si
 AuxIO_DumpSector    EndP
 
 
-AuxIOHello  db 10,10,10,'<<<<< AiR-BOOT SERIAL DEBUGGER ACTIVE >>>>>',10,0
+AuxInitMsg      db 'Serial Communications active on COM',0
+AuxIOHello      db 10,10,10,'<<<<< AiR-BOOT SERIAL DEBUGGER ACTIVE >>>>>',10,0
