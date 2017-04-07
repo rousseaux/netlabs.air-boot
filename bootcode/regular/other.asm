@@ -175,11 +175,9 @@ ENDIF
         xor     si,si
         call    MBR_TeletypeNL
 
-        ;
         ; Write MBR back to disk to sync MBR variables.
         ; Otherwise subsequent MBR loads will differ from the RAM stored one,
         ; which is used by MBR protection to validate parts of the MBR.
-        ;
         xor     bx, bx
         mov     cx, 1
         xor     dh, dh
@@ -193,139 +191,12 @@ ENDIF
         ;! was loaded from a disk where the MBR cannot be written !
         ;!
 
-; =============================================================================
-
-        ; Start with disk at index 0
-        xor     cx,cx
-
-    PRECRAP_Main_next_disk:
-
-        ; Get next disk and convert to BIOS disk-number
-        mov     dl,cl
-        or      dl,80h
-
-        ;
-        ; This also setup the size of the i13xbuf.
-        ;
-        call     DriveIO_GatherDiskInfo              ; Also used to fill the geo, should be separate function
-
-        mov      bx,offset [HugeDisk]
-        add      bx,cx
-        mov      [bx], al
-
-
-        ; CHECKSUM CALCULATION DOES NOT WORK YET HERE
-        ; CRC TABLE NOT INITED YET
-        ; Returns NC if no valid LVM record found
-        call     DriveIO_LoadMasterLVMSector
-
-        pushf
-
-        mov     bx, offset [TrueSecs]
-        add     bx,cx
-        add     bx,cx
-        add     bx,cx
-        add     bx,cx
-
-IFDEF   AUX_DEBUG
-        IF 0
-        pushf
-        pusha
-            mov     al, '#'
-            call    AuxIO_Teletype
-            mov     ax, [bx]
-            call    AuxIO_TeletypeHexWord
-            mov     al, '#'
-            call    AuxIO_Teletype
-            call    AuxIO_TeletypeNL
-        popa
-        popf
-        ENDIF
-ENDIF
-
-        popf
-
-        ; bx now contains pointer to truesecs for this drive
-
-        jnc      NoValidMasterLVM
-
-        ; ?? 3f bij disk 80h maar 0 bij disk 81h
-        mov     si,offset [LVMSector]
-        mov     ax,[si+LocLVM_Secs]
-
-        ;~ pusha
-        ;~ mov     dx,ax
-        ;~ mov     al,'%'
-        ;~ call    VideoIO_PrintSingleChar
-        ;~ mov     ax,dx
-        ;~ call    VideoIO_PrintHexWord
-        ;~ mov     al,'%'
-        ;~ call    VideoIO_PrintSingleChar
-        ;~ popa
-
-        mov      word ptr [bx],ax
-        jmp      SkipUseBiosSecs
-
-
-    NoValidMasterLVM:
-        push    bx                   ; push truesecs pointer
-        mov     bx, offset [BIOS_Secs]
-        add     bx,cx
-        add     bx,cx
-        add     bx,cx
-        add     bx,cx
-
-        mov     ax,[bx]              ; get biossecs
-        pop     bx
-        mov     word ptr [bx],ax     ; store bios secs in truesecs
-
-
-    SkipUseBiosSecs:
-        inc     cx
-        cmp     cl,[TotalHarddiscs]
-        jb      PRECRAP_Main_next_disk
-
-; =============================================================================
 
 IFDEF   AUX_DEBUG
     IF 1
     call     DEBUG_Dump1
     ENDIF
 ENDIF
-
-        ;~ jz      NoValidMasterLVM
-;~
-        ;~ ; A valid Master LVM has been found.
-        ;~ ; We use the values in here to determine the number of sectors per track,
-        ;~ ; since this could be OS/2 extended geometry.
-;~
-        ;~ jmp     Continue1
-        ;~
-        ;~ mov     word ptr [LOG_Secs],63
-
-;               mov      al,[HugeDisk]           ;; fout, moet nog index bij
-;               call     AuxIO_TeletypeHexByte
-;               call     AuxIO_TeletypeNL
-
-;               mov      ax,word ptr [TrueSecs]  ;; fout, moet nog index bij
-;               call     AuxIO_TeletypeHexWord
-;               call     AuxIO_TeletypeNL
-
-;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        ; Huge Disk indicator
-        ;~ mov     si, offset [HugeBootDisk]
-        ;~ call    MBR_Teletype
-        ;~ mov     al,[HugeDisk]
-        ;~ mov     si, offset [No]
-        ;~ test    al,al
-        ;~ jz      MBR_HugeDriveIndicator
-        ;~ mov     si, offset [Yes]
-
-    MBR_HugeDriveIndicator:
-        ;~ call    MBR_Teletype
-        ;~ xor     si,si
-        ;~ call    MBR_TeletypeNL
 
 
         ;
@@ -345,7 +216,6 @@ ENDIF
         xor     si,si
         call    MBR_TeletypeNL
 
-; =============================================================================
 
         ; Calculate Cooper-Bar Tables
     IFDEF   FX_ENABLED
