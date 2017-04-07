@@ -739,163 +739,302 @@ VideoIO_PrintBuildInfo  EndP
 
 
 
-   ; Rousseau:
-;   mov al, [NewPartitions]
-   ;call  VideoIO_PrintByteDynamicNumber
-;   mov al, [CFG_Partitions]
-   ;call  VideoIO_PrintByteDynamicNumber
-;   ret
-;VideoIO_DBG_WriteString         EndP
+;------------------------------------------------------------------------------
+; [TextColorFore], 01h    ; blue
+; [TextColorFore], 02h    ; green
+; [TextColorFore], 03h    ; cyan
+; [TextColorFore], 04h    ; red
+; [TextColorFore], 05h    ; magenta
+; [TextColorFore], 06h    ; brown
+; [TextColorFore], 07h    ; white
+; [TextColorFore], 08h    ; grey
+; [TextColorFore], 09h    ; marine
+; [TextColorFore], 0ah    ; bright green
+; [TextColorFore], 0bh    ; bright cyan
+; [TextColorFore], 0ch    ; bright red
+; [TextColorFore], 0dh    ; bright magenta
+; [TextColorFore], 0eh    ; bright yellow
+; [TextColorFore], 0fh    ; bright white
+; [TextColorFore], 10h    ; black on blue.
+; more...
+;------------------------------------------------------------------------------
+; Show disk and other information on the pre-MENU screen
+;------------------------------------------------------------------------------
+; IN    : None
+; OUT   : None
+; NOTE  : Assumes VIDEO and DISK stuff has been done already
+; TODO  : Optimize for space (use seperate function to display geo)
+;------------------------------------------------------------------------------
+VideoIO_DisplayDiskInfo     Proc Near
 
+        ; Push the whole shebang
+        pusha
 
-; Dump the disk-info.
-; Disk number is in DL.
-VideoIO_DumpDiskInfo    Proc Near uses ax bx cx dx
+        ; Push these too for safety
+        push    ds
+        push    es
 
-    VideoIO_DumpDiskInfo_next_disk:
-        push    dx
-        xor     ax,ax
-        mov     al,[TextPosY]
+        ; Save current video state
+        mov     al, [TextColorFore]
+        mov     ah, [TextColorBack]
+        mov     dl, [TextPosX]
+        mov     dh, [TextPosY]
         push    ax
+        push    dx
 
-        mov     ax,21
-        mov     dh,dl
-        and     dh,01111111b
-        mul     dh
-        mov     dh,al
+        ; Jmp over the strings
+        jmp     @F
 
-        mov     [TextPosX],dh
+        ; We like to have these local for now
+    VideoIO_DumpDiskInfo_labels     db  'DISK '
+                                    db  'SECTORS_LBA '
+                                    db  'SECSIZE  '
+                                    db  'I13_GEO   '
+                                    db  'I13X_GEO  '
+                                    db  'LVM_GEO   '
+                                    db  'BUS  '
+                                    db  'INTERFACE '
+                                    db  'REMOVABLE'
+                                    db  0
 
-        mov     si, offset [Disk]
+    ; Display disk information on the pre-MENU screen
+    @@:
+
+        ; Start postition -- allow for AuxIO message when debugging
+IFNDEF  AUX_DEBUG
+        mov     [TextPosY], 7
+ELSE
+        mov     [TextPosY], 8
+ENDIF
+        mov     [TextPosX], 0
+
+        ; Normal colors
+        mov     [TextColorFore], 07h    ; white
+        mov     [TextColorBack], 00h    ; black
+
+        ; Show the labels
+        mov     si, offset [VideoIO_DumpDiskInfo_labels]
         call    VideoIO_Print
-        mov     al,dl
 
-        ; NIET GOED, GAAT FOUT > 9, HEX PRINT GEBRUIKEN !!
-        shr     al,4
-        add     al,'0'
+        ; Zero based index of first drive to scan
+        xor     cl, cl
+
+        ; Reduced brightness
+        mov     [TextColorFore], 08h
+
+        ; Loop over all disks found
+    VideoIO_DumpDiskInfo_next_disk:
+
+        ; Compose BIOS disk number (80h, 81h, etc)
+        mov     dl, cl
+        add     dl, 80h
+
+        ; Position on start of next line
+        inc     [TextPosY]
+        mov     [TextPosX], 0
+
+        ; Show a bright star if this is the BIOS boot-disk
+        ;~ mov     [TextColorBack], 08h
+        mov     al, ' '
+        cmp     dl, [BIOS_BootDisk]
+        jne     @F
+        mov     [TextColorFore], 0fh
+        mov     al, '*'
+    @@:
         call    VideoIO_PrintSingleChar
-        mov     al,dl
-        and     al,01111111b
-        add     al,'0'
+
+        ; Show BIOS disk number in normal white ----------------- [ BIOS DISK ]
+        mov     [TextColorFore], 07h
+        mov     al, dl
+        call    VideoIO_PrintHexByte
+        mov     al, 'h'
         call    VideoIO_PrintSingleChar
-        mov     al,'h'
+        mov     [TextColorFore], 08h
+
+        ; Get pointer to DISKINFO structure in BX
+        call    DriveIO_CalcDiskInfoPointer
+
+        ; Show disk size in LBA sectors (hex) -------------------- [ LBA SECS ]
+        mov     [TextPosX], 5
+        mov     [TextColorFore], 06h            ; brown for >2TiB
+        mov     al, [bx+LocDISKINFO_I13X_SecsLBA+04h]
+        test    al, al
+        jnz     @F
+        mov     ch, 08h                         ; reduced brightness
+        cmp     dl, [BIOS_BootDisk]
+        lahf                                    ; load flags
+        rcl     ah, 2                           ; move ZF to CF
+        sbb     ch, 0                           ; change color to white
+        mov     [TextColorFore], ch             ; white when boot-disk
+    @@:
+        call    VideoIO_PrintHexByte
+        mov     ax, [bx+LocDISKINFO_I13X_SecsLBA+00h]
+        mov     dx, [bx+LocDISKINFO_I13X_SecsLBA+02h]
+        call    VideoIO_PrintHexDWord
+        mov     al, 'h'
+        call    VideoIO_PrintSingleChar
+        mov     [TextColorFore], 08h            ; reduced brightness
+
+        ; Show sector size (hex) ------------------------------ [ SECTOR SIZE ]
+        mov     [TextPosX], 17
+        mov     [TextColorFore], 06h            ; brown for != 512
+        mov     ax, [bx+LocDISKINFO_I13X_SecSize]
+        cmp     ax, 0200h
+        jne     @F
+        mov     [TextColorFore], ch             ; white when boot-disk
+    @@:
+        call    VideoIO_PrintHexWord
+        mov     al, 'h'
+        call    VideoIO_PrintSingleChar
+        mov     [TextColorFore], 08h            ; reduced brightness
+
+        ; Show INT13 geometry (dec) ----------------------------- [ INT13 GEO ]
+        mov     [TextPosX], 26
+        mov     [TextColorFore], 04h            ; red for (0,0)
+        mov     dl, [bx+LocDISKINFO_I13_Secs]
+        mov     dh, [bx+LocDISKINFO_I13_Heads]
+        test    dl, dl
+        jz      @F                              ; no spt !
+        test    dh, dh
+        jz      @F                              ; no heads !
+        mov     [TextColorFore], 08h            ; reduced brightness
+    @@:
+        mov     al, '('
+        call    VideoIO_PrintSingleChar
+        mov     al, dh                          ; int13 heads
+        call    VideoIO_PrintByteDynamicNumber
+        mov     al, ','
+        call    VideoIO_PrintSingleChar
+        mov     al, dl                          ; int13 secs
+        call    VideoIO_PrintByteDynamicNumber
+        mov     al, ')'
+        call    VideoIO_PrintSingleChar
+        mov     [TextColorFore], 08h            ; reduced brightness
+
+        ; Show INT13X geometry (dec) --------------------------- [ INT13X GEO ]
+        mov     [TextPosX], 36
+        mov     [TextColorFore], 04h            ; red for (0,0)
+        mov     dl, [bx+LocDISKINFO_I13X_Secs]
+        mov     dh, [bx+LocDISKINFO_I13X_Heads]
+        test    dl, dl
+        jz      @F                              ; no spt !
+        test    dh, dh
+        jz      @F                              ; no heads !
+        mov     [TextColorFore], 08h            ; reduced brightness
+    @@:
+        mov     al, '('
+        call    VideoIO_PrintSingleChar
+        mov     al, dh                          ; int13x heads
+        call    VideoIO_PrintByteDynamicNumber
+        mov     al, ','
+        call    VideoIO_PrintSingleChar
+        mov     al, dl                          ; int13x secs
+        call    VideoIO_PrintByteDynamicNumber
+        mov     al, ')'
+        call    VideoIO_PrintSingleChar
+        mov     [TextColorFore], 08h            ; reduced brightness
+
+        ; Show LVM geometery (dec)  ------------------------------- [ LVM GEO ]
+        mov     [TextPosX], 46
+        mov     [TextColorFore], 04h            ; red for (0,0)
+        mov     dl, [bx+LocDISKINFO_LVM_Secs]
+        mov     dh, [bx+LocDISKINFO_LVM_Heads]
+        test    dl, dl
+        jz      @F                              ; no spt, thus no lvm !
+        test    dh, dh
+        jz      @F                              ; no heads, thus no lvm !
+        mov     [TextColorFore], 09h            ; marine for LVM_SPT>127
+        cmp     dl, 127
+        ja      @F                              ; IBMS506 or DANI on >1TiB
+        mov     [TextColorFore], 03h            ; cyan for 63>LVM_SPT<=127
+        cmp     dl, 63
+        ja      @F                              ; DANI on >502MiB
+        mov     [TextColorFore], 07h            ; white for normal LVM_SPT
+    @@:
+        mov     al, '('
+        call    VideoIO_PrintSingleChar
+        mov     al, dh                          ; lvm heads
+        call    VideoIO_PrintByteDynamicNumber
+        mov     al, ','
+        call    VideoIO_PrintSingleChar
+        mov     al, dl                          ; lvm secs
+        call    VideoIO_PrintByteDynamicNumber
+        mov     al, ')'
+        call    VideoIO_PrintSingleChar
+        mov     [TextColorFore], 08h            ; reduced brightness
+
+        ; Show host bus (4 chars) -------------------------------- [ HOST BUS ]
+        mov     [TextPosX], 56
+        mov     ax, [bx+LocDISKINFO_I13X_HostBus+00h]
+        mov     dx, [bx+LocDISKINFO_I13X_HostBus+02h]
+        call    VideoIO_PrintSingleChar
+        mov     al, ah
+        call    VideoIO_PrintSingleChar
+        mov     al, dl
+        call    VideoIO_PrintSingleChar
+        mov     al, dh
         call    VideoIO_PrintSingleChar
 
-        inc     [TextPosY]
-        mov     [TextPosX],dh
+        ; Show interface (8 chars) ------------------------------ [ INTERFACE ]
+        mov     [TextPosX], 61
+        mov     ax, [bx+LocDISKINFO_I13X_Interface+00h]
+        mov     dx, [bx+LocDISKINFO_I13X_Interface+02h]
+        call    VideoIO_PrintSingleChar
+        mov     al, ah
+        call    VideoIO_PrintSingleChar
+        mov     al, dl
+        call    VideoIO_PrintSingleChar
+        mov     al, dh
+        call    VideoIO_PrintSingleChar
+        mov     ax, [bx+LocDISKINFO_I13X_Interface+04h]
+        mov     dx, [bx+LocDISKINFO_I13X_Interface+06h]
+        call    VideoIO_PrintSingleChar
+        mov     al, ah
+        call    VideoIO_PrintSingleChar
+        mov     al, dl
+        call    VideoIO_PrintSingleChar
+        mov     al, dh
+        call    VideoIO_PrintSingleChar
 
-        mov     al,'-'
-        mov     cl,17
-        call    VideoIO_PrintSingleMultiChar
-
-        ;~ inc     [TextPosY]
-        ;~ mov     [TextPosX],dh
-        ;~ mov     si, offset BiosCyls
-        ;~ call    VideoIO_Print
-
-        ;~ push    dx
-        ;~ mov     bx,offset BIOS_Cyls
-        ;~ xor     dh,dh
-        ;~ and     dl,01111111b
-        ;~ shl     dx,1
-        ;~ shl     dx,1
-        ;~ add     bx,dx
-        ;~ mov     ax,[bx]
-        ;~ mov     dx,[bx+02]
-        ;~ call    VideoIO_PrintHexDWord
-        ;~ pop     dx
-
-        inc     [TextPosY]
-        mov     [TextPosX],dh
-        mov     si, offset BiosHeads
+        ; Show if disk is removable (YES/NO) -------------------- [ REMOVABLE ]
+        mov     [TextPosX], 71
+        mov     si, offset [No]
+        mov     ax, [bx+LocDISKINFO_I13X_Flags]
+        test    ax, 0004h
+        jz      @F
+        mov     si, offset [Yes]
+        mov     [TextColorFore], 06h            ; brown
+    @@:
         call    VideoIO_Print
+        mov     [TextColorFore], 08h            ; reduced brightness
 
-        push    dx
-        mov     bx,offset BIOS_Heads
-        xor     dh,dh
-        and     dl,01111111b
-        shl     dx,1
-        shl     dx,1
-        add     bx,dx
-        mov     ax,[bx]
-        mov     dx,[bx+02]
-        call    VideoIO_PrintHexDWord
-        pop     dx
+        ; Increment disk index
+        inc     cl
 
-        inc     [TextPosY]
-        mov     [TextPosX],dh
-        mov     si, offset BiosSecs
-        call    VideoIO_Print
+        ; Process next disk if still in range
+        cmp     cl, [TotalHarddiscs]
+        jb      VideoIO_DumpDiskInfo_next_disk
 
-        push    dx
-        mov     bx,offset BIOS_Secs
-        xor     dh,dh
-        and     dl,01111111b
-        shl     dx,1
-        shl     dx,1
-        add     bx,dx
-        mov     ax,[bx]
-        mov     dx,[bx+02]
-        call    VideoIO_PrintHexDWord
-        pop     dx
-
-        inc     [TextPosY]
-        mov     [TextPosX],dh
-        mov     si, offset LvmSecs
-        call    VideoIO_Print
-
-        push    dx
-        ; Offset of array containing LVM SPT values for each disk found
-        mov     bx,offset [TrueSecs]
-        ; DX to index
-        xor     dh,dh
-        and     dl,01111111b
-        shl     dx,1
-        shl     dx,1
-        add     bx,dx
-        ; Get LVM SPT
-        mov     ax,[bx]
-        mov     dx,[bx+02]
-        call    VideoIO_PrintHexDWord
-        pop     dx
-
-        inc     [TextPosY]
-        mov     [TextPosX],dh
-        mov     si, offset BiosLBA
-        call    VideoIO_Print
-
-        push    dx
-        mov     bx,offset BIOS_TotalSecs
-        xor     dh,dh
-        and     dl,01111111b
-        shl     dx,1
-        shl     dx,1
-        shl     dx,1
-        add     bx,dx
-        mov     ax,[bx]
-        mov     dx,[bx+02]
-        call    VideoIO_PrintHexDWord
-        pop     dx
-
-        inc     [TextPosY]
-        mov     [TextPosX],dh
-
-        pop     ax
-        mov     [TextPosY],al
-        pop     dx
-
-        inc     dl
-        mov     al,dl
-        and     al,01111111b
-        cmp     al,[TotalHarddiscs]
-        jae     VideoIO_DumpDiskInfo_end
-        jmp     VideoIO_DumpDiskInfo_next_disk
-
+    ; We're done
     VideoIO_DumpDiskInfo_end:
-        mov     [TextPosX],0
-        add     [TextPosY],6
+
+        ; Restore video state
+        pop     dx
+        pop     ax
+        mov     [TextPosY], dh
+        mov     [TextPosX], dl
+        mov     [TextColorBack], ah
+        mov     [TextColorFore], al
+
+        ; Restore segment registers
+        pop     es
+        pop     ds
+
+        ; Restore work registers
+        popa
+
         ret
-VideoIO_DumpDiskInfo    EndP
+VideoIO_DisplayDiskInfo     EndP
 
 
 ;
@@ -927,33 +1066,20 @@ VideoIO_ShowWaitDots    EndP
 
 
 
-; Disk Info to Dump to AB LogScreen
-Disk              db "DISK ",0
-;BiosCyls          db "Cyls    :",0
-BiosHeads         db "Heads   :",0
-BiosSecs          db "Secs    :",0
-LvmSecs           db "SecsLVM :",0
-BiosLBA           db "LBA Secs:",0
-
-
-HugeBootDisk      db "Boot Disk is Huge    : ",0
-DisksFound        db "Disks Found          : ",0
-PartitionsFound   db "Partitions Found     : ",0
-;AutoStartPart     db "Auto Start Partition : ",0
-
-Phase1            db "OS/2 Install Phase 1 : ",0
-
-
-ShowMenu          db "Press TAB to return to the AiR-BOOT Menu",0
-;ShowBootLog       db "Press TAB to see the Boot Log...",0
-
-Yes               db "YES",0
-No                db "NO",0
-;~ On                db "ON",0
-;~ Off               db "OFF",0
-;~ None              db "NONE",0
-;~ Active            db "ACTIVE",0
-NotActive         db "NOT ACTIVE",0
-
-; New Line for use by MBR_Teletype
-NL          db 0dh, 0ah, 0
+;
+; Strings used in the pre-MENU screen
+;
+NL                  db 0dh, 0ah, 0
+DisksFound          db "Disks Found          : ",0
+PartitionsFound     db "Partitions Found     : ",0
+Phase1              db "OS/2 Install Phase 1 : ",0
+TABMessage          db "Press TAB to return to the AiR-BOOT Menu",0
+PREPMessage         db "Preparing BOOT Menu...",0
+Yes                 db "YES",0
+No                  db "NO",0
+;~ On                  db "ON",0
+;~ Off                 db "OFF",0
+;~ None                db "NONE",0
+;~ Active              db "ACTIVE",0
+;~ NotActive           db "NOT ACTIVE",0
+;~ AutoStartPart       db "Auto Start Partition : ",0
