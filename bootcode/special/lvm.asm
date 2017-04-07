@@ -111,16 +111,19 @@ LVM_CheckSectorSignature        EndP
 ;        In: DS:SI - Sector that needs to get checked...
 ;       Out: Carry set, if LVM CRC valid
 ; Destroyed: None
-LVM_CheckSectorCRC              Proc Near   Uses ax dx
-        call    LVM_GetSectorCRC
+LVM_CheckSectorCRC              Proc Near   Uses ax bx dx
+        mov     bx, si
+        call    IsSectorZero                ; Zero sector implies bad CRC
+        jz      LVMCSCRC_BadCRC
+        call    LVM_GetSectorCRC            ; Only use after CRC table is valid
         cmp     ax, word ptr [si+LocLVM_CRC]
         jne     LVMCSCRC_BadCRC
         cmp     dx, word ptr [si+LocLVM_CRC+2]
         jne     LVMCSCRC_BadCRC
-        stc
+        stc                                 ; Indicate CRC is OK
         ret
     LVMCSCRC_BadCRC:
-        clc
+        clc                                 ; Indicate BAD CRC
         ret
 LVM_CheckSectorCRC              EndP
 
