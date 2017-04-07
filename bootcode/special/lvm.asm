@@ -136,7 +136,7 @@ DriveIO_LVMSectorValid           Proc  Near
 
         call    LVM_CheckSectorCRC
         ; Force valid !!!
-        stc
+        ;~ stc
 
     DriveIO_LVMSectorValid_End:
         popa
