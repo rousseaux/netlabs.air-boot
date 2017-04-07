@@ -2092,20 +2092,21 @@ ENDIF
 
 
 sobss:
+sobss_abs = offset sobss + image_size
 ;------------------------------------------------------------------------------
 
-                            ;
-                            ; Removed ORG for BSS data to be more compatible
-                            ; with segment-concatenated layout.
-                            ;
-                            ; What happens before this space ??
-                            ; If org 0 corruption occurs.
-                            ;
 
-                            ;
-                            ; Filling hiddenparttable goes out-of-bounds !
-                            ; Fixed with 6-bit packing.
-                            ;
+        ;
+        ; This is the actual start of the BSS.
+        ; In the past however, we have had a code-loop that went out of bounds,
+        ; overwriting the start of the BSS.
+        ;
+        ; Because important runtime data is stored in the BSS, we offset it
+        ; by 400h bytes. Since the loader-image is always 62 sectors, which
+        ; makes it 7c00h in size, the runtime data starts at 8000h.
+        ; This is the 'BeginOfVariables' location.
+        ;
+
 
 ;
 ; If segmented, offsets are relative to the BSS segment.
@@ -2113,9 +2114,9 @@ sobss:
 ; If not segmented, offsets are relative to the CODE segment.
 ;
 IFDEF   SEGMENTED
-                            ORG 02400h
+                            ORG 00400h      ; 7c00h + 400h = 8000h
 ELSE
-                            ORG 0A000h
+                            ORG 08000h      ; 8000h
 ENDIF
 
 
@@ -2125,6 +2126,7 @@ ENDIF
 
 ; This space actually gets initialized in PreCrap to NUL (till EndOfVariables)
 BeginOfVariables:
+BeginOfVariablesAbs = offset BeginOfVariables + image_size
 
 
 ; -----------------------------------------------------------------------------
@@ -2136,6 +2138,8 @@ PBRSector           db  512 dup (?) ; Temporary Sector for JFS/HPFS writeback
 LVMSector           db  512 dup (?) ; Temporary Sector for LVM
 TmpSector           db  512 dup (?) ; Temporary Sector
 Scratch             db  512 dup (?) ; Scratch buffer
+                    ALIGN   16
+
 
 ; -----------------------------------------------------------------------------
 ;                                                          NEW PARTITION TABLE
@@ -2143,6 +2147,7 @@ Scratch             db  512 dup (?) ; Scratch buffer
 ; Everything used to build a new IPT and reference it to the old one
 ; BOOKMARK: New Partition Table
 NewPartTable                db  1536 dup (?)    ; New Partition Table
+                            ALIGN   16
 
 
 ; -----------------------------------------------------------------------------
@@ -2150,16 +2155,16 @@ NewPartTable                db  1536 dup (?)    ; New Partition Table
 ; -----------------------------------------------------------------------------
 ; BOOKMARK: New Hide-Partition Table
 NewHidePartTable            db  LocIPT_MaxPartitions * LocHPT_LenOfHPT dup (?)
+                            ALIGN   16
 
-    ;~ even
 
 ; -----------------------------------------------------------------------------
 ;                                                            NEW DRIVE LETTERS
 ; -----------------------------------------------------------------------------
 ; BOOKMARK: Logical Drive-Letters
 NewDriveLetters             db  LocIPT_MaxPartitions dup (?)
+                            ALIGN   16
 
-    ;~ even
 
 ; -----------------------------------------------------------------------------
 ;                                                         PARTITION SIZE TABLE
@@ -2167,6 +2172,7 @@ NewDriveLetters             db  LocIPT_MaxPartitions dup (?)
 ; Size-Table (6 bytes per partition)
 ; BOOKMARK: Partition Size Table
 PartitionSizeTable          db  LocIPT_MaxPartitions * 6 dup (?)
+                            ALIGN   16
 
 
 ; -----------------------------------------------------------------------------
@@ -2175,9 +2181,12 @@ PartitionSizeTable          db  LocIPT_MaxPartitions * 6 dup (?)
 ; Maximum is 52 word entries till now
 ; BOOKMARK: Partition Pointers
 PartitionPointers           dw  52 dup (?)
+                            ALIGN   16
 
 ; Count of total Partition Pointers
 PartitionPointerCount       db  ?
+                            ALIGN   16
+
 
 ; -----------------------------------------------------------------------------
 ;                                                                   XREF TABLE
@@ -2186,6 +2195,8 @@ PartitionPointerCount       db  ?
 ; X-Reference Table (holds new partnr, index is old part nr)
 ; BOOKMARK: Xref Table
 PartitionXref               db  LocIPT_MaxPartitions dup (?)
+                            ALIGN   16
+
 
 ; -----------------------------------------------------------------------------
 ;                                                               VOLUME LETTERS
@@ -2197,7 +2208,7 @@ PartitionXref               db  LocIPT_MaxPartitions dup (?)
 ; 'C'-'Z' - assigned drive letter
 ; BOOKMARK: Volume Drive Letters
 PartitionVolumeLetters      db  LocIPT_MaxPartitions dup (?)
-
+                            ALIGN   16
 
 
 ; -----------------------------------------------------------------------------
@@ -2220,9 +2231,7 @@ CurIO_UseExtension      db  ?           ; 1-Use INT 13h EXTENSIONS
                                         ; (filled out by PreCrap)
 CurIO_Scanning          db  ?           ; 1-AiR-BOOT is scanning partitions
                                             ; (for detailed error message)
-
-; [Linux support removed since v1.02]
-;GotLinux                     db     ?    ; 1-Linux found
+                        ALIGN   16
 
 
 ; -----------------------------------------------------------------------------
@@ -2237,6 +2246,8 @@ Menu_EntryDefault   db  ?   ; Default Entry in filtered View
 Menu_EntryLast      db  ?   ; LastBooted Entry in filtered View
 Menu_EntryAutomatic db  ?   ; Automatic Entry in filtered View
                                          ;  - All adjusted to menu locations
+                    ALIGN   16
+
 
 ; -----------------------------------------------------------------------------
 ;                                                       PARTITION RELATED VARS
@@ -2246,6 +2257,8 @@ PartSetup_ActivePart    db  ?   ; Active Partition
 PartSetup_HiddenUpper   db  ?   ; (like Menu_UpperPart)
 PartSetup_HiddenX       db  ?   ; Pos for Hidden-Setup
 PartSetup_HiddenAdd     db  ?   ; Adjust for Hidden-Setup
+                        ALIGN   16
+
 
 ; -----------------------------------------------------------------------------
 ;                                                   TIMER / SETUP RELATED VARS
@@ -2265,6 +2278,7 @@ SETUP_VerifyPwd     db  17 dup (?)
 StartSoundPlayed    db  ?
 ChangePartNameSave  db  ?   ; Save label after user-edit ?
 SyncLvmLabels       db  ?   ; Sync LVM labels after user-edit ?
+                    ALIGN   16
 
 
 ; -----------------------------------------------------------------------------
@@ -2280,42 +2294,44 @@ FX_WideScrollerDirection    db  ?
 FX_WideScrollerAbsDirection db  ?
 FX_WideScrollerBounceSpeed  db  ?
 FX_CooperBarsTimer          dw  ?
+                            ALIGN   16
 
 ; Dynamically Generated Tables - do not need to get initialized with NUL
 FX_CooperColors     db   672 dup (?) ; 7 cooper bars*96 - runtime calculated
 FX_CooperState      db     7 dup (?)
 FX_SinusPos         db     7 dup (?)
 FX_CooperPos        dw     7 dup (?)
+                    ALIGN   16
 
 
 ; -----------------------------------------------------------------------------
 ;                                                               CHARSET BUFFER
 ; -----------------------------------------------------------------------------
 CharsetTempBuffer   db  4096 dup (?) ; Uninitialized Charset buffer
+                    ALIGN   16
+
 
 ; -----------------------------------------------------------------------------
 ;                                                                LVM CRC TABLE
 ; -----------------------------------------------------------------------------
 LVM_CRCTable        dd   256 dup (?) ; LVM-CRC (->SPECiAL\LVM.asm)
+                    ALIGN   16
 
 
-
-;
-; Rousseau: added some stuff.
-;
 ; -----------------------------------------------------------------------------
 ;                                                           ECS PHASE1 RELATED
 ; -----------------------------------------------------------------------------
 Phase1Active                db      ?
 OldPartitionCount           db      ?
+                            ALIGN   16
 
 
 ; -----------------------------------------------------------------------------
 ;                                                              DISK PARAMETERS
 ; -----------------------------------------------------------------------------
-                              ;EVEN
 HugeDisk                    db      MaxDisks  dup(?)
 TrueSecs                    dd      MaxDisks  dup(?)
+                            ALIGN   16
 
 ; BIOS geometry of the boot-drive
 ; Note that heads cannot be 256 due to legacy DOS/BIOS bug
@@ -2325,6 +2341,7 @@ BIOS_Heads                  dd      MaxDisks  dup(?)
 BIOS_Secs                   dd      MaxDisks  dup(?)
 BIOS_Bytes                  dw      MaxDisks  dup(?)
 BIOS_TotalSecs              dq      MaxDisks  dup(?)
+                            ALIGN   16
 
 ; LBA geometry of the boot-drive
 ; Note that these values are taken from the BPB of a partition boot-record
@@ -2333,6 +2350,7 @@ LVM_Heads                   dd      MaxDisks  dup(?)
 LVM_Secs                    dd      MaxDisks  dup(?)
 LVM_Bytes                   dw      MaxDisks  dup(?)
 LVM_TotalSecs               dq      MaxDisks  dup(?)
+                            ALIGN   16
 
 ; OS/2 geometry of the boot-drive
 ; Note that these values are taken from the BPB of a partition boot-record
@@ -2341,14 +2359,25 @@ LOG_Heads                   dd      MaxDisks  dup(?)
 LOG_Secs                    dd      MaxDisks  dup(?)
 LOG_Bytes                   dw      MaxDisks  dup(?)
 LOG_TotalSecs               dq      MaxDisks  dup(?)
+                            ALIGN   16
+
+; Storage for INT13 disk parameters
+INT13_DiskParams            db      MaxDisks  dup(10h dup(?))
+                            ALIGN   16
+
+; Storage for INT13X disk parameters
+INT13X_DiskParams           db      MaxDisks  dup(80h dup(?))
+                            ALIGN   16
 
 ; Get's initialized at startup to: 00000011111111111111111111111100b
 ; Meaning A,B not free; C-Z free, rest unused. (right to left)
 ; Each partition with an assigned drive-letter clears a bit in this map.
 FreeDriveletterMap          dd      ?
+                            ALIGN   16
 
 ; LBA address of master LVM sector, zero if non-existant
-MasterLVMLBA                dd      ?
+MasterLVMLBA                dd      MaxDisks  dup(?)
+                            ALIGN   16
 
 
 ; -----------------------------------------------------------------------------
@@ -2363,6 +2392,7 @@ INT13X_DAP_Transfer         dd      ?       ; Transfer Adress
 INT13X_DAP_Absolute         dd      ?       ; Absolute Sector
                             dd      ?       ; Second Part of QWORD
 INT13X_DAP_Size = $-offset [INT13X_DAP]     ; Calculated size
+                            ALIGN   16
 
 ;
 ; BOOKMARK: Temporary buffer for 48h INT13X bios call.
@@ -2379,14 +2409,16 @@ i13xbuf     dw  1   dup (?)
             ; Size of buffer calculated.
             ; (excluding the size word at the start).
             i13xbuf_size = $-offset i13xbuf-2
+            ALIGN   16
 
             ; Some debug area.
 dbg_scratch db  512 dup(?)
+            ALIGN   16
 
 
 ; End of transient variables.
 EndOfVariables:
-
+EndOfVariablesAbs = offset EndOfVariables + image_size
 
 
 
@@ -2404,6 +2436,7 @@ EndOfVariables:
 ; depending on the alignment and size. This DD prevents the OldSP and OldSS
 ; to be partly overwritten by the clearing routine.
                             dd      ?
+                            ALIGN   16
 
 ; SS:SP from before our relocation.
 ; The registers values when the BIOS transferred control to us were pushed
@@ -2417,18 +2450,18 @@ OldSS                       dw      ?
 ; the old stack to display them in debug mode.
 CurrentSP                   dw      ?
 CurrentSS                   dw      ?
-
+                            ALIGN   16
 ;
 ; End of BSS segment.
 ;
 eobss:
-
+eobss_abs = offset eobss + image_size
 ;
 ; Total RAM occupied, including BSS.
 ; BASE is 8000:0000, LIMIT is 8000:FFFF.
 ; Note that the LDRIMAGE is of constant size, 7C00h = 62 sectors of 512 bytes.
 ;
-resident_size = (offset eobss + image_size)
+resident_size = offset eobss + image_size
 
 ;
 ; Close BSS segment.
