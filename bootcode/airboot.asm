@@ -1949,7 +1949,7 @@ CFG_MiscFlags           db  1   ; Miscellaneous Flags (See EQUates)
 CFG_PartDefault         db  0   ; Default-Partition (Base=0)
 
 CFG_PartLast            db  0   ; Which Partition was booted last time ? (Base=0)
-CFG_TimedBoot           db  0   ; Timed Boot Enable (for REAL Enable look TimedBootEnable)
+CFG_TimedBoot           db  1   ; Timed Boot Enable (for REAL Enable look TimedBootEnable)
 CFG_TimedSecs           db  15  ; Timed Boot - How Many Seconds Till Boot
 CFG_TimedDelay          dw  123 ; Timed Boot - Delay
 CFG_TimedBootLast       db  1   ; Timed Boot - Boot From Last Drive Booted From
