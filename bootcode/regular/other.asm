@@ -362,15 +362,31 @@ ENDIF
         ; This may change (be corrected) in future versions !
         mov      cx,5
 
-        mov     dx, [CFG_CheckConfig]
-        mov     [CFG_CheckConfig], bx
+        mov     dx, [CFG_CheckConfig]       ; Get current CRC for configuration
+        mov     [CFG_CheckConfig], bx       ; Mark it as invalid
     PCCC_Loop:
-        call    MBR_GetCheckOfSector
+        call    MBR_GetCheckOfSector        ; Calculate CRC
         loop    PCCC_Loop
-        cmp     bx, dx
-        jne     PCCC_Failed
-        mov     CFG_CheckConfig, dx
+        cmp     bx, dx                      ; Validate CRC
+
+        ;
+        ; The CRC is calculated and inserted in the loader image when
+        ; AiR-BOOT is installed. Ignoring the CRC enables manually
+        ; merging the loader without using the installer. This is used
+        ; for debugging in virtual machines, where it is easy to
+        ; merge the loader to the disk image of the VM.
+        ;
+IFNDEF  CRC_IGNORE
+        jne     PCCC_Failed                 ; Validation failed, halt AiR-BOOT
+ENDIF
+
+        mov     CFG_CheckConfig, dx         ; Restore the valid CRC
         ret
+
+        ;
+        ; CRC validation for the configuration failed.
+        ; Inform the user of this and halt the system.
+        ;
     PCCC_Failed:
         mov     si, offset TXT_ERROR_CheckConfig
         call    MBR_Teletype
