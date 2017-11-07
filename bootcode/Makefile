@@ -159,9 +159,9 @@ ASM=jwasm
 # -Zm   = Masm51 compat -- don't use ! (Will generate incorrect offsets)
 # -Zd   = line number debug info
 # -Zi   = symbolic debug info
-ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W0 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
-ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -W4 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
-ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -q -WX -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM $(%JWASM_DEFINES) -q -W0 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM $(%JWASM_DEFINES) -q -W4 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM $(%JWASM_DEFINES) -q -WX -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
 # Workaround for JWasm list-file generation.
 # Generate the list-file on a local drive so JWasm doen't take forever.
 # This is done in the recipe.
@@ -210,16 +210,16 @@ ASM_FLAGS=$(ASM_FLAGS_D$(DEBUG_LEVEL))
 
 # 16-bits C Compiler.
 CC16=wcc
-CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -w4 -e25 -zq -od -fo=$^.
-CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -d2 -w4 -e25 -zq -od -fo=$^.
-CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -d2 -w4 -e25 -zq -od -fo=$^.
+CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(%CC_DEFINES) -w4 -e25 -zq -od -fo=$^.
+CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(%CC_DEFINES) -d2 -w4 -e25 -zq -od -fo=$^.
+CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(%CC_DEFINES) -d2 -w4 -e25 -zq -od -fo=$^.
 CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
 
 # 32-bits C Compiler.
 CC32=wcc386
-CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -w4 -e25 -zq -od -6r -mf -fo=$^.
-CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -d2 -w4 -e25 -zq -od -6r -mf -fo=$^.
-CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) -d2 -w4 -e25 -zq -od -6r -mf -fo=$^.
+CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(%CC_DEFINES) -w4 -e25 -zq -od -6r -mf -fo=$^.
+CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(%CC_DEFINES) -d2 -w4 -e25 -zq -od -6r -mf -fo=$^.
+CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(%CC_DEFINES) -d2 -w4 -e25 -zq -od -6r -mf -fo=$^.
 CC32_FLAGS=$(CC32_FLAGS_D$(DEBUG_LEVEL))
 
 #

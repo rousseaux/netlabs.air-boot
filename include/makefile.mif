@@ -106,6 +106,35 @@ WARN_OVERLAP_NOT_SUPPORTED=Warning: Overlap Checking not supported for assembler
 %ZVAR=This variable will be placed in the Environment
 
 #
+# Set the '*UNKNOWN*' value for Vendor and BuildMachine if undefined or empty
+#
+!if	"$(%BLDLVL_VENDOR)"==""
+%BLDLVL_VENDOR=*UNKNOWN*
+!endif
+!if	"$(%BLDLVL_MACHINE)"==""
+%BLDLVL_MACHINE=*UNKNOWN*
+!endif
+
+#
+# Compose JWasm defines to pass on command-line
+#
+%JWASM_DEFINES=
+%JWASM_DEFINES += -DBLDLVL_VENDOR="'$(%BLDLVL_VENDOR)'"
+%JWASM_DEFINES += -DBLDLVL_MACHINE="'$(%BLDLVL_MACHINE)'"
+
+#
+# Compose C-Compiler defines to pass on command-line
+#
+%CC_DEFINES=
+!ifdef	__LINUX__
+%CC_DEFINES += -dBLDLVL_VENDOR='"$(%BLDLVL_VENDOR)"'
+%CC_DEFINES += -dBLDLVL_MACHINE='"$(%BLDLVL_MACHINE)"'
+!else
+%CC_DEFINES += -dBLDLVL_VENDOR="$(%BLDLVL_VENDOR)"
+%CC_DEFINES += -dBLDLVL_MACHINE="$(%BLDLVL_MACHINE)"
+!endif
+
+#
 # Define how a spawning shell is invoked.
 #
 DOSSHELL	= COMMAND.COM /c

@@ -3,6 +3,8 @@
 #
 
 B:	Build Development Version [EN]
+	cmd /c "set BLDLVL_VENDOR=& set BLDLVL_MACHINE=& wmake -h dev"
+V:	Build Vendor Dev  Version [EN]
 	wmake -h dev
 M:	Build Development Version [??]
 {
