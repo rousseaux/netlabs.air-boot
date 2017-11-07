@@ -304,9 +304,9 @@ langsetup: .SYMBOLIC .MULTIPLE
 # Note that this target is not used as a 'dependency' but 'called' explicitly
 # by the $(BLD_LANGUAGES) target.
 !ifdef __LINUX__
-	@echo -e "include text/$(%BLD_LANG)/mbr.asm\r">   text$(DS)txtmbr.asm
-	@echo -e "include text/$(%BLD_LANG)/menus.asm\r"> text$(DS)txtmenus.asm
-	@echo -e "include text/$(%BLD_LANG)/other.asm\r"> text$(DS)txtother.asm
+	@bash -c 'echo -e "include text/$(%BLD_LANG)/mbr.asm\r">   text$(DS)txtmbr.asm'
+	@bash -c 'echo -e "include text/$(%BLD_LANG)/menus.asm\r"> text$(DS)txtmenus.asm'
+	@bash -c 'echo -e "include text/$(%BLD_LANG)/other.asm\r"> text$(DS)txtother.asm'
 !else
 	@echo include text/$(%BLD_LANG)/mbr.asm>   text$(DS)txtmbr.asm
 	@echo include text/$(%BLD_LANG)/menus.asm> text$(DS)txtmenus.asm
