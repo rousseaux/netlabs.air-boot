@@ -1,0 +1,12 @@
+#
+# Simple Build Menu
+#
+
+A:	Build All
+	make build USE_GNU_MAKE=y
+
+C:	Clean All
+	make clean USE_GNU_MAKE=y
+
+S:	Git Status
+	git status

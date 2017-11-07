@@ -1,0 +1,66 @@
+###############################################################################
+# airboot.gmk :: GNU Makefile for the Boot Loader (airboot.bin)               #
+# --------------------------------------------------------------------------- #
+# This Makefile builds the AiR-BOOT Boot Loader.                              #
+# This is the small ~31kB binary that resides in track0.                      #
+###############################################################################
+
+# UUID of this Makefile
+uuid:=95b9bf74-70d3-11e6-bae9-df2b17e2701d
+
+# Get the name of this Makefile
+self:=$(lastword $(MAKEFILE_LIST))
+
+# Delegate to target 'default' which can specify more than one dependency
+.DEFAULT_GOAL:=default
+
+# Inform the user on how to build AiR-BOOT
+default: info
+
+# Show information on how to use this Makefile
+info:
+	$(info )
+	$(info [$@])
+	@echo "### Master AiR-BOOT Makefile ###"
+	@echo "Use make build to build AiR-BOOT for all languages."
+	@echo
+
+# Redirect to 'build' target
+all: build
+
+# Build AiR-BOOT and its components
+build: dev
+#~ 	$(info )
+#~ 	$(info [$@])
+#~ 	$(call owc.env)
+#~ 	wmake -h
+
+# Cleanup the generated files
+clean:
+	$(info )
+	$(info [$@])
+	$(call owc.env)
+	wmake -h clean
+
+# Build AiR-BOOT development version
+dev:
+	$(info )
+	$(info [$@])
+	$(call owc.env)
+	@echo "VV:$(__VENDOR_BUILD__)"
+	wmake -h dev DEV_BLD_LANG=$(DEV_BLD_LANG)
+
+#
+# Open Watcom Environment
+#
+define owc.env
+$(call owc19.env)
+endef
+define owc19.env
+$(eval export WATCOM:=/vol/devtools/owc19)
+$(eval export PATH:=$(WATCOM)/binl:$(PATH))
+$(eval export INCLUDE:=$(WATCOM)/lh:$(INCLUDE))
+$(eval export EDPATH:=$(WATCOM)/eddat)
+$(eval export WIPFC:=$(WATCOM)/wipfc)
+$(eval CC=owcc)
+endef
