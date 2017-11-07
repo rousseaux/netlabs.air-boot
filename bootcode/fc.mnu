@@ -3,7 +3,7 @@
 #
 
 I:	Information
-	make dev-info
+	wmake devinfo
 -:	-------------------------------------
 B:	Build Anonymous Dev Version  [EN]
 	wmake -h dev DEV_BLD_LANG=en %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y

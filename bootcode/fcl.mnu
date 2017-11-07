@@ -3,7 +3,7 @@
 #
 
 I:	Information
-	make dev-info
+	make devinfo USE_GNU_MAKE=y
 -:	-------------------------------------
 B:	Build Anonymous Dev Version  [EN]
 	make dev DEV_BLD_LANG=en BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y

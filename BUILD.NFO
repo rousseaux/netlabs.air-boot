@@ -1,5 +1,5 @@
 ===============================================================================
-Information on building AiR-BOOT                                     [20170413]
+Information on building AiR-BOOT                                   [2017-04-13]
 ===============================================================================
 
 
@@ -13,7 +13,7 @@ the beast.
 Fiddling
 --------
 Fiddling can be done in the 'bootcode' directory.
-Do a 'make dev-info' in 'bootcode' to learn more.
+Do a 'make devinfo' in 'bootcode' to learn more.
 -- or --
 Use File Commander and press F2 which will present a nice Build Menu.
 

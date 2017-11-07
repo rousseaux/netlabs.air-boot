@@ -42,6 +42,13 @@ dev:
 	$(call owc.env)
 	wmake -h dev DEV_BLD_LANG=$(DEV_BLD_LANG)
 
+# Show information on AiR-BOOT development
+devinfo:
+	$(info )
+	$(info [$@])
+	@less devinfo.txt
+	@echo
+
 #
 # Open Watcom Environment
 #

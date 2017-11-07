@@ -1,0 +1,127 @@
+===============================================================================
+Information on AiR-BOOT Development                                [2017-04-13]
+===============================================================================
+
+
+This is the AiR-BOOT Development Build Directory
+------------------------------------------------
+AiR-BOOT roughly consists of the following components:
+o The BootLoader
+o The Installer Program
+o The SetABoot Program
+
+Required Tools
+--------------
+o Open Watcom -- v1.9 is the version used by the maintainer
+o JWasm       -- v2.06d (July 9 2011) is the version used by the maintainer
+o GNU Make    -- v3.81 or higher
+
+A note on supported Assemblers and Build Utilities
+--------------------------------------------------
+The (earlier) support for TASM/MASM and WASM was actually an excercise
+investigating assembler capabilities and code-generation. This has not been
+maintained and the relevant sections and files will be removed. The only
+supported assembler is JWasm, specifically v2.06d for OS/2. Also, the Watcom
+Make utility (wmake) is about to be replaced by GNU Make to enhance the overall
+build-system.
+
+The BootLoader
+--------------
+The main source file is 'airboot.asm', from which other sources are included
+at the source level. Building the BootLoader results in a 16-bit binary image
+called 'airboot.bin' which is the stuff that gets installed in TRACK0 of the
+boot-disk.
+
+Post Processing of the BootLoader
+---------------------------------
+When 'airboot.asm' is assembled, the resulting binary is not ready yet.
+The 'mbr-prot' module is a seperatedly built module that has to be embedded
+to form the final loader-image. This is done by the 'fixcode' utility.
+Even when this embedding is done, the resulting image is not ready yet because
+the CRC that protects the code-section has not been calculated yet, because
+that is done by the installer when the loader-imaged is installed. This means
+that a regular built loader-image cannot be manually merged to TRACK0 of a disk
+and be functional. The moment AiR-BOOT starts it will halt on the invalid
+code-section CRC. See the para below on how to circumvent that.
+
+The 'CRC_IGNORE' build-option
+-----------------------------
+If you look at 'fc.mnu' you see the use of the 'CRC_IGNORE' build-option.
+This option disables the CRC check for the code-section in the resulting
+loader-image so that it is now possible to manually merge the loader-image to
+TRACK0 of a disk. This is handy when using virtual machines for development.
+Of course you cannot blindly copy the loader-image to TRACK0, because that
+would overwrite the partition-table of the disk.
+
+The Internal Mini Debugger
+--------------------------
+If AUX_DEBUG (airboot.asm:~97) is enabled, rudimentary COM-port debugging is
+possible. If a terminal is attached to the COM-port, AiR-BOOT will dump
+information there when it is loading and a few 'hotkeys' exist to dump some
+internal stuff when the MAIN MENU is active. Press 'h' to have AiR-BOOT dump
+de hotkeys to the COM-port.
+
+Adjusting the Mini Debugger to your needs
+-----------------------------------------
+The debugger hooks into the main keyboard loop to check if the key pressed is
+one of its hotkeys. These hotkeys are defined in 'debug.asm'. More precisely,
+they are part of a dispatch-table where each hotkey maps to a pointer that
+points to the function to be executed. This makes it easy to redefine existing
+hotkeys or add new ones and their corresponding functions to suit your needs.
+
+The need for the '/forcecode' flag
+----------------------------------
+When developing, if the regular installer is used to install a new build,
+the '/forcecode' option is required. This is because the installer checks the
+version, which is most probably the same as the previously installed build,
+so the installer assumes the installed version 'up-to-date'. The '/forcecode'
+flag forces the installer to write the new code-section to TRACK0 of the disk.
+
+CAUTION when developing on a Real System
+----------------------------------------
+Remember that AiR-BOOT always accesses all disks and modifies the boot-flags
+in the MBRs it finds. A small bug can render disks unusable. This also involves
+attached USB mass storage devices (accidently) left plugged-in. Needless to say
+that a virtual machine environment is the safest and both Qemu and VirtualBox
+are very suitable for that.
+
+The Installer Program
+---------------------
+This is a cross-platform program written in C.
+It takes the 'airboot.bin' loader-image and installs it into TRACK0 of the
+boot-disk. Needless to say that the OS/2 version of the installer,
+'airboot2.exe', is the most tested version. Versions for the other platforms
+are tested occasionally but not intensively.
+
+The SetABoot Program
+--------------------
+This is the AiR-BOOT replacement for 'setboot.exe'.
+If offers roughly the same functionality, but instead of acting on IBM-BM,
+it of course acts on AiR-BOOT. If AiR-BOOT is not found, it delegates to
+'setbm.exe' which it assumes is the original 'setboot.exe' renamed.
+
+The FixCode Utility
+-------------------
+This utility is used to embed the 'mbr-prot' module into the loader-image.
+It is only used when developing and not part of the AiR-BOOT distribution.
+
+The File Commander Build Menu
+-----------------------------
+The Swiss Army Knife used to provide Build Menus.
+Just press F2 here for the Developer Build Menu.
+
+Resources:
+----------
+Netlabs Project Page  : http://trac.netlabs.org/air-boot
+Netlabs Respository   : http://trac.netlabs.org/air-boot/browser/trunk
+Netlabs Revision Log  : http://trac.netlabs.org/air-boot/log
+Bug tracking:         : http://trac.netlabs.org/air-boot/report
+GitHub Project Portal : http://rousseaux.github.io/netlabs.air-boot
+GitHub Repository     : http://github.com/rousseaux/netlabs.air-boot
+Contact e-mail        : rousseau.os2dev@gmx.com
+
+
+
+Ben Rietbroek <rousseau.os2dev@gmx.com>,
+
+  AiR-BOOT maintainer.
