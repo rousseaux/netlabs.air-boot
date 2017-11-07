@@ -1,0 +1,72 @@
+===============================================================================
+Information on AiR-BOOT Manual Creation                            [2017-04-13]
+===============================================================================
+
+Apache OpenOffice Writer for the Master Document
+------------------------------------------------
+The AiR-BOOT Manual is provided in the PDF and OS/2 INF formats.
+Of course we do not want to maintain both formats separately, so a sort of
+_master_ format is required. This is found in the Open Document Format (ODF)
+used by Apache OpenOffice, especially the ODT-variant used by AOO-Writer.
+
+The port of Apache OpenOffice for OS/2 is provided by "bww bitwise works GmbH".
+See: https://www.bitwiseworks.com
+
+
+The Master Document
+-------------------
+The file "airboot-manual.odt" is the master document in ODT-format.
+It can be modified using AOO-Writer. Before putting a new version in the
+repository, it is always reconstructed from its exploded form.
+
+
+The AiR-BOOT Manual in PDF-format
+---------------------------------
+This is done using the excellent PDF-export feature of Apache OpenOffice.
+The steps are:
+o Reconstruct the master-document
+o Load it in AOO for OS/2
+o Manually export it to PDF
+
+
+The AiR-BOOT Manual in INF-format
+---------------------------------
+This is done using XSLT.
+Because an ODT is actually a ZIP-file, with the file 'content.xml' holding the
+document-content in XML-form, it can be processed by XSLT.
+
+Construction of the manual is done by:
+o Exploding the ODT to a subdirectory                 -- UNZIP
+o Transforming 'content.xml' to 'airboot-manual.ipf'  -- XSLTPROC
+o Converting PNG images to OS/2 BMP images            -- GBMCONV
+o Compiling IPF to INF                                -- WIPFC
+
+
+Conversion of the embedded images
+---------------------------------
+AOO embedded images are stored in PNG-format.
+Since the IPF creation tools can only handle OS/2 bitmap format, these images
+must first be converted from PNG to OS/2 BMP. This is done with the 'gbmconv'
+utility, which is part of the 'Generalised Bitmap Module' (GBM) package.
+
+Be sure that any old "?:\os2\dll\gbm.dll" is *not* active when using 'gbmconv'!
+
+The Generalised Bitmap Module is provided by "Heiko Nitzsche".
+See: http://heikon.home.tlink.de                            (** unavailable **)
+     http://www.ecsoft2.org/generalised-bitmap-module-gbm         (via eCoSoft)
+
+
+Tools Versions
+--------------
+o UNZIP             -- v6.00 is the version used
+o XSLTPROC          -- xsltproc was compiled against libxml 20904,
+                       libxslt 10129 and libexslt 817
+o GBMCONV           -- v1.7.6 is the version used
+o Open Watcom WIPFC -- v1.9 is the version used
+o GNU Make          -- v3.81 is the version used
+
+
+
+Ben Rietbroek <rousseau.os2dev@gmx.com>,
+
+  AiR-BOOT maintainer.

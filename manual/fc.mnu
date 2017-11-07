@@ -1,0 +1,35 @@
+I:	Information
+	make info
+
+-:	--------------------------
+
+B:	Build Manual
+	make build
+
+R:	Rebuild Manual
+	make rebuild
+
+O:	Reconstruct the ODT
+	make reconstruct
+
+-:	--------------------------
+
+1:	Explode ODT
+	make odt.explode
+
+2:	Convert Images
+	make png.convert
+
+3:	Generate Formatted Content
+	make content.formatted
+
+4:	Generate IPF
+	make ipf.create
+
+5:	Create INF
+	make inf.create
+
+-:	--------------------------
+
+C:	Clean
+	make clean

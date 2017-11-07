@@ -1,0 +1,254 @@
+###############################################################################
+# airboot-manual.gmk :: Create the airboot.inf OS/2 Help File                 #
+# --------------------------------------------------------------------------- #
+# The manual itself is maintained with Apache Open Office Writer for OS/2.    #
+# This implies the Open Document Format, which in turn implies ZIP compressed #
+# files. With ODF, the content and markup is separated, so it is possible to  #
+# get the structure and content of the ODF-document use that as the base for  #
+# a Manual in the familiar OS/2 INF format that can be read with (New) View.  #
+#                                                                             #
+# This Makefile extracts the 'content.xml' and uses XSLT to create an IPF     #
+# source 'airboot.ipf'. This is then compiled with 'wipfc' to create the      #
+# 'airboot.inf' file.                                                         #
+#                                                                             #
+###############################################################################
+gnumake.project.name    := airboot-manual
+gnumake.project.target  := default
+gnumake.project.uuid    := a84e63e6-8929-11e7-ac7d-dfa0c5e47662
+
+# Get the name of this Makefile
+SELF:=$(lastword $(MAKEFILE_LIST))
+
+# Delegate to target 'default' which can specify more than one dependency
+.DEFAULT_GOAL:=$(gnumake.project.target)
+
+#
+# Global Variables
+#
+doctitle=AiR-BOOT User Manual
+toclevels=123
+infname=airboot.inf
+basename=airboot-manual
+odt.docin=$(basename).odt
+explode.dir=$(odt.docin:odt=odtx)
+imgdirprefix=$(explode.dir)
+transform.sheet=odt2ipf.xsl
+
+# =============================================================================
+# Virtual default target using dependency to invoke other targets
+# =============================================================================
+default: info
+#~ default: all
+#~ default: build
+#~ default: rebuild
+#~ default: package
+#~ default: clean
+
+# =============================================================================
+# Show information about this sub-project
+# =============================================================================
+info:
+	$(info )
+	$(info [$@])
+	@less $(gnumake.project.name).info
+	@echo
+
+# =============================================================================
+# Build everything
+# -----------------------------------------------------------------------------
+# When building everything, we want to exclude side effects of incremental
+# actions. So we delegate to 'rebuild' which does a clean first.
+# =============================================================================
+all: rebuild
+
+# =============================================================================
+# Perform all steps to create the AiR-BOOT Manual (incremental)
+# =============================================================================
+build::
+	$(info )
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+	$(info :: BUILDING AiR-BOOT MANUAL                                                  ::)
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+build:: inf.create
+	$(info )
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+	$(info :: BUILDING AiR-BOOT MANUAL FINISHED                                         ::)
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+
+# =============================================================================
+# Perform all steps to create the AiR-BOOT Manual
+# =============================================================================
+rebuild::
+	$(info )
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+	$(info :: COMPLETELY REBUILDING AiR-BOOT MANUAL                                     ::)
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+rebuild:: clean build
+
+# =============================================================================
+# Reconstruct the AiR-BOOT Manual from the Exploded Directory
+# =============================================================================
+reconstruct::
+	$(info )
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+	$(info :: RECONSTRUCTING THE AiR-BOOT OPEN-OFFICE DOCUMENT FOR EDITING              ::)
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+reconstruct::
+	rm -f -v reconstructed.odt
+	bash -c "cd $(explode.dir) && rm -f Pictures/*.bmp && zip -r ../reconstructed.odt . && cd -"
+
+
+# =============================================================================
+# Clean all generated files
+# =============================================================================
+clean::
+	$(info )
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+	$(info :: REMOVING ALL GENERATED FILES                                              ::)
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+clean::
+	$(info )
+	$(info [$@])
+	@rm -r -f -v $(explode.dir)
+	@rm -f -v $(basename).ipf $(basename).inf
+	@rm -f -v content.xml styles.xml meta.xml
+
+
+
+#~ .SECONDEXPANSION:
+
+# =============================================================================
+# Explode the Open Office Writer document
+# =============================================================================
+odt.explode: $(explode.dir)/content.xml
+	$(info )
+	$(info [$@] -- [$?])
+
+# =============================================================================
+# Virtual target to translate ODT to IPF using XSLT
+# =============================================================================
+ipf.create: $(basename).ipf
+	$(info )
+	$(info [$@] -- [$?])
+
+# =============================================================================
+# Convert the extracted PNG images to OS/2 BMP format
+# -----------------------------------------------------------------------------
+# OpenOffice uses the PNG format for embedded images, which are present in the
+# 'Pictures' directory of the exploded ODT document. The OS/2 INF format can
+# only handle the OS/2 BMP format, so we convert to PNG images to OS/2 BMP.
+# This is done using 'gbmconv' from the GBM imaging tools.
+#
+# When the ODT is not yet exploded, there are no images yet, so things like
+# $(wildcard) cannot be used because it would return an empty set. So it is not
+# directly possible to have the images as dependencies because all macros are
+# evaluated before they are present.
+#
+# To solve this, this 'png.convert' is recursively invoked from the target that
+# explodes the ODT. Now the images are present and $(wildcard) can be used as
+# a dependency to invoke the PNG => BMP conversion rule.
+# =============================================================================
+png.convert::
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+	$(info :: CONVERTING PNG IMAGES TO OS/2 BMP FORMAT                                  ::)
+	$(info :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::)
+png.convert:: $(patsubst %.png,%.png.bmp,$(wildcard $(explode.dir)/Pictures/*.png))
+
+
+# =============================================================================
+# Virtual target for INF file creation
+# =============================================================================
+inf.create: $(basename).inf
+	$(info )
+	$(info [$@] -- [$?])
+
+# -----------------------------------------------------------------------------
+# Local formatted copy -- forces explode
+# -----------------------------------------------------------------------------
+meta.xml: $(explode.dir)/meta.xml $(odt.docin)
+	$(info )
+	$(info [$@] -- [$?])
+	cat $(explode.dir)/$@ | xsltproc format.xsl - > $@
+
+# -----------------------------------------------------------------------------
+# Local formatted copy -- forces explode
+# -----------------------------------------------------------------------------
+styles.xml: $(explode.dir)/styles.xml $(odt.docin)
+	$(info )
+	$(info [$@] -- [$?])
+	cat $(explode.dir)/$@ | xsltproc format.xsl - > $@
+
+# -----------------------------------------------------------------------------
+# Local formatted copy -- forces explode
+# -----------------------------------------------------------------------------
+content.xml: $(explode.dir)/content.xml $(odt.docin) styles.xml meta.xml
+	$(info )
+	$(info [$@] -- [$?])
+	cat $(explode.dir)/$@ | xsltproc format.xsl - > $@
+
+# -----------------------------------------------------------------------------
+# Explode the OpenOffice document to a directory -- also converts PNG => BMP
+# -----------------------------------------------------------------------------
+$(explode.dir)/content.xml: $(odt.docin)
+	$(info )
+	$(info [$@] -- [$?])
+	unzip -o $(odt.docin) -d $(explode.dir)
+	$(MAKE) -f $(SELF) png.convert
+	touch -r $< $@
+	@cp -a $< $<.bu
+
+# -----------------------------------------------------------------------------
+# Translate the content of the ODT file to IPF using XSLT
+# -----------------------------------------------------------------------------
+$(basename).ipf:
+$(basename).ipf: $(explode.dir)/content.xml $(transform.sheet) content.xml
+	$(info )
+	$(info [$@] -- [$?])
+#~ 	cat $< | xsltproc $(transform.sheet) - > $@
+	xsltproc \
+	--stringparam basename "$(basename)" \
+	--stringparam doctitle "$(doctitle)" \
+	--stringparam toclevels "$(toclevels)" \
+	--stringparam imgdirprefix "$(imgdirprefix)" \
+	--stringparam default-font "WarpSans" \
+	$(transform.sheet) $< > $@
+
+# -----------------------------------------------------------------------------
+# Create the AiR-BOOT Manual in INF format
+# -----------------------------------------------------------------------------
+$(basename).inf: $(basename).ipf
+	$(info )
+	$(info [$@] -- [$?])
+	$(call owc.env)
+	wipfc -q -i $< -o $@
+	cp -a $@ $(infname)
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Rule to convert PNG images to OS/2 BMP format
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%.png.bmp: %.png
+ifdef OS2_SHELL
+	$(info $(notdir $<) => $(notdir $@))
+	@gbmconv $< $@
+else
+	$(info $(notdir $<) => $(notdir $@))
+	@./gbmconv $< $@
+endif
+
+#
+# Open Watcom Environment (Linux)
+#
+ifndef OS2_SHELL
+define owc.env
+$(call owc19.env)
+endef
+define owc19.env
+$(eval export WATCOM:=/vol/devtools/owc19)
+$(eval export PATH:=$(WATCOM)/binl:$(PATH))
+$(eval export INCLUDE:=$(WATCOM)/lh:$(INCLUDE))
+$(eval export EDPATH:=$(WATCOM)/eddat)
+$(eval export WIPFC:=$(WATCOM)/wipfc)
+$(eval CC=owcc)
+endef
+endif
