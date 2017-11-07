@@ -8,7 +8,7 @@ I:	Information
 -:	-------------------------
 
 B:	Build
-	wmake -h %RELEASE=y
+	wmake -h
 
 P:	Package
 	wmake -h package

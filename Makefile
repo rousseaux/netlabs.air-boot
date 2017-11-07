@@ -26,6 +26,13 @@
 ###############################################################################
 
 
+#
+# Enable the macro below to do a RELEASE build.
+# This will influence various definitions in "include/version.h" as well as
+# definitions in "include/version.inc". Note that the '%' causes it to be set
+# in the environment, so it also influences recursive make invocations.
+#
+#~ %RELEASE=y
 
 #                           DEFINITIONS AND STUFF
 # _____________________________________________________________________________
@@ -195,7 +202,7 @@ package.src: .SYMBOLIC clean
 	set RELDIR=release
 	set CRC_IGNORE=n
 	set ABV=AirBoot-v1.1.2
-	set PACKDIR=$(%ABV)-src-RELEASE
+	set PACKDIR=$(%ABV)-src
 	set WTD=04-13-2017
 	set WTT=01:01:02
 	set RDATE=201704130101.02
@@ -207,7 +214,7 @@ package.src: .SYMBOLIC clean
 	@echo Preparing...
 	@if exist $(%ABV)*.zip del $(%ABV)*.zip 1>nul
 	@if exist $(%RDATE)-tmp.zip del $(%RDATE)-tmp.zip 1>nul
-	@zip -q -r -x.git $(%RDATE)-tmp.zip .
+	@zip -q -r $(%RDATE)-tmp.zip . -x .git -x .index.local
 	@md $(%PACKDIR)
 	@move $(%RDATE)-tmp.zip $(%PACKDIR) 1>nul
 	@cd $(%PACKDIR)
@@ -235,7 +242,7 @@ package.bin: .SYMBOLIC
 !else
 	set RELEASE=y
 	set RELDIR=release
-	set PACKDIR=AirBoot-v1.1.2-bin-RELEASE
+	set PACKDIR=AirBoot-v1.1.2-bin
 	set RDATE=201704130101.02
 
 	@%MAKE build

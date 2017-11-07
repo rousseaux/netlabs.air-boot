@@ -8,7 +8,7 @@ I:	Information
 -:	-------------------------
 
 B:	Build
-	make build RELEASE=y USE_GNU_MAKE=y
+	make build USE_GNU_MAKE=y
 
 P:	Package
 	make package USE_GNU_MAKE=y
