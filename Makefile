@@ -158,6 +158,7 @@ clean: .SYMBOLIC
 	@cd ..
 	@SET ACTION=CLEAN
 	@for %%i in ($(COMPONENTS)) do @$(MAKE) -h %%i
+	@if exist Makefile.bu $(RM) Makefile.bu
 	@echo.
 	@echo Done.
 	@echo.
