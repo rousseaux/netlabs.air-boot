@@ -940,7 +940,7 @@ BOOL Track0DetectAirBoot (BOOL* ab_bad) {
       return TRUE;
     }
 
-   if (strncmp(AiRBOOT_Config->Identifier, "AiRCFG-TABLE­", 13)!=0) {            // Rousseau: INVISIBLE CHAR HERE !
+   if (strncmp(AiRBOOT_Config->Identifier, "AiRCFG-TABLE\xad", 13)!=0) {
       puts ("SETABOOT: AiR-BOOT Config damaged!");
       *ab_bad = TRUE;
       return TRUE;
