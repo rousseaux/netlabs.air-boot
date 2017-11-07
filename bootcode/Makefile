@@ -159,9 +159,9 @@ ASM=jwasm
 # -Zm   = Masm51 compat -- don't use ! (Will generate incorrect offsets)
 # -Zd   = line number debug info
 # -Zi   = symbolic debug info
-ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -DBLD_LANG="'$(%BLD_LANG)'" $(%JWASM_DEFINES) -q -W0 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
-ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -DBLD_LANG="'$(%BLD_LANG)'" $(%JWASM_DEFINES) -q -W4 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
-ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -DBLD_LANG="'$(%BLD_LANG)'" $(%JWASM_DEFINES) -q -WX -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -DBLD_LANG="$(%BLD_LANG)" $(%JWASM_DEFINES) -q -W0 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -DBLD_LANG="$(%BLD_LANG)" $(%JWASM_DEFINES) -q -W4 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -DBLD_LANG="$(%BLD_LANG)" $(%JWASM_DEFINES) -q -WX -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
 # Workaround for JWasm list-file generation.
 # Generate the list-file on a local drive so JWasm doen't take forever.
 # This is done in the recipe.
@@ -288,33 +288,6 @@ all: .SYMBOLIC Makefile.bu $(BLD_LANGUAGES) footer
 
 
 # -----------------------------------------------------------------------------
-# LANGUAGE SETUP
-# -----------------------------------------------------------------------------
-# Setup the relevant language files.
-# This is done by generating include-files for the specified language.
-# This is a 'pre-action' before assembling the AiR-BOOT.ASM source.
-# -----------------------------------------------------------------------------
-langsetup: .SYMBOLIC .MULTIPLE
-# Default to development language is none defined.
-!if "$(%BLD_LANG)"==""
-#~ %BLD_LANG=DEV_BLD_LANG
-!endif
-# Generate include-files for specified language.
-# After this, the Assembly sources are setup for the specified language.
-# Note that this target is not used as a 'dependency' but 'called' explicitly
-# by the $(BLD_LANGUAGES) target.
-!ifdef __LINUX__
-	@bash -c 'echo -e "include text/$(%BLD_LANG)/mbr.asm\r">   text$(DS)txtmbr.asm'
-	@bash -c 'echo -e "include text/$(%BLD_LANG)/menus.asm\r"> text$(DS)txtmenus.asm'
-	@bash -c 'echo -e "include text/$(%BLD_LANG)/other.asm\r"> text$(DS)txtother.asm'
-!else
-	@echo include text/$(%BLD_LANG)/mbr.asm>   text$(DS)txtmbr.asm
-	@echo include text/$(%BLD_LANG)/menus.asm> text$(DS)txtmenus.asm
-	@echo include text/$(%BLD_LANG)/other.asm> text$(DS)txtother.asm
-!endif
-
-
-# -----------------------------------------------------------------------------
 # BUILD ALL LANGUAGES
 # -----------------------------------------------------------------------------
 # For every language we Assemble and Link these steps are performed.
@@ -327,7 +300,6 @@ $(BLD_LANGUAGES): .SYMBOLIC
 	@%MAKE header
 	@%MAKE clean
 	@%MAKE rmbin
-	@%MAKE langsetup
 	@%MAKE $(TARGET)
 # Checking %AB_DEV does not work from target 'dev:' when non-recursively
 # invoked. Var '%AB_DEV' *is* set correctly but conditional !if's fail on it.

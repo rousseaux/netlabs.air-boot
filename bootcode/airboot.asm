@@ -28,6 +28,13 @@
 ;##############################################################################
 
 ;
+; This one should never be undefined, but if so, then default to English.
+;
+IFNDEF  BLD_LANG
+BLD_LANG    EQU     en
+ENDIF
+
+;
 ; Include AiR-BOOT Version Information.
 ; This version-info is defined using simpel EQU's so it can serve as a
 ; single source for other formats. The AiR-BOOT signature and the
@@ -47,6 +54,13 @@ include bldlevel.inc
 ;
 include ../include/asm.inc
 
+;
+; The BLD_LANG is passed as an unquoted string so it can be used with
+; the 'include' directive. But for other language conditional actions a quoted
+; version is needed. This macro creates BLD_LANG_TXT holding the language
+; in single quotes.
+;
+enquote BLD_LANG,%BLD_LANG
 
 ; We actually don't want to use this directive because it generates extra
 ; NOP instructions that we can do without.
@@ -100,7 +114,7 @@ ENDIF
 ; know I have been './'-ted, which most probably will be something completely
 ; different from being 'slash-dotted' ... ;)
 ;
-IF  BLD_LANG EQ 'en'
+IF  BLD_LANG_TXT EQ 'en'
 IFNDEF  AUX_DEBUG
 FX_ENABLED      EQU
 ENDIF
@@ -883,7 +897,7 @@ MBR_RealStart:
 
 
 ;------------------------------------------------------------------------------
-include text/txtmbr.asm                        ; All translateable Text in MBR
+include_from text/%BLD_LANG,mbr.asm            ; All translateable Text in MBR
 ;------------------------------------------------------------------------------
 
                 ; Disk Signature
@@ -1737,11 +1751,11 @@ include regular/math.asm        ; Math functions (like 32-bit multiply)
 size_math = $-b_math
 
 b_txtother:
-include text/txtother.asm       ; All translateable Text-Strings
+include_from text/%BLD_LANG,other.asm   ; All translateable Text-Strings
 size_txtother = $-b_txtother
 
 b_txtmenus:
-include text/txtmenus.asm       ; All translateable Menu-text
+include_from text/%BLD_LANG,menus.asm   ; All translateable Menu-text
 size_txtmenus = $-b_txtmenus
 
 b_charset:

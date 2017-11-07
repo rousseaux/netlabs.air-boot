@@ -246,6 +246,25 @@ InsertAirbootSignature  MACRO   lang
 ENDM
 
 
+;
+; This macro composes a path and file to load in include file.
+; It is used to include language specific files by using the BLD_LANG value.
+;
+include_from   MACRO   loc,file
+    include loc/file
+ENDM
+
+
+;
+; This macro creates a new symbol ending with '_TXT' which has the value of
+; the original symbol put in single quotes. It is used to do language specific
+; actions based on the BLD_LANG value.
+;
+enquote   MACRO   symname,symval
+    symname&_TXT    EQU '&symval&'
+ENDM
+
+
 ; Shortcuts for pointer-types
 bptr                             equ   byte ptr
 wptr                             equ   word ptr
