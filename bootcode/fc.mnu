@@ -2,29 +2,36 @@
 # Simple Build Menu
 #
 
-B:	Build Development Version [EN]
+I:	Information
+	make dev-info
+-:	-------------------------------------
+B:	Build Anonymous Dev Version  [EN]
 	wmake -h dev DEV_BLD_LANG=en %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
-V:	Build Vendor Dev  Version [EN]
-	wmake -h dev DEV_BLD_LANG=en
-M:	Build Development Version [??]
+V:	Build Vendor    Dev Version  [EN]
+	wmake -h dev DEV_BLD_LANG=en %CRC_IGNORE=y
+F:	Build Fake  Release Version  [EN]
+	wmake dev DEV_BLD_LANG=en %RELEASE=y
+-:	-------------------------------------
+L:	Build Anonymous Dev Version  [LANG]
 {
 1:	English
-	wmake -h dev DEV_BLD_LANG=en
-2:	German
-	wmake -h dev DEV_BLD_LANG=de
-3:	Dutch
-	wmake -h dev DEV_BLD_LANG=nl
-4:	French
-	wmake -h dev DEV_BLD_LANG=fr
-5:	Italian
-	wmake -h dev DEV_BLD_LANG=it
-6:	Swedish
-	wmake -h dev DEV_BLD_LANG=sw
-7:	Russian
-	wmake -h dev DEV_BLD_LANG=ru
+	wmake -h dev DEV_BLD_LANG=en %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
+2:	German    (without FX)
+	wmake -h dev DEV_BLD_LANG=de %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
+3:	Dutch     (without FX)
+	wmake -h dev DEV_BLD_LANG=nl %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
+4:	French    (without FX)
+	wmake -h dev DEV_BLD_LANG=fr %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
+5:	Italian   (without FX)
+	wmake -h dev DEV_BLD_LANG=it %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
+6:	Swedish   (without FX)
+	wmake -h dev DEV_BLD_LANG=sw %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
+7:	Russian   (without FX)
+	wmake -h dev DEV_BLD_LANG=ru %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
 }
+-:	-------------------------------------
 C:	Clean
 	wmake -h clean
--:	--------------------------------
+-:	-------------------------------------
 I:	Install (/forcecode)
 	airboot2.exe /forcecode

@@ -2,8 +2,16 @@
 # Simple Build Menu
 #
 
-A:	Build All Languages
-	wmake -h
+I:	Information
+	wmake -h info
 
-C:	Clean All
+-:	-------------
+
+B:	Build
+	wmake -h %RELEASE=y
+
+P:	Package
+	wmake -h package
+
+C:	Clean
 	wmake -h clean

@@ -2,11 +2,21 @@
 # Simple Build Menu
 #
 
-A:	Build All
-	make build USE_GNU_MAKE=y
+I:	Information
+	make info USE_GNU_MAKE=y
 
-C:	Clean All
+-:	-------------
+
+B:	Build
+	make build RELEASE=y USE_GNU_MAKE=y
+
+P:	Package
+	make package USE_GNU_MAKE=y
+
+C:	Clean
 	make clean USE_GNU_MAKE=y
+
+-:	-------------
 
 S:	Git Status
 	git status

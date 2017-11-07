@@ -17,6 +17,58 @@
 ;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
 ;
 
+
+;
+; AiR-BOOT Version Information.
+;
+; First we define the numeric (BCD) AiR-BOOT version information.
+; This is used to derive ASCII and other representations.
+;
+
+IFDEF   RELEASE
+
+; AiR-BOOT version conform WarpIN format with implicit 0 as fourth number.
+; Note that the config-version is managed manually.
+AB_MAJOR_VERSION    EQU     1
+AB_MIDDLE_VERSION   EQU     1
+AB_MINOR_VERSION    EQU     2
+
+; The Year, Month and Day in BCD so we can easily extract nibbles.
+AB_YEAR             EQU     2017h
+AB_MONTH            EQU     04h
+AB_DAY              EQU     13h
+
+; The Hours, Minutes and Seconds, again in BCD for easy manipulation.
+AB_HOURS            EQU     01h
+AB_MINUTES          EQU     01h
+AB_SECONDS          EQU     02h
+
+ELSE
+
+; AiR-BOOT version conform WarpIN format with implicit 0 as fourth number.
+; Note that the config-version is managed manually.
+AB_MAJOR_VERSION    EQU     1
+AB_MIDDLE_VERSION   EQU     1
+AB_MINOR_VERSION    EQU     1
+
+; The Year, Month and Day in BCD so we can easily extract nibbles.
+AB_YEAR             EQU     2017h
+AB_MONTH            EQU     04h
+AB_DAY              EQU     13h
+
+; The Hours, Minutes and Seconds, again in BCD for easy manipulation.
+AB_HOURS            EQU     23h
+AB_MINUTES          EQU     59h
+AB_SECONDS          EQU     59h
+
+ENDIF
+
+; The AiR-BOOT signature uses big-endian so we shuffle some bits around.
+AB_SIG_VERSION      EQU     (((AB_MIDDLE_VERSION SHL 4) OR AB_MINOR_VERSION) SHL 8) OR AB_MAJOR_VERSION
+AB_SIG_YEAR         EQU     ((AB_YEAR SHR 8) OR (AB_YEAR SHL 8) AND 0FFFFh)
+AB_SIG_DATE         EQU     (AB_MONTH SHL 8) OR AB_DAY
+
+
 ;
 ; If the EQU below is enabled, the testbuild color-scheme will be used.
 ;
@@ -50,37 +102,3 @@
 ; d0h bright magenta
 ; e0h bright yellow
 ; f0h bright white
-
-;
-; AiR-BOOT Version Information.
-;
-
-;
-; First we define the numeric (BCD) AiR-BOOT version information.
-; This is used to derive ASCII and other representations.
-;
-
-; AiR-BOOT version conform WarpIN format with implicit 0 as fourth number.
-; Note that the config-version is managed manually.
-AB_MAJOR_VERSION    EQU     1
-AB_MIDDLE_VERSION   EQU     1
-AB_MINOR_VERSION    EQU     1
-
-; The Year, Month and Day in BCD so we can easily extract nibbles.
-AB_YEAR             EQU     2017h
-AB_MONTH            EQU     04h
-AB_DAY              EQU     13h
-
-; The Hours, Minutes and Seconds, again in BCD for easy manipulation.
-;~ AB_HOURS            EQU     01h
-;~ AB_MINUTES          EQU     01h
-;~ AB_SECONDS          EQU     01h
-AB_HOURS            EQU     23h
-AB_MINUTES          EQU     59h
-AB_SECONDS          EQU     59h
-
-; The AiR-BOOT signature uses big-endian so we shuffle some bits around.
-AB_SIG_VERSION      EQU     (((AB_MIDDLE_VERSION SHL 4) OR AB_MINOR_VERSION) SHL 8) OR AB_MAJOR_VERSION
-AB_SIG_YEAR         EQU     ((AB_YEAR SHR 8) OR (AB_YEAR SHL 8) AND 0FFFFh)
-AB_SIG_DATE         EQU     (AB_MONTH SHL 8) OR AB_DAY
-

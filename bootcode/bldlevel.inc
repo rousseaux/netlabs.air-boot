@@ -31,7 +31,7 @@
 ;
 
 ;
-; For some reason JWasm and Tasm don't accept 'EN' for instance, but need
+; For some reason JWasm and Tasm do not accept 'EN' for instance, but need
 ; it to be split-up. While 'iEN' does work. So all the strings that were not
 ; accepted are split-up.
 ;

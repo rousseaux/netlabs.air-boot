@@ -17,8 +17,9 @@
 //
 
 
+
 /*
-// OS/2 BLDLEVEL Information.
+// OS/2 BLDLEVEL Information
 */
 
 // Vendor
@@ -31,6 +32,30 @@
 #define     BLDLVL_MACHINE          "*UNKNOWN*"
 #endif
 
+// Build language
+#define     BLDLVL_LANGUAGE         "EN"
+
+
+// Release and TestBuild variants
+#ifdef  RELEASE
+
+// Version
+#define     BLDLVL_MAJOR_VERSION    "1"
+#define     BLDLVL_MIDDLE_VERSION   "1"
+#define     BLDLVL_MINOR_VERSION    "2"
+
+// Build date
+#define     BLDLVL_YEAR             "2017"
+#define     BLDLVL_MONTH            "04"
+#define     BLDLVL_DAY              "13"
+
+// Build time
+#define     BLDLVL_HOURS            "01"
+#define     BLDLVL_MINUTES          "01"
+#define     BLDLVL_SECONDS          "02"
+
+#else
+
 // Version
 #define     BLDLVL_MAJOR_VERSION    "1"
 #define     BLDLVL_MIDDLE_VERSION   "1"
@@ -42,12 +67,8 @@
 #define     BLDLVL_DAY              "13"
 
 // Build time
-//~ #define     BLDLVL_HOURS            "01"
-//~ #define     BLDLVL_MINUTES          "01"
-//~ #define     BLDLVL_SECONDS          "00"
 #define     BLDLVL_HOURS            "23"
 #define     BLDLVL_MINUTES          "59"
 #define     BLDLVL_SECONDS          "59"
 
-// Build language
-#define     BLDLVL_LANGUAGE         "EN"
+#endif

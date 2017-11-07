@@ -116,9 +116,22 @@ WARN_OVERLAP_NOT_SUPPORTED=Warning: Overlap Checking not supported for assembler
 !endif
 
 #
-# Compose JWasm defines to pass on command-line
+# Clear the ASM and CC definitions
 #
 %JWASM_DEFINES=
+%CC_DEFINES=
+
+#
+# Force a RELEASE build if specified
+#
+!if	"$(%RELEASE)"=="y"
+%JWASM_DEFINES += -DRELEASE
+%CC_DEFINES += -dRELEASE
+!endif
+
+#
+# Compose JWasm defines to pass on command-line
+#
 %JWASM_DEFINES += -DBLDLVL_VENDOR="'$(%BLDLVL_VENDOR)'"
 %JWASM_DEFINES += -DBLDLVL_MACHINE="'$(%BLDLVL_MACHINE)'"
 
@@ -132,7 +145,6 @@ WARN_OVERLAP_NOT_SUPPORTED=Warning: Overlap Checking not supported for assembler
 #
 # Compose C-Compiler defines to pass on command-line
 #
-%CC_DEFINES=
 !ifdef	__LINUX__
 %CC_DEFINES += -dBLDLVL_VENDOR='"$(%BLDLVL_VENDOR)"'
 %CC_DEFINES += -dBLDLVL_MACHINE='"$(%BLDLVL_MACHINE)"'
