@@ -159,9 +159,9 @@ ASM=jwasm
 # -Zm   = Masm51 compat -- don't use ! (Will generate incorrect offsets)
 # -Zd   = line number debug info
 # -Zi   = symbolic debug info
-ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM $(%JWASM_DEFINES) -q -W0 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
-ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM $(%JWASM_DEFINES) -q -W4 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
-ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM $(%JWASM_DEFINES) -q -WX -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D0=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -DBLD_LANG="'$(%BLD_LANG)'" $(%JWASM_DEFINES) -q -W0 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D1=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -DBLD_LANG="'$(%BLD_LANG)'" $(%JWASM_DEFINES) -q -W4 -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
+ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -DBLD_LANG="'$(%BLD_LANG)'" $(%JWASM_DEFINES) -q -WX -Cp -zcw -Fo$^. -Sa $(JWASM_LIST_FILE) -Fw$^&.err
 # Workaround for JWasm list-file generation.
 # Generate the list-file on a local drive so JWasm doen't take forever.
 # This is done in the recipe.
@@ -297,7 +297,7 @@ all: .SYMBOLIC Makefile.bu $(BLD_LANGUAGES) footer
 langsetup: .SYMBOLIC .MULTIPLE
 # Default to development language is none defined.
 !if "$(%BLD_LANG)"==""
-%BLD_LANG=DEV_BLD_LANG
+#~ %BLD_LANG=DEV_BLD_LANG
 !endif
 # Generate include-files for specified language.
 # After this, the Assembly sources are setup for the specified language.

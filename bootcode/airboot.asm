@@ -82,17 +82,33 @@ ENDIF
 ;
 ;~ AUX_DEBUG       EQU
 
+
 ;
-; To have FX enabled, make sure FX_ENABLE is defined.
-; There is no need (for now) to remove Cooper Bars from the setup-menu
-; because AiR-BOOT does not crash when enabling Cooper Bars while FX
-; is not compiled in. Only TAB to post-screen does not work.
-; Way to go Martin !
+; The FX (video animation) module is about to be completely removed from the
+; build to regain code space. This is especially true for non-EN builds,
+; which often have longer strings or even load special character sets.
 ;
+; However, because the EN-build for REALEASE-v1.1.2 was already distributed
+; with ArcaOS v5, FX will only be excluded for non-EN builds. When FX is not
+; compiled-in and Cooper Bars is enabled in the SETUP, the TAB-key used for
+; switching between MENU and PRE-BOOT screens will not work.
+;
+; Upcoming releases will completely remove FX related code and SETUP options.
+;
+; As can be read in 'special/fx.asm' around line 26, this removal may have
+; severe consequences for me, so if no new AiR-BOOT releases appear, then you
+; know I have been './'-ted, which most probably will be something completely
+; different from being 'slash-dotted' ... ;)
+;
+IF  BLD_LANG EQ 'en'
 IFNDEF  AUX_DEBUG
 FX_ENABLED      EQU
 ENDIF
-
+ELSE
+    echo
+    echo ***** NOTE: Excluding FX-module for this language ! *****
+    echo
+ENDIF
 
 
 ; -----------------------------------------------------------------------------
