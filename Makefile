@@ -32,7 +32,7 @@
 # definitions in "include/version.inc". Note that the '%' causes it to be set
 # in the environment, so it also influences recursive make invocations.
 #
-#~ %RELEASE=y
+%RELEASE=y
 
 #                           DEFINITIONS AND STUFF
 # _____________________________________________________________________________
