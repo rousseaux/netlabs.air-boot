@@ -826,12 +826,25 @@ MBR_RealStart:
                 call    MBR_GetCheckOfSector
                 loop    MBR_RealStart_CheckCodeLoop
 
-                ; Verify checksum
+                ; Verify checksum -- EQUAL if OK
                 cmp     MBR_CheckCode, bx
-                ;~ je      MBR_RealStart_CheckSuccess      ; CRC verified
-                jmp      MBR_RealStart_CheckSuccess     ; Ignore CRC
 
+                ;
+                ; The CRC is calculated and inserted in the loader image when
+                ; AiR-BOOT is installed. Ignoring the CRC enables manually
+                ; merging the loader without using the installer. This is used
+                ; for debugging in virtual machines, where it is easy to
+                ; merge the loader to the disk image of the VM.
+                ;
+            IFDEF   CRC_IGNORE
+                jmp     MBR_RealStart_CheckSuccess      ; Ignore CRC
+            ELSE
+                je      MBR_RealStart_CheckSuccess      ; Honor CRC -- EQ is OK
+            ENDIF
+
+                ;
                 ; Oops, checksum mismatch -- halt the system
+                ;
                 mov     si, offset TXT_ERROR_Attention
                 call    MBR_Teletype
                 mov     si, offset TXT_ERROR_CheckCode

@@ -3,26 +3,26 @@
 #
 
 B:	Build Development Version [EN]
-	bash -c "BLDLVL_VENDOR= BLDLVL_MACHINE= make dev DEV_BLD_LANG=en USE_GNU_MAKE=y"
+	make dev DEV_BLD_LANG=en BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
 V:	Build Vendor Dev  Version [EN]
-	make dev DEV_BLD_LANG=en USE_GNU_MAKE=y
+	make dev DEV_BLD_LANG=en BLDLVL_VENDOR=${USER} BLDLVL_MACHINE=${HOSTNAME} USE_GNU_MAKE=y
 -:	------------------------------
 M:	Build Development Version [??]
 {
 1:	English
-	make dev DEV_BLD_LANG=en USE_GNU_MAKE=y
+	make dev DEV_BLD_LANG=en USE_GNU_MAKE=y CRC_IGNORE=y
 2:	German
-	make dev DEV_BLD_LANG=de USE_GNU_MAKE=y
+	make dev DEV_BLD_LANG=de USE_GNU_MAKE=y CRC_IGNORE=y
 3:	Dutch
-	make dev DEV_BLD_LANG=nl USE_GNU_MAKE=y
+	make dev DEV_BLD_LANG=nl USE_GNU_MAKE=y CRC_IGNORE=y
 4:	French
-	make dev DEV_BLD_LANG=fr USE_GNU_MAKE=y
+	make dev DEV_BLD_LANG=fr USE_GNU_MAKE=y CRC_IGNORE=y
 5:	Italian
-	make dev DEV_BLD_LANG=it USE_GNU_MAKE=y
+	make dev DEV_BLD_LANG=it USE_GNU_MAKE=y CRC_IGNORE=y
 6:	Swedish
-	make dev DEV_BLD_LANG=sw USE_GNU_MAKE=y
+	make dev DEV_BLD_LANG=sw USE_GNU_MAKE=y CRC_IGNORE=y
 7:	Russian
-	make dev DEV_BLD_LANG=ru USE_GNU_MAKE=y
+	make dev DEV_BLD_LANG=ru USE_GNU_MAKE=y CRC_IGNORE=y
 }
 C:	Clean
 	make clean USE_GNU_MAKE=y

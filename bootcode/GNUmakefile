@@ -6,6 +6,8 @@
 # completed the switch to GNU Make will be propagated.                        #
 ###############################################################################
 
+export CRC_IGNORE
+
 # Use the new GNU Make build-system if USE_GNU_MAKE is set to 'y'
 ifeq ($(USE_GNU_MAKE),y)
 include airboot.gmk

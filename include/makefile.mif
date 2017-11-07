@@ -123,6 +123,13 @@ WARN_OVERLAP_NOT_SUPPORTED=Warning: Overlap Checking not supported for assembler
 %JWASM_DEFINES += -DBLDLVL_MACHINE="'$(%BLDLVL_MACHINE)'"
 
 #
+# Disable code CRC-check -- used for debugging
+#
+!if	"$(%CRC_IGNORE)"=="y"
+%JWASM_DEFINES += -DCRC_IGNORE
+!endif
+
+#
 # Compose C-Compiler defines to pass on command-line
 #
 %CC_DEFINES=
