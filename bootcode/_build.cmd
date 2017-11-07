@@ -1,3 +1,1 @@
-@SET ASM=jwasm
-@wmake -h dev
-@wmake -h dist
+@wmake -h dev DEV_BLD_LANG=en %%BLDLVL_VENDOR= %%BLDLVL_MACHINE= %%CRC_IGNORE=y

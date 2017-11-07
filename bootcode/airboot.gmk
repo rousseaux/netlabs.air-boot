@@ -15,39 +15,31 @@ self:=$(lastword $(MAKEFILE_LIST))
 .DEFAULT_GOAL:=default
 
 # Inform the user on how to build AiR-BOOT
-default: info
+default: build
 
 # Show information on how to use this Makefile
 info:
 	$(info )
 	$(info [$@])
-	@echo "### Master AiR-BOOT Makefile ###"
-	@echo "Use make build to build AiR-BOOT for all languages."
-	@echo
 
 # Redirect to 'build' target
 all: build
 
 # Build AiR-BOOT and its components
 build: dev
-#~ 	$(info )
-#~ 	$(info [$@])
-#~ 	$(call owc.env)
-#~ 	wmake -h
 
 # Cleanup the generated files
 clean:
 	$(info )
 	$(info [$@])
 	$(call owc.env)
-	wmake -h clean
+	wmake -h clean rmbin
 
 # Build AiR-BOOT development version
 dev:
 	$(info )
 	$(info [$@])
 	$(call owc.env)
-	@echo "VV:$(__VENDOR_BUILD__)"
 	wmake -h dev DEV_BLD_LANG=$(DEV_BLD_LANG)
 
 #
