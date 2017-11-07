@@ -1,22 +1,70 @@
--------------------------------------------------------------------------------
-AiR-BOOT-v1.1.1-testing                                                feb 2016
--------------------------------------------------------------------------------
+===============================================================================
+AiR-BOOT v1.1.2-RELEASE                                            [2017-04-13]
+===============================================================================
 
-This v1.1.1-testing cycle will be relatively short with the main purpose of
-integrating some patches and fixes from the local dev-queue. After things look
-good enough a v1.1.2-RELEASE will be done.
+This is the version distributed with the release of ArcaOS v5.0.
+Besides the focus-shift from eComStation to ArcaOS, substantial parts have
+been reimplemented and other features added.
 
-Once on v1.1.3-testing, the plan is to also integrate the building of the INF
-and PDF documentation into this project. That part will require LFNs, but the
-building of core AiR-BOOT files, like the installers and of course the
-bootloader itself will remain doable on 8.3 FAT systems.
+Below is a short summation:
+---------------------------
+
+o Corrected many hard coded 80h bootd-disk BIOS numbers
+  This should improve booting AiR-BOOT when BIOS boots a non-80h disk.
+
+o Allow Ctrl-Alt-Del to do a warm reset when AiR-BOOT halts
+  An AiR-BOOT halt can be caused by an USB stick with a confusing layout left
+  left in a slot. While CAD is faster, remember that AiR-BOOT halted for a
+  reason, so some proper investigation is still required !
+
+o Improved LVM-info handling
+  This code has virtually been rewritten and might solve some 'LOAD/SAVE ERROR'
+  issues.
+
+o Better handling of removable (USB) media
+  Note that this does also depend on the BIOS
+
+o Better validation before writing important sectors
+  Sectors containing partition-tables or LVM-info and their location are
+  more extensively checked before writing to disk.
+
+o Better handling of OS/2 systems using the same boot-drive
+  This is an advanced feature which essentially allows multiple installations
+  of OS/2 using the same drive-letter to boot from.
+
+o Revamped pre-MENU screen (press TAB to switch)
+  Better layout and more information, including removable devices and LVM-info.
+
+o Initial support for LARGE FLOPPY formatted media
+  Not bullet-proof yet...
+
+o Fixed issues reported on Trac
+  See: http://trac.netlabs.org/air-boot/report
+  for detailed info.
+
+More details can be found here:
+
+http://trac.netlabs.org/air-boot/log
+-- or --
+https://github.com/rousseaux/netlabs.air-boot/commits/master
+
+
+Resources:
+----------
+Netlabs Project Page  : http://trac.netlabs.org/air-boot
+Netlabs Respository   : http://trac.netlabs.org/air-boot/browser/trunk
+Netlabs Revision Log  : http://trac.netlabs.org/air-boot/log
+Bug tracking:         : http://trac.netlabs.org/air-boot/report
+GitHub Project Portal : http://rousseaux.github.io/netlabs.air-boot
+GitHub Repository     : http://github.com/rousseaux/netlabs.air-boot
+Contact e-mail        : rousseau.os2dev@gmx.com
 
 
 
 
 
 ===============================================================================
-AiR-BOOT version 1.1.0-RELEASE                                         apr 2013
+AiR-BOOT version 1.1.0-RELEASE                                     [2013-04-05]
 ===============================================================================
 
 This is the version as included on the eCS v2.2-beta CD's.
@@ -184,11 +232,9 @@ It will report a broken configuration while this is not the case.
 
 
 
-
--------------------------------------------------------------------------------
-=============================
-AiR-BOOT version 1.07-RELEASE                                          may 2011
-=============================
+===============================================================================
+AiR-BOOT version 1.07-RELEASE                                      [2011-05-06]
+===============================================================================
 
 With eComStation v2.1, as released in may 2011, AiR-BOOT replaces the familiar
 but aging IBM Boot Manager. While it is still possible to use IBM-BM,
@@ -253,18 +299,417 @@ Technically, version 1.07 and up are forks of the 1.06 version and maintained
 by a different developer. As such, addressing the original author with regard
 to v1.07 and up is not the correct path.
 
-The eComStation version of AiR-BOOT resides on Netlabs and not on Sourceforge.
+The ArcaOS Edition  of AiR-BOOT resides on Netlabs and not on Sourceforge.
 
 
 
-Resources:
-----------
-GitHub Project Portal : http://rousseaux.github.io/netlabs.air-boot
-GitHub Repository     : http://github.com/rousseaux/netlabs.air-boot
-Netlabs Project Page  : http://trac.netlabs.org/air-boot
-Netlabs Respository   : http://trac.netlabs.org/air-boot/browser/trunk
-Bug tracking:         : http://trac.netlabs.org/air-boot/report
-Contact e-mail        : rousseau.os2dev@gmx.com
+Ben Rietbroek <rousseau.os2dev@gmx.com>,
+
+  AiR-BOOT maintainer.
 
 
-                                    - x -
+########################## INFO PENDING TO BE MERGED ##########################
+
+;
+; v1.1.0-final
+; ============
+; # Bumped Version Number
+;   During v1.0.8 is was decided that odd minor versions will be test-versions.
+;   Since v1.0.8 was a test-version all the way, the final stuff has been
+;   bumped to v1.1.0, including the version of the configuration.
+;   v1.1.1 will be any following test-version, with build-dates separating
+;   test-releases. Version 1.1.2 would be a next release.
+;
+; # Updated version numbers
+;   All version identifiers updated from v1.0.8 to v1.1.0
+;   AIRBOOT.BIN, INSTALL[D2WL].EXE and SETABOOT.EXE.
+;
+; # Fixed Virus Regression
+;   Using the enhanced drive-letter feature to boot eCS installations using
+;   the same drive-letter caused the PBR-virus protection to activate.
+;   This was caused by a missing update to the PBR CRC in the AB configuration.
+;   This has been fixed.
+;
+; # Only clear bootable flag on boot-drive
+;  This interferred with booting other drives, not containing AiR-BOOT,
+;  directly from the BIOS. Now AiR-BOOT only clears the bootable-flag on the
+;  boot-drive, which is the one where AiR-BOOT got activated from.
+;
+; # Check for INT13X extensions before using them
+;   Now the availability of INT13X is checked and a popup is displayed and the
+;   system halted when they are not available. INT13X is a requirement for
+;   this and higher versions of AiR-BOOT.
+;
+; v1.0.8-rc3-bld20120909
+; ----------------------
+; # Added Show LVM Drive Letters in SETUP/BASIC #
+;   This will toggle the display of LVM drive-letters in the main menu.
+;   By default this option is enabled.
+;
+; # Reduced MBR Protection Image from 1024 bytes to 768 bytes #
+;   The fight for code-space continues...
+;   Luckily the MBR Protection Image code does not exceed 768 bytes,
+;   so that gives us another 256 bytes of precious code-space.
+;   Now the non-EN versions are happy again.
+;   Note that the alignment for the image changed from 512 to 256 bytes.
+;   MBR-PROT.ASM, FIXCODE.C, PARTMAIN.ASM and AIR-BOOT.ASM have been
+;   adjusted for this change.
+;
+; # Updating from v1.06 now also copies over drive-letters #
+;   When the user has forced drive-letters in v1.06 these will be copied over
+;   to the v1.0.8 configuration when upgrading.
+;   Because the drive-letter feature is broken in v1.07, the drive-letter
+;   table does not get copied over when upgrading from v1.07.
+;
+; # Fixed a minor bug with displaying LVM drive-letters #
+;   When more partitions that can be displayed were present, scrolling the
+;   menu would not scroll the drive-letter. Fixed.
+;
+; # Added DOCU directory for documentation #
+;   This contains the AiR-BOOT User Manual in Open Office .odt-format.
+;   To also have OS/2 INF format, a transformation script and sheet have been
+;   created to convert the .odt document to an ipf-source that can be compiled
+;   with Watcoms wipfc ipf compiler. (IBM ipfc does not work correctly)
+;   This makes it possible to write documentation in OOo Writer and export that
+;   to PDF and INF format.
+;
+; # Fixed a bug with regard to the drive-letter feature #
+;   When partitions were deleted, and some partitions above the deleted
+;   partition(s) had a drive-letter forced, these partitions would lose this
+;   assignment. This bug is also present in v1.06.
+;
+; # Implemented a very simple interactive debugger #
+;   Making use of the main menu-loop, pressing a digit or a letter activates
+;   some debugging routine. Mostly such a routine dumps a part of the internal
+;   state to the com-port. Other purposes are the interrogation of certain
+;   BIOS functions, as these can differ substantially between machines.
+;
+; # Made FX-code optional to compile in #
+;   The FX-code supplies the shifting screen-effects when 'Cooper Bars' is
+;   enabled in the setup. With the current enhancements made however,
+;   there is a continuous lack of code-space, especially when debug-code is
+;   included during development. The FX-code occupies some 1200 bytes, a space
+;   that can be put to better use. Therefore inclusion the FX-code has been
+;   made conditional to make room for either debugging or future new features.
+;
+; # Also write PBR to HPFS #
+;   Earlier, a fix was made to write a modified PBR back in case JFS was used.
+;   This was done to enable the drive-letter feature on JFS, since the PBR
+;   JFS-bootcode does not use the supplied PBR in memory.
+;   With the enhancements in the drive-letter feature, the HPFS PBR needs to
+;   be updated on disk also, to cope with zero drive-letters in the HPFS PBR.
+;
+; # Added drive-letters in display for LVM volumes #
+;   A populair request was to show drive-letter information in the menu.
+;   Drive-letters however, are OS specific and AiR-BOOT cannot accurately
+;   predict what drive-letter DOS would assign to what partition.
+;   eCS LVM drive-letters however are stored in the LVM-record and can thus
+;   be displayed. This has been implemented.
+;
+; # Enhanced drive-letter feature #
+;   Enable multiple eComStation installations using the same drive-letter
+;   This makes it possible to clone a system with XCOPY /h /e /s /t /r /v
+;   to another drive and have that boot from the same drive-letter.
+;   (Or installing to the same drive by hiding the other system)
+;
+; # Removed Force LBA Usage from Setup #
+;   When AiR-BOOT is installed on an USB-stick, there is a possibility that
+;   the CHS-geometry varies between different machines where the stick is
+;   booted. This would invalidate the CHS-values in the partition table
+;   and also the values that were stored in the AiR-BOOT's internal partition
+;   table, the IPT.
+;   To prevent more nasty things like below from happening, LBA-addressing
+;   is now always used and the setting has been removed from the setup-menu.
+;   While this may prevent AiR-BOOT from running on very old systems,
+;   the focus of AiR-BOOT development is geared towards the future.
+;   Such old systems can use v1.06.
+;
+; # Added extra MBR protection #
+;   When AiR-BOOT is active, it is only AiR-BOOT that writes to the MBR.
+;   To protect the MBR from programming errors, like the one below,
+;   any write to the MBR is now checked for validity.
+;   In essence this is protecting your MBR from bad programming done by me...
+;
+;!## Fixed a very very nasty bug that can destroy the MBR on multiple disks ##!
+;   When Force BIOS-LBA usage is disabled (the default is enabled), and the
+;   the driveletter feature is being set, and valid LVM information is present,
+;   then the MBR of the disk containing the partition of which the driveletter
+;   is changed will be overwritten with the LVM sector !
+;   In addition, if the driveletter was already in use by another partition
+;   on another disk, the MBR of that disk will be overwritten too !!
+;
+; # Fixed a nasty bug when eCS phase1 is active #
+;   When creating a partition in a free space between partitions for
+;   eCS installation, the phase1 boot-through code would calculate the
+;   wrong index for the new partition. As a result the next partition
+;   would be auto-booted instead of the newly installed system.
+;   This has been fixed.
+;   This bug is also present in v1.07 and does not apply to previous versions.
+;
+; v1.0.8-rc2-bld20120423
+; ----------------------
+; # Fixed some minor Installer bugs with SPT < 63 #
+;   Some extra var StatusCode was used instead of Status_Code.
+;   This caused too few tracks not to be reported.
+;   No installation was done however.
+;   This bug is also present in the v1.06 code.
+;
+; # Fixed Installer to handle packed hideparttable #
+;   Implemented upgrading from v1.06 directly to v1.0.8.
+;   Fixed minor stuff when upgrading from v1.06 to v1.07.
+;   Hide partition configuration is now preserved when upgrading.
+;   Fixed minor display bug when SPT < 63.
+;
+; # Implemented DOS code in C cross-platform installer
+;   There is now one C source for 4 platforms:
+;   DOS,WIN32,OS2 and LINUX (Linux portion not ready yet)
+;   This obsoletes AIRBOOT.ASM/AIRBOOT.COM.
+;   DOS Installer is now AIRBOOTD.EXE.
+;
+; # Merged 16-bit Assembler bitfield code to the Installer #
+;   The installer needs to handle the v1.0.8 configuration.
+;   This requires access to the 6-bit packed 'hideparttable'.
+;   To 'not-reinvent-the-wheel', by coding this in C, the Assembler
+;   bitfield functions are integrated using Open Watcom's '_asm' capability.
+;   It may not be pretty and the functions themselves are limited,
+;   but this method prevents maintaining seperate Asm and C implementations.
+;   Will be improved later.
+;
+; # Implemented BLDLEVEL support #
+;   AIRBOOT.BIN, the Installers and SET(A)BOOT now support OS/2 BLDLEVEL
+;   information. This enhances identification and problem tracking/solving.
+;   While BLDLEVEL is an OS/2 command, the BLDLEVEL information itself can
+;   be embedded in any binary. Invoking BLDLEVEL from within OS/2 on, let's
+;   say, the AIRBOOTL.ELF Linux executable, will also show the BLDLEVEL info.
+;   A slight deficiency of BLDLEVEL is that is forces a format on the version.
+;   So, AiR-BOOT v1.0.8 will be shown as v1.00.8.
+;
+; # Added support for Masm6 and Wasm v1.9 -- Experimental use only #
+;   Trying to assemble with Masm6 or Wasm v1.9 reveiled some interesting
+;   behavior aspects in general. While this version can now be assembled with
+;   Masm6 and Wasm too, this was only done to get a 'cross-feeling' for this
+;   project. Future versions will drop support for Tasm, Masm6 and Wasm since
+;   much conditional assembly is needed to support all of them. This was an
+;   experimental excercise only. JWasm is the assembler of choise for this
+;   project and any future versions.
+;
+; # Implemented stop scanning when max. partitions limit exceeded #
+;   Previous versions halted the system when the maximum number of partitions
+;   that can be handled (45) was exceeded.
+;   This required the user to boot from alternate media to correct the problem.
+;   Now, when the partition limit is exceeded, AiR-BOOT displays a pop-up
+;   and waits for a key-press. When the user presses a key, AiR-BOOT continues
+;   and the boot-menu is shown, enabling the user to boot a system to correct
+;   the problem. To indicate this situation, the color of the selection-bar
+;   is displayed in red.
+;
+; # Fixed hiding partitions above old max 30-partitions limit #
+;   Hiding partitions is a per partition setting and it is kept in a table
+;   in the AiR-BOOT image on disk. In previous versions, including v1.0.8-rc1,
+;   this table still held the old number of maximum partitions (30).
+;   So configuring a hide-setting for partitions >30 or hiding more than
+;   30 partitions per partition would not work properly.
+;   Unfortunately, there was no room to expand this table, since it resides
+;   just below the MBR backup, at the end of the AiR-BOOT image.
+;   To work around this, the table now uses a 6-bits packed format and the
+;   drive-letter array, which followed this table has been moved elsewhere.
+;   This is a change in the configuration layout since the previous version,
+;   so the config-version has been bumped to v1.0.8.
+;   TODO: Add upgrade-code to the installer to cope with this.
+;
+; # Removed requirement for LVM P and V name to be the same to edit #
+;   However, when both are the same before the edit, the V name will be
+;   synved to the P name to have them both the same again after the edit.
+;   If they differ, only the V name is updated.
+;
+; # Trying to edit the label of a type 0x35 partition now shows a popup #
+;   The user is informed that type 0x35 labels cannot be edited.
+;
+; # Type 0x35 partitions cannot be added to the AB-menu anymore #
+;   They are not bootable anyway. The user is informed by a popup.
+;
+; # De-tasemized the Assembler sources for JWasm compatibility #
+;   AiR-BOOT can now be built using JWasm, which is the preferred
+;   assembler as of this release. Tasm support will be dropped in the future.
+;
+; # Completely reworked the build-system #
+;   Everything is now done with Makefiles using WMake, Wlink and the
+;   C/C++ Compilers from the Open Watcom development tools together with JWasm.
+;   This obsoletes tasm, tlink and exe2bin.
+;
+; # Cross-Platform support #
+;   AiR-BOOT and it's helpers can now be built on: DOS, Win32, OS/2 and Linux.
+;
+; # Rewrote FIXCODE.ASM in C so the tool-chain is not dependent on a DOS .COM #
+;   Now FIXCODE is built platform-specific and takes care of the embedding
+;   of MPR-protection image.
+;
+; # Created FIXCODE bash-script to accomplish embedding of MBR-protection #
+;   Building on Linux requires that no DOS-tools are used in the tool-chain.
+;   This script essentially performs the same functionality but does not check
+;   certain conditions, like image-too-big, etc.
+;   It is a 'quick-hack' until the Linux version of FIXCODE is operational.
+;
+; v1.0.8-rc1-bld20120124
+; ----------------------
+; # Changed version format to be more WarpIN compatible #
+;   This is a cosmetic change only, the internal format has not changed.
+;
+; # Show LVM VolumeName instead of LVM PartitionName #
+;   Previous versions of AiR-BOOT used the LVM PartitionName as the Label
+;   if LVM-info was present for the partition.
+;   This is inconsistent with MiniLVM which shows the LVM VolumeName.
+;   Starting with v1.0.8 the LVM VolumeName is displayed.
+;
+; # LVM Partition and Volume name Synchronization #
+;   Changing the Label of a partition with LVM-info now synchronizes
+;   the LVM Partition Name with the LVM Volume Name.
+;   This is the same behavior as MiniLVM.
+;   Note however that the Label can only be changed when both the
+;   LVM PartitionName and LVM VolumeName are the same.
+;   See protected editing below.
+;
+; # Protected editing of the Label when LVM-info is present #
+;   When the LVM VolumeName differs from the LVM PartitionName, the user can
+;   edit the label but it will not be saved to the LVM record on disk.
+;   This is to protect configurations created with the classic LVM tool.
+;   Since MiniLVM assigns the same name to both the Partition and the Volume,
+;   the Label can be edited and will be saved for such partitions.
+;   To further protect a given configuration, LVM volumes with type 0x35
+;   cannot be edited at all. This is to ensure that the LVM PartitionNames
+;   remain unique when Spanning Volumes are used.
+;
+; # Editing the Label appended spaces #
+;   When editing and changing the Label of a System using SETUP,
+;   trailing spaces were stored in the LVM Volume and Partition names.
+;   These labels need to be padded with zero's.
+;   This has been fixed.
+;   This bug is also present in v1.06.
+;
+; # Reworked Primary Partition <-> LVM-info association #
+;   The previous way was to use a 1:1 correspondence between the PT-index
+;   and the LVM-index. However, when the PT is cross-linked, lower entries
+;   pointing to higher locations on the disk, or vice-versa, incorrect
+;   LVM-info was associated. Such a cross-linked PT is sometimes generated
+;   by the LVM engine when creating or deleting multiple partitions at once.
+;   Best is to intermediately save after creating or deleting a partition
+;   with (Mini)LVM.
+;   The new way is to search the LVM-entries for the partition requested.
+;
+; # Reworked MBR-code to provide two I13X signatures #
+;   The normal LVM MBR-code uses a special setup to indicate Int13X capability.
+;   It contains the instruction, MOV EAX,'X31I', and some software checks
+;   for the presence of the 'I13X' string in the MBR.
+;   However, the location of this instruction differs between eCS 1.x and
+;   eCS 2.x LVM MBR-code.
+;   For compatibility, the v1.0.8 MBR has the 'I13X' string at both locations.
+;
+; # Fixed booting older eCS installations on HPFS #
+;   When restoring systems from archive or otherwise generated systems,
+;   the HPFS BPB sometimes lacked information that AiR-BOOT did not fill in.
+;   The result was that a wrong partition was booted or that booting
+;   stalled with the "unable to operate harddisk" message.
+;   This has been fixed.
+;
+; # Fixed booting Windows from a logical partition with loader on FAT32 #
+;   Depending on the configuration, sometimes the NTLDR could not be found.
+;   This has been fixed.
+;
+; # Fixed drive-letter feature which was broken in v1.07 #
+;   a)  v1.07 did remember the drive-letter feature was active for a partition,
+;       but it failed to store the drive-letter because too few configuration
+;       sectors were saved. This resulted in arbitrary values to be assigned
+;       to the drive-letter for the partition.
+;   b)  The JFS PBR-code does not use the in-memory BPB but uses the one
+;       that is on disk. This prevented AiR-BOOT from passing the user assigned
+;       drive-letter. AiR-BOOT now inserts the drive-letter in the BPB on disk,
+;       but only if the partition is JFS.
+;       AB v1.06 is also unable to use the drive-letter feature on JFS.
+;   As a convenience, a drive-letter in the dl-feature pop-up can now be set
+;   to "Disabled" by pressing backspace.
+;   (As opposed to arrowing up/down to get to the "Disabled" entry)
+;
+; # Fixed stuck phase1 indicator when wrong name entered #
+;   When using SET(A)BOOT /4:NAME with the MEMDRIVE env-var set,
+;   and NAME being a non-existing partition, the phase1 indicator
+;   would stay stuck between reboots.
+;   This has been fixed.
+;
+; # Fixed DOS installer (AIRBOOT.COM) #
+;   Behavior should now be the same as the eCS and WIN installers.
+;   This re-enables the use of a bootable floppy or usb-stick
+;   to install AiR-BOOT.
+;
+; # Fixed booting from FloppyDrive #
+;   This is actually also broken in v1.06 when Int13X is forced on.
+;   Now regular BIOS calls are used when booting from floppydrive.
+;   A fresh AiR-BOOT installation now includes the floppydrive menu entry.
+;
+; # Fixed chainloading IBM Boot Manager #
+;   AiR-BOOT v1.06 could chainload IBM-BM but only when it resided on
+;   the first disk and was located below the 1024 cylinder and forced Int13X
+;   extensions were disabled.
+;   AiR-BOOT v1.0.8 can now chainload IBM-BM with forced Int13X extensions
+;   enabled (the default) and if IBM-BM resides above the 1024 cylinder limit.
+;   Also, chainloading IBM-BM from the second disk is supported.
+;   Do not use chainloading IBM-BM unless you really have a need to.
+;   See the AiR-BOOT Manual for "gotcha's" when using both AiR-BOOT and IBM-BM.
+;
+; # Corrected contact links #
+;   Version 1.07 still presented the old contact links to the sourceforge
+;   repository and the original author.
+;   This caused confusion with regard to issues with v1.07.
+;   This has been corrected.
+;
+; NOTE:
+;   AB v1.07 had a bug with saving and loading the correct size of the
+;   configuration. This broke the drive-letter feature.
+;   As a result, the CRC over the config was also calculated wrongly.
+;   While AB v1.0.8 fixes this, it has to use the v1.07 way of CRC calculation.
+;   Otherwise SET(A)BOOT from the eCS v2.1 would break on AB v1.0.8 because it
+;   sees a corrupt AiR-BOOT configuration.
+;   This means that the CRC over the AB config is calculated over 5 sectors
+;   instead of 7, just like in v1.07.
+;
+; NOTE:
+;   Because of space constraints most of the debug code has been commented
+;   out in this version.
+;   Possibly it will be re-enabled after code cleanup and changing to JWasm.
+;
+;
+; v1.07-final
+; ===========
+; # Huge Drives and LVM #
+;   When using disks >512GB under eComStation, the drive geometry changes to
+;   127 or 255 sectors per track. Since LVM-info is written at the last sector
+;   of a track, and AiR-BOOT uses the geometry of the MBR, it cannot find the
+;   LVM-info and the eCS partition / volume bootsector.
+;   This has been fixed.
+;   Now, when an eCS-partition is discovered and the drive is >512GB, AiR-BOOT
+;   will use the eCS geometry to locate the LVM-info and the bootsector.
+;
+; # Special loader handling #
+;   The special handling of partition boot-loaders has been enhanced to
+;   enable booting of legacy systems on huge drives with or without OS/2
+;   extended geometry.
+;
+; # eComStation boot-through after phase 1 #
+;   Special functionality is implemented to directly boot a newly
+;   installed eCS system after completing phase 1 of the installation.
+;   This works in conjuntion with the OS/2 specific SET(A)BOOT.EXE program,
+;   also part of the AiR-BOOT package.
+;
+; # Math, Debug, Conv and Aux modules #
+;   These are used for 32-bit arithmatic on 16-bit code,
+;   debug the boot process, converting between data-types
+;   and outputting log-data to the com-port.
+;
+;
+; v1.06
+; =====
+; This is the last version developed by Martin Kiewitz.
+; It serves as the base for the versions above.
+; Please do not post your feedback on sourceforge or bother Martin with
+; regard to issues with the above versions.
+; Use the eCS bug-tracker or the Trac project-page at netlabs and see the
+; documentation of this newer versions for the relevant contact information.
