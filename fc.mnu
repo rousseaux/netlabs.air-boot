@@ -13,6 +13,17 @@ B:	Build
 P:	Package
 	wmake -h package
 
+#~ P:	Package
+#~ {
+#~ A:	All
+#~ 	wmake -h package
+#~ -:	--------------
+#~ B:	Binary Package
+#~ 	wmake -h package.bin
+#~ S:	Source Package
+#~ 	wmake -h package.src
+#~ }
+
 C:	Clean
 	wmake -h clean
 

@@ -123,8 +123,6 @@ build: .SYMBOLIC
 	@echo :: All AiR-BOOT stuff has been built.                             ::
 	@echo :: Look in the RELEASE directory for the distribution files       ::
 	@echo :: for each platform and the bootloader for each language.        ::
-#	@echo :: The packages directory contains packages for each supported    ::
-#	@echo :: platform.                                                      ::
 	@echo ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 	@echo.
 	@echo ***** NOTE: Only the EN-build has the FX-module included !!    *****
@@ -186,18 +184,129 @@ history: .SYMBOLIC
 
 
 # -----------------------------------------------------------------------------
-# CREATE PACKAGE
+# CREATE SOURCE PACKAGE (ZIP)
 # -----------------------------------------------------------------------------
-package: .SYMBOLIC
+package.src: .SYMBOLIC clean
 !ifdef	__LINUX__
 	@echo
 	@echo "*** Packaging is not implemented yet ***"
 	@echo
 !else
+	set RELDIR=release
+	set CRC_IGNORE=n
+	set ABV=AirBoot-v1.1.2
+	set PACKDIR=$(%ABV)-src-RELEASE
+	set WTD=04-13-2017
+	set WTT=01:01:02
+	set RDATE=201704130101.02
+
 	@echo.
-	@echo *** Packaging is not implemented yet ***
+	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@echo @@ Creating Source Package
+	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@if exist $(%ABV)*.zip del $(%ABV)*.zip
+	@if exist $(%RDATE)-tmp.zip del $(%RDATE)-tmp.zip
+	@zip -q -r -x.git $(%RDATE)-tmp.zip .
+	@md $(%PACKDIR)
+	@move $(%RDATE)-tmp.zip $(%PACKDIR) 1>nul
+	@cd $(%PACKDIR)
+	@unzip -q $(%RDATE)-tmp.zip
+	@del $(%RDATE)-tmp.zip
+	@wtouch -c -r -s -d $(%WTD) -t $(%WTT) .
+	@cd ..
+	@if exist $(%PACKDIR).zip del $(%PACKDIR).zip
+	@zip -r -m $(%PACKDIR).zip $(%PACKDIR)
+	@-touch -c -t $(%RDATE) $(%PACKDIR).zip
+
 	@echo.
 !endif
+
+
+
+# -----------------------------------------------------------------------------
+# CREATE BINARY PACKAGE (ZIP)
+# -----------------------------------------------------------------------------
+package.bin: .SYMBOLIC
+!ifdef	__LINUX__
+	@echo
+	@echo "*** Packaging is not implemented yet ***"
+	@echo
+!else
+	set RELEASE=y
+	set RELDIR=release
+	set PACKDIR=AirBoot-v1.1.2-bin-RELEASE
+	set RDATE=201704130101.02
+
+	@%MAKE build
+
+	@echo.
+	@echo *** Copying DOS Release Files ***
+	@xcopy /s $(%RELDIR)\dos $(%PACKDIR)\install\dos\
+	@if exist $(%PACKDIR)\install\dos\.gitignore del $(%PACKDIR)\install\dos\.gitignore
+	@-touch -c -t $(%RDATE) $(%PACKDIR)\install\dos\*
+
+#~ 	@echo.
+#~ 	@echo *** Copying Linux Release Files ***
+#~ 	@xcopy /s $(%RELDIR)\linux $(%PACKDIR)\install\linux\
+#~ 	@if exist $(%PACKDIR)\install\linux\.gitignore del $(%PACKDIR)\install\linux\.gitignore
+#~ 	@-touch -c -t $(%RDATE) $(%PACKDIR)\install\linux\*
+
+	@echo.
+	@echo *** Copying OS/2 Release Files ***
+	@xcopy /s $(%RELDIR)\os2 $(%PACKDIR)\install\os2\
+	@if exist $(%PACKDIR)\install\os2\.gitignore del $(%PACKDIR)\install\os2\.gitignore
+	@-touch -c -t $(%RDATE) $(%PACKDIR)\install\os2\*
+
+	@echo.
+	@echo *** Copying WindowsNT Release Files ***
+	@xcopy /s $(%RELDIR)\winnt $(%PACKDIR)\install\winnt\
+	@if exist $(%PACKDIR)\install\winnt\.gitignore del $(%PACKDIR)\install\winnt\.gitignore
+	@-touch -c -t $(%RDATE) $(%PACKDIR)\install\winnt\*
+
+	@-touch -c -t $(%RDATE) $(%PACKDIR)\install\*
+
+	@echo.
+	@echo *** Copying Other Language Loader Images ***
+	@xcopy /s $(%RELDIR)\bootcode\*.bin $(%PACKDIR)\loaders\
+	@if exist $(%PACKDIR)\loaders\.gitignore del $(%PACKDIR)\loaders\.gitignore
+	@-touch -c -t $(%RDATE) $(%PACKDIR)\loaders\*
+
+	@-touch -c -t $(%RDATE) $(%PACKDIR)\*
+	@-touch -c -t $(%RDATE) $(%PACKDIR)
+
+	@echo.
+	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@echo @@ Creating Binary Package
+	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@if exist $(%PACKDIR).zip del $(%PACKDIR).zip
+	@zip -r -m $(%PACKDIR).zip $(%PACKDIR)
+	@-touch -c -t $(%RDATE) $(%PACKDIR).zip
+
+	@echo.
+!endif
+
+
+
+# -----------------------------------------------------------------------------
+# CREATE SOURCE AND BINARY DISTRIBUTION PACKAGES (ZIP)
+# -----------------------------------------------------------------------------
+# This creates the source and binary packages suitable for distribution.
+# Note that 'package.src' does a 'clean' and 'package.bin' does a 'build',
+# so this may take a while. When finished, both packages will be in this
+# directory and the built files will not have been cleaned.
+# -----------------------------------------------------------------------------
+package: .SYMBOLIC package.src package.bin
+	@echo.
+	@echo ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+	@echo :: Package Creation Finished                                      ::
+	@echo :: -------------------------------------------------------------- ::
+	@echo :: Before distributing, check the BLDLEVEL and MD5SUM of the      ::
+	@echo :: files in the binary package to verify they are correct.        ::
+	@echo :: Also unzip the source package and check that building works.   ::
+	@echo ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+	@echo.
+	@dir /b *.zip
+	@echo.
 
 
 
