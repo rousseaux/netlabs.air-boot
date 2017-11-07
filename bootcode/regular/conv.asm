@@ -63,6 +63,7 @@ CONV_BinToAsc   Endp
 ; In:          AL - value to convert
 ; Out:         AX - |digitcount|digit2|digit1|digit0|
 ; Destroyed:   none
+IF 0
 CONV_BinToPBCD  Proc  Near uses cx
 
         ; Use AAM to convert to unpacked BCD
@@ -108,6 +109,7 @@ CONV_BinToPBCD  Proc  Near uses cx
 
         ret
 CONV_BinToPBCD  Endp
+ENDIF
 
 
 
