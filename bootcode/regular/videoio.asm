@@ -786,7 +786,7 @@ VideoIO_DisplayDiskInfo     Proc Near
         jmp     @F
 
         ; We like to have these local for now
-    VideoIO_DumpDiskInfo_labels     db  'DISK '
+    VideoIO_DisplayDiskInfo_labels  db  'DISK '
                                     db  'SECTORS_LBA '
                                     db  'SECSIZE  '
                                     db  'I13_GEO   '
@@ -813,7 +813,7 @@ ENDIF
         mov     [TextColorBack], 00h    ; black
 
         ; Show the labels
-        mov     si, offset [VideoIO_DumpDiskInfo_labels]
+        mov     si, offset [VideoIO_DisplayDiskInfo_labels]
         call    VideoIO_Print
 
         ; Zero based index of first drive to scan
@@ -823,7 +823,7 @@ ENDIF
         mov     [TextColorFore], 08h
 
         ; Loop over all disks found
-    VideoIO_DumpDiskInfo_next_disk:
+    VideoIO_DisplayDiskInfo_next_disk:
 
         ; Compose BIOS disk number (80h, 81h, etc)
         mov     dl, cl
@@ -1013,10 +1013,10 @@ ENDIF
 
         ; Process next disk if still in range
         cmp     cl, [TotalHarddiscs]
-        jb      VideoIO_DumpDiskInfo_next_disk
+        jb      VideoIO_DisplayDiskInfo_next_disk
 
     ; We're done
-    VideoIO_DumpDiskInfo_end:
+    VideoIO_DisplayDiskInfo_end:
 
         ; Restore video state
         pop     dx
