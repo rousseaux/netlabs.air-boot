@@ -674,15 +674,16 @@ DRIVELETTERS_ENABLE     EQU
         jz      skip_show_dl
 
 
-        ; Dirty hack to clear remaining line when menu is scrolled.
-        ; Padd with spaces.
+        ; Dirty hack to pad remaining line with spaces.
         ; Should be implemented in scrolling routine.
-        push    word ptr [TextPosX]
-        mov     si, offset spaces
-        mov     cl,24
-        call    VideoIO_FixedPrint
-        pop     word ptr [TextPosX]
+        push    word ptr [TextPosY]             ; Quick save X,Y position
+        mov     al, ' '                         ; Filler
+        mov     cl, 79                          ; Index of last column
+        sub     cl, byte ptr [TextPosX]         ; Calculate padding length
+        call    VideoIO_PrintSingleMultiChar    ; Do the padding
+        pop     word ptr [TextPosY]             ; Quick restore X,Y position
 
+        ; Get AiR-BOOT system-ID to see if drive-letters need to be shown
         mov     si, [PartPointer]
         mov     ah, [si+LocIPT_SystemID]
 
@@ -701,14 +702,14 @@ IFDEF   AUX_DEBUG
         ENDIF
 ENDIF
 
-        mov     al, ah
+        ; Only show drive-letters when partition is HPFS or JFS
+        mov     al, ah          ; AiR-BOOT system-ID in AL
+        cmp     al, 07h         ; Is HPFS ?
+        je      show_dl         ; Yep, show drive-letters
+        cmp     al, 0fch        ; Is JFS ?
+        je      show_dl         ; Yep, show drive-letters
 
-        cmp     al, 07h
-        je      show_dl
-        cmp     al, 0fch
-        je      show_dl
-
-        jmp     skip_show_dl
+        jmp     skip_show_dl    ; No HPFS or JFS, skip show drive-letters
 
     show_dl:
 
@@ -798,7 +799,6 @@ BOOTMENU_BuildPartitionText     EndP
 
 dl_text     db  '   on drive ',0
 dl_hidden   db  '   hidden   ',0
-spaces      db  '                        ',0
 
 ;        In: DL - Active Partition
 ;            DH - New Active Partition (may not be correct number)
