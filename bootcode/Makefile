@@ -165,8 +165,12 @@ ASM_FLAGS_D2=-DDEBUG_LEVEL=$(DEBUG_LEVEL) -DJWASM -DBLD_LANG="$(%BLD_LANG)" $(%J
 # Workaround for JWasm list-file generation.
 # Generate the list-file on a local drive so JWasm doen't take forever.
 # This is done in the recipe.
+!ifndef __LINUX__
 JWASM_LIST_FILE_LOC=$(%TEMP)$(DS)
 JWASM_LIST_FILE=-Fl=$(JWASM_LIST_FILE_LOC)$^&.lst
+!else
+JWASM_LIST_FILE=-Fl=$^&.lst
+!endif
 
 # WASM
 !elseif "$(ASM)"=="wasm"
