@@ -15,3 +15,8 @@ P:	Package
 
 C:	Clean
 	wmake -h clean
+
+-:	-------------
+
+L:	Show License
+	wmake -h license

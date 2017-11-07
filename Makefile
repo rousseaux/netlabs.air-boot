@@ -133,6 +133,57 @@ build: .SYMBOLIC
 	@echo.
 
 
+
+# -----------------------------------------------------------------------------
+# SHOW MASTER BUILD INFORMATION
+# -----------------------------------------------------------------------------
+info: .SYMBOLIC
+!ifdef	__LINUX__
+	@clear
+	@less BUILD.NFO
+	@echo
+!else
+	@cls
+	@type BUILD.NFO | more
+	@echo.
+	@pause
+!endif
+
+
+
+# -----------------------------------------------------------------------------
+# SHOW LICENSE
+# -----------------------------------------------------------------------------
+license: .SYMBOLIC
+!ifdef	__LINUX__
+	@clear
+	@less COPYING
+	@echo
+!else
+	@cls
+	@type COPYING | more
+	@echo.
+	@pause
+!endif
+
+
+
+# -----------------------------------------------------------------------------
+# CREATE PACKAGE
+# -----------------------------------------------------------------------------
+package: .SYMBOLIC
+!ifdef	__LINUX__
+	@echo
+	@echo "*** Packaging is not implemented yet ***"
+	@echo
+!else
+	@echo.
+	@echo *** Packaging is not implemented yet ***
+	@echo.
+!endif
+
+
+
 # -----------------------------------------------------------------------------
 # DISTRIBUTE RELEVANT TARGETS TO RELEASE DIRECTORY
 # -----------------------------------------------------------------------------

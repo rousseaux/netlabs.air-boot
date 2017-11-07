@@ -28,9 +28,7 @@ default: info
 info:
 	$(info )
 	$(info [$@])
-	@echo
-	@echo "### Master AiR-BOOT Makefile ###"
-	@echo "Use make build to build AiR-BOOT for all languages."
+	@less BUILD.NFO
 	@echo
 
 # Redirect to 'build' target
@@ -43,6 +41,14 @@ build:
 	$(call owc.env)
 	wmake -h
 
+# Create package
+package:
+	$(info )
+	$(info [$@])
+	@echo
+	@echo "*** Packaging is not implemented yet ***"
+	@echo
+
 # Cleanup the generated files
 clean:
 	$(info )
@@ -50,7 +56,12 @@ clean:
 	$(call owc.env)
 	wmake -h clean
 
-
+# Show license information
+license:
+	$(info )
+	$(info [$@])
+	@less COPYING
+	@echo
 
 #
 # Open Watcom Environment

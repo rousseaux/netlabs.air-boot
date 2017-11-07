@@ -1,1 +1,1 @@
-@wmake -h
+@wmake -h %RELEASE=y

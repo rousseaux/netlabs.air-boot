@@ -1,58 +1,55 @@
 ===============================================================================
- BUILD.NFO -- Information on building AiR-BOOT v1.1.0
+Information on building AiR-BOOT                                     [20170413]
 ===============================================================================
 
-Building AiR-BOOT and the support tools has been completely revamped
-in this version. The code has been "de-tasmized" so it can now also
-be assembled with JWasm, which is the preferred assembler as of this version.
 
-The DOS batch-files have been replaced by Open Watcom Makefiles that
-can be used on: DOS, Windows, OS/2 and Linux.
-This greatly enhances the build-environment, which was previously DOS-only.
-
-The Open Watcom Linker is now used, which obsoletes the use of the (DOS-only)
-exe2bin and TLink programs. WLink replaces the functionality of both while
-also adding extensive cross-platform support.
-
-Several cross-reference files are generated, like object disassemblies
-and executable header dumps. This aids development in checking for assembler
-generation and the correctness of that code.
-
-The (DOS-only) FIXCODE.COM program that is used to embed the MBR-protection
-in the AiR-BOOT image has been replaced by platform specific versions.
-This does away with the need to run a DOS-only program in the tool-chain,
-and thus enables building AiR-BOOT on Linux.
-
-The preferred assembler is now JWasm.
-While Tasm4/Masm6 and Wasm are also supported, their use should be of an
-experimental nature only. Limitations for checking section overlaps
-and other assembler specific directives inhibit the use of JWasm to
-it's fullest capability.
-Since JWasm is open-source and mature, there is no need to support other
-assemblers in future releases of AiR-BOOT.
-
-The JWasmD extended DOS version needs DPMI 'enabled' and XMS set to 0
-to be able to run in an eCS DOS session.
-The DOS build-environment will probably be discontinued in
-the future due to it's many restrictions. DOS specific targets can
-be built on the other platforms.
-
-The Open Watcom tool-chain in combination with JWasm is now the
-default tool-chain.
-
-Building AiR-BOOT v1.1.0 requires the following tools:
-- Open Watcom Make Utility v1.9 or higher
-- Open Watcom 16-bits C-Compiler v1.9 or higher
-- Open Watcom 32-bits C-Compiler v1.9 or higher
-- Open Watcom Linker v1.9 or higher
-- JWasm Assembler v2.06d or higher
-
-As a convenience a simple GNUmakefile also exists where a Makefile exists.
-The GNUmakefile forwards to the normal Makefile enabing Linux users to run the
-familiar "make" command. Target passing is supported.
-
-Note that only the loader, installer and setaboot targets are built.
-No floppy, cd-rom, etc. images.
+This is the Master Build Directory
+----------------------------------
+By default, it builds a RELEASE version for ALL languages and components,
+which is probably *not* what you want if you only want to _fiddle_ with
+the beast.
 
 
-Rousseau.
+Fiddling
+--------
+Fiddling can be done in the 'bootcode' directory.
+Do a 'make dev-info' in 'bootcode' to learn more.
+-- or --
+Use File Commander and press F2 which will present a nice Build Menu.
+
+
+A RELEASE Version
+-----------------
+If you _do_ build a RELEASE and *distribute* it, you are obliged to honor the
+GPL and thus also make available the sources from which the release was built.
+Furthermore, you are obliged to use *your* VENDOR and MACHINE information
+for the BLDLEVEL information.
+
+
+The '_build.cmd' script
+-----------------------
+Builds the whole shebang.
+Stuff is put in the 'release' directoy.
+
+
+The '_package.cmd' script
+-------------------------
+Creates a zip-file containing all the RELEASE files.
+
+
+The '_clean.cmd' script
+-----------------------
+Yep, you guessed it...
+
+
+File Commander
+--------------
+The Swiss Army Knife used to provide Build Menus.
+Just press F2 here for the Master Build Menu,
+-- or --
+go to the 'bootcode' directory and press F2 for the Development Build Menu.
+
+
+
+Ben Rietbroek,
+  AiR-BOOT maintainer.
