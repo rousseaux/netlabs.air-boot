@@ -204,8 +204,9 @@ package.src: .SYMBOLIC clean
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	@echo @@ Creating Source Package
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	@if exist $(%ABV)*.zip del $(%ABV)*.zip
-	@if exist $(%RDATE)-tmp.zip del $(%RDATE)-tmp.zip
+	@echo Preparing...
+	@if exist $(%ABV)*.zip del $(%ABV)*.zip 1>nul
+	@if exist $(%RDATE)-tmp.zip del $(%RDATE)-tmp.zip 1>nul
 	@zip -q -r -x.git $(%RDATE)-tmp.zip .
 	@md $(%PACKDIR)
 	@move $(%RDATE)-tmp.zip $(%PACKDIR) 1>nul
@@ -271,6 +272,8 @@ package.bin: .SYMBOLIC
 	@if exist $(%PACKDIR)\loaders\.gitignore del $(%PACKDIR)\loaders\.gitignore
 	@-touch -c -t $(%RDATE) $(%PACKDIR)\loaders\*
 
+	@%MAKE os2.install.cmd
+
 	@-touch -c -t $(%RDATE) $(%PACKDIR)\*
 	@-touch -c -t $(%RDATE) $(%PACKDIR)
 
@@ -284,6 +287,93 @@ package.bin: .SYMBOLIC
 
 	@echo.
 !endif
+
+
+
+# -----------------------------------------------------------------------------
+# GENERATE AiR-BOOT GENERIC INSTALL SCRIPT FOR OS/2
+# -----------------------------------------------------------------------------
+# When unzipping a package, some 'install' is expected in the root directory.
+# And since installing for another language than EN involves some copying and
+# renaming, we will script that too. Currently this convenience is OS/2 only.
+# This target generates the generic install script.
+# -----------------------------------------------------------------------------
+os2.install.cmd: .symbolic
+	@set ABLANG=en de nl fr it sw ru
+	@type >$(%PACKDIR)\$@ <<
+@echo off
+
+rem :: ========================================================================
+rem :: This script will install or upgrade AiR-BOOT.
+rem :: However, an upgrade will only work if the installed version is older.
+rem :: To force the installer to write the code, use the /forcecode flag.
+rem :: ========================================================================
+
+rem :: Do not interfere with system environment
+setlocal
+
+rem :: Default to EN if language not specified
+if "%ablang%"=="" set ablang=en
+
+rem :: Check if we are not on some WindowsNT system
+if "%os2_shell%"=="" goto not_os2
+
+rem :: Create temporary directory and copy installer and lang-specific loader
+if not exist os2.%ablang% md os2.%ablang%
+copy install\os2\airboot2.exe os2.%ablang%
+copy loaders\airbt-%ablang%.bin os2.%ablang%\airboot.bin
+
+rem :: Now run the installer from there
+cd os2.%ablang%
+airboot2.exe %1 %2 %3 %4 %5 %6 %7 %8 %9
+cd ..
+
+rem :: Remove the temporary stuff
+if exist os2.%ablang% del /n os2.%ablang%\*.*
+if exist os2.%ablang% rd os2.%ablang%
+goto end
+
+rem :: Probably WindowsNT, user must do language stuff themselves
+:not_os2
+echo.
+echo ERROR: This does not look like an OS/2 system !
+echo        For WindowsNT [EN], go to install\winnt and run 'airbootw.exe'.
+echo        For other languages see this script on how to do it.
+echo        Aborting...
+goto end
+
+rem :: Done
+:end
+<<nokeep
+	@for %%i in ($(%ABLANG)) do @$(MAKE) -h os2.install.lang.cmd ABLANG=%%i
+
+
+
+# -----------------------------------------------------------------------------
+# GENERATE AiR-BOOT LANGUAGE SPECIFIC INSTALL SCRIPT FOR OS/2
+# -----------------------------------------------------------------------------
+# When unzipping a package, some 'install' is expected in the root directory.
+# This target generates a language specific install script.
+# -----------------------------------------------------------------------------
+os2.install.lang.cmd: .symbolic
+	@type >$(%PACKDIR)\os2.install.$(ABLANG).cmd <<
+@echo off
+
+rem :: ========================================================================
+rem :: This script will install or upgrade AiR-BOOT.
+rem :: However, an upgrade will only work if the installed version is older.
+rem :: To force the installer to write the code, use the /forcecode flag.
+rem :: ========================================================================
+
+rem :: Do not interfere with system environment
+setlocal
+
+rem :: Setup language
+set ablang=$(ABLANG)
+
+rem :: Run the generic OS/2 script to install this specific language
+call os2.install.cmd %1 %2 %3 %4 %5 %6 %7 %8 %9
+<<nokeep
 
 
 
