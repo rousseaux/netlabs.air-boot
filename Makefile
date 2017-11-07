@@ -193,7 +193,7 @@ history: .SYMBOLIC
 # -----------------------------------------------------------------------------
 # CREATE SOURCE PACKAGE (ZIP)
 # -----------------------------------------------------------------------------
-package.src: .SYMBOLIC clean
+package.src: .SYMBOLIC clean manual.clean
 !ifdef	__LINUX__
 	@echo
 	@echo "*** Packaging is not implemented yet ***"
@@ -214,7 +214,7 @@ package.src: .SYMBOLIC clean
 	@echo Preparing...
 	@if exist $(%ABV)*.zip del $(%ABV)*.zip 1>nul
 	@if exist $(%RDATE)-tmp.zip del $(%RDATE)-tmp.zip 1>nul
-	@zip -q -r $(%RDATE)-tmp.zip . -x .git -x .index.local
+	@zip -q -r $(%RDATE)-tmp.zip . -x .git -x .index.local -x *.bu
 	@md $(%PACKDIR)
 	@move $(%RDATE)-tmp.zip $(%PACKDIR) 1>nul
 	@cd $(%PACKDIR)
@@ -234,7 +234,7 @@ package.src: .SYMBOLIC clean
 # -----------------------------------------------------------------------------
 # CREATE BINARY PACKAGE (ZIP)
 # -----------------------------------------------------------------------------
-package.bin: .SYMBOLIC
+package.bin: .SYMBOLIC manual
 !ifdef	__LINUX__
 	@echo
 	@echo "*** Packaging is not implemented yet ***"
@@ -246,6 +246,10 @@ package.bin: .SYMBOLIC
 	set RDATE=201704130101.02
 
 	@%MAKE build
+
+	@xcopy /s $(%RELDIR)\dos $(%PACKDIR)\install\dos\
+	@if exist $(%PACKDIR)\install\dos\.gitignore del $(%PACKDIR)\install\dos\.gitignore
+	@-touch -c -t $(%RDATE) $(%PACKDIR)\install\dos\*
 
 	@echo.
 	@echo *** Copying DOS Release Files ***
@@ -278,6 +282,13 @@ package.bin: .SYMBOLIC
 	@xcopy /s $(%RELDIR)\bootcode\*.bin $(%PACKDIR)\loaders\
 	@if exist $(%PACKDIR)\loaders\.gitignore del $(%PACKDIR)\loaders\.gitignore
 	@-touch -c -t $(%RDATE) $(%PACKDIR)\loaders\*
+
+	@echo.
+	@echo *** Copying User Manual ***
+	@md $(%PACKDIR)\manual
+	@copy manual\airboot-manual.inf $(%PACKDIR)\manual
+	@copy manual\airboot-manual.pdf $(%PACKDIR)\manual
+	@-touch -c -t $(%RDATE) $(%PACKDIR)\manual\*
 
 	@%MAKE os2.install.cmd
 
@@ -419,6 +430,36 @@ dist: .SYMBOLIC
 	@echo.
 
 
+# -----------------------------------------------------------------------------
+# CREATE THE AiR-BOOT MANUAL
+# -----------------------------------------------------------------------------
+# This creates the INF-version from the ODT-document.
+# The PDF-version needs to be manually exported from the ODT-document.
+# -----------------------------------------------------------------------------
+manual: .SYMBOLIC
+	@echo.
+	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@echo @@ Creating Manual
+	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@cd manual
+	@$(MAKE) -h rebuild
+	@cd ..
+
+# -----------------------------------------------------------------------------
+# CLEAN THE AiR-BOOT MANUAL
+# -----------------------------------------------------------------------------
+# This removes the generated files for the manual.
+# This target is used by the target that creates the source package to prevent
+# inclusion of spurious files.
+# -----------------------------------------------------------------------------
+manual.clean: .SYMBOLIC
+	@echo.
+	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@echo @@ Cleaning Manual
+	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@cd manual
+	@$(MAKE) -h clean
+	@cd ..
 
 # -----------------------------------------------------------------------------
 # CLEANUP EVERYTHING
