@@ -63,6 +63,13 @@ license:
 	@less COPYING
 	@echo
 
+# Show release history
+history:
+	$(info )
+	$(info [$@])
+	@less air-boot.his
+	@echo
+
 #
 # Open Watcom Environment
 #

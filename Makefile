@@ -152,7 +152,7 @@ info: .SYMBOLIC
 
 
 # -----------------------------------------------------------------------------
-# SHOW LICENSE
+# SHOW DISTRIBUTION LICENSE
 # -----------------------------------------------------------------------------
 license: .SYMBOLIC
 !ifdef	__LINUX__
@@ -162,6 +162,23 @@ license: .SYMBOLIC
 !else
 	@cls
 	@type COPYING | more
+	@echo.
+	@pause
+!endif
+
+
+
+# -----------------------------------------------------------------------------
+# SHOW RELEASE HISTORY
+# -----------------------------------------------------------------------------
+history: .SYMBOLIC
+!ifdef	__LINUX__
+	@clear
+	@less air-boot.his
+	@echo
+!else
+	@cls
+	@type air-boot.his | more
 	@echo.
 	@pause
 !endif

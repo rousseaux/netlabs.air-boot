@@ -5,7 +5,7 @@
 I:	Information
 	make info USE_GNU_MAKE=y
 
--:	-------------
+-:	-------------------------
 
 B:	Build
 	make build RELEASE=y USE_GNU_MAKE=y
@@ -16,10 +16,15 @@ P:	Package
 C:	Clean
 	make clean USE_GNU_MAKE=y
 
--:	-------------
+-:	-------------------------
+
+H:	Show Release History
+	make history USE_GNU_MAKE=y
+
+L:	Show Distribution License
+	make license USE_GNU_MAKE=y
+
+-:	-------------------------
 
 S:	Git Status
 	git status
-
-L:	Show License
-	make license USE_GNU_MAKE=y

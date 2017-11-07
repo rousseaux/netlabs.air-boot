@@ -29,7 +29,7 @@ for the BLDLEVEL information.
 The '_build.cmd' script
 -----------------------
 Builds the whole shebang.
-Stuff is put in the 'release' directoy.
+Stuff is put in the 'release' directory.
 
 
 The '_package.cmd' script
@@ -51,5 +51,6 @@ go to the 'bootcode' directory and press F2 for the Development Build Menu.
 
 
 
-Ben Rietbroek,
+Ben Rietbroek <rousseau.os2dev@gmx.com>,
+
   AiR-BOOT maintainer.

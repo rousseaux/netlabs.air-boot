@@ -5,7 +5,7 @@
 I:	Information
 	wmake -h info
 
--:	-------------
+-:	-------------------------
 
 B:	Build
 	wmake -h %RELEASE=y
@@ -16,7 +16,10 @@ P:	Package
 C:	Clean
 	wmake -h clean
 
--:	-------------
+-:	-------------------------
 
-L:	Show License
+H:	Show Release History
+	wmake -h history
+
+L:	Show Distribution License
 	wmake -h license
