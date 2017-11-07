@@ -5,14 +5,34 @@
 # Ignore .gitignore itself
 #/.gitignore
 
-# Ignore CodeLite Project Files
-/*.project
-
 # Ignore Geany Project Files
 /*.geany
 
+# Ignore CodeLite and Eclipse Project Files
+/*.project
+
 # Ignore prepared commit message
-/commit.msg
+/.commit.msg
 
 # Ignore scratch files and directories
 ...
+
+# Selectively include the files required to build the manual
+/manual
+/manual/*
+!/manual
+!/manual/Makefile
+!/manual/GNUmakefile
+!/manual/airboot-manual.gmk
+!/manual/airboot-manual.gmi
+!/manual/airboot-manual.info
+!/manual/airboot-manual.his
+!/manual/airboot-manual.odt
+!/manual/airboot-manual.pdf
+!/manual/fc.mnu
+!/manual/fc?.mnu
+!/manual/odt2ipf.xsl
+!/manual/format.xsl
+!/manual/images
+/manual/images/*
+!/manual/images/clips.xcf
