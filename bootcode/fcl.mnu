@@ -10,7 +10,7 @@ B:	Build Anonymous Dev Version  [EN]
 V:	Build Vendor    Dev Version  [EN]
 	make dev DEV_BLD_LANG=en BLDLVL_VENDOR=${USER} BLDLVL_MACHINE=${HOSTNAME} USE_GNU_MAKE=y
 F:	Build Fake  Release Version  [EN]
-	make dev DEV_BLD_LANG=en RELEASE=y USE_GNU_MAKE=y
+	make dev DEV_BLD_LANG=en RELEASE=y CRC_IGNORE=y USE_GNU_MAKE=y
 -:	-------------------------------------
 L:	Build Anonymous Dev Version  [LANG]
 {

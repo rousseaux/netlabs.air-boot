@@ -10,7 +10,7 @@ B:	Build Anonymous Dev Version  [EN]
 V:	Build Vendor    Dev Version  [EN]
 	wmake -h dev DEV_BLD_LANG=en %CRC_IGNORE=y
 F:	Build Fake  Release Version  [EN]
-	wmake dev DEV_BLD_LANG=en %RELEASE=y
+	wmake dev DEV_BLD_LANG=en %RELEASE=y %CR_IGNORE=y
 -:	-------------------------------------
 L:	Build Anonymous Dev Version  [LANG]
 {
