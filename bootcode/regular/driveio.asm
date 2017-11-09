@@ -308,6 +308,24 @@ ENDIF
 ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         call    DriveIO_LoadSector
 
+        ; ----------------------------------------------------- [Check for GPT]
+        ; Check the 4 P-Table entries for a GPT identifier
+        ; If found, set CY and exit to indicate no partitions are found.
+        ; This prevents the disk from appearing in the menu with an 'unknown'
+        ; partition identifier.
+        cmp     byte ptr [si+01c2h], 0eeh   ; Check Entry #1
+        stc
+        jz      DIOLP_Success
+        cmp     byte ptr [si+01d2h], 0eeh   ; Check Entry #2
+        stc
+        jz      DIOLP_Success
+        cmp     byte ptr [si+01e2h], 0eeh   ; Check Entry #3
+        stc
+        jz      DIOLP_Success
+        cmp     byte ptr [si+01f2h], 0eeh   ; Check Entry #4
+        stc
+        jz      DIOLP_Success
+
         clc
         cmp     wptr [si+LocBR_Magic], 0AA55h
         je      DIOLP_Success
