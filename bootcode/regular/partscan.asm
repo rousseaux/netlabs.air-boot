@@ -441,24 +441,53 @@ ENDIF
         je      PSSP_IgnorePartition
         ; Ignore these partitions, because there are no real Partitions
 
-        ;
-        ; Stop scanning if too many partitions.
-        ;
+
+        ; If this flag is set, no scanning should be done.
+        ; So we jump to the epilog which tries to mark a primary on the boot
+        ; disk because we are in an 'overflow' situation and a properly setup
+        ; MBR can do no harm.
+        mov     al, cs:[TooManyPartitions]
+        test    al, al
+        jnz     PSSP_Epilog
+
+
+        ; Check the number of partitions for this iteration of the scan-loop.
+        ; If the maximum has been reached an error-box is shown to the user.
         cmp     word ptr cs:[NewPartitions],LocIPT_MaxPartitions
-        jae     skip_check
+        jae     PSSP_TooManyPartitions
+
+
+        ;
+        ; The limit has not been reached yet, so check this partition for
+        ; potential adding to the list and jump over the error-box.
+        ;
         call    PARTSCAN_CheckThisPartition
         jmp     PSSP_IgnorePartition
-    skip_check:
-        ; Cannot boot LVM-Data partitions
+
+
+    PSSP_TooManyPartitions:
+
+        ; If we are on the second iteration after we encountered too many
+        ; partitions we stop scanning.
+        mov     al, cs:[TooManyPartitions]
+        test    al, al
+        jnz     PSSP_NoMarkPrimary
+
+        ; First time we encountered too many partitions,
+        ; show the error-box.
         pusha
-        mov     byte ptr cs:[TooManyPartitions],1
         mov     cx, 0C04h
-        ;~ mov     si, offset TXT_ERROR_TooManyPartitions
         mov     si, offset TXT_TooManyPartitions
         add     si,5    ; We stole this string, so skip new-line and dash.
-        ;~ call    SETUP_Warning_AreYouSure
         call    SETUP_ShowErrorBox
+
+        ; Record that too many partitions are present.
+        mov     byte ptr cs:[TooManyPartitions],1
         popa
+
+        ; Further scanning is aborted.
+        jmp     PSSP_Epilog
+
 
     PSSP_IgnorePartition:
         ; Only clear the boot-flag on the boot-disk.
@@ -470,7 +499,14 @@ ENDIF
     PSSP_Skip_Clear_BootFlag:
         add     si, LocBRPT_LenOfEntry     ; 16 Bytes per partition entry
         cmp     si, 500+offset PartitionSector
+
+
+        ; Next iteration
         jb      PSSP_ScanLoop
+
+
+    PSSP_Epilog:
+
         ; If we are on first HDD and in primary partition table -> mark primary
         mov     al, [BIOS_BootDisk]
         cmp     bptr [CurPartition_Location+4], al  ; Drive
