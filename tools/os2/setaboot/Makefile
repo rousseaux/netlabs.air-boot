@@ -103,7 +103,8 @@ ASM_FLAGS=$(ASM_FLAGS_D$(DEBUG_LEVEL))
 #
 MM16=-ml
 CC16=wcc
-CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) $(%CC_DEFINES) -w4 -e25 -zq -otexan -fo=$^. -fr=$^&.err
+CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) $(%CC_DEFINES) -w4 -e25 -zq -otebmieran -fo=$^. -fr=$^&.err
+#~ CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) $(%CC_DEFINES) -w4 -e25 -zq -otexan -fo=$^. -fr=$^&.err
 CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) $(%CC_DEFINES) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.err
 CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) $(%CC_DEFINES) -d3 -w4 -e25 -zq -od -fo=$^. -fr=$^&.err
 CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
@@ -113,7 +114,27 @@ CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
 #
 MM32=-mf
 CC32=wcc386
-CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) $(%CC_DEFINES) -w4 -e25 -zq -otexan -6r -fo=$^. -fr=$^&.err
+# rousseau.comment.201711092035 :: -ol optimization generates inconsistent code
+# It was already observed that building on Linux could generate different code
+# as when building on OS/2, so releases were always built on OS/2.
+# Lately, however, different code generation was also observed between building
+# on a local drive and on a network drive, both under OS/2. But is was not the
+# local or remote nature of the drive, but it seemed like the length of the
+# path to the sources played a role. Doing two builds on a local drive on OS/2,
+# one with a short path and one with a longer path generated substantially
+# different (prolog / indexing) code at specific locations. The one used a
+# combination of 'mov' and 'add' while the other used 'lea'.
+#
+# This has been tracked down to the wcc386 -ol (enable loop optimizations)
+# flag, which is part of -ox, which is short for -obmiler -s.
+# So the new flags replace -ox with -obmier and since we actually do want
+# stack overflow checking (-s), this flag is not re-added.
+#
+# Now MD5SUMS are the same again, even when building on Linux.
+# This requires further investigation and a cross-check against v1.9+ versions
+# of Open Watcom.
+CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) $(%CC_DEFINES) -w4 -e25 -zq -otebmieran -6r -fo=$^. -fr=$^&.err
+#~ CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) $(%CC_DEFINES) -w4 -e25 -zq -otexan -6r -fo=$^. -fr=$^&.err
 CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) $(%CC_DEFINES) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.err
 CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) $(%CC_DEFINES) -d3 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.err
 CC32_FLAGS=$(CC32_FLAGS_D$(DEBUG_LEVEL))
