@@ -104,7 +104,8 @@ ASM_FLAGS=$(ASM_FLAGS_D$(DEBUG_LEVEL))
 #
 CC16=wcc
 MM16=-ml
-CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) $(%CC_DEFINES) -w4 -e25 -zq -otexan -fo=$^. -fr=$^&.err
+#~ CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) $(%CC_DEFINES) -w4 -e25 -zq -otexan -fo=$^. -fr=$^&.err
+CC16_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) $(%CC_DEFINES) -w4 -e25 -zq -otebmieran -fo=$^. -fr=$^&.err
 CC16_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) $(%CC_DEFINES) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.err
 CC16_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM16) $(%CC_DEFINES) -d2 -w4 -e25 -zq -od -fo=$^. -fr=$^&.err
 CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
@@ -114,7 +115,8 @@ CC16_FLAGS=$(CC16_FLAGS_D$(DEBUG_LEVEL))
 #
 MM32=-mf
 CC32=wcc386
-CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) $(%CC_DEFINES) -w4 -e25 -zq -otexan -6r -fo=$^. -fr=$^&.err
+#~ CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) $(%CC_DEFINES) -w4 -e25 -zq -otexan -6r -fo=$^. -fr=$^&.err
+CC32_FLAGS_D0=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) $(%CC_DEFINES) -w4 -e25 -zq -otebmieran -6r -fo=$^. -fr=$^&.err
 CC32_FLAGS_D1=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) $(%CC_DEFINES) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.err
 CC32_FLAGS_D2=-dDEBUG_LEVEL=$(DEBUG_LEVEL) $(MM32) $(%CC_DEFINES) -d2 -w4 -e25 -zq -od -6r -fo=$^. -fr=$^&.err
 CC32_FLAGS_R=-w4 -e25 -zq -od -6r -mf -fo=$^.
