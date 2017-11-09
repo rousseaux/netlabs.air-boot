@@ -502,8 +502,10 @@ $(BASENAME).obj: .MULTIPLE $(BASENAME).asm
 # Workaround for generating JWasm list-files.
 # Command 'move' does not work across drives.
 # So we do a 'copy' then 'del' instead.
+!ifndef __LINUX__
 	@if not exist $^&.lst $(CP) $(JWASM_LIST_FILE_LOC)$^&.lst .
 	@if exist $(JWASM_LIST_FILE_LOC)$^&.lst $(RM) $(JWASM_LIST_FILE_LOC)$^&.lst
+!endif
 !endif
 !ifndef __MSDOS__
 	@wdis -fi $^. > $^..wda
