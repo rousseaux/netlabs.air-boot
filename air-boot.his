@@ -1,4 +1,24 @@
 ===============================================================================
+AiR-BOOT v1.1.4-RELEASE                                            [2017-11-09]
+===============================================================================
+
+This is the version as included on the ArcaOS v5.0.2 release media.
+It has initial awareness of GPT partitioned and LUKS formatted disks.
+
+Below is a short summation:
+---------------------------
+
+o Updated the manual to reflect v1.1.4
+o Initial awareness of GPT partitioned disks
+o Initial awareness of LUKS formatted disks
+o Removed Cooper Bars to create space for future enhancements
+o Minor fixes
+
+
+
+
+
+===============================================================================
 AiR-BOOT v1.1.2-RELEASE                                            [2017-04-13]
 ===============================================================================
 
