@@ -12,15 +12,15 @@ The main repository for AirBoot development is at GitHub:<br>
 <table>
 <tr>
 <td>project portal</td>
-<td>: <a href="http://rousseaux.github.io/netlabs.air-boot">http://rousseaux.github.io/netlabs.air-boot</a></td>
+<td><a href="http://rousseaux.github.io/netlabs.air-boot">http://rousseaux.github.io/netlabs.air-boot</a></td>
 </tr>
 <tr>
 <td>repository</td>
-<td>: <a href="http://github.com/rousseaux/netlabs.air-boot">http://github.com/rousseaux/netlabs.air-boot</a></td>
+<td><a href="http://github.com/rousseaux/netlabs.air-boot">http://github.com/rousseaux/netlabs.air-boot</a></td>
 </tr>
 <tr>
 <td>releases</td>
-<td>: <a href="http://github.com/rousseaux/netlabs.air-boot/releases">http://github.com/rousseaux/netlabs.air-boot/releases</a></td>
+<td><a href="http://github.com/rousseaux/netlabs.air-boot/releases">http://github.com/rousseaux/netlabs.air-boot/releases</a></td>
 </tr>
 </table>
 
@@ -29,10 +29,10 @@ Periodically, the above AirBoot GitHub repos will be synced to Netlabs:<br>
 <table>
 <tr>
 <td>project portal</td>
-<td>: <a href="http://trac.netlabs.org/air-boot">http://trac.netlabs.org/air-boot</a></td>
+<td><a href="http://trac.netlabs.org/air-boot">http://trac.netlabs.org/air-boot</a></td>
 </tr>
 <tr>
 <td>repository</td>
-<td>: <a href="http://trac.netlabs.org/air-boot/browser/trunk">http://trac.netlabs.org/air-boot/browser/trunk</a></td>
+<td><a href="http://trac.netlabs.org/air-boot/browser/trunk">http://trac.netlabs.org/air-boot/browser/trunk</a></td>
 </tr>
 </table>
