@@ -1006,21 +1006,22 @@ SETUP_LetEnterPassword          EndP
 ; CX = Color of Box, SI = String in Box
 ; If AX = ABABh -> Thingie will not wait...
 SETUP_ShowErrorBox              Proc Near   Uses ax bx cx
-   push    ax
+      push     word ptr [TextColorFore]      ; Save current color
+      push    ax
       push    cx
-         call    VideoIO_Color
-         call    GetLenOfString          ; CX - Len of Error Message
-         add     cl, 4                   ; Adjust to include Space and Frame
-         push    cx
-            mov     bx, 0D28h
-            shr     cl, 1
-            sub     bl, cl
-         pop     cx
-         mov     dh, 0Fh
-         mov     dl, bl
-         add     dl, cl
-         dec     dl
-         call    VideoIO_MakeWindow
+      call    VideoIO_Color
+      call    GetLenOfString          ; CX - Len of Error Message
+      add     cl, 4                   ; Adjust to include Space and Frame
+      push    cx
+      mov     bx, 0D28h
+      shr     cl, 1
+      sub     bl, cl
+      pop     cx
+      mov     dh, 0Fh
+      mov     dl, bl
+      add     dl, cl
+      dec     dl
+      call    VideoIO_MakeWindow
       pop     cx
       mov     ch, 0Fh
       call    VideoIO_Color
@@ -1029,13 +1030,14 @@ SETUP_ShowErrorBox              Proc Near   Uses ax bx cx
       add     cl, 2
       call    VideoIO_Locate
       call    VideoIO_Print
-   pop     ax
-   cmp     ax, 0ABABh
-   je      SSEB_NoWait
-   mov     ah, 0
-   int     16h     ; Waits for key stroke
-  SSEB_NoWait:
-   ret
+      pop     ax
+      cmp     ax, 0ABABh               ; Wait for key or not
+      je      SSEB_NoWait
+      mov     ah, 0
+      int     16h     ; Waits for key stroke
+   SSEB_NoWait:
+      pop      word ptr [TextColorFore]
+      ret                                 ; Restore previous color
 SETUP_ShowErrorBox              EndP
 
 SETUP_EnterMenu_SaveAndExitSetup Proc Near   Uses dx bp
