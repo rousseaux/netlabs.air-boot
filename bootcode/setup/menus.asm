@@ -153,9 +153,17 @@ SETUP_BasicOptions:
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_MakeSound
                 dw      offset TXT_SETUP_MakeSounds, offset TXT_SETUPHELP_MakeSounds
                 dw      6 dup (0)
+
+; While the FX-module is excluded from newer versions, we want to retain
+; the option of enabling it.
+IFDEF   FX_ENABLED
                 dw      offset SETUPMAGIC_EnableDisable, offset CFG_CooperBars
                 dw      offset TXT_SETUP_CooperBars, offset TXT_SETUPHELP_CooperBars
                 dw      6 dup (0)
+ELSE
+                dw      0, 0    ; added for removal of cooper-bars
+                dw      0, 0    ; added for removal of cooper-bars
+ENDIF
 
 SETUP_AdvancedOptions:
                 db      0                ; Where Current Item will get saved
