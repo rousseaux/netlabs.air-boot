@@ -32,7 +32,7 @@
 # definitions in "include/version.inc". Note that the '%' causes it to be set
 # in the environment, so it also influences recursive make invocations.
 #
-%RELEASE=y
+#~ %RELEASE=y
 
 #                           DEFINITIONS AND STUFF
 # _____________________________________________________________________________
@@ -201,11 +201,11 @@ package.src: .SYMBOLIC clean manual.clean
 !else
 	set RELDIR=release
 	set CRC_IGNORE=n
-	set ABV=AirBoot-v1.1.2
+	set ABV=AirBoot-v1.1.4
 	set PACKDIR=$(%ABV)-src
-	set WTD=04-13-2017
-	set WTT=01:01:02
-	set RDATE=201704130101.02
+	set WTD=11-07-2017
+	set WTT=01:01:04
+	set RDATE=201711070101.04
 
 	@echo.
 	@echo @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -242,8 +242,8 @@ package.bin: .SYMBOLIC manual
 !else
 	set RELEASE=y
 	set RELDIR=release
-	set PACKDIR=AirBoot-v1.1.2-bin
-	set RDATE=201704130101.02
+	set PACKDIR=AirBoot-v1.1.4-bin
+	set RDATE=201711070101.04
 
 	@%MAKE build
 

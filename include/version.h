@@ -42,29 +42,29 @@
 // Version
 #define     BLDLVL_MAJOR_VERSION    "1"
 #define     BLDLVL_MIDDLE_VERSION   "1"
-#define     BLDLVL_MINOR_VERSION    "2"
+#define     BLDLVL_MINOR_VERSION    "4"
 
 // Build date
 #define     BLDLVL_YEAR             "2017"
-#define     BLDLVL_MONTH            "04"
-#define     BLDLVL_DAY              "13"
+#define     BLDLVL_MONTH            "11"
+#define     BLDLVL_DAY              "07"
 
 // Build time
 #define     BLDLVL_HOURS            "01"
 #define     BLDLVL_MINUTES          "01"
-#define     BLDLVL_SECONDS          "02"
+#define     BLDLVL_SECONDS          "04"
 
 #else
 
 // Version
 #define     BLDLVL_MAJOR_VERSION    "1"
 #define     BLDLVL_MIDDLE_VERSION   "1"
-#define     BLDLVL_MINOR_VERSION    "1"
+#define     BLDLVL_MINOR_VERSION    "3"
 
 // Build date
 #define     BLDLVL_YEAR             "2017"
-#define     BLDLVL_MONTH            "04"
-#define     BLDLVL_DAY              "13"
+#define     BLDLVL_MONTH            "11"
+#define     BLDLVL_DAY              "07"
 
 // Build time
 #define     BLDLVL_HOURS            "23"

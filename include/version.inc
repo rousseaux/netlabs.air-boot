@@ -31,17 +31,17 @@ IFDEF   RELEASE
 ; Note that the config-version is managed manually.
 AB_MAJOR_VERSION    EQU     1
 AB_MIDDLE_VERSION   EQU     1
-AB_MINOR_VERSION    EQU     2
+AB_MINOR_VERSION    EQU     4
 
 ; The Year, Month and Day in BCD so we can easily extract nibbles.
 AB_YEAR             EQU     2017h
-AB_MONTH            EQU     04h
-AB_DAY              EQU     13h
+AB_MONTH            EQU     11h
+AB_DAY              EQU     07h
 
 ; The Hours, Minutes and Seconds, again in BCD for easy manipulation.
 AB_HOURS            EQU     01h
 AB_MINUTES          EQU     01h
-AB_SECONDS          EQU     02h
+AB_SECONDS          EQU     04h
 
 ELSE
 
@@ -49,12 +49,12 @@ ELSE
 ; Note that the config-version is managed manually.
 AB_MAJOR_VERSION    EQU     1
 AB_MIDDLE_VERSION   EQU     1
-AB_MINOR_VERSION    EQU     1
+AB_MINOR_VERSION    EQU     3
 
 ; The Year, Month and Day in BCD so we can easily extract nibbles.
 AB_YEAR             EQU     2017h
-AB_MONTH            EQU     04h
-AB_DAY              EQU     13h
+AB_MONTH            EQU     11h
+AB_DAY              EQU     07h
 
 ; The Hours, Minutes and Seconds, again in BCD for easy manipulation.
 AB_HOURS            EQU     23h
