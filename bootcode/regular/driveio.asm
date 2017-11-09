@@ -326,6 +326,18 @@ ENDIF
         stc
         jz      DIOLP_Success
 
+        ; ---------------------------------------------------- [Check for LUKS]
+        ; Check for LUKS signature
+        ; If the LUKS signature is foud, set CY and exit to indicate no
+        ; are found partitions. This prevents LUKS disks from appearing in the
+        ; menu in the off chance the luks-sector has a 0xaa55 at offset 0x01fe.
+        cmp     word ptr [si+00h], 554ch    ; 'LU'
+        jne     @F
+        cmp     word ptr [si+02h], 534bh    ; 'KS'
+        stc
+        jz      DIOLP_Success
+
+    @@:
         clc
         cmp     wptr [si+LocBR_Magic], 0AA55h
         je      DIOLP_Success
