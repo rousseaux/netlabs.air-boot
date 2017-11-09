@@ -1209,8 +1209,14 @@ BOOTMENU_Execute    Proc Near   Uses es di
 
     BME_KeyTAB:
         push    dx
+
+; While the FX-module is excluded from newer versions, we want to retain
+; the option of enabling it.
+IFDEF   FX_ENABLED
         test    byte ptr [CFG_CooperBars], 1
         jnz     BME_KeyTAB_ShowFX
+ENDIF
+
         mov     ax, 0501h                  ; Go To Page 1 -> BIOS POST crap
         int     10h
         mov     ah, 0

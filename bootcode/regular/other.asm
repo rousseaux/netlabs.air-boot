@@ -263,8 +263,14 @@ ENDIF
         ; ============================================
         ;  Delay for some time and get Strg/Alt State
         ; ============================================
+
+; While the FX-module is excluded from newer versions, we want to retain
+; the option of enabling it.
+IFDEF   FX_ENABLED
         test    byte ptr [CFG_CooperBars], 1
         jnz     PCM_ShortDelay
+ENDIF
+
         mov     al, 27                        ; About 1.5 seconds
         test    byte ptr [CFG_FloppyBootGetName], 1
         jz      PCM_LongDelay
