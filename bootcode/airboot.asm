@@ -114,16 +114,20 @@ ENDIF
 ; know I have been './'-ted, which most probably will be something completely
 ; different from being 'slash-dotted' ... ;)
 ;
-IF  BLD_LANG_TXT EQ 'en'
-IFNDEF  AUX_DEBUG
-FX_ENABLED      EQU
-ENDIF
-ELSE
-    echo
-    echo ***** NOTE: Excluding FX-module for this language ! *****
-    echo
-ENDIF
 
+;~ IF  BLD_LANG_TXT EQ 'en'
+;~ IFNDEF  AUX_DEBUG
+;~ FX_ENABLED      EQU
+;~ ENDIF
+;~ ELSE
+    ;~ echo
+    ;~ echo ***** NOTE: Excluding FX-module for this language ! *****
+    ;~ echo
+;~ ENDIF
+
+echo
+echo *** NOTE: As of v1.1.4-RELEASE the FX-module is excluded to save space ***
+echo
 
 ; -----------------------------------------------------------------------------
 ;                                                                          AUX
