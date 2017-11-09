@@ -47,7 +47,7 @@
 // Build date
 #define     BLDLVL_YEAR             "2017"
 #define     BLDLVL_MONTH            "11"
-#define     BLDLVL_DAY              "07"
+#define     BLDLVL_DAY              "09"
 
 // Build time
 #define     BLDLVL_HOURS            "01"
@@ -64,7 +64,7 @@
 // Build date
 #define     BLDLVL_YEAR             "2017"
 #define     BLDLVL_MONTH            "11"
-#define     BLDLVL_DAY              "07"
+#define     BLDLVL_DAY              "08"
 
 // Build time
 #define     BLDLVL_HOURS            "23"
