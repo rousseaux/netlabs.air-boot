@@ -206,10 +206,15 @@ ENDIF
         ; Setup PartitionPointers-Table
         call    PART_CalculateStraightPartPointers
 
-        ; Setup Cyrillic Charset, if needed
-    IFDEF TXT_IncludeCyrillic
+        ; Load charset or glyphs if needed
+IFDEF TXT_LoadCharset
+IF  BLD_LANG_TXT EQ 'es'
+        call    CHARSET_IncludeSpanish
+ENDIF
+IF  BLD_LANG_TXT EQ 'ru'
         call    CHARSET_IncludeCyrillic
-    ENDIF
+ENDIF
+ENDIF
 
 
         ; This sets [CurIO_UseExtension] flag.

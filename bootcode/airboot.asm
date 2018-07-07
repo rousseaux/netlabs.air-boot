@@ -187,7 +187,14 @@ TextChar_WinLineDown        equ     0B3h
 TextChar_WinRep1            equ     0D1h
 TextChar_WinRep2            equ     0C5h
 TextChar_WinRep3            equ     0CFh
-TextChar_WinRep4            equ     0B5h
+
+; Remap the box-char for Spanish
+IF  BLD_LANG_TXT EQ 'es'
+TextChar_WinRep4            equ     0D9h    ; Remapped box-char for ES
+ELSE
+TextChar_WinRep4            equ     0B5h    ; Normal box-char
+ENDIF
+
 TextChar_WinRep5            equ     0C6h
 TextChar_WinRep6            equ     0D8h
 
@@ -1789,11 +1796,11 @@ size_apm = $-b_apm
 
 
 ;
-; Cyrillic support.
+; Extended Charset support.
 ;
-IFDEF   TXT_IncludeCyrillic
+IFDEF   TXT_LoadCharset
 b_ccharset:
-   include special/charset.asm  ; Charset Support (e.g. Cyrillic)
+   include special/charset.asm  ; Charset Support (RU and ES)
 size_ccharset = $-b_ccharset
 ENDIF
 

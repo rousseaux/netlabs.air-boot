@@ -16,23 +16,12 @@
 ;  AiR-BOOT. If not, see <http://www.gnu.org/licenses/>.
 ;
 ;---------------------------------------------------------------------------
-;                                               AiR-BOOT / CYRILLIC CHARSET
+;                                                  AiR-BOOT / SPANISH CHARS
 ;---------------------------------------------------------------------------
 
 
-; Check if extended glyphs need to be loaded.
-; Both use a different algorithm because for ES only one char is needed while
-; for RU the cyrillic chars are loaded. Code is 'bootcode/special/charset.asm'.
-IFDEF TXT_LoadCharset
-
-; Spanish (cp850)
-IF  BLD_LANG_TXT EQ 'es'
-	include charset-es.asm
-ENDIF
-
-; Russian (cp866)
-IF  BLD_LANG_TXT EQ 'ru'
-   include charset-ru.asm
-ENDIF
-
-ENDIF
+; Glyphs from CP850 for code-points 0xb5 (A with accent) and 0xe0 (O with accent)
+CHARSET_Spanish:
+    db 002h                                                                                             ; Number of glyphs in this table
+    db 0b5h,0d9h,060h,0c0h,010h,038h,06ch,0c6h,0c6h,0feh,0c6h,0c6h,0c6h,0c6h,000h,000h,000h,000h        ; Remap original glyph (box-char) to 0xd9
+    db 0e0h,000h,018h,030h,000h,07ch,0c6h,0c6h,0c6h,0c6h,0c6h,0c6h,0c6h,07ch,000h,000h,000h,000h        ; No remapping needed

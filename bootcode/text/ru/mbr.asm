@@ -21,7 +21,7 @@
 ;------------------------------------------------------------------------------
 
 TXT_LanguageID                equ 'R'
-TXT_IncludeCyrillic           equ ON
+TXT_LoadCharset               equ ON
 
 ; Those strings are saved within MBR.
 ; Total Length maximum 165 chars (include 13,10 (CRs), excluding ending Zeros)
