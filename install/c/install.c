@@ -1020,7 +1020,7 @@ void Status_CheckConfig (void) {
     /*
     // Note that the 'AiRCFG-TABLE' string includes the invisible 0xAD char.
     */
-    if (strncmp(ConfigSectorPtr, "AiRCFG-TABLE­", 13)==0) {
+    if (strncmp(ConfigSectorPtr, "AiRCFG-TABLE\xad", 13)==0) {
         // AiR-BOOT signature found...
         SectorPtr = &Track0[54 * BYTES_PER_SECTOR];                                // Start at sector 55
         ConfigChecksum = *(PUSHORT)&Track0[54 * BYTES_PER_SECTOR + 20];
@@ -1364,6 +1364,7 @@ void Language_PrintF(UCHAR LanguageID) {
         case 'I': printf("italian");    break;
         case 'R': printf("russian");    break;
         case 'S': printf("swedish");    break;
+        case 0xa5: printf("spanish");   break;
         default:  printf("unknown");
     }
 }
@@ -1798,7 +1799,7 @@ int main (int argc, char **argv) {
 #endif
                 if (Install_Code) {
                     if (!Option_CID) {
-                        printf(" þ Writing AiR-BOOT code...");
+                        printf(" \xfe Writing AiR-BOOT code...");
                     }
                     //~ DumpTrack0();
                     Install_WriteCode();
@@ -1809,7 +1810,7 @@ int main (int argc, char **argv) {
                 }
                 if (Install_Config) {
                     if (!Option_CID) {
-                        printf(" þ Writing AiR-BOOT configuration...");
+                        printf(" \xfe Writing AiR-BOOT configuration...");
                     }
                     Install_WriteConfig();
                     if (!Option_CID) {
@@ -1862,7 +1863,7 @@ int main (int argc, char **argv) {
             }
             else {
                 if (!Option_CID) {
-                    printf(" þ All components of AiR-BOOT are intact and up-to-date. Nothing to do.\n");
+                    printf(" \xfe All components of AiR-BOOT are intact and up-to-date. Nothing to do.\n");
                 }
                 ExitOnly = TRUE;
             }
@@ -1870,7 +1871,7 @@ int main (int argc, char **argv) {
         }
         case 'd': {
             if (!Option_CID) {
-                printf(" þ Removing AiR-BOOT automatically is not possible at this time.\n");
+                printf(" \xfe Removing AiR-BOOT automatically is not possible at this time.\n");
             }
 #ifdef PLATFORM_OS2
             if (!Option_CID) {
