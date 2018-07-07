@@ -75,7 +75,7 @@ TXT_SETUP_LowerMessage      db 'This software is released under ', 0, 'GPLv3+', 
                             db 'http://www.gnu.org/licenses/gpl.txt', 0
                             db 'For more information and source, please visit:', 0
                             db 'http://svn.netlabs.org/air-boot', 0
-                            db 'Contact via e-mail: ', 0, 'rousseau.os2dev@gmx.com', 0
+                            db 'Contact by e-mail: ', 0, 'rousseau.os2dev@gmx.com', 0
 
 ; Table that points to BIOS device names.
 ContinueBIOSbootTable   dw offset TXT_SETUP_MAGIC_CDROM
