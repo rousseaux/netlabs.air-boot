@@ -1055,7 +1055,7 @@ ENDIF
    inc     bl
    mov     cx, bx
    call    VideoIO_Locate
-   mov     al, 0b5h
+   mov     al, TextChar_WinRep4
    call    VideoIO_PrintSingleChar
 
 
@@ -1125,7 +1125,7 @@ ENDIF
 
 ;   inc     cl
 ;   call    MBR_Locate                    ; Location 16, HiddenX
-;   mov     al, 0b5h
+;   mov     al, TextChar_WinRep4
 ;   call    MBR_PrintSingleChar
 ;   mov     cx, 0E05h                     ; Yellow on Lila
 ;   call    MBR_Color
@@ -1782,7 +1782,7 @@ ENDIF
    push    bx
       mov     cx, bx
       call    VideoIO_Locate
-      mov     al, 0b5h
+      mov     al, TextChar_WinRep4
       call    VideoIO_PrintSingleChar
 
 
