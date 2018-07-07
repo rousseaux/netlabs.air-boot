@@ -317,7 +317,7 @@ package.bin: .SYMBOLIC manual
 # This target generates the generic install script.
 # -----------------------------------------------------------------------------
 os2.install.cmd: .symbolic
-	@set ABLANG=en de nl fr it sw ru
+	@set ABLANG=en de nl fr it sw ru es
 	@type >$(%PACKDIR)\$@ <<
 @echo off
 

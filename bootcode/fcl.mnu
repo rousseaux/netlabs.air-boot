@@ -28,6 +28,8 @@ L:	Build Anonymous Dev Version  [LANG]
 	make dev DEV_BLD_LANG=sw BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
 7:	Russian
 	make dev DEV_BLD_LANG=ru BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
+8:	Spanish
+	make dev DEV_BLD_LANG=es BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
 }
 -:	-------------------------------------
 C:	Clean

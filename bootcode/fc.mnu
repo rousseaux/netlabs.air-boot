@@ -28,6 +28,8 @@ L:	Build Anonymous Dev Version  [LANG]
 	wmake -h dev DEV_BLD_LANG=sw %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
 7:	Russian
 	wmake -h dev DEV_BLD_LANG=ru %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
+8:	Spanish
+	wmake -h dev DEV_BLD_LANG=es %BLDLVL_VENDOR= %BLDLVL_MACHINE= %CRC_IGNORE=y
 }
 -:	-------------------------------------
 C:	Clean
