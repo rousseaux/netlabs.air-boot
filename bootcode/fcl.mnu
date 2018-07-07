@@ -16,17 +16,17 @@ L:	Build Anonymous Dev Version  [LANG]
 {
 1:	English
 	make dev DEV_BLD_LANG=en BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
-2:	German    (without FX)
+2:	German
 	make dev DEV_BLD_LANG=de BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
-3:	Dutch     (without FX)
+3:	Dutch
 	make dev DEV_BLD_LANG=nl BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
-4:	French    (without FX)
+4:	French
 	make dev DEV_BLD_LANG=fr BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
-5:	Italian   (without FX)
+5:	Italian
 	make dev DEV_BLD_LANG=it BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
-6:	Swedish   (without FX)
+6:	Swedish
 	make dev DEV_BLD_LANG=sw BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
-7:	Russian   (without FX)
+7:	Russian
 	make dev DEV_BLD_LANG=ru BLDLVL_VENDOR= BLDLVL_MACHINE= USE_GNU_MAKE=y CRC_IGNORE=y
 }
 -:	-------------------------------------

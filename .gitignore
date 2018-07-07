@@ -9,10 +9,15 @@
 /*.geany
 
 # Ignore CodeLite and Eclipse Project Files
+/.settings
 /*.project
+/*.cproject
 
 # Ignore prepared commit message
 /.commit.msg
+
+# Ignore GnuHerd 'fc2.mnu' files
+fc2.mnu
 
 # Ignore scratch files and directories
 ...
@@ -30,7 +35,7 @@
 !/manual/airboot-manual.odt
 !/manual/airboot-manual.pdf
 !/manual/fc.mnu
-!/manual/fc?.mnu
+#~ !/manual/fc?.mnu
 !/manual/odt2ipf.xsl
 !/manual/format.xsl
 !/manual/images
