@@ -256,48 +256,58 @@ PARTSETUP_DrawMenuBase          Proc Near   Uses dx
    mov     cx, CLR_SETUP_PARTITION_LABELS   ; F10-SETUP-PARTITION-SETUP labels bg
    call    VideoIO_Color
 
+   ; rousseau.comment.201807062250 :: Replaced fixed values with length-query and length-mask
+
    ; ------------------------------------- 1st Part
    mov     cx, 0503h
    call    VideoIO_Locate
    mov     si, offset TXT_TopInfos_No    ; "No Hd"
-   mov     cl, 5
+   call    GetLenOfString
+   and     cl, 07h
    call    VideoIO_FixedPrint
    mov     cx, 050Bh
    call    VideoIO_Locate
    mov     si, offset TXT_TopInfos_Label ; "Label"
-   mov     cl, 5
+   call    GetLenOfString
+   and     cl, 0fh
    call    VideoIO_FixedPrint
    mov     cx, 0517h
    call    VideoIO_Locate
    mov     si, offset TXT_TopInfos_Flags ; "Flags"
-   mov     cl, 5
+   call    GetLenOfString
+   and     cl, 07h
    call    VideoIO_FixedPrint
    mov     cx, 051Fh
    call    VideoIO_Locate
    mov     si, offset TXT_TopInfos_Type  ; "Type"
-   mov     cl, 4
+   call    GetLenOfString
+   and     cl, 0fh
    call    VideoIO_FixedPrint
 
    ; ------------------------------------- 2nd Part
    mov     cx, 052Bh
    call    VideoIO_Locate
    mov     si, offset TXT_TopInfos_No    ; "No Hd"
-   mov     cl, 5
+   call    GetLenOfString
+   and     cl, 07h
    call    VideoIO_FixedPrint
    mov     cx, 0533h
    call    VideoIO_Locate
    mov     si, offset TXT_TopInfos_Label ; "Label"
-   mov     cl, 5
+   call    GetLenOfString
+   and     cl, 0fh
    call    VideoIO_FixedPrint
    mov     cx, 053Fh
    call    VideoIO_Locate
    mov     si, offset TXT_TopInfos_Flags ; "Flags"
-   mov     cl, 5
+   call    GetLenOfString
+   and     cl, 07h
    call    VideoIO_FixedPrint
    mov     cx, 0547h
    call    VideoIO_Locate
    mov     si, offset TXT_TopInfos_Type  ; "Type"
-   mov     cl, 4
+   call    GetLenOfString
+   and     cl, 0fh
    call    VideoIO_FixedPrint
 
    mov     si, offset TXT_SETUPHELP_PartSetup
