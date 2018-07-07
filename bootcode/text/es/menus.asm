@@ -65,7 +65,7 @@ TXT_SETUP_PartAutoDetect       db 'Detectar particiones', 0
 TXT_SETUP_SecurityOptions      db '-> Opcs. seguridad <-', 0
 TXT_SETUP_PasswordedSetup      db 'Clave para configurar', 0
 TXT_SETUP_PasswordedSystem     db 'Clave para iniciar', 0
-TXT_SETUP_PasswordedChangeBoot db 'Clave para cambios', 0
+TXT_SETUP_PasswordedChangeBoot db 'Clave para cambiar', 0
 TXT_SETUP_GetFloppyName        db 'Leer etiqueta disquete', 0
 TXT_SETUP_GetFloppyName2Sec    db '-> Leer cada 2 seg.', 0
 TXT_SETUP_VirusDetect          db 'Detecci¢n de virus', 0
@@ -110,7 +110,7 @@ TXT_SETUP_MAGIC_Set            db 'hacer ', 0
 ; Setup Control Help - Max Length: 33
 ;----------------------------------|-------------------------------|--------
 TXT_SETUPHELP_Main             db 24,32,25,32,26,32,27,' : Navegar', 0
-                               db               'Enter   : Inicar acci¢n/entrar', 0
+                               db               'Enter   : Entrar/Ejecutar', 0
                                db 'F10 : Guardar cambios y salir', 0
                                db 'Esc : Ir al men£ de inicio', 0
 
@@ -138,10 +138,10 @@ TXT_SETUPHELP_BasicOptions     db 'Establecer el sistema', 0
                                db 'opciones de inicio por', 0
                                db 'tiempo, disquete, etc.', 0
                                db 0
-TXT_SETUPHELP_AdvOptions       db 'Para usuarios avanza-', 0
-                               db 'dos. Si no entiende', 0
-                               db 'qu‚ hacen, d‚jelas', 0
-                               db 'como est n.', 0
+TXT_SETUPHELP_AdvOptions       db 'Si no tiene el conoci-', 0
+                               db 'miento t‚cnico para', 0
+                               db 'estar seguro de qu‚', 0
+                               db 'hacen, no las cambie.', 0
                                db 0
 TXT_SETUPHELP_ExtOptions       db 'Opciones extendidas', 0
                                db 'para SO espec¡ficos.', 0
@@ -153,11 +153,11 @@ TXT_SETUPHELP_DefMasterPwd     db 'Defina una clave para', 0
 TXT_SETUPHELP_DefBootPwd       db 'Defina una clave para', 0
                                db 'iniciar el sistema.', 0
                                db 0
-TXT_SETUPHELP_SaveAndExit      db 'Continur  el proceso', 0
+TXT_SETUPHELP_SaveAndExit      db 'Continuar el proceso', 0
                                db 'de inicio guardando', 0
                                db 'las opciones actuales.', 0
                                db 0
-TXT_SETUPHELP_JustExit         db 'Continuar  el proceso', 0
+TXT_SETUPHELP_JustExit         db 'Continuar el proceso', 0
                                db 'de inicio sin guardar', 0
                                db 'cambios hechos a las', 0
                                db 'opciones.', 0
@@ -170,10 +170,10 @@ TXT_SETUPHELP_InPartitionSetup db 'I - Incluir en el men£', 0
                                db 'E - Part. ext. a la M$', 0
                                db 0
 
-TXT_SETUPHELP_HideSetup        db 'Establecer el estado', 0
-                               db 'de visibilidad de cada', 0
-                               db 'partici¢n al iniciar', 0
-                               db 'la seleccionada.', 0
+TXT_SETUPHELP_HideSetup        db 'Establecer que las de-', 0
+                               db 'm s particiones sean', 0
+                               db 'visibles o no al ini-', 0
+                               db 'ciar la seleccionada.', 0
                                db 0
 
 ; Basic Options - Help
@@ -194,16 +194,16 @@ TXT_SETUPHELP_TimedKeyHandling db 'Establece qu‚ hacer si', 0
                                db 'durante la cuenta para', 0
                                db 'el inicio.', 0
                                db 0
-TXT_SETUPHELP_BootLastIfTimed  db 'Si se activa el inicio', 0
+TXT_SETUPHELP_BootLastIfTimed  db 'Si se activ¢ el inicio', 0
                                db 'por tiempo, iniciar el', 0
                                db '£ltimo sistema; si no,', 0
                                db 'iniciar el establecido', 0
                                db 'por omisi¢n.', 0
                                db 0
-TXT_SETUPHELP_RememberLastBoot db 'Colocar al inicio la', 0
-                               db 'barra de men£ sobre', 0
+TXT_SETUPHELP_RememberLastBoot db 'Al inicio, colocar el', 0
+                               db 'cursor del men£ sobre', 0
                                db 'el £ltimo sistema que', 0
-                               db 'se inici¢.', 0
+                               db 'se arranc¢ desde ‚l.', 0
                                db 0
 TXT_SETUPHELP_RememberTimeBoot db 'Tambi‚n se puede', 0
                                db 'recordar el £ltimo', 0
@@ -218,15 +218,15 @@ TXT_SETUPHELP_ShowLVMDriveLetters   db 'AiR-BOOT mostrar  las', 0
                                     db 'letras de unidad del', 0
                                     db 'LVM en el men£.', 0
                                     db 0
-TXT_SETUPHELP_MbrProtection    db 'Activa 1KB de c¢digo', 0
+TXT_SETUPHELP_MbrProtection    db 'Activar 1KB de c¢digo', 0
                                db 'residente para prote-', 0
                                db 'ger el MBR. Puede ser', 0
                                db 'incompatible con algu-', 0
                                db 'nos SO.', 0
                                db 0
-TXT_SETUPHELP_IgnoreMbrWrites  db 'Activar: se ignorar n', 0
+TXT_SETUPHELP_IgnoreMbrWrites  db 'Activado, se ignorar n', 0
                                db 'las operaciones de', 0
-                               db 'escritura; desactivar:', 0
+                               db 'escritura; desactivado', 0
                                db 'el sistema ®fallar ¯.', 0
                                db 0
 TXT_SETUPHELP_MakeSounds       db 'AiR-BOOT puede emitir', 0
@@ -250,17 +250,16 @@ TXT_SETUPHELP_PartAutoDetect   db 'Si AiR-BOOT debe', 0
                                db 'nuevas que mostrar en', 0
                                db 'el men£ de inicio.', 0
                                db 0
-TXT_SETUPHELP_PasswordedSetup  db 'Para entrar a esta', 0
-                               db 'configuraci¢n, se le', 0
-                               db 'pedir  una contrase¤a.', 0
+TXT_SETUPHELP_PasswordedSetup  db 'Pedir una contrase¤a', 0
+                               db 'para entrar a esta', 0
+                               db 'configuraci¢n.', 0
                                db 0
-TXT_SETUPHELP_PasswordedSystem db 'Se le pedir  una con-', 0
-                               db 'trase¤a al iniciar el', 0
-                               db 'sistema.', 0
+TXT_SETUPHELP_PasswordedSystem db 'Pedir una contrase¤a', 0
+                               db 'al iniciar el sistema.', 0
                                db 0
-TXT_SETUPHELP_PasswordedBoot   db 'Se le pedir  cuando el', 0
-                               db 'inicio no est‚ tempo-', 0
-                               db 'rizado.', 0
+TXT_SETUPHELP_PasswordedBoot   db 'Pedir una contrase¤a', 0
+                               db 'cuando el inicio no', 0
+                               db 'est‚ temporizado.', 0
                                db 0
 TXT_SETUPHELP_GetFloppyName    db 'Al mostrar la unidad', 0
                                db 'de disquete en el men£', 0
@@ -271,10 +270,10 @@ TXT_SETUPHELP_GetFloppyName2Sec db 'Y adem s lo intentar ', 0
                                db 'opcionalmente cada dos', 0
                                db 'segundos.', 0
                                db 0
-TXT_SETUPHELP_VirusDetect      db 'Detectar  los virus', 0
+TXT_SETUPHELP_VirusDetect      db 'Detectar los virus', 0
                                db 'normales (torpes).', 0
                                db 0
-TXT_SETUPHELP_StealthDetect    db 'Detectar  los virus', 0
+TXT_SETUPHELP_StealthDetect    db 'Detectar los virus', 0
                                db 'que se camuflan.', 0
                                db 0
 TXT_SETUPHELP_VIBRdetect       db 'Detecci¢n de Virus En', 0
@@ -315,10 +314,10 @@ TXT_SETUPHELP_IgnoreLVM        db 'Al activarse, AiR-BOOT', 0
                                ;~ db 'of mixed usage of CHS', 0
                                ;~ db 'and LBA.', 0
                                ;~ db 0
-TXT_SETUPHELP_ExtPartMShack    db 'Activa el cambio din -', 0
-                               db 'mico del identificador', 0
+TXT_SETUPHELP_ExtPartMShack    db 'Cambiar din micamente', 0
+                               db 'entre el identificador', 0
                                db 'de partici¢n extendida', 0
-                               db 'est ndar al de M$.', 0
+                               db 'est ndar y el de M$.', 0
                                db '(Control por tecla E.)', 0
                                db 0
 
