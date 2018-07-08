@@ -1455,7 +1455,7 @@ ENDIF
                 mov     si, offset [TABMessage]
                 call    VideoIO_Print
                 inc     [TextPosY]
-                mov     [TextPosX], 57
+                mov     [TextPosX], 79 - sizeof [PREPMessage]
                 call    MBR_TeletypeSyncPos
                 mov     si, offset [PREPMessage]
                 call    MBR_TeletypeBold
