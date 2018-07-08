@@ -132,10 +132,10 @@ build: .SYMBOLIC
 	@echo :: for each platform and the bootloader for each language.        ::
 	@echo ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 	@echo.
-	@echo ***** NOTE: Only the EN-build has the FX-module included !!    *****
-	@echo *****       To regain space, the FX-module will be completely  *****
-	@echo *****       excluded from future AiR-BOOT releases !           *****
-	@echo.
+#~ 	@echo ***** NOTE: Only the EN-build has the FX-module included !!    *****
+#~ 	@echo *****       To regain space, the FX-module will be completely  *****
+#~ 	@echo *****       excluded from future AiR-BOOT releases !           *****
+#~ 	@echo.
 
 
 
