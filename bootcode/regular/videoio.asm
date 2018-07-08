@@ -785,7 +785,11 @@ VideoIO_DisplayDiskInfo     Proc Near
         ; Jmp over the strings
         jmp     @F
 
-        ; We like to have these local for now
+
+    ; Label positions for disk information in preboot-menu
+    VideoIO_DisplayDiskInfo_labpos  db  0, 5, 17, 26, 36, 46, 56, 61, 71
+
+    ; Label names for disk information in preboot-menu
     VideoIO_DisplayDiskInfo_labels  db  'DISK '
                                     db  'SECTORS_LBA '
                                     db  'SECSIZE  '
@@ -796,6 +800,7 @@ VideoIO_DisplayDiskInfo     Proc Near
                                     db  'INTERFACE '
                                     db  'REMOVABLE'
                                     db  0
+
 
     ; Display disk information on the pre-MENU screen
     @@:
@@ -829,9 +834,14 @@ ENDIF
         mov     dl, cl
         add     dl, 80h
 
+        ; Pointer to label positions
+        mov si, offset VideoIO_DisplayDiskInfo_labpos
+
+
         ; Position on start of next line
         inc     [TextPosY]
-        mov     [TextPosX], 0
+        lodsb
+        mov     [TextPosX], al
 
         ; Show a bright star if this is the BIOS boot-disk
         ;~ mov     [TextColorBack], 08h
@@ -855,7 +865,8 @@ ENDIF
         call    DriveIO_CalcDiskInfoPointer
 
         ; Show disk size in LBA sectors (hex) -------------------- [ LBA SECS ]
-        mov     [TextPosX], 5
+        lodsb
+        mov     [TextPosX], al
         mov     [TextColorFore], 06h            ; brown for >2TiB
         mov     al, [bx+LocDISKINFO_I13X_SecsLBA+04h]
         test    al, al
@@ -876,7 +887,8 @@ ENDIF
         mov     [TextColorFore], 08h            ; reduced brightness
 
         ; Show sector size (hex) ------------------------------ [ SECTOR SIZE ]
-        mov     [TextPosX], 17
+        lodsb
+        mov     [TextPosX], al
         mov     [TextColorFore], 06h            ; brown for != 512
         mov     ax, [bx+LocDISKINFO_I13X_SecSize]
         cmp     ax, 0200h
@@ -889,7 +901,8 @@ ENDIF
         mov     [TextColorFore], 08h            ; reduced brightness
 
         ; Show INT13 geometry (dec) ----------------------------- [ INT13 GEO ]
-        mov     [TextPosX], 26
+        lodsb
+        mov     [TextPosX], al
         mov     [TextColorFore], 04h            ; red for (0,0)
         mov     dl, [bx+LocDISKINFO_I13_Secs]
         mov     dh, [bx+LocDISKINFO_I13_Heads]
@@ -912,7 +925,8 @@ ENDIF
         mov     [TextColorFore], 08h            ; reduced brightness
 
         ; Show INT13X geometry (dec) --------------------------- [ INT13X GEO ]
-        mov     [TextPosX], 36
+        lodsb
+        mov     [TextPosX], al
         mov     [TextColorFore], 04h            ; red for (0,0)
         mov     dl, [bx+LocDISKINFO_I13X_Secs]
         mov     dh, [bx+LocDISKINFO_I13X_Heads]
@@ -935,7 +949,8 @@ ENDIF
         mov     [TextColorFore], 08h            ; reduced brightness
 
         ; Show LVM geometery (dec)  ------------------------------- [ LVM GEO ]
-        mov     [TextPosX], 46
+        lodsb
+        mov     [TextPosX], al
         mov     [TextColorFore], 04h            ; red for (0,0)
         mov     dl, [bx+LocDISKINFO_LVM_Secs]
         mov     dh, [bx+LocDISKINFO_LVM_Heads]
@@ -964,7 +979,8 @@ ENDIF
         mov     [TextColorFore], 08h            ; reduced brightness
 
         ; Show host bus (4 chars) -------------------------------- [ HOST BUS ]
-        mov     [TextPosX], 56
+        lodsb
+        mov     [TextPosX], al
         mov     ax, [bx+LocDISKINFO_I13X_HostBus+00h]
         mov     dx, [bx+LocDISKINFO_I13X_HostBus+02h]
         call    VideoIO_PrintSingleChar
@@ -976,7 +992,8 @@ ENDIF
         call    VideoIO_PrintSingleChar
 
         ; Show interface (8 chars) ------------------------------ [ INTERFACE ]
-        mov     [TextPosX], 61
+        lodsb
+        mov     [TextPosX], al
         mov     ax, [bx+LocDISKINFO_I13X_Interface+00h]
         mov     dx, [bx+LocDISKINFO_I13X_Interface+02h]
         call    VideoIO_PrintSingleChar
@@ -997,7 +1014,8 @@ ENDIF
         call    VideoIO_PrintSingleChar
 
         ; Show if disk is removable (YES/NO) -------------------- [ REMOVABLE ]
-        mov     [TextPosX], 71
+        lodsb
+        mov     [TextPosX], al
         mov     si, offset [No]
         mov     ax, [bx+LocDISKINFO_I13X_Flags]
         test    ax, 0004h
