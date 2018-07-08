@@ -715,6 +715,34 @@ VideoIO_PrintBuildInfo  Proc    Near    Uses ax bx cx si di
         mov     [TextPosX], 65
         mov     al, ' '
         mov     si, offset [WinBeginPosY]
+
+        ; Adjust positions for language
+        mov     bx, BLD_LANG_TXT
+        cmp     bx, 06573h
+        jne     @F
+        xchg    ah, al
+        mov     byte ptr [si+20], 0c6h
+        mov     byte ptr [si+22], 007h
+        mov     bx, cx
+        push    si
+        push    [si+bx+00]
+        push    [si+bx+02]
+        push    [si+bx+04]
+        mov     di, si
+        add     di, bx
+        add     si, 17
+        mov     cx, 7
+        cld
+        rep     movsb
+        xchg    bx, cx
+        mov     al, 085h
+        stosb
+        pop     [di+bx+04]
+        pop     [di+bx+02]
+        pop     [di+bx+00]
+        pop     si
+        xchg    ah, al
+    @@:
         add     si, cx
         mov     ah, al
         xor     al, ah
@@ -782,28 +810,11 @@ VideoIO_DisplayDiskInfo     Proc Near
         push    ax
         push    dx
 
-        ; Jmp over the strings
-        jmp     @F
 
+        ;
+        ; Display disk information on the pre-MENU screen
+        ;
 
-    ; Label positions for disk information in preboot-menu
-    VideoIO_DisplayDiskInfo_labpos  db  0, 5, 17, 26, 36, 46, 56, 61, 71
-
-    ; Label names for disk information in preboot-menu
-    VideoIO_DisplayDiskInfo_labels  db  'DISK '
-                                    db  'SECTORS_LBA '
-                                    db  'SECSIZE  '
-                                    db  'I13_GEO   '
-                                    db  'I13X_GEO  '
-                                    db  'LVM_GEO   '
-                                    db  'BUS  '
-                                    db  'INTERFACE '
-                                    db  'REMOVABLE'
-                                    db  0
-
-
-    ; Display disk information on the pre-MENU screen
-    @@:
 
         ; Start postition -- allow for AuxIO message when debugging
 IFNDEF  AUX_DEBUG
@@ -1083,11 +1094,13 @@ VideoIO_ShowWaitDots    Proc
 VideoIO_ShowWaitDots    EndP
 
 
+; DOS CR/LF
+NL                  db 0dh, 0ah, 0
 
+IF  NOT BLD_LANG_TXT EQ 'es'
 ;
 ; Strings used in the pre-MENU screen
 ;
-NL                  db 0dh, 0ah, 0
 DisksFound          db "Disks Found          : ",0
 PartitionsFound     db "Partitions Found     : ",0
 Phase1              db "OS/2 Install Phase 1 : ",0
@@ -1101,3 +1114,19 @@ No                  db "NO",0
 ;~ Active              db "ACTIVE",0
 ;~ NotActive           db "NOT ACTIVE",0
 ;~ AutoStartPart       db "Auto Start Partition : ",0
+
+    ; Label positions for disk information in preboot-menu
+    VideoIO_DisplayDiskInfo_labpos  db  0, 5, 17, 26, 36, 46, 56, 61, 71
+
+    ; Label names for disk information in preboot-menu
+    VideoIO_DisplayDiskInfo_labels  db  'DISK '
+                                    db  'SECTORS_LBA '
+                                    db  'SECSIZE  '
+                                    db  'I13_GEO   '
+                                    db  'I13X_GEO  '
+                                    db  'LVM_GEO   '
+                                    db  'BUS  '
+                                    db  'INTERFACE '
+                                    db  'REMOVABLE'
+                                    db  0
+ENDIF

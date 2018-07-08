@@ -114,33 +114,33 @@ CHARSET_IncludeCyrillic        Proc Near
         call    CHARSET_GetRomGlyphs
 
         ; Pointer to table with glyphs using compressed format
-        mov    si, offset CHARSET_Cyrillic
-        mov    di, offset CharsetTempBuffer+2048
+        mov     si, offset CHARSET_Cyrillic
+        mov     di, offset CharsetTempBuffer+2048
 
-        mov    dl, 64           ; Decode 64 character bitmaps
-        xor    al, al
-        xor    ch, ch
-        DecodeLoop:             ; This is an uncompressing-loop
-        mov    ah, ds:[si]
-        inc    si
-        mov    cl, ah
-        and    cl, 0Fh
-        rep    stosb            ; Write NULs, count: lower 4 bits
-        mov    cl, ah
-        shr    cl, 4
-        or     cl, cl
-        jz     EndOfStream
-        rep    movsb
-        jmp    DecodeLoop
-        EndOfStream:
-        cmp    di, offset CharsetTempBuffer+3840
-        jae    DecodeDone
-        add    di, 768          ; Skip 3x16 char blocks
-        jmp    DecodeLoop
+        mov     dl, 64          ; Decode 64 character bitmaps
+        xor     al, al
+        xor     ch, ch
+    DecodeLoop:                 ; This is an uncompressing-loop
+        mov     ah, ds:[si]
+        inc     si
+        mov     cl, ah
+        and     cl, 0Fh
+        rep     stosb           ; Write NULs, count: lower 4 bits
+        mov     cl, ah
+        shr     cl, 4
+        or      cl, cl
+        jz      EndOfStream
+        rep     movsb
+        jmp     DecodeLoop
+    EndOfStream:
+        cmp     di, offset CharsetTempBuffer+3840
+        jae     DecodeDone
+        add     di, 768         ; Skip 3x16 char blocks
+        jmp     DecodeLoop
 
-        DecodeDone:
+    DecodeDone:
         ; Upload the custom charset to the video-adapter
-        call  CHARSET_SetCutsomGlyphs
+        call    CHARSET_SetCutsomGlyphs
 
         popa
         ret
@@ -157,18 +157,18 @@ ENDIF
 ; http://www.ctyme.com/intr/rb-0158.htm
 ; -----------------------------------------------------------------------------
 CHARSET_GetRomGlyphs    Proc
-        mov    ax, 1130h
-        mov    bh, 6                ; Get ROM VGA 25x80 charset
-        int    10h                  ; VIDEO BIOS: Get charset table pointer
-        mov    bx, ds
-        mov    ax, es
-        mov    es, bx               ; ES now points to Data-Segment      (dest)
-        mov    ds, ax               ; DS now points to Video-ROM          (src)
-        mov    si, bp               ; SI now points to ROM Font 25x80
-        mov    di, offset CharsetTempBuffer     ; Located in BSS
-        mov    cx, 2048
-        rep    movsw                ; Copy ROM-charset to Temp-Buffer in BSS
-        mov    ds, bx               ; Restore DS (DS==ES==CS)
+        mov     ax, 1130h
+        mov     bh, 6               ; Get ROM VGA 25x80 charset
+        int     10h                 ; VIDEO BIOS: Get charset table pointer
+        mov     bx, ds
+        mov     ax, es
+        mov     es, bx              ; ES now points to Data-Segment      (dest)
+        mov     ds, ax              ; DS now points to Video-ROM          (src)
+        mov     si, bp              ; SI now points to ROM Font 25x80
+        mov     di, offset CharsetTempBuffer    ; Located in BSS
+        mov     cx, 2048
+        rep     movsw               ; Copy ROM-charset to Temp-Buffer in BSS
+        mov     ds, bx              ; Restore DS (DS==ES==CS)
         ret
 CHARSET_GetRomGlyphs    EndP
 
@@ -184,7 +184,7 @@ CHARSET_GetRomGlyphs    EndP
 ; scanning phase, so the quirk occurred when the preboot-menu was moved to the
 ; second video-page. Information from Ralph Brown does state that for 0x1110h
 ; video-page 0 needs to be active, which might not be the case when the custom
-; glyphs are loaded. Switching to 0x1100 solves the problem on the Hp Pavilion
+; glyphs are loaded. Switching to 0x1100 solves the problem on the HP Pavilion
 ; and the other test-laptop, which did not have this quirk, still works fine.
 ; That leaves the question why 0x1110 was chosen by Martin in the first place.
 ; http://www.ctyme.com/intr/rb-0136.htm  <!-- 0x1100 -->

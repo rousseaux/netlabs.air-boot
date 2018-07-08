@@ -70,12 +70,14 @@ BootEndMsg2     db 'To obtain the sources,   please visit: http://svn.netlabs.or
 CheckID_MBR     db 'AiRBOOT'
 BrokenHDD       db ' (HDDx)', 0
 
+IF  NOT BLD_LANG_TXT EQ 'es'
 ; Colors for special words hard-coded. Keep all 0s.
 TXT_SETUP_LowerMessage      db 'This software is released under ', 0, 'GPLv3+', 0
                             db 'http://www.gnu.org/licenses/gpl.txt', 0
                             db 'For more information and source, please visit:', 0
                             db 'http://svn.netlabs.org/air-boot', 0
                             db 'Contact by e-mail: ', 0, 'rousseau.os2dev@gmx.com', 0
+ENDIF
 
 ; Table that points to BIOS device names.
 ContinueBIOSbootTable   dw offset TXT_SETUP_MAGIC_CDROM
@@ -83,6 +85,7 @@ ContinueBIOSbootTable   dw offset TXT_SETUP_MAGIC_CDROM
                         dw offset TXT_SETUP_MAGIC_ZIPLS
                         dw     0
 
+IF  NOT BLD_LANG_TXT EQ 'es'
 ; LVM protection messages; should be translated and moved to lang-files.
 TXT_SETUP_NoEditType35      db 'Labels of LVM-Data partitions cannot be changed', 0
 TXT_SETUP_NoBootType35      db 'LVM-Data partitions cannot be set bootable', 0
@@ -98,3 +101,4 @@ SystemHalted    db  'System Halted',0
 ; Build Information string.
 build_date      db  'Build Date: ',0
 scanning_txt    db  'Scanning...',0
+ENDIF

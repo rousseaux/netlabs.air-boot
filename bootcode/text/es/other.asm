@@ -104,3 +104,61 @@ TXT_ERROR_CheckConfig          db 13, 10, ' - La configuraci¢n', 0
 
 ;----------------------------------|----------------------------------------------------------|
 TXT_TooManyTries               db 'Demasiados intentos. Sistema detenido.', 0
+
+;
+; Strings used in the pre-MENU screen
+;
+DisksFound          db "Discos Encontrados      : ",0
+PartitionsFound     db "Particiones Encontradas : ",0
+Phase1              db "Fase 1 Instalaci¢n OS/2 : ",0
+TABMessage          db "Pulse TAB para volver al men£ de AiR-BOOT",0
+PREPMessage         db "Preparando Men£ de Inicio...",0
+Yes                 db "SÖ",0
+No                  db "NO",0
+;~ On                  db "SÖ",0
+;~ Off                 db "NO",0
+;~ None                db "NINGUNO",0
+;~ Active              db "ACTIVA",0
+;~ NotActive           db "NO ACTIVA",0
+;~ AutoStartPart       db "Autoiniciar Partici¢n: ",0
+
+; Label positions for disk information in preboot-menu
+VideoIO_DisplayDiskInfo_labpos  db  0, 6, 19, 28, 37, 47, 56, 61, 71
+
+; Label names for disk information in preboot-menu
+VideoIO_DisplayDiskInfo_labels  db  'DISCO '
+                                db  'SECTORES_LBA '
+                                db  'TAM¥SEC  '
+                                db  'GEO_I13  '
+                                db  'GEO_I13X  '
+                                db  'GEO_LVM  '
+                                db  'BUS  '
+                                db  'INTERFAZ  '
+                                db  'EXTRAÖBLE'
+                                db  0
+
+TXT_SETUP_NoEditType35      db 'Imposible cambiar etiqueta de partici¢n de datos LVM', 0
+TXT_SETUP_NoBootType35      db 'Imposible hacer arrancables particiones de datos LVM', 0
+TXT_BootMenuPowerOff        db 'SUPR para apagar', 0
+TXT_NoINT13XSupport         db 'Esta BIOS no soporta funciones INT13h extendidas', 0
+;~ TXT_ERROR_TooManyPartitions db '­Demasiadas particiones - Funcionamiento no garantizado!', 0
+
+; MBR protection; should also be translated and moved.
+NonMBRwrite     db  '­­AiR-BOOT INTENTà ESCRIBIR A DISCO ALGO QUE NO ES UN MBR!!',0
+NonMBRwrite_rep db  'Por favor, informe de esto a rousseau.os2dev@gmx.com',0
+SystemHalted    db  'Sistema detenido',0
+
+; Build Information string.
+build_date      db  'Compilaci¢n: ',0
+scanning_txt    db  'Explorando...',0
+
+; Colors for special words hard-coded. Keep all 0s.
+TXT_SETUP_LowerMessage      db 'Este programa se publica bajo licencia ', 0, 'GPLv3+', 0
+                            db 'http://lslspanish.github.io/translation_GPLv3_to_spanish', 0
+                            db 'Para m s informaci¢n y el c¢digo fuente, por favor visite:', 0
+                            db 'http://svn.netlabs.org/air-boot', 0
+                            db 'Correo electr¢nico: ', 0, 'rousseau.os2dev@gmx.com', 0
+
+; Drive-Letter indication for OS/2 partitions
+dl_text     db  '   en unidad ',0
+dl_hidden   db  '   oculto   ',0

@@ -971,6 +971,7 @@ FurtherMoreLoad:
 ; Filesystem table correlating id with name.
 ;
 
+                ; -> 44 Partition-Types
                 ; first Normal-Partition-ID, Hidden-Partition-ID
                 ; and Default-Partition-Flags.
                 ; 01h -> Boot-Able
@@ -991,6 +992,7 @@ FileSysIDs      db      01h, 11h,01h, 04h,014h,01h, 06h,016h,41h, 0Eh,00Eh,01h
                 db      0Ah, 0Ah,20h,0FEh,0FEh,21h,0FFh,0FFh,21h, 00h,000h,21h
                 db      16 dup (0)
 
+                ; Filesystem Types / Boot Methods
 FileSysNames    db  'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
                 db  'HPFS    ', 'NTFS    ', 'LVM-Data', 'JFS     '
                 db  'FAT32   ', 'FAT32   ', 'FAT32   ', 'BeOS    '
@@ -1002,11 +1004,15 @@ FileSysNames    db  'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
                 db  '        ', '        ', '        ', '        '
                 db  '        ', 'Kernel  ', '        ', '0V-Award'
 ;                db  'OS/2 Man', 'via BIOS', 'Floppy  ', 'Unknown '
+
+; rousseau.comment.201807081141
+; These strings should not be separated into language-files because they are
+; part of the table above.
+IF  BLD_LANG_TXT EQ 'es'
+                db  'OS2-BMGR', 'v¡a BIOS', 'Flexible', '????????'
+ELSE
                 db  'OS2-BMGR', 'via BIOS', 'Floppy  ', 'Unknown '
-                         ; -> 44 Partition-Types
-
-
-
+ENDIF
 
 
 

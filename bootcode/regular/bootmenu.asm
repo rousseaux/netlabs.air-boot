@@ -797,8 +797,11 @@ ENDIF
    ret
 BOOTMENU_BuildPartitionText     EndP
 
+IF  NOT BLD_LANG_TXT EQ 'es'
+; Drive-Letter indication for OS/2 partitions
 dl_text     db  '   on drive ',0
 dl_hidden   db  '   hidden   ',0
+ENDIF
 
 ;        In: DL - Active Partition
 ;            DH - New Active Partition (may not be correct number)
