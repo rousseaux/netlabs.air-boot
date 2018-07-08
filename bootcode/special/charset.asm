@@ -151,34 +151,51 @@ ENDIF
 
 
 ; -----------------------------------------------------------------------------
-; Load the glyphs to the video-bios assuming 400 scanlines
+; Get the standard CP437 glyphs from the video-bios -- (400 scanlines version)
+; -----------------------------------------------------------------------------
+; Returns ES:BP pointer to charset (in Video-ROM)
+; http://www.ctyme.com/intr/rb-0158.htm
 ; -----------------------------------------------------------------------------
 CHARSET_GetRomGlyphs    Proc
         mov    ax, 1130h
         mov    bh, 6                ; Get ROM VGA 25x80 charset
         int    10h                  ; VIDEO BIOS: Get charset table pointer
-        mov    bx, ds               ; ES:BP point to charset (in Video-ROM)
+        mov    bx, ds
         mov    ax, es
-        mov    es, bx
-        mov    ds, ax
-        mov    si, bp               ; DS:SI - ROM Font 25x80 and ES==CS
-        mov    di, offset CharsetTempBuffer
+        mov    es, bx               ; ES now points to Data-Segment      (dest)
+        mov    ds, ax               ; DS now points to Video-ROM          (src)
+        mov    si, bp               ; SI now points to ROM Font 25x80
+        mov    di, offset CharsetTempBuffer     ; Located in BSS
         mov    cx, 2048
-        rep    movsw                ; Copy ROM-charset to Temp-Buffer
-        mov    ds, bx               ; DS==CS
+        rep    movsw                ; Copy ROM-charset to Temp-Buffer in BSS
+        mov    ds, bx               ; Restore DS (DS==ES==CS)
         ret
 CHARSET_GetRomGlyphs    EndP
 
 
 
 ; -----------------------------------------------------------------------------
-; Load the glyphs to the video-bios assuming 400 scanlines
+; Set the custom glyphs for the video-adapter assuming 400 scanlines
+; -----------------------------------------------------------------------------
+; rousseau.comment.201807071938 :: Changed call from 0x1110 to 0x1100
+; On a HP Pavilion dv9000 laptop, when pressing TAB to switch to preboot-menu,
+; the text did not start at 0,0 anymore but was moved some 50 odd characters
+; to the right. However, the preboot-menu was displayed correctly during the
+; scanning phase, so the quirk occurred when the preboot-menu was moved to the
+; second video-page. Information from Ralph Brown does state that for 0x1110h
+; video-page 0 needs to be active, which might not be the case when the custom
+; glyphs are loaded. Switching to 0x1100 solves the problem on the Hp Pavilion
+; and the other test-laptop, which did not have this quirk, still works fine.
+; That leaves the question why 0x1110 was chosen by Martin in the first place.
+; http://www.ctyme.com/intr/rb-0136.htm  <!-- 0x1100 -->
+; http://www.ctyme.com/intr/rb-0143.htm  <!-- 0x1110 ~~ video page 0 remark -->
 ; -----------------------------------------------------------------------------
 CHARSET_SetCutsomGlyphs Proc
 IFDEF FX_ENABLED
         call    FX_WaitRetrace      ; Wait for retrace to reduce flickering
 ENDIF
-        mov     ax, 1110h
+        ;~ mov     ax, 1110h           ; Works quirky on HP Pavilion dv9000
+        mov     ax, 1100h           ; Works OK on HP Pavilion dv9000
         mov     bh, 16
         xor     bl, bl
         mov     cx, 0FFh
