@@ -20,8 +20,9 @@
 ;---------------------------------------------------------------------------
 
 
-; Glyphs from CP850 for code-points 0xb5 (A with accent) and 0xe0 (O with accent)
+; Glyphs from CP850 -- row layout: code-point, remap-to-point, byte[16] glyph-rows
 CHARSET_Spanish:
-    db 002h                                                                                             ; Number of glyphs in this table
-    db 0b5h,0d9h,060h,0c0h,010h,038h,06ch,0c6h,0c6h,0feh,0c6h,0c6h,0c6h,0c6h,000h,000h,000h,000h        ; Remap original glyph (box-char) to 0xd9
-    db 0e0h,000h,018h,030h,000h,07ch,0c6h,0c6h,0c6h,0c6h,0c6h,0c6h,0c6h,07ch,000h,000h,000h,000h        ; No remapping needed
+    db 003h                                                                                             ; Number of glyphs in this table
+    db 0b5h,0d9h,060h,0c0h,010h,038h,06ch,0c6h,0c6h,0feh,0c6h,0c6h,0c6h,0c6h,000h,000h,000h,000h        ; A with accent  (original remapped to 0xd9)
+    db 0d6h,000h,00ch,018h,000h,03ch,018h,018h,018h,018h,018h,018h,018h,03ch,000h,000h,000h,000h        ; I with accent  (no remapping needed)
+    db 0e0h,000h,018h,030h,000h,07ch,0c6h,0c6h,0c6h,0c6h,0c6h,0c6h,0c6h,07ch,000h,000h,000h,000h        ; O with accent  (no remapping needed)
