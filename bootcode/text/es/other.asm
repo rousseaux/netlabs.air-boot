@@ -88,7 +88,7 @@ TXT_BootingWait                db '; por favor, espere...', 13, 10, 13, 10, 0
 ; FIXED LENGTH - 11 chars each string
 ;----------------------------------|---------|------------------------------
 TXT_Floppy_NoName              db 'Sin nombre '
-TXT_Floppy_Drive               db 'Disquete   '
+TXT_Floppy_Drive               db 'Disquetera '
 TXT_Floppy_NoDisc              db 'Sin disco  '
 
 ; Maximum 60 chars (should not be reached)
@@ -161,4 +161,7 @@ TXT_SETUP_LowerMessage      db 'Este programa se publica bajo licencia ', 0, 'GP
 
 ; Drive-Letter indication for OS/2 partitions
 dl_text     db  '   en unidad ',0
-dl_hidden   db  '   oculto   ',0
+dl_hidden   db  '   oculta    ',0
+
+; Displayed above SETUP Menu
+SETUP_UpperFixString        db 'CONFIGURACI‡N DE AiR-BOOT ',0

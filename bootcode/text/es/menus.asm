@@ -17,13 +17,13 @@
 ;
 ;---------------------------------------------------------------------------
 ;                                          AiR-BOOT SETUP / ALL SETUP MENUS
-; v001 - English - by Martin Kiewitz
+; v001 - Spanish - by Alfredo Fern ndez D¡az
 ;---------------------------------------------------------------------------
 
 ; Main Setup - Items - Max Length: 33
 ;----------------------------------|-------------------------------|--------
 TXT_SETUP_PartitionSetup       db 'CONFIGURAR PARTICIONES', 0
-TXT_SETUP_BasicOptions         db 'OPCIONES B',0b5h,'SICAS', 0
+TXT_SETUP_BasicOptions         db 'OPCIONES BµSICAS', 0
 TXT_SETUP_AdvOptions           db 'OPCIONES AVANZADAS', 0
 TXT_SETUP_ExtOptions           db 'OPCIONES DE INICIO EXTENDIDAS', 0
 TXT_SETUP_DefMasterPwd         db 'DEFINIR CONTRASE¥A MAESTRA', 0
@@ -44,7 +44,7 @@ TXT_SETUP_LetterNo             equ 'N'
 
 ; Basic Options - Items - Max Length: 23
 ;----------------------------------|---------------------|------------------
-TXT_SETUP_DefaultSelection     db 'Por omisi¢n iniciar', 0
+TXT_SETUP_DefaultSelection     db 'Por omisi¢n, iniciar', 0
 TXT_SETUP_TimedBoot            db 'Temporizador', 0
 TXT_SETUP_TimedBootDelay       db 'Tiempo para iniciar (s)', 0
 TXT_SETUP_TimedKeyHandling     db 'Teclas durante cuenta', 0
@@ -90,10 +90,10 @@ TXT_SETUP_ExtPartMShack        db 'Part. extendidas de M$', 0
 TXT_SETUP_MAGIC_Enabled        db 'Activo', 0
 TXT_SETUP_MAGIC_Disabled       db 'Inactivo', 0
 TXT_SETUP_MAGIC_Detailed       db 'Detallado', 0
-TXT_SETUP_MAGIC_NoBootable     db 'No iniciabl', 0
+TXT_SETUP_MAGIC_NoBootable     db 'No iniciab.', 0
 ; [Linux support removed since v1.02]
 ;TXT_SETUP_MAGIC_NoLinux        db 'No Linux', 0
-TXT_SETUP_MAGIC_DoNothing      db 'Ignorar', 0
+TXT_SETUP_MAGIC_DoNothing      db 'Continuar', 0
 TXT_SETUP_MAGIC_ResetTime      db 'Reiniciar', 0
 TXT_SETUP_MAGIC_StopTime       db 'Detener', 0
 TXT_SETUP_MAGIC_CDROM          db 'CD-ROM', 0
@@ -189,10 +189,9 @@ TXT_SETUPHELP_TimedBoot        db 'AiR-BOOT iniciar  el', 0
 TXT_SETUPHELP_TimedBootDelay   db 'El intervalo de tiempo', 0
                                db 'para el inicio.', 0
                                db 0
-TXT_SETUPHELP_TimedKeyHandling db 'Establece qu‚ hacer si', 0
-                               db 'se pulsa una tecla', 0
-                               db 'durante la cuenta para', 0
-                               db 'el inicio.', 0
+TXT_SETUPHELP_TimedKeyHandling db 'Efecto sobre la cuenta', 0
+                               db 'de inicio si se pulsa', 0
+                               db 'una tecla.', 0
                                db 0
 TXT_SETUPHELP_BootLastIfTimed  db 'Si se activ¢ el inicio', 0
                                db 'por tiempo, iniciar el', 0
@@ -200,7 +199,7 @@ TXT_SETUPHELP_BootLastIfTimed  db 'Si se activ¢ el inicio', 0
                                db 'iniciar el establecido', 0
                                db 'por omisi¢n.', 0
                                db 0
-TXT_SETUPHELP_RememberLastBoot db 'Al inicio, colocar el', 0
+TXT_SETUPHELP_RememberLastBoot db 'Empezar colocando el', 0
                                db 'cursor del men£ sobre', 0
                                db 'el £ltimo sistema que', 0
                                db 'se arranc¢ desde ‚l.', 0
@@ -342,7 +341,7 @@ TXT_SETUP_SaveAndExitNow       db 'GUARDAR Y SALIR', 0
 TXT_SETUP_QuitWithoutSaveNow   db 'SALIR SIN GUARDAR', 0
 ; Must be shorter than SaveAndExitNow / QuitWithoutSaveNow
 ;----------------------------------|----------------------------------------------------------|
-TXT_SETUP_AreYouSure1          db '¨EST',0b5h,' SEGURO?', 0
+TXT_SETUP_AreYouSure1          db '¨ESTµ SEGURO?', 0
 TXT_SETUP_AreYouSure2          db '(S/N)', 0
 
 ; Maximum 60 chars (should not be reached)

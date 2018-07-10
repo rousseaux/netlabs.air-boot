@@ -29,7 +29,9 @@ ENDIF
 ;~ LocMENU_ItemHelpPtr          equ          6
 ;~ LocMENU_ItemPack             equ          8 ; only if VariablePtr>0
 
+IF  NOT BLD_LANG_TXT EQ 'es'
 SETUP_UpperFixString          db 'SETUP ',0 ; AddOn for "AiR-BOOT SETUP vX.XX"
+ENDIF
 
 include setup/menus.asm                  ; Menu structures
 include setup/part_set.asm               ; Partition Setup (in extra file)
@@ -576,6 +578,12 @@ SETUP_DrawMenuBase              Proc Near
    mov     cl, 9
    call    VideoIO_FixedPrint            ; Put 'AiR-BOOT' to 1st line...
    push    si
+
+; rousseau.comment.201807101222 :: Need to make this a lang-dependend function
+IF  BLD_LANG_TXT EQ 'es'
+      mov     cx, 0118h
+      call    VideoIO_Locate
+ENDIF
       mov     si, offset SETUP_UpperFixString
       call    VideoIO_Print              ; and 'SETUP'...
    pop     si

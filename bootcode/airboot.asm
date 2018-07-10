@@ -1009,7 +1009,7 @@ FileSysNames    db  'FAT12   ', 'FAT16   ', 'FAT16Big', 'FAT16Big'
 ; These strings should not be separated into language-files because they are
 ; part of the table above.
 IF  BLD_LANG_TXT EQ 'es'
-                db  'OS2-BMGR', 'v¡a BIOS', 'Flexible', '????????'
+                db  'OS2-BMGR', 'v¡a BIOS', 'Disquete', '????????'
 ELSE
                 db  'OS2-BMGR', 'via BIOS', 'Floppy  ', 'Unknown '
 ENDIF

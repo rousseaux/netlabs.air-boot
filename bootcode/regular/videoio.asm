@@ -459,6 +459,12 @@ WinCharEE       db      0BEh
                 db      0CCh
                 db      0CAh
                 db      0CBh
+                db      085h
+                db      0D5h
+                db      0C4h
+                db      0D7h
+                db      0C4h
+                db      085h
 
 ;        In: BX - Begin Position, DX - End Position
 ; Destroyed: BX DX
@@ -700,7 +706,7 @@ VideoIO_SyncPos                 EndP
 ;
 ; Put the Build Information at the POST BIOS screen.
 ;
-VideoIO_PrintBuildInfo  Proc    Near    Uses ax bx cx si di
+VideoIO_PrintBuildInfo  Proc    Near    Uses ax bx dx cx si di
         ; Print header.
         mov     si, offset [build_date]
         call    MBR_Teletype
@@ -712,6 +718,7 @@ VideoIO_PrintBuildInfo  Proc    Near    Uses ax bx cx si di
         sub     cx, si
         call    VideoIO_FixedPrint
         mov     cx, 10
+        xor     dx, dx
         mov     [TextPosX], 65
         mov     al, ' '
         mov     si, offset [WinBeginPosY]
@@ -728,19 +735,21 @@ VideoIO_PrintBuildInfo  Proc    Near    Uses ax bx cx si di
         push    [si+bx+00]
         push    [si+bx+02]
         push    [si+bx+04]
+        mov     dx, 5
         mov     di, si
         add     di, bx
         add     si, 17
         mov     cx, 7
+        add     cx, dx
+        inc     cx
         cld
         rep     movsb
         xchg    bx, cx
-        mov     al, 085h
-        stosb
         pop     [di+bx+04]
         pop     [di+bx+02]
         pop     [di+bx+00]
         pop     si
+        sub     [TextPosX], dl
         xchg    ah, al
     @@:
         add     si, cx
@@ -752,15 +761,14 @@ VideoIO_PrintBuildInfo  Proc    Near    Uses ax bx cx si di
         mov     ax, [bx]
         shl     ax, 4
         add     cx, 4
+        add     cx, dx
     @@: lodsb
         xor     al, ah
         call    VideoIO_PrintSingleChar
         loop    @B
-
         add     [TextPosY], 2
         mov     [TextPosX], 0
         call    MBR_TeletypeSyncPos
-
         ret
 VideoIO_PrintBuildInfo  EndP
 
