@@ -75,7 +75,7 @@ TXT_VirusFound2                db '    Est  en el registro de arranque de la par
 TXT_VirusFoundEnd              db '    Sistema detenido. Pulse RESET.', 0
 TXT_HowEnterSetup              db 13, 10, ' - Mantenga pulsado Ctrl o Alt para configurar AiR-BOOT.', 0
 
-TXT_BootingNow1                db 'Iniciando en el sistema ', 0
+TXT_BootingNow1                db 'Arrancando ', 0
 ; DO NOT MODIFY HERE
 TXT_BootingNow2                db '''', 0
 TXT_BootingNowPartName         db 12 dup (0) ; Space for BootThisPart-Name
@@ -108,8 +108,8 @@ TXT_TooManyTries               db 'Demasiados intentos. Sistema detenido.', 0
 ;
 ; Strings used in the pre-MENU screen
 ;
-DisksFound          db "Discos Encontrados      : ",0
-PartitionsFound     db "Particiones Encontradas : ",0
+DisksFound          db "Discos encontrados      : ",0
+PartitionsFound     db "Particiones encontradas : ",0
 Phase1              db "Fase 1 Instalaci¢n OS/2 : ",0
 TABMessage          db "Pulse TAB para volver al men£ de AiR-BOOT",0
 PREPMessage         db "Preparando Men£ de Inicio...",0
@@ -151,6 +151,12 @@ SystemHalted    db  'Sistema detenido',0
 ; Build Information string.
 build_date      db  'Compilaci¢n: ',0
 scanning_txt    db  'Explorando...',0
+
+; License and source info.
+BootEndMsg      db 'Programa GPLv3+; por favor,    visite: http://www.gnu.org/licenses/gpl.txt', 0
+BootEndMsg2     db 'Para acceder al c¢digo fuente, visite: http://svn.netlabs.org/air-boot', 0
+;~ BootEndMsg      db 'Publicado bajo GPLv3+, por favor visite: http://www.gnu.org/licenses/gpl.txt', 0
+;~ BootEndMsg2     db 'Para acceder al c¢digo fuente, por favor visite: http://svn.netlabs.org/air-boot', 0
 
 ; Colors for special words hard-coded. Keep all 0s.
 TXT_SETUP_LowerMessage      db 'Este programa se publica bajo licencia ', 0, 'GPLv3+', 0

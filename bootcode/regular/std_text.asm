@@ -62,9 +62,11 @@ ENDIF
 ; booting the selected system.
 CopyrightVersionLen   equ   6
 
+IF  NOT BLD_LANG_TXT EQ 'es'
 ; License and source info.
 BootEndMsg      db 'This is GPLv3+ software, please visit: http://www.gnu.org/licenses/gpl.txt', 0
 BootEndMsg2     db 'To obtain the sources,   please visit: http://svn.netlabs.org/air-boot', 0
+ENDIF
 
 ; Bugger...
 CheckID_MBR     db 'AiRBOOT'
